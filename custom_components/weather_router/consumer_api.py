@@ -4171,11 +4171,7 @@ async def websocket_consumer_resolve(
             status="ready",
             selected_provider="aggregate",
             selected_capability=public_id,
-            fallback_count=sum(
-                1
-                for item in trace.data["candidates"]
-                if item.get("attempted") and item.get("result") != "selected"
-            ),
+            fallback_count=trace.recorded_fallback_count(),
             reason_code="aggregate_eligible_sources",
         )
         trace.finish(status="ready")
@@ -4315,7 +4311,7 @@ async def websocket_consumer_resolve(
                 selected_provider=candidate.provider.id,
                 selected_capability=candidate.capability.id,
                 selected_index=index,
-                fallback_count=index,
+                fallback_count=trace.recorded_fallback_count(),
                 reason_code=reason,
             )
             trace.stage_end("provider_resolution")
