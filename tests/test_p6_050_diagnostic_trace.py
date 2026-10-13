@@ -57,6 +57,25 @@ class P6050Diagnostics(unittest.TestCase):
         self.assertEqual([r["result"] for r in done["candidates"]], ["rejected", "rejected", "selected"])
         self.assertEqual([r["attempted"] for r in done["candidates"]], [False, True, True])
 
+    def test_winner_reason_uses_attempts_not_skipped_position(self):
+        trace = builder()
+        candidate(trace, "skipped", 0)
+        candidate(trace, "winner", 1)
+        trace.candidate_result("skipped/synthetic", result="rejected", reason="requirements_not_met")
+        self.assertEqual(trace.winner_reason(eligible_count=2), "eligible_candidate")
+        self.assertEqual(trace.recorded_fallback_count(), 0)
+        trace.candidate_attempt("skipped/synthetic")
+        self.assertEqual(trace.winner_reason(eligible_count=2), "fallback_after_failure")
+        self.assertEqual(
+            trace.winner_reason(eligible_count=2, rate_limited=True),
+            "fallback_after_rate_limit",
+        )
+
+    def test_only_eligible_winner_reason(self):
+        trace = builder()
+        candidate(trace, "winner", 0)
+        self.assertEqual(trace.winner_reason(eligible_count=1), "only_eligible_candidate")
+
     def test_provider_contact_is_distinct_from_attempt(self):
         trace = builder()
         candidate(trace, "provider", 0)
