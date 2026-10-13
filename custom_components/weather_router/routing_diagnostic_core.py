@@ -820,7 +820,7 @@ class RoutingTraceBuilder:
         return sum(
             1
             for item in self.data["candidates"]
-            if item.get("attempted") and item.get("result") != "selected"
+            if item.get("attempted") and item.get("result") in ("rejected", "failed")
         )
 
     def winner_reason(self, *, eligible_count: int, rate_limited: bool = False) -> str:
