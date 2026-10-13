@@ -101,9 +101,10 @@
       "P6-080 consistent 0.10.147 DEV / Loader 150 release: public CI #76 completed/success",
       "P6-080 profile no-model rejection: private HA REAL PASS, six of six candidates filtered, zero provider contacts",
       "P6-080 first-candidate winner_reason diagnostic correction: public CI #84 completed/success (not deployed)",
-      "P6-080/2 visual result acceptance: screenshot + user confirmation, visible green 227/227 success in 66 ms; loading interim not human-observable at this speed"
+      "P6-080/2 visual result acceptance: screenshot + user confirmation, visible green 227/227 success in 66 ms; loading interim not human-observable at this speed",
+      "P6-080/3 shared release candidate: public CI #93 and #94 completed/success; five tested blobs on deploy/dev 9bb9d97062d0; HA installation pending"
     ],
-    "ha_runtime_proof": "0.10.147 DEV / Loader 150 installed and verified by private HA routing traces; P6-080/1 PASS; P6-080/2 visual catalog result PASS (66 ms instant success; interim loading state not observed); corrected winner_reason is NOT installed.",
+    "ha_runtime_proof": "Installed HA last verified at 0.10.147 DEV / Loader 150. P6-080/1 model filter PASS and P6-080/2 catalog visual PASS. Corrected winner trace is NOT installed/validated in HA yet; DRA source 0.10.148 DEV / Loader 151 prepared on deploy/dev.",
     "privacy": "No raw logs, user locations or credentials in this document",
     "evidence_boundary": "Prior P0-P6 domain paths accepted at their historical runtime versions. Catalog eligibility is not 227 live provider fetches. Do not copy raw HA diagnostics to source/CI repositories."
   },
@@ -130,7 +131,7 @@
       "id": "P6-080-WINNER-TRACE",
       "requirement": "Single runtime confirmation of corrected first-winner reason with fallback_count=0 after bundled deployment",
       "status": "OPEN",
-      "evidence": "Correction verified by public CI #84; deploy/dev still contains old file"
+      "evidence": "Corrected source CI #84; bundled 0.10.148 DEV / Loader 151 on deploy/dev commit 9bb9d97062d0; no HA installation/real trace yet"
     },
     {
       "id": "P6-080-GESAMT",
@@ -155,8 +156,8 @@
   },
   "historical_snapshot_note": "docs/p6_070_documentation_inventory.v1.json describes the P6-070-era snapshot; its earlier ACTIVE/OPEN values do not supersede this matrix.",
   "next_runtime_batch": {
-    "source_fix": "custom_components/weather_router/routing_diagnostic_core.py (feature blob 94bb14e46e5f6b147d2d53039a600fc2682c6762; deployment remains older)",
-    "deployment": "Not authorized yet. Bundle only after static/CI and visual/current source check; one DRA update if winner correction needs HA runtime verification.",
+    "source_fix": "routing_diagnostic_core.py SHA 94bb14e46e5f6b147d2d53039a600fc2682c6762; now included in tested DRA deploy/dev commit 9bb9d97062d0",
+    "deployment": "One bundled DRA update is now prepared on deploy/dev at WR 0.10.148 DEV / Loader 151. HA installation and real first-winner trace still pending.",
     "real_tests": [
       "First-winner diagnostic reason after single bundled DRA upgrade, only if deployment necessary"
     ],
