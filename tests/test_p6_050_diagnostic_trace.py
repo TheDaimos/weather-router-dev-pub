@@ -64,10 +64,12 @@ class P6050Diagnostics(unittest.TestCase):
         trace.candidate_result("skipped/synthetic", result="rejected", reason="requirements_not_met")
         self.assertEqual(trace.winner_reason(eligible_count=2), "eligible_candidate")
         self.assertEqual(trace.recorded_fallback_count(), 0)
-        trace.candidate_attempt("skipped/synthetic")
+        # The actual winner can be attempted but still pending during winner_reason.
+        trace.candidate_attempt("winner/synthetic")
         self.assertEqual(trace.winner_reason(eligible_count=2), "eligible_candidate")
         self.assertEqual(trace.recorded_fallback_count(), 0)
-        trace.candidate_result("skipped/synthetic", result="rejected", reason="temporarily_unavailable")
+        # A previously rejected candidate becomes a failure only if actually attempted.
+        trace.candidate_attempt("skipped/synthetic")
         self.assertEqual(trace.winner_reason(eligible_count=2), "fallback_after_failure")
         self.assertEqual(
             trace.winner_reason(eligible_count=2, rate_limited=True),
