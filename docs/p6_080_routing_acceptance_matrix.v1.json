@@ -96,22 +96,46 @@
       "P6-070 documentation synchronization"
     ],
     "new": [
-      "P6-080 effective availability candidate class restriction CI #62 completed/success",
-      "P6-080 visible catalog feedback CI #64 completed/success"
+      "P6-080 catalog effective candidate eligibility: public CI #62 completed/success",
+      "P6-080 catalog visible feedback: public CI #64 completed/success (not a visual HA acceptance)",
+      "P6-080 consistent 0.10.147 DEV / Loader 150 release: public CI #76 completed/success",
+      "P6-080 profile no-model rejection: private HA REAL PASS, six of six candidates filtered, zero provider contacts",
+      "P6-080 first-candidate winner_reason diagnostic correction: public CI #84 completed/success (not deployed)"
     ],
-    "ha_runtime_proof": "NEW P6-080 changes NOT installed; final live comparison pending",
-    "privacy": "No raw logs, user locations or credentials in this document"
+    "ha_runtime_proof": "0.10.147 DEV / Loader 150 installed and verified by private HA routing traces; P6-080/1 PASS; visual catalog feedback remains unverified; corrected winner_reason is NOT installed.",
+    "privacy": "No raw logs, user locations or credentials in this document",
+    "evidence_boundary": "Prior P0-P6 domain paths accepted at their historical runtime versions. Catalog eligibility is not 227 live provider fetches. Do not copy raw HA diagnostics to source/CI repositories."
   },
   "open_gates": [
     {
       "id": "P6-080-HA-1",
-      "requirement": "Install a consistent release with backend catalog eligibility and visible catalog feedback; validate restrained model profile and global router deny without provider I/O",
-      "status": "OPEN"
+      "requirement": "Deny-only model-profile resolve with all six candidates filtered, zero provider contacts",
+      "status": "PASS",
+      "evidence": "Private HA acceptance 2026-10-13; WeatherRouter 0.10.147 DEV / Loader 150"
     },
     {
       "id": "P6-080-RELEASE",
-      "requirement": "Versioned loader and build identifiers must match; deploy source must be audited before DRA",
-      "status": "BLOCKED"
+      "requirement": "Consistent version and loader on audited DRA source; runtime receipt verified",
+      "status": "PASS",
+      "evidence": "Public CI #76; deploy/dev c3fb3bd57f631d99bf4b1a530a7eea1cf628c580; private HA runtime proof"
+    },
+    {
+      "id": "P6-080-CATALOG-VISUAL",
+      "requirement": "Human visual inspection of installed loading and completion feedback; error-state remains statically tested unless naturally observable",
+      "status": "OPEN",
+      "evidence": "CI #64 is not a visual HA test"
+    },
+    {
+      "id": "P6-080-WINNER-TRACE",
+      "requirement": "Single runtime confirmation of corrected first-winner reason with fallback_count=0 after bundled deployment",
+      "status": "OPEN",
+      "evidence": "Correction verified by public CI #84; deploy/dev still contains old file"
+    },
+    {
+      "id": "P6-080-GESAMT",
+      "requirement": "Classify eight domain proofs, verify remaining evidence, complete routing-wide sign-off before enabling P7",
+      "status": "OPEN",
+      "evidence": "Historical domain subtests + P6-030 to P6-070 DONE; P6-080 currently ACTIVE"
     }
   ],
   "limitations": [
@@ -119,5 +143,24 @@
     "Previous HA proofs were under their historical builds",
     "No quantitative per-request resource measurements from earlier P6-060 logs",
     "Browser unhandled_rejection cause remains unknown"
-  ]
+  ],
+  "as_of": "2026-10-14",
+  "evidence_levels": {
+    "static_catalog": "All 227 public IDs / 286 edges / 38 core providers inventoried and regression-tested; this is not live network availability.",
+    "historical_real_tests": "P0-P5 topic-specific HA acceptances retained with their original runtime and scope; not repeated here.",
+    "p6_060": "Six manual successful catalog loads, each 227/227; qualitative Proxmox observation, no isolated performance benchmark.",
+    "p6_080": "One successful unfiltered basis resolve and one REAL PASS no-model filtering; new visual feedback and corrected winner trace remain open.",
+    "separate_non_blocking_diagnostic": "Two historic opaque browser unhandled_rejection entries; causal relation to catalog/routing not demonstrated."
+  },
+  "historical_snapshot_note": "docs/p6_070_documentation_inventory.v1.json describes the P6-070-era snapshot; its earlier ACTIVE/OPEN values do not supersede this matrix.",
+  "next_runtime_batch": {
+    "source_fix": "custom_components/weather_router/routing_diagnostic_core.py (feature blob 94bb14e46e5f6b147d2d53039a600fc2682c6762; deployment remains older)",
+    "deployment": "Not authorized yet. Bundle only after static/CI and visual/current source check; one DRA update if winner correction needs HA runtime verification.",
+    "real_tests": [
+      "Visual catalog feedback on installed 0.10.147/150, no restart",
+      "First-winner diagnostic reason after single bundled DRA upgrade, only if deployment necessary"
+    ],
+    "already_passed": "Do not repeat P6-080/1 model-profile rejection"
+  },
+  "p7_status": "OPEN - locked until formal P6-080 DONE"
 }
