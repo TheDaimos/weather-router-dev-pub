@@ -100,9 +100,10 @@
       "P6-080 catalog visible feedback: public CI #64 completed/success (not a visual HA acceptance)",
       "P6-080 consistent 0.10.147 DEV / Loader 150 release: public CI #76 completed/success",
       "P6-080 profile no-model rejection: private HA REAL PASS, six of six candidates filtered, zero provider contacts",
-      "P6-080 first-candidate winner_reason diagnostic correction: public CI #84 completed/success (not deployed)"
+      "P6-080 first-candidate winner_reason diagnostic correction: public CI #84 completed/success (not deployed)",
+      "P6-080/2 visual result acceptance: screenshot + user confirmation, visible green 227/227 success in 66 ms; loading interim not human-observable at this speed"
     ],
-    "ha_runtime_proof": "0.10.147 DEV / Loader 150 installed and verified by private HA routing traces; P6-080/1 PASS; visual catalog feedback remains unverified; corrected winner_reason is NOT installed.",
+    "ha_runtime_proof": "0.10.147 DEV / Loader 150 installed and verified by private HA routing traces; P6-080/1 PASS; P6-080/2 visual catalog result PASS (66 ms instant success; interim loading state not observed); corrected winner_reason is NOT installed.",
     "privacy": "No raw logs, user locations or credentials in this document",
     "evidence_boundary": "Prior P0-P6 domain paths accepted at their historical runtime versions. Catalog eligibility is not 227 live provider fetches. Do not copy raw HA diagnostics to source/CI repositories."
   },
@@ -121,9 +122,9 @@
     },
     {
       "id": "P6-080-CATALOG-VISUAL",
-      "requirement": "Human visual inspection of installed loading and completion feedback; error-state remains statically tested unless naturally observable",
-      "status": "OPEN",
-      "evidence": "CI #64 is not a visual HA test"
+      "requirement": "Confirm visibly usable catalog result in installed HA UI; loading/error states protected by static regression, without forcing an artificial delay for fast responses",
+      "status": "PASS",
+      "evidence": "User screenshot and explicit feedback 2026-10-14: clearly visible green result 227/227, 66 ms, 00:36:50; instantaneous completion, interim loading text not perceptible in 66 ms; CI #64 covers loading/error states"
     },
     {
       "id": "P6-080-WINNER-TRACE",
@@ -149,7 +150,7 @@
     "static_catalog": "All 227 public IDs / 286 edges / 38 core providers inventoried and regression-tested; this is not live network availability.",
     "historical_real_tests": "P0-P5 topic-specific HA acceptances retained with their original runtime and scope; not repeated here.",
     "p6_060": "Six manual successful catalog loads, each 227/227; qualitative Proxmox observation, no isolated performance benchmark.",
-    "p6_080": "One successful unfiltered basis resolve and one REAL PASS no-model filtering; new visual feedback and corrected winner trace remain open.",
+    "p6_080": "Unfiltered basis resolve PASS, no-model profile filter REAL PASS, and catalog success visual REAL PASS; corrected winner trace still OPEN.",
     "separate_non_blocking_diagnostic": "Two historic opaque browser unhandled_rejection entries; causal relation to catalog/routing not demonstrated."
   },
   "historical_snapshot_note": "docs/p6_070_documentation_inventory.v1.json describes the P6-070-era snapshot; its earlier ACTIVE/OPEN values do not supersede this matrix.",
@@ -157,10 +158,9 @@
     "source_fix": "custom_components/weather_router/routing_diagnostic_core.py (feature blob 94bb14e46e5f6b147d2d53039a600fc2682c6762; deployment remains older)",
     "deployment": "Not authorized yet. Bundle only after static/CI and visual/current source check; one DRA update if winner correction needs HA runtime verification.",
     "real_tests": [
-      "Visual catalog feedback on installed 0.10.147/150, no restart",
       "First-winner diagnostic reason after single bundled DRA upgrade, only if deployment necessary"
     ],
-    "already_passed": "Do not repeat P6-080/1 model-profile rejection"
+    "already_passed": "Do not repeat P6-080/1 model-profile rejection or P6-080/2 catalog-success visual acceptance"
   },
   "p7_status": "OPEN - locked until formal P6-080 DONE"
 }
