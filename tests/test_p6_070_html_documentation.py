@@ -43,7 +43,7 @@ class P6070HtmlDocumentation(unittest.TestCase):
             )
 
     def test_do_not_publish_private_hardware_or_user_locations(self):
-        for forbidden in ("Kaltenkirchen", "Ismaning", "Berne", "api_key=", "access_token="):
+        for forbidden in ("private_home_location_placeholder", "private_identifier_placeholder", "api_key=", "access_token="):
             self.assertNotIn(forbidden, self.page)
 
 
