@@ -4256,14 +4256,9 @@ async def websocket_consumer_resolve(
                 )
 
             now = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
-            reason = (
-                "fallback_after_rate_limit"
-                if index > 0 and rate_limited
-                else "fallback_after_failure"
-                if index > 0
-                else "only_eligible_candidate"
-                if len(eligible) == 1
-                else "eligible_candidate"
+            reason = trace.winner_reason(
+                eligible_count=len(eligible),
+                rate_limited=rate_limited,
             )
             freshness = {
                 "data_time": data_time,
@@ -4292,7 +4287,7 @@ async def websocket_consumer_resolve(
                 "routing": {
                     "reason_code": reason,
                     "fallback_available": len(eligible) > 1,
-                    "degraded": index > 0,
+                    "degraded": trace.recorded_fallback_count() > 0,
                     "candidate_count": len(eligible),
                     "selected_index": index,
                     "profile_excluded_candidates": profile_excluded_candidates,
