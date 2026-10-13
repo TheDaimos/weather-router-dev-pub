@@ -65,6 +65,9 @@ class P6050Diagnostics(unittest.TestCase):
         self.assertEqual(trace.winner_reason(eligible_count=2), "eligible_candidate")
         self.assertEqual(trace.recorded_fallback_count(), 0)
         trace.candidate_attempt("skipped/synthetic")
+        self.assertEqual(trace.winner_reason(eligible_count=2), "eligible_candidate")
+        self.assertEqual(trace.recorded_fallback_count(), 0)
+        trace.candidate_result("skipped/synthetic", result="rejected", reason="temporarily_unavailable")
         self.assertEqual(trace.winner_reason(eligible_count=2), "fallback_after_failure")
         self.assertEqual(
             trace.winner_reason(eligible_count=2, rate_limited=True),
