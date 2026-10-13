@@ -1,0 +1,120 @@
+{
+  "schema": "weather_router.p3_warn_intent_design.v1",
+  "date": "2026-10-04",
+  "status": "design_only",
+  "scope": "P3-WARN-30 intent design; no runtime change",
+  "public_capability_count_before": 226,
+  "public_capabilities_added": 0,
+  "public_capability_count_after": 226,
+  "public_intents": {
+    "weather.warning.official": {
+      "action": "reuse_existing",
+      "family": "warning",
+      "resource_type": "hazard_feed",
+      "strategy": "aggregate",
+      "candidates": [
+        "dwd/official_weather_warnings",
+        "noaa_nws/official_weather_alerts"
+      ],
+      "candidate_count": 2,
+      "filters": {
+        "hazard_types": "event_filter.hazard_types",
+        "severities": "event_filter.severities"
+      },
+      "source_provenance": "preserve_per_event",
+      "cross_provider_deduplication": false,
+      "provider_priority": false,
+      "strongest_warning_wins": false
+    }
+  },
+  "spatial_policy": {
+    "global": {
+      "rule": "official events may contribute without event geometry",
+      "geometry_required": false
+    },
+    "point": {
+      "rule": "event may contribute only when provider point filtering or machine-readable event geometry proves relevance",
+      "geometry_or_provider_point_proof_required": true
+    },
+    "bbox": {
+      "rule": "event may contribute only when machine-readable geometry intersects requested bbox",
+      "geometry_required": true,
+      "missing_geometry": "exclude_from_bbox_match"
+    }
+  },
+  "dwd_target": {
+    "current_problem": "WarnWetter JSON exposes WarnCellID but current runtime emits geometry=null and discards point/bbox context",
+    "implementation_requirement": "integrate official DWD CAP/status geometry with polygons and WarnCellID",
+    "point_behavior": "filter by real event geometry or other machine-readable WarnCell mapping",
+    "bbox_behavior": "filter by real event geometry intersection",
+    "global_behavior": "official events may remain available even when polygon is unavailable",
+    "forbidden": [
+      "invent static Germany bbox as event coverage",
+      "claim runtime_event_geometry without actual geometry",
+      "treat endpoint reachability as coverage"
+    ]
+  },
+  "noaa_nws_target": {
+    "point_behavior": "retain provider API point filtering",
+    "bbox_behavior": "require real GeoJSON geometry intersection",
+    "missing_bbox_geometry": "exclude",
+    "outside_coverage": "preserve explicit provider outside_coverage"
+  },
+  "event_contract": {
+    "guaranteed": [
+      "authority/source provenance",
+      "provider-scoped source event id",
+      "normalized hazard_type",
+      "normalized severity",
+      "event/headline when supplied",
+      "real time fields when supplied",
+      "real area information when supplied"
+    ],
+    "optional": [
+      "urgency",
+      "certainty",
+      "message_type",
+      "sent",
+      "geometry",
+      "instruction",
+      "description",
+      "response",
+      "affected_zones",
+      "provider_parameters"
+    ],
+    "missing_optional_fields": "remain absent_or_null"
+  },
+  "aggregation_policy": {
+    "aggregate_all_successful_eligible_sources": true,
+    "successful_empty_source_is_valid": true,
+    "one_source_failure_may_degrade_not_fail_aggregate": true,
+    "no_successful_sources": "existing aggregate failure semantics",
+    "deduplication": "none_in_p3_warn_40",
+    "event_ids": "provider_namespaced",
+    "source_event_id": "preserved"
+  },
+  "implementation_tasks": [
+    "Keep weather.warning.official; add no public capability.",
+    "Keep DWD and NOAA/NWS candidate set unchanged.",
+    "Keep aggregate strategy and event_filter behavior.",
+    "Integrate official DWD CAP/status geometry for point/bbox relevance.",
+    "Exclude BBox events without geometry from spatial matches.",
+    "Preserve event and source provenance.",
+    "Do not introduce cross-provider deduplication.",
+    "Add diagnostics for warning spatial evidence as needed for HA acceptance.",
+    "Keep runtime map and Consumer V1 mirror synchronized.",
+    "Add global, point, bbox, empty-feed, and missing-geometry tests.",
+    "Bump build/loader only because P3-WARN-40 is a real runtime change."
+  ],
+  "invariants": [
+    "No new public capability is introduced.",
+    "Provider ID is not a scoring axis.",
+    "Profiles remain deny-only.",
+    "Official warning is not a thunderstorm cell, probability, or lightning observation.",
+    "Missing CAP fields are never invented.",
+    "Missing event geometry cannot prove point/bbox relevance.",
+    "Endpoint reachability is not coverage evidence.",
+    "Cross-provider deduplication is forbidden without a stable identity contract.",
+    "No strongest-warning-wins provider selection."
+  ]
+}

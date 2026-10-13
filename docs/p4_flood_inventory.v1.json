@@ -1,0 +1,160 @@
+{
+  "schema": "weather_router.p4_flood_inventory.v1",
+  "date": "2026-10-05",
+  "status": "inventory_only",
+  "scope": "standard_core_only",
+  "summary": {
+    "public_capabilities_family_flood": 10,
+    "dedicated_flood_warning_public_capabilities": 1,
+    "glofas_raster_public_capabilities": 9,
+    "general_weather_warning_paths_with_flood_types": 1,
+    "civil_protection_warning_paths_with_flood_types": 1,
+    "dedicated_flood_warning_candidates": 1
+  },
+  "hazard_types_in_scope": [
+    "flood",
+    "flash_flood",
+    "surface_water_flood",
+    "debris_flow",
+    "levee_failure",
+    "dam_failure",
+    "glacial_lake_outburst_flood",
+    "ice_jam_flood"
+  ],
+  "related_but_distinct_hazard_types": [
+    "heavy_rain",
+    "storm_surge",
+    "coastal_event"
+  ],
+  "warning_paths": {
+    "natural_hazards.flood.warning": {
+      "family": "flood",
+      "resource_type": "hazard_feed",
+      "candidates": [
+        "nina_flood/flood_information_germany"
+      ],
+      "hazard_types": [
+        "flood",
+        "flash_flood",
+        "civil_protection",
+        "surface_water_flood",
+        "debris_flow",
+        "levee_failure",
+        "dam_failure",
+        "glacial_lake_outburst_flood",
+        "ice_jam_flood"
+      ],
+      "provider_default_enabled": false,
+      "coverage": "Deutschland",
+      "source_class": "official_warning",
+      "data_origin": "warning_authority",
+      "measurement_method": "civil_protection_warning_feed"
+    },
+    "weather.warning.official": {
+      "family": "warning",
+      "strategy": "aggregate",
+      "resource_type": "hazard_feed",
+      "candidates": [
+        "dwd/official_weather_warnings",
+        "noaa_nws/official_weather_alerts"
+      ],
+      "contains_flood_related_hazard_types": [
+        "heavy_rain",
+        "flash_flood",
+        "flood",
+        "surface_water_flood",
+        "debris_flow",
+        "levee_failure",
+        "dam_failure",
+        "glacial_lake_outburst_flood",
+        "ice_jam_flood"
+      ]
+    },
+    "civil_protection.warning.official": {
+      "family": "warning",
+      "strategy": "aggregate",
+      "contains_flood_related_hazard_types": [
+        "flood",
+        "surface_water_flood",
+        "debris_flow",
+        "levee_failure",
+        "dam_failure",
+        "glacial_lake_outburst_flood",
+        "ice_jam_flood"
+      ],
+      "nina_flood_also_maps_here": true
+    }
+  },
+  "nina_flood_current_classifier": {
+    "provider_revision": "wr-0.10.48-nina-supplementary-1",
+    "event_label": "Flood information",
+    "classification_input": "title_only",
+    "directly_classified_types": [
+      "levee_failure",
+      "dam_failure",
+      "debris_flow",
+      "surface_water_flood",
+      "flash_flood",
+      "flood"
+    ],
+    "declared_but_not_directly_classified_from_title": [
+      "glacial_lake_outburst_flood",
+      "ice_jam_flood"
+    ],
+    "fallback_type": "civil_protection"
+  },
+  "glofas": {
+    "provider_default_enabled": false,
+    "coverage": "Global",
+    "data_origin": "model",
+    "measurement_method": "hydrological_model",
+    "warning_authority": false,
+    "capabilities": [
+      "natural_hazards.flood.reporting_points.layer",
+      "natural_hazards.flood.probability_5y.layer",
+      "natural_hazards.flood.probability_20y.layer",
+      "natural_hazards.flood.summary_1_3d.layer",
+      "natural_hazards.flood.summary_4_10d.layer",
+      "natural_hazards.flood.summary_11_30d.layer",
+      "natural_hazards.flood.rapid_mapping.layer",
+      "natural_hazards.flood.rapid_impact.layer",
+      "natural_hazards.flood.hazard_100y.layer"
+    ],
+    "source_classes": {
+      "forecast": 8,
+      "climatology": 1
+    },
+    "hard_boundary": "GloFAS model layers are not local official warnings."
+  },
+  "inventory_findings": [
+    "The standard core already has a dedicated Germany flood-warning public capability backed only by NINA/LHP.",
+    "The general official weather-warning aggregate independently carries multiple flood and heavy-rain hazard types through DWD and NOAA/NWS.",
+    "The public flood-warning contract declares GLOF and ice-jam flood, but the current NINA title classifier has no direct GLOF or ice-jam patterns.",
+    "Heavy rain is a weather hazard type in weather.warning.official but is not part of natural_hazards.flood.warning.",
+    "GloFAS consists of nine separate raster contracts and must not be collapsed into an official-warning contract.",
+    "Flood reporting points, exceedance probabilities, forecast summaries, rapid mapping, rapid impact, and 100-year hazard climatology are materially different products.",
+    "Storm surge and coastal event are hydrology-adjacent but remain distinct from the P4-FLOOD river/pluvial/flash-flood subtype set."
+  ],
+  "open_questions_for_p4_flood_20": [
+    "Define authoritative event semantics for river/general flood versus flash flood and surface-water/pluvial flood.",
+    "Decide whether heavy rain belongs only as a precursor/weather-warning class or can participate in a flood-specific additive semantic class.",
+    "Define how levee failure, dam failure, debris flow, GLOF and ice-jam flood remain distinct when multiple terms occur in one warning.",
+    "Decide whether the NINA title-only classifier is sufficient or whether additional source fields must be used.",
+    "Resolve declared-but-unreachable GLOF and ice-jam semantics in the dedicated NINA flood-warning path.",
+    "Keep official warning, modeled forecast/probability, rapid mapping/impact and climatology semantically separate.",
+    "Define whether weather.warning.official and natural_hazards.flood.warning are interchangeable, complementary, or distinct consumer intents.",
+    "Do not infer an official warning from a GloFAS threshold/probability or raster."
+  ],
+  "invariants": [
+    "Inventory contains standard core only.",
+    "GloFAS model output is not an official warning.",
+    "Heavy rain is not automatically a flood event.",
+    "Flood probability is not an observed flood.",
+    "Rapid flood mapping is not automatically an authority-issued warning.",
+    "Storm surge and coastal event are not silently collapsed into river/pluvial flood.",
+    "Provider ID is not a scoring axis.",
+    "Profiles remain deny-only.",
+    "Coverage unknown remains unknown.",
+    "Endpoint reachability is not coverage proof."
+  ]
+}

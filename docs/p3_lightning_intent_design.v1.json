@@ -1,0 +1,196 @@
+{
+  "schema": "weather_router.p3_lightning_intent_design.v1",
+  "date": "2026-10-03",
+  "scope": "P3-LIGHTNING-30 intent design only; implementation follows in P3-LIGHTNING-40",
+  "decisions": {
+    "new_public_capabilities": [],
+    "preserved_public_capabilities": [
+      "weather.lightning.density",
+      "weather.lightning.observed.density",
+      "weather.lightning.observed.events",
+      "weather.lightning.observed.nearest_distance",
+      "weather.lightning.observed.nearest_azimuth",
+      "weather.lightning.satellite.glm_east.lcfa",
+      "weather.lightning.satellite.glm_west.lcfa",
+      "weather.lightning.satellite.mtg_li.accumulated_flashes"
+    ],
+    "multi_candidate_public_capabilities": [],
+    "deferred_merges": [
+      {
+        "candidates": [
+          "dwd/lightning_density",
+          "eccc_lightning/lightning_density_2_5km"
+        ],
+        "reason": "density unit, aggregation semantics and routing coverage are not sufficiently harmonized"
+      },
+      {
+        "candidates": [
+          "noaa_goes_glm/glm_east_lcfa",
+          "noaa_goes_glm/glm_west_lcfa"
+        ],
+        "reason": "machine-readable field-of-view coverage is not available for provider-neutral regional selection"
+      }
+    ]
+  },
+  "intents": {
+    "weather.lightning.density": {
+      "semantic_class": "observed_lightning_density_grid",
+      "candidates": [
+        "dwd/lightning_density"
+      ],
+      "resource_type": "raster_tile",
+      "quantity_policy": "lightning_density",
+      "observation_kind_policy": "observation",
+      "data_origin_policy": "lightning_detection_network",
+      "measurement_method_policy": "lightning_density_grid",
+      "unit_policy": "provider_capability",
+      "canonical_unit": null,
+      "temporal_policy": "provider_product_frames",
+      "coverage": "candidate_hard_bbox",
+      "fallback_policy": "only_declared_candidate"
+    },
+    "weather.lightning.observed.density": {
+      "semantic_class": "observed_lightning_density_grid",
+      "candidates": [
+        "eccc_lightning/lightning_density_2_5km"
+      ],
+      "resource_type": "raster_tile",
+      "quantity_policy": "lightning_density",
+      "observation_kind_policy": "observation",
+      "data_origin_policy": "lightning_detection_network",
+      "measurement_method_policy": "lightning_density_grid",
+      "unit_policy": "provider_capability_explicit",
+      "canonical_unit": "km^-2 min^-1",
+      "temporal_policy": "10_minute_observed_density",
+      "coverage": "candidate_specific_unknown_allowed",
+      "fallback_policy": "only_declared_candidate"
+    },
+    "weather.lightning.observed.events": {
+      "semantic_class": "terrestrial_network_lightning_event",
+      "candidates": [
+        "fmi_lightning/lightning_strikes_observed"
+      ],
+      "resource_type": "event_feed",
+      "quantity_policy": "not_applicable",
+      "observation_kind_policy": "observation",
+      "data_origin_policy": "lightning_detection_network",
+      "measurement_method_policy": "lightning_event_detection",
+      "unit_policy": "not_applicable",
+      "canonical_unit": null,
+      "temporal_policy": "events_within_20_minute_query_window",
+      "ground_strike_only": false,
+      "coverage": "dynamic_runtime_event_geometry_context_filter",
+      "fallback_policy": "only_declared_candidate"
+    },
+    "weather.lightning.observed.nearest_distance": {
+      "semantic_class": "nearest_lightning_event_distance",
+      "candidates": [
+        "fmi_lightning/lightning_nearest_distance"
+      ],
+      "resource_type": "value",
+      "quantity_policy": "distance",
+      "observation_kind_policy": "observation",
+      "data_origin_policy": "lightning_detection_network",
+      "measurement_method_policy": "derived_nearest_event_geometry",
+      "unit_policy": "canonical",
+      "canonical_unit": "km",
+      "temporal_policy": "nearest_event_within_20_minute_window",
+      "coverage": "candidate_specific_unknown_allowed",
+      "fallback_policy": "only_declared_candidate"
+    },
+    "weather.lightning.observed.nearest_azimuth": {
+      "semantic_class": "nearest_lightning_event_azimuth",
+      "candidates": [
+        "fmi_lightning/lightning_nearest_azimuth"
+      ],
+      "resource_type": "value",
+      "quantity_policy": "azimuth",
+      "observation_kind_policy": "observation",
+      "data_origin_policy": "lightning_detection_network",
+      "measurement_method_policy": "derived_nearest_event_geometry",
+      "unit_policy": "canonical",
+      "canonical_unit": "°",
+      "temporal_policy": "nearest_event_within_20_minute_window",
+      "coverage": "candidate_specific_unknown_allowed",
+      "fallback_policy": "only_declared_candidate"
+    },
+    "weather.lightning.satellite.glm_east.lcfa": {
+      "semantic_class": "satellite_total_lightning_l2_lcfa_file",
+      "candidates": [
+        "noaa_goes_glm/glm_east_lcfa"
+      ],
+      "resource_type": "data_file",
+      "quantity_policy": "not_applicable",
+      "observation_kind_policy": "observation",
+      "data_origin_policy": "satellite",
+      "measurement_method_policy": "optical_lightning_detection",
+      "unit_policy": "not_applicable",
+      "canonical_unit": null,
+      "temporal_policy": "latest_l2_lcfa_product_file",
+      "ground_strike_confirmation": false,
+      "coverage": "candidate_specific_unknown_allowed",
+      "fallback_policy": "only_declared_candidate"
+    },
+    "weather.lightning.satellite.glm_west.lcfa": {
+      "semantic_class": "satellite_total_lightning_l2_lcfa_file",
+      "candidates": [
+        "noaa_goes_glm/glm_west_lcfa"
+      ],
+      "resource_type": "data_file",
+      "quantity_policy": "not_applicable",
+      "observation_kind_policy": "observation",
+      "data_origin_policy": "satellite",
+      "measurement_method_policy": "optical_lightning_detection",
+      "unit_policy": "not_applicable",
+      "canonical_unit": null,
+      "temporal_policy": "latest_l2_lcfa_product_file",
+      "ground_strike_confirmation": false,
+      "coverage": "candidate_specific_unknown_allowed",
+      "fallback_policy": "only_declared_candidate"
+    },
+    "weather.lightning.satellite.mtg_li.accumulated_flashes": {
+      "semantic_class": "satellite_total_lightning_accumulation_raster",
+      "candidates": [
+        "eumetsat_mtg_li/mtg_li_accumulated_flashes"
+      ],
+      "resource_type": "raster_tile",
+      "quantity_policy": "lightning_flash_accumulation",
+      "observation_kind_policy": "observation",
+      "data_origin_policy": "satellite",
+      "measurement_method_policy": "optical_lightning_detection",
+      "unit_policy": "provider_capability",
+      "canonical_unit": null,
+      "temporal_policy": "provider_accumulated_near_real_time_frames",
+      "ground_strike_confirmation": false,
+      "coverage": "candidate_specific_unknown_allowed",
+      "fallback_policy": "only_declared_candidate"
+    }
+  },
+  "forbidden_fallbacks": [
+    "density_to_event_feed",
+    "event_feed_to_density",
+    "nearest_distance_to_nearest_azimuth",
+    "nearest_azimuth_to_nearest_distance",
+    "ground_network_to_satellite_as_identical_measurement",
+    "satellite_total_lightning_to_confirmed_ground_strike",
+    "dwd_density_to_eccc_density_until_unit_time_coverage_harmonized",
+    "eccc_density_to_dwd_density_until_unit_time_coverage_harmonized",
+    "glm_east_to_glm_west_until_machine_coverage",
+    "glm_west_to_glm_east_until_machine_coverage",
+    "mtg_li_raster_to_goes_lcfa_file",
+    "goes_lcfa_file_to_mtg_li_raster",
+    "observed_lightning_to_thunder_probability",
+    "observed_lightning_to_thunderstorm_cells",
+    "observed_lightning_to_warnings"
+  ],
+  "invariants": {
+    "provider_id_is_not_scoring_axis": true,
+    "profiles_remain_deny_only": true,
+    "unknown_coverage_stays_unknown": true,
+    "endpoint_reachability_is_not_coverage": true,
+    "specialized_public_ids_are_preserved": true,
+    "no_provider_specific_consumer_logic": true,
+    "private_extensions_outside_standard_core_contract": true,
+    "no_cross_provider_fallback_without_full_contract_compatibility": true
+  }
+}

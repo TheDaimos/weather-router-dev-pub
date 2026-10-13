@@ -1,0 +1,175 @@
+{
+  "schema": "weather_router.p3_supercell_semantics.v1",
+  "date": "2026-10-05",
+  "status": "semantics_only",
+  "scope": "P3-SUPERCELL-20 semantics; no runtime or public-contract change",
+  "official_supercell_alert": {
+    "semantic_class": "official_supercell_alert_event",
+    "transport": "weather.warning.official",
+    "resource_type": "hazard_feed",
+    "data_origin": "warning_authority",
+    "measurement_method": "official_weather_warning_feed",
+    "observation_kind": "warning_event",
+    "sufficient_text_evidence": [
+      "supercell",
+      "superzelle"
+    ],
+    "status": "defined_for_design_not_yet_runtime_field",
+    "does_not_mean": [
+      "confirmed_supercell_observation",
+      "radar_confirmed_supercell",
+      "mesocyclone_signature",
+      "supercell_probability"
+    ]
+  },
+  "mesocyclone_semantics": {
+    "semantic_class": "mesocyclone_rotation_signature",
+    "status": "not_implemented",
+    "meaning": "storm-scale rotation / radar-signature semantics, distinct from a confirmed supercell",
+    "keywords": [
+      "mesocyclone",
+      "mesozyklone"
+    ],
+    "mesocyclone_is_automatic_supercell": false,
+    "mesocyclone_is_visual_observation": false,
+    "mesocyclone_is_confirmed_supercell": false,
+    "current_runtime_maps_mesocyclone_to_primary_supercell": true,
+    "semantic_decision": "current runtime mapping is too broad and must be separated in P3-SUPERCELL-30/-40"
+  },
+  "primary_hazard_semantics": {
+    "current_model": "single_label_first_match",
+    "relevant_order": [
+      "waterspout",
+      "tornado",
+      "supercell",
+      "downburst",
+      "severe_thunderstorm",
+      "hail"
+    ],
+    "primary_label_is_complete_semantics": false,
+    "runtime_change_in_p3_supercell_20": false,
+    "consequences": [
+      "tornado or waterspout can hide simultaneous supercell text from the primary label",
+      "supercell can hide downburst, severe_thunderstorm or hail from the primary label",
+      "existing additive tornado, hail and wind-hazard dimensions partially preserve multi-hazard evidence but there is no additive supercell dimension yet"
+    ]
+  },
+  "supercell_evidence_scope": {
+    "explicit_event": {
+      "fields": [
+        "event",
+        "headline"
+      ],
+      "meaning": "supercell/superzelle is explicitly named in provider event labeling"
+    },
+    "contextual_text": {
+      "fields": [
+        "description",
+        "instruction"
+      ],
+      "meaning": "supercell/superzelle appears only in contextual provider text"
+    },
+    "both_support_official_supercell_alert_event": true,
+    "neither_implies_confirmed_observation": true,
+    "explicit_precedence": true
+  },
+  "alert_stage": {
+    "reuse_existing_field": true,
+    "allowed": [
+      "warning",
+      "watch",
+      "outlook",
+      "statement",
+      "unspecified"
+    ],
+    "missing_stage": "must_not_be_invented"
+  },
+  "related_contracts": {
+    "weather.convection.thunderstorm_cells": {
+      "meaning": "convective-cell nowcast raster",
+      "is_supercell_classification": false,
+      "existing_non_guarantee": "tornado_hail_downburst_supercell_semantics"
+    },
+    "weather.point.thunder_probability": {
+      "meaning": "next-1-hour thunderstorm probability",
+      "is_supercell_probability": false
+    }
+  },
+  "observation_and_forecast_classes": {
+    "confirmed_supercell_observation_event": "not_implemented",
+    "observed_or_reported_supercell_event": "not_implemented",
+    "mesocyclone_rotation_signature": "not_implemented",
+    "supercell_probability_forecast": "not_implemented"
+  },
+  "overlap_rules": {
+    "severe_thunderstorm_is_automatically_supercell": false,
+    "tornado_is_automatically_supercell": false,
+    "hail_is_automatically_supercell": false,
+    "downburst_is_automatically_supercell": false,
+    "lightning_is_automatically_supercell": false,
+    "real_supercell_text_can_add_supercell_semantics_independent_of_primary_hazard_type": true
+  },
+  "provider_semantics": {
+    "dwd": {
+      "registry_topic_supercell": false,
+      "dedicated_supercell_capability": false,
+      "broad_official_supercell_alert_supported_only_when_real_event_text_contains_supercell_evidence": true
+    },
+    "noaa_nws": {
+      "registry_topic_supercell": false,
+      "dedicated_supercell_capability": false,
+      "broad_official_supercell_alert_supported_only_when_real_event_text_contains_supercell_evidence": true
+    }
+  },
+  "compatibility": {
+    "provider_neutral_broad_alert_class": "official_supercell_alert_event",
+    "dwd_nws_compatible_when_real_event_contains_supercell_or_superzelle": true,
+    "registry_or_provider_description_is_event_proof": false,
+    "same_observation_semantics_proven": false,
+    "same_radar_rotation_semantics_proven": false
+  },
+  "authoritative_references": [
+    {
+      "source": "NOAA/NWS Amarillo",
+      "url": "https://www.weather.gov/ama/supercell",
+      "finding": "A supercell is distinguished by a deep and persistent rotating updraft called a mesocyclone."
+    },
+    {
+      "source": "NOAA/NWS Glossary",
+      "url": "https://forecast.weather.gov/glossary.php?word=MESOCYCLONE",
+      "finding": "Mesocyclone is properly a Doppler-radar rotation term and should not be treated as a visually observed phenomenon."
+    },
+    {
+      "source": "AMS Glossary of Meteorology",
+      "url": "https://glossary.ametsoc.org/wiki/mesocyclone/",
+      "finding": "Mesocyclones are frequently associated with supercells, which does not make the terms semantically identical."
+    }
+  ],
+  "invariants": [
+    "Official supercell alert evidence is not a confirmed supercell observation.",
+    "Mesocyclone is not automatically supercell.",
+    "Mesocyclone is not a visual observation.",
+    "Thunderstorm cell is not automatically supercell.",
+    "Thunderstorm probability is not supercell probability.",
+    "Tornado is not automatically supercell.",
+    "Hail is not automatically supercell.",
+    "Downburst is not automatically supercell.",
+    "Lightning is not automatically supercell.",
+    "Real supercell evidence must not be considered absent solely because another primary hazard label matched first.",
+    "Missing alert stage is not invented.",
+    "Provider ID is not a scoring axis.",
+    "Profiles remain deny-only.",
+    "Coverage unknown remains unknown.",
+    "Endpoint reachability is not coverage proof.",
+    "Private extensions remain outside the standard core contract."
+  ],
+  "decisions_for_p3_supercell_30": [
+    "Keep weather.warning.official as the candidate broad official transport unless design proves a new public ID is necessary.",
+    "Represent official_supercell_alert_event additively and independently of primary hazard_type.",
+    "Represent explicit_event versus contextual_text supercell evidence.",
+    "Reuse alert_stage for official supercell alert semantics.",
+    "Remove mesocyclone/mesozyklone from automatic supercell evidence in the design.",
+    "Keep mesocyclone rotation signature, confirmed/observed supercell and supercell probability outside the broad official-supercell alert class.",
+    "Preserve existing tornado, hail and wind-hazard additive dimensions."
+  ]
+}

@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="dark light">
+  <title>WeatherRouter · Hilfe und Überblick</title>
+  <style>
+    :root{
+      color-scheme:dark;--bg:#07111f;--panel:#0d1b2d;--panel2:#10243a;--line:#21415f;
+      --text:#edf7ff;--muted:#a7bed1;--cyan:#31d8ff;--blue:#4a8dff;--green:#5ee0a0;
+      --amber:#ffc857;--danger:#ff7085;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif
+    }
+    *{box-sizing:border-box}html{scroll-behavior:smooth}
+    body{margin:0;background:radial-gradient(circle at 50% 0,#12345a 0,#07111f 38%,#050b13 100%);color:var(--text);line-height:1.55}
+    a{color:var(--cyan)}.page{max-width:1280px;margin:0 auto;padding:28px 22px 56px}
+    .hero{position:relative;overflow:hidden;border:1px solid #2f6c98;border-radius:26px;padding:30px;background:linear-gradient(145deg,rgba(15,42,69,.97),rgba(6,18,33,.98));box-shadow:0 18px 70px rgba(0,158,255,.16)}
+    .hero:before{content:"";position:absolute;inset:-35%;background:radial-gradient(circle,rgba(49,216,255,.13),transparent 46%);pointer-events:none}
+    .hero-grid{position:relative;display:grid;grid-template-columns:minmax(240px,340px) 1fr;gap:30px;align-items:center}
+    .logo-wrap{display:flex;align-items:center;justify-content:center;min-height:280px}.logo{width:min(100%,320px);height:auto;filter:drop-shadow(0 0 28px rgba(38,206,255,.35))}
+    h1{font-size:clamp(38px,6vw,72px);line-height:1;margin:0 0 12px;letter-spacing:-.035em}.claim{font-size:clamp(18px,2.5vw,28px);font-weight:750;margin:0 0 16px}
+    .lead{font-size:17px;color:var(--muted);max-width:800px}.badges{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px}
+    .badge{border:1px solid #3374a0;background:#0b2136;border-radius:999px;padding:7px 11px;font-size:13px;font-weight:700}.badge.good{border-color:#2d8f66;color:#b8ffdf;background:#0c2a22}.badge.warn{border-color:#856527;color:#ffe3a1;background:#2b2110}
+    .notice{margin:18px 0 0;padding:13px 15px;border-left:4px solid var(--amber);background:#251d0c;border-radius:8px;color:#ffe9b7}
+    .nav{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 24px}.nav a{text-decoration:none;border:1px solid var(--line);background:#0a1929;border-radius:10px;padding:8px 11px;font-weight:700}
+    .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.card{border:1px solid var(--line);background:linear-gradient(180deg,var(--panel),#091625);border-radius:18px;padding:20px;box-shadow:0 10px 32px rgba(0,0,0,.16)}
+    .card h2,.card h3{margin-top:0}.card h2{font-size:24px}.card h3{font-size:18px;color:#dff6ff}.full{grid-column:1/-1}
+    code,pre{font-family:"SFMono-Regular",Consolas,"Liberation Mono",monospace}pre{white-space:pre-wrap;overflow:auto;border:1px solid #1c4565;background:#050e18;padding:14px;border-radius:12px;color:#d9f6ff}
+    table{width:100%;border-collapse:collapse;font-size:14px}th,td{border-bottom:1px solid #21415f;padding:9px;text-align:left;vertical-align:top}th{color:#bfeeff;position:sticky;top:0;background:#0d1b2d}
+    .table-wrap{overflow:auto;max-height:680px;border:1px solid #183a56;border-radius:12px}.ok{color:var(--green);font-weight:750}.warn{color:var(--amber);font-weight:750}.muted{color:var(--muted)}
+    .pillrow{display:flex;flex-wrap:wrap;gap:7px}.pill{display:inline-block;border:1px solid #285779;background:#0a1f33;border-radius:999px;padding:5px 9px;font-size:12px}
+    .footer{margin-top:28px;text-align:center;color:var(--muted);font-size:13px}
+    @media(max-width:820px){.hero-grid,.grid{grid-template-columns:1fr}.logo-wrap{min-height:auto}.logo{max-width:280px}.full{grid-column:auto}.page{padding:14px 12px 36px}.hero{padding:20px}table{font-size:12px}}
+  </style>
+</head>
+<body>
+<main class="page">
+  <section class="hero">
+    <div class="hero-grid">
+      <div class="logo-wrap"><img class="logo" src="/weather_router_static/assets/branding/weather-router-brandmark.png" alt="WeatherRouter Logo" onerror="this.style.display='none'"></div>
+      <div>
+        <h1>WeatherRouter</h1>
+        <p class="claim">Daten, Gefahren und Wetter nach Fähigkeit statt nach einem einzigen Anbieter.</p>
+        <p class="lead">WeatherRouter ist eine optionale Home-Assistant-Integration mit fähigkeitsbasiertem Routing. Punktdaten, Kartenebenen, Warnungen, Gefahrenfeeds, Satellitenmedien und Weltraumdaten können aus unterschiedlichen Quellen kommen, ohne Consumer an einzelne Provider zu koppeln.</p>
+        <div class="badges">
+          <span class="badge">WR 0.10.77 DEV</span><span class="badge">Loader 80</span><span class="badge">API-Vertrag 1</span>
+          <span class="badge">38 Kern-Provider</span><span class="badge">8 Fachbereiche</span><span class="badge">221 Kern-Capabilities</span>
+          <span class="badge good">DRA deploy/dev</span>
+        </div>
+        <div class="notice"><strong>Development-Stand.</strong> WR 0.10.77 trennt lokale/private Provider-Erweiterungen vollständig vom Standardpaket. Der Kern enthält 38 Provider und 221 öffentliche Capabilities; die mit DRA installierte private Erweiterung ergänzt einen lokalen Provider, ohne neue Public-Capability-IDs einzuführen. Die offiziellen Lightning-Quellen FMI, EUMETSAT MTG-LI, NOAA GOES-GLM und ECCC bleiben opt-in. Nach Python- oder Extension-Updates ist ein Home-Assistant-Neustart erforderlich.</div>
+      </div>
+    </div>
+  </section>
+
+  <nav class="nav" aria-label="Schnellnavigation">
+    <a href="#prinzip">Prinzip</a><a href="#routing">Routing</a><a href="#provider">Provider</a><a href="#blitze">Live-Blitze</a><a href="#biologisch">Biologische Daten</a><a href="#profile">Profile</a>
+    <a href="#gefahren">Gefahren</a><a href="#api">Consumer API</a><a href="#kommunikation">Kommunikation</a>
+    <a href="#netzwerk">Firewall</a><a href="#lab">Lab</a><a href="#status">Status</a>
+  </nav>
+
+  <section class="grid">
+    <article class="card" id="prinzip">
+      <h2>🌦️ Grundprinzip</h2>
+      <p>Consumer fragen nach fachlichen Fähigkeiten. WeatherRouter entscheidet providerneutral, welche aktivierte und geeignete Quelle diese Fähigkeit liefern kann.</p>
+      <pre>Consumer
+→ Capability
+→ Eligibility
+→ Provider
+→ Resource
+→ Provenienz + Attribution</pre>
+      <p>Gewitterradar, Aurora Borealis und weitere Consumer bleiben ohne WeatherRouter vollständig funktionsfähig.</p>
+    </article>
+
+    <article class="card" id="routing">
+      <h2>🧭 Routing & Eligibility</h2>
+      <pre>Router global
+→ Fachbereich
+→ Provider
+→ Coverage / Health / Freshness
+→ optionales Profil
+→ konkrete Anfrage</pre>
+      <p><strong>Harte Regel:</strong> Router/Fachbereich/Provider AUS bedeutet kein providerbezogener Netzwerkzugriff. Profile dürfen diesen Zustand nur weiter einschränken.</p>
+    </article>
+
+    <article class="card full">
+      <h2>🗂️ Acht Fachbereiche</h2>
+      <div class="pillrow">
+        <span class="pill">Wetter</span><span class="pill">Pollen</span><span class="pill">Naturgefahren</span>
+        <span class="pill">Bevölkerungsschutz</span><span class="pill">Öffentliche Sicherheit</span>
+        <span class="pill">Luftfahrtwarnungen</span><span class="pill">Sonne & Weltraum</span><span class="pill">Biologische Gefahren & Wildtiere</span>
+      </div>
+      <p><strong>Pollen ist ein eigener Top-Level-Fachbereich.</strong> Öffentliche IDs sind <code>pollen.*</code>; <code>weather.pollen.*</code> gehört nicht zum aktuellen Vertrag.</p>
+    </article>
+
+    <article class="card full" id="provider">
+      <h2>🛰️ Providerkatalog · 39 registriert</h2>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Provider</th><th>Fachbereich</th><th>Standard</th><th>Schwerpunkt</th></tr></thead>
+        <tbody>
+          <tr><td>Open-Meteo</td><td>Wetter</td><td>an</td><td>Punktprognosen, UV</td></tr>
+          <tr><td>Open-Meteo · Pollen</td><td>Pollen</td><td>opt-in</td><td>CAMS-Europe Pollen</td></tr>
+          <tr><td>RainViewer</td><td>Wetter</td><td>an</td><td>Niederschlagsradar</td></tr>
+          <tr><td>DWD</td><td>Wetter, Naturgefahren</td><td>an</td><td>Radar, WMS, Warnungen</td></tr>
+          <tr><td>NASA GIBS</td><td>Wetter</td><td>an</td><td>MODIS, GOES, Himawari, IMERG</td></tr>
+          <tr><td>EUMETSAT EUMETView</td><td>Wetter</td><td>an</td><td>Satellit / WMS</td></tr>
+          <tr><td>MET Norway</td><td>Wetter</td><td>an</td><td>Locationforecast / Nowcast</td></tr>
+          <tr><td>NOAA/NWS</td><td>Wetter, Naturgefahren</td><td>an</td><td>US-Punktwetter / Alerts</td></tr>
+          <tr><td>NOAA SWPC</td><td>Sonne & Weltraum</td><td>an</td><td>SUVI-Sonnenbilder</td></tr>
+          <tr><td>NASA ISS</td><td>Sonne & Weltraum</td><td>an</td><td>ISS Live</td></tr>
+          <tr><td>NASA Moon Trek</td><td>Sonne & Weltraum</td><td>an</td><td>Mondkarte</td></tr>
+          <tr><td>MET Norway · Sonne & Mond</td><td>Sonne & Weltraum</td><td>opt-in</td><td>24 Astronomie-Punktwerte</td></tr>
+          <tr><td>FMI</td><td>Wetter</td><td>an</td><td>Finnland Punktdaten</td></tr>
+          <tr><td>SMHI</td><td>Wetter</td><td>an</td><td>Schweden Punktdaten</td></tr>
+          <tr><td>ECCC / MSC GeoMet</td><td>Wetter</td><td>an</td><td>Kanada Beobachtungen</td></tr>
+          <tr><td>JMA</td><td>Wetter, Naturgefahren</td><td>an</td><td>Japan Wetter / Tsunami</td></tr>
+          <tr><td>ECMWF Open Data</td><td>Wetter</td><td>an</td><td>IFS/AIFS GRIB2</td></tr>
+          <tr><td>NHC</td><td>Naturgefahren</td><td>an</td><td>Tropische Wirbelstürme</td></tr>
+          <tr><td>NOAA Tsunami</td><td>Naturgefahren</td><td>an</td><td>amtliche Tsunamimeldungen</td></tr>
+          <tr><td>BMKG</td><td>Naturgefahren</td><td>an</td><td>Tsunamipotenzial</td></tr>
+          <tr><td>BoM/JATWC</td><td>Naturgefahren</td><td>an</td><td>Australien Tsunami</td></tr>
+          <tr><td>USGS Erdbeben</td><td>Naturgefahren</td><td>an</td><td>Erdbeben</td></tr>
+          <tr><td>Smithsonian/GVP</td><td>Naturgefahren</td><td>an</td><td>Vulkanaktivität</td></tr>
+          <tr><td>USGS Vulkanstatus</td><td>Naturgefahren</td><td>an</td><td>erhöhte Vulkanstatus</td></tr>
+          <tr><td>GDACS</td><td>Naturgefahren</td><td>opt-in</td><td>globale Katastrophenlage</td></tr>
+          <tr><td>Copernicus GloFAS</td><td>Naturgefahren</td><td>opt-in</td><td>9 globale Hydrologie-Layer</td></tr>
+          <tr><td>USGS Seismische Sonderereignisse</td><td>Naturgefahren</td><td>opt-in</td><td>seismische Sonderereignisse</td></tr>
+          <tr><td>BBK/NINA MoWaS</td><td>Bevölkerungsschutz</td><td>opt-in</td><td>amtliche Bevölkerungsschutzmeldungen</td></tr>
+          <tr><td>BBK/NINA Polizeiwarnungen</td><td>Öffentliche Sicherheit</td><td>opt-in</td><td>Polizeiwarnungen</td></tr>
+          <tr><td>NOAA/NWS Aviation Weather</td><td>Luftfahrtwarnungen</td><td>opt-in</td><td>SIGMET/AIRMET/G-AIRMET</td></tr>
+          <tr><td>NINA/LHP Hochwasser</td><td>Naturgefahren, Bevölkerungsschutz</td><td>opt-in</td><td>Hochwasser</td></tr>
+          <tr><td>NINA KATWARN</td><td>Bevölkerungsschutz</td><td>opt-in</td><td>KATWARN</td></tr>
+          <tr><td>NINA BIWAPP</td><td>Bevölkerungsschutz</td><td>opt-in</td><td>BIWAPP</td></tr>
+          <tr><td>GBIF · Biologische Vorkommen</td><td>Biologische Gefahren & Wildtiere</td><td>opt-in</td><td>88 globale Vorkommensdichte-Layer für Wildtiere, toxische Arten, Giftpflanzen/-pilze und Vektoren</td></tr>
+          <tr><td>FMI · Lightning Open Data</td><td>Wetter</td><td>opt-in</td><td>offizielle Blitzereignisse · WFS · nördliches Europa</td></tr>
+          <tr><td>EUMETSAT · MTG Lightning Imager</td><td>Wetter</td><td>opt-in</td><td>offizielles Accumulated-Flashes-Raster · Europa/Afrika/Atlantik</td></tr>
+          <tr><td>NOAA · GOES Geostationary Lightning Mapper</td><td>Wetter</td><td>opt-in</td><td>GOES-19/18 LCFA-NetCDF über NOAA NODD</td></tr>
+          <tr><td>ECCC/MSC · Lightning Density</td><td>Wetter</td><td>opt-in</td><td>offizielle 10-Minuten-Blitzdichte · Kanada</td></tr>
+        </tbody>
+      </table></div>
+    </article>
+
+    <article class="card full" id="blitze">
+      <h2>⚡ Blitzdaten</h2>
+      <p>Das Standardpaket enthält ausschließlich die dokumentierten offiziellen Lightning-Quellen. Zusätzliche lokale Provider können über den generischen Extension-Vertrag eingebunden werden; deren Implementierung und Quellzugang sind bewusst nicht Bestandteil des Standardpakets.</p>
+      <h3>Offizielle WeatherRouter-Blitzquellen</h3>
+      <ul>
+        <li><strong>FMI</strong> · Ereignisse aus dem offiziellen Open-Data-WFS</li>
+        <li><strong>EUMETSAT MTG-LI</strong> · optische Total-Lightning-Raster</li>
+        <li><strong>NOAA GOES-19/18 GLM</strong> · offizielle LCFA-NetCDF-Dateien</li>
+        <li><strong>ECCC/MSC</strong> · beobachtete Blitzdichte auf ca. 2,5-km-Raster</li>
+      </ul>
+      <p>Alle Quellen bleiben opt-in und sind in der Gewitterradar-Profilvorlage standardmäßig ausgeschlossen. Messarten werden nicht semantisch vermischt.</p>
+</article>
+
+    <article class="card full" id="biologisch">
+      <h2>🐾 Biologische Gefahren & Wildtiere</h2>
+      <p>WR 0.10.71 ergänzt einen achten, standardmäßig deaktivierten Fachbereich. Der erste Provider <strong>GBIF · Biologische Vorkommen</strong> stellt 88 globale Rasterebenen bereit.</p>
+      <div class="pillrow">
+        <span class="pill">Löwen & Großkatzen</span><span class="pill">Puma</span><span class="pill">Bären & Wölfe</span>
+        <span class="pill">Krokodilartige</span><span class="pill">Haie</span><span class="pill">Giftschlangen</span>
+        <span class="pill">Skorpione & Spinnen</span><span class="pill">Marine Gifttiere</span>
+        <span class="pill">Giftpflanzen</span><span class="pill">Giftpilze</span><span class="pill">Vektoren</span>
+      </div>
+      <p><strong>Wichtig:</strong> Diese Karten zeigen die <em>Dichte veröffentlichter Vorkommensnachweise</em>. Sie sind keine Populationsdichte, keine aktuelle Anwesenheitsprognose und keine Gefahren-/Angriffswahrscheinlichkeit.</p><p>Zusätzlich gibt es im Admin-Lab <strong>2a · Biologische Taxonsuche</strong>. Dort kann ein beliebiger wissenschaftlicher Name bzw. ein höheres Taxon von GBIF aufgelöst und als temporäre Kartenebene eingeblendet werden.</p>
+      <pre>GBIF Species Match API v2
+→ Catalogue of Life Extended Release (COL XR)
+→ taxonKey + checklistKey
+→ GBIF Maps API
+→ occurrence_density raster_tile</pre>
+      <h3>Geprüfte biologische Quellen</h3>
+      <ul>
+        <li><a href="https://techdocs.gbif.org/en/openapi/v2/maps" target="_blank" rel="noopener noreferrer">GBIF Maps API</a> · direkt integriert für Vorkommensdichte</li>
+        <li><a href="https://www.gbif.org/terms/data-user" target="_blank" rel="noopener noreferrer">GBIF Data User Agreement</a> · Attribution und unterliegende Datensatzlizenzen beachten</li>
+        <li><a href="https://obis.org/" target="_blank" rel="noopener noreferrer">OBIS</a> · geprüfte Folgequelle für marine Biodiversität</li>
+        <li><a href="https://www.who.int/teams/control-of-neglected-tropical-diseases/snakebite-envenoming/snakebite-information-and-data-platform" target="_blank" rel="noopener noreferrer">WHO Snakebite Information and Data Platform</a> · Fachreferenz für medizinisch wichtige Giftschlangen</li>
+        <li><a href="https://api.iucnredlist.org/" target="_blank" rel="noopener noreferrer">IUCN Red List API</a> · Credential-/Nutzungs-Gate</li>
+        <li><a href="https://www.movebank.org/" target="_blank" rel="noopener noreferrer">Movebank</a> · Tracking nur bei freigegebenen Studien</li>
+        <li><a href="https://api.inaturalist.org/v1/docs/" target="_blank" rel="noopener noreferrer">iNaturalist API</a> · mögliche spätere Beobachtungsquelle</li>
+      </ul>
+    </article>
+
+    <article class="card" id="profile">
+      <h2>🎛️ Consumer-Profile</h2>
+      <p>Profile sind optionale, persistente Richtlinien für Consumer. Sie dürfen nur einschränken.</p>
+      <ul>
+        <li>Fachbereiche</li><li>Familien/Ebenen</li><li>Phänomene</li><li>Capability-Positivliste</li>
+        <li>Ereignistypen</li><li>Warnstufen</li><li>Provider-Ausschlüsse</li>
+      </ul>
+      <p class="ok">Keine Providerpriorität. Keine Wiederaktivierung global deaktivierter Provider.</p>
+    </article>
+
+    <article class="card" id="gefahren">
+      <h2>⚠️ Gefahren & Warnungen</h2>
+      <p>Normalisierte Typen decken Wetter-, Hydrologie-, geologische, zivile und Luftfahrtgefahren ab.</p>
+      <p>Neu im aktuellen Block: Oberflächenüberflutung, Mure/Schlammstrom, Deichbruch, Dammbruch, Gletschersee-Ausbruch und Eisstau-Hochwasser.</p>
+      <p>Warnstufe, Dringlichkeit, Sicherheit und Quellsemantik bleiben getrennt. Ein Modellindikator wird nicht zur amtlichen Warnung hochgestuft.</p>
+    </article>
+
+    <article class="card full" id="api">
+      <h2>🔌 Consumer API V1 · Draft</h2>
+      <p>Der aktuelle read-only Runtime-Prototyp veröffentlicht <strong>214 öffentliche Capabilities</strong>.</p>
+      <pre>weather_router/consumer/discovery
+weather_router/consumer/capabilities
+weather_router/consumer/resolve</pre>
+      <p>Aktuelle Schwerpunkte: Wetter, Pollen, Naturgefahren, Bevölkerungsschutz, Sicherheit, Luftfahrt, Sonne & Weltraum sowie Biologische Gefahren & Wildtiere. Dazu gehören sechs <code>pollen.*</code>-Capabilities, 24 Sonne-/Mond-Punktwerte, neun GloFAS-Layer, vier UV-Fähigkeiten und 88 <code>biological_hazards.*</code>-Vorkommensdichte-Layer.</p>
+      <p class="warn">Der Vertrag ist noch nicht öffentlich eingefroren.</p>
+    </article>
+
+    <article class="card" id="kommunikation">
+      <h2>🔁 Kommunikationswege</h2>
+      <pre>Lab / Consumer
+→ Home-Assistant WebSocket
+→ WeatherRouter
+→ Router/Eligibility
+→ Provideradapter
+→ HTTPS / API / WMS / WMTS / Feed
+→ externe Quelle</pre>
+      <p>Resource-Typen: <code>value</code>, <code>raster_tile</code>, <code>hazard_feed</code>, <code>image_sequence</code>, <code>live_stream</code>, <code>planetary_tile</code>, <code>data_file</code>.</p>
+    </article>
+
+    <article class="card" id="netzwerk">
+      <h2>🛡️ Netzwerk & Firewall</h2>
+      <pre>Open-Meteo        api.open-meteo.com:443
+Pollen            air-quality-api.open-meteo.com:443
+MET Norway        api.met.no:443
+NASA GIBS         gibs.earthdata.nasa.gov:443
+EUMETView         view.eumetsat.int:443
+GloFAS            ows.globalfloods.eu:443
+GBIF              api.gbif.org:443
+FMI Lightning     opendata.fmi.fi:443
+MTG-LI            view.eumetsat.int:443
+GOES-19 GLM       noaa-goes19.s3.amazonaws.com:443
+GOES-18 GLM       noaa-goes18.s3.amazonaws.com:443
+ECCC Lightning    geo.weather.gc.ca:443
+RainViewer        api.rainviewer.com:443 + dynamische Tile-Hosts</pre>
+      <p><code>network_targets()</code> ist die technische Quelle. WeatherRouter dokumentiert den Bedarf, verändert aber keine Firewall-, Proxy- oder DNS-Regeln.</p>
+    </article>
+
+    <article class="card full" id="lab">
+      <h2>🧪 WeatherRouter Lab</h2>
+      <div class="pillrow">
+        <span class="pill">Router-Steuerung</span><span class="pill">Kartenebenen</span><span class="pill">Punktwerte</span>
+        <span class="pill">Gefahren & Warnungen</span><span class="pill">Consumer API</span><span class="pill">Profile</span>
+        <span class="pill">Providerdiagnose</span><span class="pill">Protokolle & Logs</span>
+      </div>
+      <p>Die Karte kann angedockt, ausgeblendet oder in einem echten zweiten Browserfenster betrieben werden. Das Hauptfenster bleibt bei POPOUT gleichzeitig vollständig nutzbar.</p>
+      <p>Providerdiagnosen laufen bewusst auf Benutzeraktion und zeigen Fortschritt als Provider X/Y. Exporte können redigiert als JSON/CSV/Zwischenablage oder nach Git ausgegeben werden.</p>
+    </article>
+
+    <article class="card" id="status">
+      <h2>✅ Real bestätigt</h2>
+      <ul>
+        <li>Development-Baseline und Home-Assistant-Lifecycle</li>
+        <li>NASA GIBS 17 Layer</li><li>EUMETView Playback/Puffer/Style-Recovery</li>
+        <li>mehrere Punktprovider und Gefahrenprovider</li><li>separates Kartenfenster am PC</li>
+      </ul>
+    </article>
+
+    <article class="card">
+      <h2>🧾 Noch offen</h2>
+      <p>WR 0.10.71 benötigt die reale HA-Abnahme des neuen biologischen Fachbereichs, des GBIF-Providers und der 88 Vorkommensdichte-Layer. Die 0.10.70-Pollen-/Astronomie-/GloFAS-/UV-/Hydrologiepfade bleiben Teil der Regression.</p>
+      <p>GitHub Actions „Validate M2 structure“ ist derzeit kein belastbarer Code-Test, weil der Job vor seinen eigentlichen Steps scheitert.</p>
+    </article>
+
+    <article class="card full">
+      <h2>🔒 Datenschutz</h2>
+      <p>Keine vollständigen Referenzkoordinaten, keine Provider-Secrets, keine Authorization-Header und keine credentialtragenden URLs in normalen Diagnose-/Exportpfaden. Consumer übergeben ihren räumlichen Kontext ausdrücklich.</p>
+    </article>
+  </section>
+
+  <p class="footer">WeatherRouter · WR 0.10.77 DEV · Dokumentationsstand 28.09.2026</p>
+</main>
+</body>
+</html>

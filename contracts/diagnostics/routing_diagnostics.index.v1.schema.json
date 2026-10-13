@@ -1,0 +1,164 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://weather-router.local/contracts/diagnostics/routing_diagnostics.index.v1.schema.json",
+  "title": "WeatherRouter Routing Diagnostics Index V1",
+  "type": "object",
+  "required": [
+    "schema",
+    "generated_at",
+    "trace_schema",
+    "ring_limit",
+    "traces"
+  ],
+  "properties": {
+    "schema": {
+      "const": "weather_router.routing_diagnostics.index.v1"
+    },
+    "generated_at": {
+      "type": "string"
+    },
+    "trace_schema": {
+      "const": "weather_router.routing_diagnostic.v1"
+    },
+    "ring_limit": {
+      "const": 50
+    },
+    "traces": {
+      "type": "array",
+      "maxItems": 50,
+      "items": {
+        "type": "object",
+        "required": [
+          "trace_id",
+          "started_at",
+          "completed_at",
+          "duration_ms",
+          "capability",
+          "family",
+          "phenomena",
+          "resource_types",
+          "context_type",
+          "profile_id",
+          "status",
+          "code",
+          "selected_provider",
+          "selected_capability",
+          "reason_code",
+          "candidate_count",
+          "fallback_count",
+          "providers_contacted"
+        ],
+        "properties": {
+          "trace_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "started_at": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "completed_at": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "duration_ms": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "minimum": 0
+          },
+          "capability": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "family": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "phenomena": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "resource_types": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "context_type": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "profile_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "status": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "code": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "selected_provider": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "selected_capability": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "reason_code": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "candidate_count": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "fallback_count": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "providers_contacted": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 0
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

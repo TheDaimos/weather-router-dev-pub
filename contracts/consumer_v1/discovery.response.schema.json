@@ -1,0 +1,101 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "weather_router.consumer.discovery.v1",
+  "title": "WeatherRouter Consumer Discovery V1",
+  "type": "object",
+  "required": [
+    "schema",
+    "contract",
+    "router",
+    "domains"
+  ],
+  "properties": {
+    "schema": {
+      "const": "weather_router.consumer.discovery.v1"
+    },
+    "contract": {
+      "type": "object",
+      "required": [
+        "name",
+        "supported_versions",
+        "preferred_version"
+      ],
+      "properties": {
+        "name": {
+          "const": "weather_router.consumer"
+        },
+        "supported_versions": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "preferred_version": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "additionalProperties": true
+    },
+    "router": {
+      "type": "object",
+      "required": [
+        "ready",
+        "enabled"
+      ],
+      "properties": {
+        "ready": {
+          "type": "boolean"
+        },
+        "enabled": {
+          "type": "boolean"
+        },
+        "integration_version": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "status": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "additionalProperties": true
+    },
+    "domains": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "enabled"
+        ],
+        "properties": {
+          "id": {
+            "enum": [
+              "weather",
+              "pollen",
+              "natural_hazards",
+              "civil_protection",
+              "security",
+              "aviation",
+              "space",
+              "biological_hazards"
+            ]
+          },
+          "enabled": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": true
+      }
+    }
+  },
+  "additionalProperties": true
+}

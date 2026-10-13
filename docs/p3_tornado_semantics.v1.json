@@ -1,0 +1,163 @@
+{
+  "schema": "weather_router.p3_tornado_semantics.v1",
+  "date": "2026-10-04",
+  "status": "semantics_only",
+  "scope": "P3-TORNADO-20 semantics; no runtime or public-contract change",
+  "implemented_semantic_classes": {
+    "official_tornado_alert_event": {
+      "transport": "weather.warning.official",
+      "resource_type": "hazard_feed",
+      "data_origin": "warning_authority",
+      "measurement_method": "official_weather_warning_feed",
+      "observation_kind": "warning_event",
+      "hazard_type": "tornado"
+    },
+    "official_waterspout_alert_event": {
+      "transport": "weather.warning.official",
+      "resource_type": "hazard_feed",
+      "data_origin": "warning_authority",
+      "measurement_method": "official_weather_warning_feed",
+      "observation_kind": "warning_event",
+      "hazard_type": "waterspout"
+    }
+  },
+  "not_implemented_semantic_classes": {
+    "confirmed_tornado_observation_event": "not_implemented",
+    "radar_rotation_signature": "not_implemented",
+    "tornado_probability_forecast": "not_implemented",
+    "tornado_watch_or_outlook": "not_implemented_as_distinct_public_contract"
+  },
+  "normalization": {
+    "tornado_keywords": [
+      "tornado",
+      "windhose"
+    ],
+    "waterspout_keywords": [
+      "waterspout",
+      "wasserhose"
+    ],
+    "tornado_hazard_type_guarantees": "official event contains tornado/windhose semantic evidence somewhere in normalized event text",
+    "tornado_hazard_type_does_not_guarantee": [
+      "confirmed_tornado",
+      "observed_tornado",
+      "warning_stage",
+      "radar_rotation",
+      "numeric_probability"
+    ],
+    "waterspout_remains_distinct": true
+  },
+  "alert_stage_semantics": {
+    "warning": "concrete official warning stage",
+    "watch": "conditions favorable or threat possible; not equivalent to warning",
+    "outlook": "forecast hazard outlook; not equivalent to warning",
+    "statement": "information/update product; not equivalent to warning",
+    "current_runtime_normalization": "not_distinct",
+    "missing_stage": "must_not_be_invented"
+  },
+  "confirmed_event_semantics": {
+    "class": "confirmed_tornado_observation_event",
+    "status": "not_implemented",
+    "requires": [
+      "authoritative explicit observation_or_confirmation",
+      "event_identity",
+      "time_reference",
+      "spatial_reference",
+      "source_provenance"
+    ],
+    "insufficient_alone": [
+      "hazard_type_tornado",
+      "tornado_warning_event_name",
+      "severity",
+      "cap_certainty",
+      "warning_polygon",
+      "free_text",
+      "radar_rotation"
+    ]
+  },
+  "provider_semantics": {
+    "noaa_nws": {
+      "explicit_tornado_warning_description": true,
+      "retains_fields": [
+        "event",
+        "headline",
+        "severity",
+        "urgency",
+        "certainty",
+        "status",
+        "message_type",
+        "time_fields",
+        "geometry",
+        "parameters"
+      ],
+      "rule": "raw provider fields may support future finer normalization but are not yet public tornado-stage or confirmation semantics"
+    },
+    "dwd": {
+      "registry_topic_tornado": true,
+      "dedicated_tornado_capability": false,
+      "capability_explicit_tornado_description": false,
+      "current_rule": "real CAP event text may normalize to tornado/waterspout when provider content actually supports it",
+      "registry_topic_alone_is_semantic_proof": false
+    }
+  },
+  "free_text_normalization": {
+    "current_inputs": [
+      "event",
+      "headline",
+      "description",
+      "instruction"
+    ],
+    "risk": "specialized tornado intent may be broader than explicit provider event-name semantics",
+    "runtime_change_in_p3_tornado_20": false
+  },
+  "radar_rotation": {
+    "semantic_class": "radar_rotation_signature",
+    "status": "not_implemented",
+    "confirmed_tornado_equivalent": false,
+    "thunderstorm_cell_equivalent": false,
+    "supercell_or_mesocyclone_equivalent_to_confirmed_tornado": false
+  },
+  "probability": {
+    "semantic_class": "tornado_probability_forecast",
+    "status": "not_implemented",
+    "required_future_contract": [
+      "numeric_value",
+      "canonical_percent_unit",
+      "defined_time_window",
+      "defined_spatial_support",
+      "model_or_outlook_origin"
+    ],
+    "thunder_probability_is_tornado_probability": false
+  },
+  "compatibility": {
+    "provider_neutral_broad_alert_class": "official_tornado_alert_event",
+    "dwd_nws_broad_alert_compatible_when_real_event_normalizes_to_tornado": true,
+    "same_alert_stage_not_proven": true,
+    "same_warning_thresholds_not_proven": true,
+    "same_confirmed_observed_semantics_not_proven": true,
+    "same_detection_metadata_not_proven": true
+  },
+  "invariants": [
+    "Tornado Warning is not a confirmed tornado.",
+    "Tornado Watch is not a Tornado Warning.",
+    "Outlook is not Warning.",
+    "Radar rotation is not a confirmed tornado.",
+    "Mesocyclone or supercell is not a confirmed tornado.",
+    "Thunderstorm cell is not tornado.",
+    "Tornado probability is not official warning.",
+    "Waterspout remains distinct from tornado.",
+    "Missing alert stage is not invented.",
+    "Missing confirmed or observed semantics is not invented.",
+    "Provider ID is not a scoring axis.",
+    "Profiles remain deny-only.",
+    "P3-WARN coverage invariants remain unchanged.",
+    "Private extensions remain outside the standard core contract."
+  ],
+  "decisions_for_p3_tornado_30": [
+    "Decide whether weather.warning.official plus hazard filter is sufficient as the broad official tornado-alert intent.",
+    "Decide whether a dedicated public tornado intent is needed.",
+    "Decide whether normalized alert_stage is required.",
+    "Decide whether tornado_semantic_class or evidence_class is required.",
+    "Define how explicit provider event names differ from free-text tornado mentions.",
+    "Keep confirmed event, radar rotation, watch/outlook and probability distinct."
+  ]
+}

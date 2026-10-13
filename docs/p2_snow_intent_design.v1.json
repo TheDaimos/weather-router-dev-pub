@@ -1,0 +1,81 @@
+{
+  "schema": "weather_router.p2_snow_intent_design.v1",
+  "date": "2026-10-03",
+  "scope": "P2-SNOW-30 design only; no runtime implementation",
+  "decisions": {
+    "snowfall_point_contract": {
+      "public_id": "weather.point.snowfall",
+      "reuse_existing_id": true,
+      "create_new_shared_id": false,
+      "resource_type": "value",
+      "observation_kind": "forecast",
+      "semantic_quantity": "snowfall_amount",
+      "canonical_unit": "cm",
+      "numeric_interchangeable": "not_applicable_single_candidate",
+      "coverage_policy": "candidate_specific_unknown_allowed",
+      "accumulation_policy": "preceding_runtime_interval_sum",
+      "runtime_interval_source": "provider current.interval",
+      "candidate_set": [
+        "open_meteo/snowfall"
+      ],
+      "guarantees": [
+        "numeric_point_value",
+        "forecast_semantics",
+        "snowfall_amount_quantity",
+        "canonical_unit_centimeter",
+        "preceding_runtime_interval_accumulation",
+        "candidate_semantics"
+      ],
+      "non_guarantees": [
+        "snow_depth_on_ground",
+        "snow_water_equivalent",
+        "uniform_fixed_accumulation_duration",
+        "machine_readable_preflight_coverage",
+        "multi_provider_fallback"
+      ]
+    },
+    "related_condition_paths_preserved": {
+      "public_ids": [
+        "weather.point.weather_code",
+        "weather.point.weather_summary"
+      ],
+      "preserve": true,
+      "participate_in_snowfall_amount_routing": false
+    },
+    "warning_path_preserved": {
+      "public_id": "weather.warning.official",
+      "preserve": true,
+      "participate_in_snowfall_amount_routing": false
+    },
+    "precipitation_peers_preserved": {
+      "participate_in_snowfall_amount_routing": false,
+      "reason": "Precipitation relationship alone does not establish snowfall amount equivalence."
+    },
+    "snow_leopard_topic_correction": {
+      "candidate": "gbif_biodiversity/occurrence_density_snow_leopard",
+      "remove_topic": "snow_ice",
+      "preserve_topics": [
+        "biological_hazards"
+      ],
+      "preserve_public_capability": "biological_hazards.occurrence.snow_leopard.density",
+      "reason": "Lexical false positive; biodiversity occurrence density is not meteorological snow/ice."
+    },
+    "scoring_policy": {
+      "provider_id_axis": false,
+      "profiles": "deny_only",
+      "coverage_unknown": "preserve_unknown"
+    }
+  },
+  "implementation_requirements": [
+    "Harden weather.point.snowfall as an explicit single-candidate numeric snowfall-amount forecast contract.",
+    "Keep open_meteo/snowfall as the only direct candidate; do not invent a second provider.",
+    "Guarantee consumer unit cm for the snowfall-amount path.",
+    "Model snowfall accumulation as the preceding provider runtime interval rather than not_applicable.",
+    "Preserve weather.point.weather_code and weather.point.weather_summary as separate condition semantics.",
+    "Preserve weather.warning.official as warning-event semantics.",
+    "Do not route generic precipitation peers as snowfall_amount.",
+    "Remove snow_ice topic from gbif_biodiversity/occurrence_density_snow_leopard while preserving biological_hazards.",
+    "Keep coverage unknown for Open-Meteo snowfall until machine-readable routing coverage exists.",
+    "Do not introduce provider-priority scoring."
+  ]
+}

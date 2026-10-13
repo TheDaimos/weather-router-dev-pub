@@ -1,0 +1,195 @@
+{
+  "schema": "weather_router.p3_windhaz_inventory.v1",
+  "date": "2026-10-04",
+  "status": "inventory_only",
+  "scope": "standard_core_only",
+  "summary": {
+    "dedicated_public_capabilities": 0,
+    "existing_public_warning_paths": 1,
+    "standard_core_warning_candidates": 2,
+    "direct_hazard_types": 2,
+    "separate_public_wind_data_contracts": 8,
+    "dedicated_confirmed_downburst_public_capabilities": 0,
+    "dedicated_observed_wind_damage_public_capabilities": 0,
+    "dedicated_radar_downburst_signature_public_capabilities": 0
+  },
+  "public_warning_path": {
+    "id": "weather.warning.official",
+    "strategy": "aggregate",
+    "resource_type": "hazard_feed",
+    "candidates": [
+      "dwd/official_weather_warnings",
+      "noaa_nws/official_weather_alerts"
+    ],
+    "carries_hazard_types": [
+      "windstorm",
+      "downburst",
+      "severe_thunderstorm"
+    ]
+  },
+  "hazard_types": {
+    "windstorm": {
+      "name": "Sturm / Orkan / schwere Böen",
+      "group": "weather",
+      "keywords": [
+        "high wind",
+        "wind warning",
+        "wind advisory",
+        "gale",
+        "storm warning",
+        "hurricane force wind",
+        "sturm",
+        "orkan",
+        "windbö",
+        "stürmische"
+      ]
+    },
+    "downburst": {
+      "name": "Downburst / schwere Fallböe",
+      "group": "convective_hazards",
+      "keywords": [
+        "downburst",
+        "microburst",
+        "macroburst",
+        "fallböe",
+        "fallboe"
+      ]
+    }
+  },
+  "primary_normalization": {
+    "model": "single_label_first_match",
+    "relevant_order": [
+      "downburst",
+      "severe_thunderstorm",
+      "windstorm"
+    ],
+    "findings": [
+      "Explicit downburst text precedes severe_thunderstorm and can remain the primary label.",
+      "Generic windstorm evidence can be hidden by an earlier severe_thunderstorm match.",
+      "Primary hazard_type is not necessarily the complete wind-hazard semantics."
+    ]
+  },
+  "warning_providers": [
+    {
+      "provider": "dwd",
+      "capability": "official_weather_warnings",
+      "default_enabled": true,
+      "domains": [
+        "weather",
+        "natural_hazards"
+      ],
+      "registry_topic": "severe_wind",
+      "dedicated_windhaz_contract": false
+    },
+    {
+      "provider": "noaa_nws",
+      "capability": "official_weather_alerts",
+      "default_enabled": true,
+      "domains": [
+        "weather",
+        "natural_hazards"
+      ],
+      "registry_topic": "severe_wind",
+      "dedicated_windhaz_contract": false
+    }
+  ],
+  "separate_wind_data_contracts": {
+    "weather.point.wind_speed": {
+      "kind": "forecast_value",
+      "quantity": "wind_speed",
+      "unit": "m/s",
+      "candidates": [
+        "open_meteo/wind_speed",
+        "met_norway/wind_speed",
+        "noaa_nws/wind_speed",
+        "fmi/wind_speed",
+        "smhi/wind_speed"
+      ]
+    },
+    "weather.point.wind_gusts": {
+      "kind": "forecast_value",
+      "quantity": "wind_gust_speed",
+      "unit": "m/s",
+      "candidates": [
+        "open_meteo/wind_gusts",
+        "met_norway/wind_gusts",
+        "fmi/wind_gusts",
+        "smhi/wind_gusts"
+      ]
+    },
+    "weather.point.wind_direction": {
+      "kind": "forecast_value",
+      "quantity": "wind_from_direction",
+      "unit": "degrees",
+      "candidates": [
+        "open_meteo/wind_direction",
+        "met_norway/wind_direction",
+        "noaa_nws/wind_direction",
+        "fmi/wind_direction",
+        "smhi/wind_direction"
+      ]
+    },
+    "weather.point.wind_summary": {
+      "kind": "forecast_summary",
+      "candidates": [
+        "jma/wind_summary"
+      ]
+    },
+    "weather.nowcast.wind_speed": {
+      "kind": "nowcast_value",
+      "candidates": [
+        "met_norway/nowcast_wind_speed"
+      ]
+    },
+    "weather.nowcast.wind_gusts": {
+      "kind": "nowcast_value",
+      "candidates": [
+        "met_norway/nowcast_wind_gusts"
+      ]
+    },
+    "weather.nowcast.wind_direction": {
+      "kind": "nowcast_value",
+      "candidates": [
+        "met_norway/nowcast_wind_direction"
+      ]
+    },
+    "weather.model.wind_10m.layer": {
+      "kind": "model_raster",
+      "candidates": [
+        "dwd/icon_wind_10m"
+      ]
+    }
+  },
+  "hard_boundaries": [
+    "High forecast wind speed is not an official wind warning.",
+    "High forecast gust speed is not a downburst.",
+    "Nowcast gust speed is not a confirmed downburst.",
+    "Wind model raster is not an official warning.",
+    "Severe thunderstorm is not automatically windstorm.",
+    "Generic strong wind is not automatically downburst.",
+    "Registry topic severe_wind is not proof of an active wind event."
+  ],
+  "planned_sources": [
+    "meteoalarm",
+    "eccc",
+    "jma_weather_warnings",
+    "bom_weather_warnings"
+  ],
+  "open_semantic_questions": [
+    "Define the broad official wind-alert event class.",
+    "Decide whether convective wind needs additive semantics independent of primary hazard_type.",
+    "Define strict evidence for downburst versus generic damaging wind.",
+    "Separate explicit event/headline evidence from contextual description/instruction evidence.",
+    "Decide whether existing alert_stage is reused.",
+    "Keep numeric wind/gust contracts separate from hazard-warning semantics.",
+    "Keep observed/reported wind damage separate from warning semantics."
+  ],
+  "invariants": [
+    "Inventory contains standard core only.",
+    "Future/planned providers do not count as current coverage.",
+    "Provider ID is not a scoring axis.",
+    "Profiles remain deny-only.",
+    "P3-WINDHAZ-10 does not change runtime normalization ordering.",
+    "P2-WIND numeric contracts remain semantically unchanged."
+  ]
+}

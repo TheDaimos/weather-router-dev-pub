@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "weather_router.consumer.resource.planetary_tile.v1",
+  "title": "WeatherRouter Planetary Tile Resource V1",
+  "type": "object",
+  "required": [
+    "body",
+    "tile_url",
+    "min_zoom",
+    "max_zoom"
+  ],
+  "properties": {
+    "body": {
+      "type": "string",
+      "minLength": 1
+    },
+    "tile_url": {
+      "type": "string",
+      "minLength": 1
+    },
+    "min_zoom": {
+      "type": "number",
+      "minimum": 0
+    },
+    "max_zoom": {
+      "type": "number",
+      "minimum": 0
+    },
+    "tile_size": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 1
+    },
+    "crs": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "attribution": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "additionalProperties": true
+}

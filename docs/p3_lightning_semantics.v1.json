@@ -1,0 +1,190 @@
+{
+  "schema": "weather_router.p3_lightning_semantics.v1",
+  "date": "2026-10-03",
+  "scope": "P3-LIGHTNING-20 semantics only; no intent implementation or scoring changes",
+  "semantic_families": {
+    "observed_lightning_density_grid": {
+      "resource_type": "raster_tile",
+      "semantic_quantity": "lightning_density",
+      "data_origin": "lightning_detection_network",
+      "measurement_method": "lightning_density_grid",
+      "observation_kind": "observation",
+      "numeric_interchangeability": "not_proven",
+      "canonical_unit_for_future_routing": null,
+      "blockers": [
+        "DWD provider unit is not explicitly declared.",
+        "DWD accumulation/statistical interval is not sufficiently explicit in the current routing contract.",
+        "ECCC declares km^-2 min^-1 with 10-minute aggregation."
+      ]
+    },
+    "terrestrial_network_lightning_event": {
+      "resource_type": "event_feed",
+      "semantic_quantity": null,
+      "data_origin": "lightning_detection_network",
+      "measurement_method": "lightning_event_detection",
+      "observation_kind": "observation",
+      "ground_strike_only": false,
+      "runtime_window_seconds": 1200,
+      "notes": [
+        "FMI events carry position/time plus optional peak current, multiplicity, cloud indicator and location ellipse.",
+        "ground_or_unspecified must not be rewritten as confirmed cloud-to-ground."
+      ]
+    },
+    "nearest_lightning_event_distance": {
+      "resource_type": "value",
+      "semantic_quantity": "distance",
+      "canonical_unit_for_future_routing": "km",
+      "measurement_method": "derived_nearest_event_geometry",
+      "observation_kind": "observation",
+      "derivation_window_seconds": 1200
+    },
+    "nearest_lightning_event_azimuth": {
+      "resource_type": "value",
+      "semantic_quantity": "azimuth",
+      "canonical_unit_for_future_routing": "degree",
+      "provider_unit": "°",
+      "measurement_method": "derived_nearest_event_geometry",
+      "observation_kind": "observation",
+      "derivation_window_seconds": 1200
+    },
+    "satellite_total_lightning_l2_lcfa_file": {
+      "resource_type": "data_file",
+      "data_origin": "satellite",
+      "measurement_method": "optical_lightning_detection",
+      "observation_kind": "observation",
+      "product_family": "GOES-R GLM Level-2 LCFA",
+      "ground_strike_confirmation": false,
+      "notes": [
+        "GOES East and West are the same semantic/product class.",
+        "A shared routing intent remains blocked by unknown machine-readable field-of-view coverage."
+      ]
+    },
+    "satellite_total_lightning_accumulation_raster": {
+      "resource_type": "raster_tile",
+      "semantic_quantity": "lightning_flash_accumulation",
+      "data_origin": "satellite",
+      "measurement_method": "optical_lightning_detection",
+      "observation_kind": "observation",
+      "ground_strike_confirmation": false,
+      "notes": [
+        "MTG-LI accumulated raster belongs to the broad satellite_total_lightning phenomenon.",
+        "It is resource- and product-incompatible with GOES LCFA data files."
+      ]
+    }
+  },
+  "candidate_classification": [
+    {
+      "provider": "dwd",
+      "capability": "lightning_density",
+      "public_capability": "weather.lightning.density",
+      "semantic_class": "observed_lightning_density_grid",
+      "resource_type": "raster_tile",
+      "unit": null,
+      "aggregation_semantics": "unknown",
+      "compatibility": "same_broad_density_class_not_interchangeable_yet",
+      "coverage": "hard_bbox"
+    },
+    {
+      "provider": "eccc_lightning",
+      "capability": "lightning_density_2_5km",
+      "public_capability": "weather.lightning.observed.density",
+      "semantic_class": "observed_lightning_density_grid",
+      "resource_type": "raster_tile",
+      "unit": "km^-2 min^-1",
+      "aggregation_semantics": "10_minute_observation_normalized_per_minute",
+      "compatibility": "same_broad_density_class_not_interchangeable_yet",
+      "coverage": "unknown"
+    },
+    {
+      "provider": "fmi_lightning",
+      "capability": "lightning_strikes_observed",
+      "public_capability": "weather.lightning.observed.events",
+      "semantic_class": "terrestrial_network_lightning_event",
+      "resource_type": "event_feed",
+      "compatibility": "event_feed_only",
+      "ground_strike_only": false,
+      "coverage": "dynamic_context_filter"
+    },
+    {
+      "provider": "fmi_lightning",
+      "capability": "lightning_nearest_distance",
+      "public_capability": "weather.lightning.observed.nearest_distance",
+      "semantic_class": "nearest_lightning_event_distance",
+      "resource_type": "value",
+      "quantity": "distance",
+      "canonical_unit_for_future_routing": "km",
+      "compatibility": "separate_derived_value",
+      "coverage": "unknown"
+    },
+    {
+      "provider": "fmi_lightning",
+      "capability": "lightning_nearest_azimuth",
+      "public_capability": "weather.lightning.observed.nearest_azimuth",
+      "semantic_class": "nearest_lightning_event_azimuth",
+      "resource_type": "value",
+      "quantity": "azimuth",
+      "canonical_unit_for_future_routing": "degree",
+      "compatibility": "separate_derived_value",
+      "coverage": "unknown"
+    },
+    {
+      "provider": "noaa_goes_glm",
+      "capability": "glm_east_lcfa",
+      "public_capability": "weather.lightning.satellite.glm_east.lcfa",
+      "semantic_class": "satellite_total_lightning_l2_lcfa_file",
+      "resource_type": "data_file",
+      "compatibility": "same_glm_product_class_coverage_unresolved",
+      "ground_strike_confirmation": false,
+      "coverage": "unknown"
+    },
+    {
+      "provider": "noaa_goes_glm",
+      "capability": "glm_west_lcfa",
+      "public_capability": "weather.lightning.satellite.glm_west.lcfa",
+      "semantic_class": "satellite_total_lightning_l2_lcfa_file",
+      "resource_type": "data_file",
+      "compatibility": "same_glm_product_class_coverage_unresolved",
+      "ground_strike_confirmation": false,
+      "coverage": "unknown"
+    },
+    {
+      "provider": "eumetsat_mtg_li",
+      "capability": "mtg_li_accumulated_flashes",
+      "public_capability": "weather.lightning.satellite.mtg_li.accumulated_flashes",
+      "semantic_class": "satellite_total_lightning_accumulation_raster",
+      "resource_type": "raster_tile",
+      "compatibility": "separate_satellite_raster_product",
+      "ground_strike_confirmation": false,
+      "coverage": "unknown"
+    }
+  ],
+  "temporal_rules": {
+    "fmi_events": "event timestamps within a 20-minute query window",
+    "fmi_nearest_values": "derived from the same 20-minute event window",
+    "eccc_density": "10-minute observed aggregation normalized to density",
+    "dwd_density": "exact accumulation/statistical interval unresolved in current routing contract",
+    "noaa_glm": "approximately 20-second Level-2 product files",
+    "eumetsat_mtg_li": "near-real-time accumulated raster with WMS timeline; exact common accumulation contract not yet normalized"
+  },
+  "rules": {
+    "density_is_not_event": true,
+    "event_feed_is_not_derived_nearest_value": true,
+    "distance_is_not_azimuth": true,
+    "raster_is_not_data_file": true,
+    "satellite_total_lightning_is_not_confirmed_ground_strike": true,
+    "observation_is_not_warning_or_probability": true,
+    "same_quantity_does_not_prove_interchangeability": true,
+    "unknown_coverage_stays_unknown": true,
+    "endpoint_reachability_is_not_coverage": true,
+    "provider_id_is_not_scoring_axis": true,
+    "profiles_are_deny_only": true,
+    "private_extensions_outside_standard_core_contract": true
+  },
+  "decisions_for_p3_lightning_30": [
+    "Decide whether DWD and ECCC can share a density intent only after unit and aggregation semantics are explicit.",
+    "Keep FMI event feed, nearest distance and nearest azimuth as separate consumer contracts.",
+    "Consider a shared NOAA GLM LCFA intent only with machine-readable field-of-view coverage.",
+    "Do not treat MTG-LI raster and GOES LCFA data files as render-interchangeable.",
+    "Do not introduce warning, thunder-probability or thunderstorm-cell fallbacks into observed lightning intents."
+  ]
+}

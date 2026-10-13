@@ -1,0 +1,300 @@
+{
+  "schema": "weather_router.p4_tsunami_intent_design.v1",
+  "date": "2026-10-06",
+  "status": "design_only",
+  "public_capability_count_before": 226,
+  "public_capability_count_after": 226,
+  "public_capabilities_added": 0,
+  "public_transports": [
+    "natural_hazards.tsunami.warnings",
+    "natural_hazards.tsunami.observations",
+    "natural_hazards.tsunami.potential",
+    "natural_hazards.disaster_awareness.events"
+  ],
+  "primary_hazard_types": {
+    "tsunami": {
+      "remains_for_compatibility": true,
+      "sufficient_proof_of_observed_wave": false,
+      "sufficient_proof_of_active_warning": false
+    },
+    "tsunami_potential": {
+      "remains_for_compatibility": true,
+      "official_warning": false
+    }
+  },
+  "event_semantics": {
+    "field": "tsunami_semantics",
+    "shape": "object",
+    "required_fields": [
+      "semantic_class"
+    ],
+    "optional_fields": [
+      "alert_stage",
+      "source_alert_level",
+      "active_threat",
+      "wave_evidence"
+    ],
+    "semantic_classes": [
+      "official_tsunami_warning_event",
+      "tsunami_observation_event",
+      "tsunami_potential_indicator_event",
+      "disaster_awareness_tsunami_event"
+    ],
+    "alert_stages": [
+      "warning",
+      "advisory",
+      "watch",
+      "threat",
+      "marine_warning",
+      "land_inundation_warning",
+      "information",
+      "no_threat",
+      "canceled"
+    ],
+    "wave_evidence": [
+      "expected",
+      "observed",
+      "mixed",
+      "none"
+    ]
+  },
+  "generic_alert_stage": {
+    "extended_for_tsunami": false,
+    "reason": "existing generic enum is weather-warning oriented and does not represent tsunami advisory/threat/marine/land-inundation semantics"
+  },
+  "mappings": {
+    "jma_warning": {
+      "candidate": "jma/official_tsunami_warnings_japan",
+      "semantic_class": "official_tsunami_warning_event",
+      "alert_stage_source": "parameters.alert_level",
+      "active_true_stages": [
+        "warning",
+        "advisory"
+      ],
+      "active_false_stages": [
+        "information",
+        "canceled"
+      ],
+      "wave_evidence_from_existing_parameters": true,
+      "wave_evidence_when_present": "expected"
+    },
+    "jma_observation": {
+      "candidate": "jma/tsunami_observations_japan",
+      "semantic_class": "tsunami_observation_event",
+      "alert_stage": null,
+      "active_threat": null,
+      "wave_evidence_when_present": "observed",
+      "capability_map_target": {
+        "data_origin": "warning_authority",
+        "measurement_method": "tsunami_observation_feed",
+        "observation_kind": "observation",
+        "source_class": "observation"
+      }
+    },
+    "noaa_warning": {
+      "candidate": "noaa_tsunami/official_tsunami_alerts",
+      "semantic_class": "official_tsunami_warning_event",
+      "alert_stage_source": "parameters.alert_level",
+      "active_threat_source": "provider active_threat",
+      "wave_evidence": "none",
+      "current_event_output_only_active_threats": true
+    },
+    "bom_warning": {
+      "candidate": "bom_tsunami/official_tsunami_warnings_australia",
+      "semantic_class": "official_tsunami_warning_event",
+      "alert_stage_source": "parameters.alert_level",
+      "active_true_stages": [
+        "warning",
+        "watch",
+        "marine_warning",
+        "land_inundation_warning"
+      ],
+      "active_false_stages": [
+        "information",
+        "no_threat",
+        "canceled"
+      ],
+      "wave_evidence": "none"
+    },
+    "bmkg_potential": {
+      "candidate": "bmkg_tsunami/tsunami_potential_earthquake",
+      "semantic_class": "tsunami_potential_indicator_event",
+      "alert_stage": null,
+      "active_threat": null,
+      "wave_evidence": "none",
+      "capability_map_target": {
+        "data_origin": "seismic_network",
+        "measurement_method": "seismic_event_catalog",
+        "observation_kind": "observation",
+        "source_class": "event_indicator",
+        "hazard_type": "tsunami_potential"
+      },
+      "epicenter_is_tsunami_impact_area": false
+    },
+    "gdacs": {
+      "candidate": "gdacs/global_disaster_alerts_7d",
+      "semantic_class": "disaster_awareness_tsunami_event",
+      "alert_stage": null,
+      "active_threat": null,
+      "wave_evidence": "none",
+      "preserve_disaster_awareness_role": true
+    }
+  },
+  "consumer_preservation": {
+    "event_fields": [
+      "tsunami_semantics",
+      "parameters"
+    ],
+    "resource_diagnostic_fields": [
+      "tsunami_semantic_classes",
+      "tsunami_alert_stages",
+      "tsunami_wave_evidence"
+    ]
+  },
+  "event_filter_additions": {
+    "tsunami_semantic_classes": {
+      "values": [
+        "official_tsunami_warning_event",
+        "tsunami_observation_event",
+        "tsunami_potential_indicator_event",
+        "disaster_awareness_tsunami_event"
+      ],
+      "compatible_public_capabilities": [
+        "natural_hazards.tsunami.warnings",
+        "natural_hazards.tsunami.observations",
+        "natural_hazards.tsunami.potential",
+        "natural_hazards.disaster_awareness.events"
+      ],
+      "filter_path": "tsunami_semantics.semantic_class"
+    },
+    "tsunami_alert_stages": {
+      "values": [
+        "warning",
+        "advisory",
+        "watch",
+        "threat",
+        "marine_warning",
+        "land_inundation_warning",
+        "information",
+        "no_threat",
+        "canceled"
+      ],
+      "compatible_public_capabilities": [
+        "natural_hazards.tsunami.warnings"
+      ],
+      "filter_path": "tsunami_semantics.alert_stage"
+    }
+  },
+  "spatial_design": {
+    "global": {
+      "filtering_required": false
+    },
+    "point_bbox": {
+      "mode": "event_geometry_best_effort",
+      "geometry_match_can_prove_relevance": true,
+      "geometry_nonmatch_can_exclude_event": true,
+      "missing_geometry_is_outside_coverage": false,
+      "missing_geometry_event_behavior": "preserve_with_spatial_relevance_unknown_geometry",
+      "provider_identity_as_geometry": false,
+      "region_text_as_geometry": false,
+      "empty_explicit_geometry_matches_with_unknown_events_means_no_hazard": false
+    },
+    "event_field": {
+      "name": "spatial_relevance",
+      "request_scoped": true,
+      "values": [
+        "matched_geometry",
+        "unknown_geometry"
+      ],
+      "omitted_for_global": true
+    },
+    "resource_summary_fields": [
+      "mode",
+      "context_type",
+      "geometry_matched_count",
+      "geometry_nonmatched_count",
+      "unknown_geometry_count",
+      "complete"
+    ],
+    "bmkg_epicenter_semantics": "source event location, not tsunami impact or warning area"
+  },
+  "schemas": {
+    "hazard_feed_event_additions": [
+      "tsunami_semantics",
+      "spatial_relevance"
+    ],
+    "resolve_request_filter_additions": [
+      "tsunami_semantic_classes",
+      "tsunami_alert_stages"
+    ],
+    "resource_diagnostic_additions": [
+      "tsunami_semantic_classes",
+      "tsunami_alert_stages",
+      "tsunami_wave_evidence",
+      "spatial_filter"
+    ]
+  },
+  "versions": {
+    "planned_build_version": "0.10.129",
+    "planned_loader_revision": "0.10-loader-132"
+  },
+  "planned_provider_revisions": {
+    "jma": "wr-0.10.129-tsunami-semantics-1",
+    "noaa_tsunami": "wr-0.10.129-tsunami-semantics-1",
+    "bom_tsunami": "wr-0.10.129-tsunami-semantics-1",
+    "bmkg_tsunami": "wr-0.10.129-tsunami-semantics-1",
+    "gdacs": "only if provider adapter itself is changed"
+  },
+  "provider_expansion": {
+    "in_scope": false,
+    "global_primary_warning_gap_remains_documented": true
+  },
+  "excluded": [
+    "new_public_capability",
+    "hazard_type_migration",
+    "provider_priority",
+    "cross_provider_deduplication",
+    "gdacs_to_primary_warning_promotion",
+    "bmkg_potential_to_warning_promotion",
+    "jma_observation_to_warning_promotion",
+    "cancellation_to_no_event_ever_claim",
+    "single_center_no_threat_to_global_no_tsunami",
+    "severity_to_wave_height",
+    "warning_stage_to_observed_wave_height",
+    "epicenter_to_tsunami_impact_area",
+    "provider_or_region_text_to_event_geometry",
+    "missing_geometry_to_outside_coverage",
+    "endpoint_reachability_to_coverage"
+  ],
+  "invariants": [
+    "No new public capability.",
+    "Tsunami and tsunami_potential hazard types remain compatible.",
+    "Tsunami semantics are additive.",
+    "Generic alert_stage is not expanded for tsunami-specific stages.",
+    "JMA observation remains observation semantics.",
+    "BMKG potential remains an event indicator and not a warning.",
+    "GDACS remains disaster awareness.",
+    "Expected and observed wave values are not duplicated or conflated.",
+    "Missing geometry is not outside_coverage.",
+    "Unknown spatial relevance is surfaced rather than fabricated.",
+    "Provider ID is not a scoring axis.",
+    "Profiles remain deny-only.",
+    "Cross-provider deduplication is not introduced."
+  ],
+  "implementation_order": [
+    "shared tsunami semantics helper",
+    "JMA warning and observation annotations",
+    "NOAA tsunami annotation",
+    "BoM tsunami annotation",
+    "BMKG potential annotation",
+    "GDACS tsunami disaster-awareness annotation",
+    "capability-map corrections",
+    "consumer normalization and preservation",
+    "tsunami event filters with capability gating",
+    "resource diagnostics",
+    "best-effort point/bbox spatial diagnostics",
+    "Consumer V1 schema synchronization",
+    "regression tests",
+    "version bump"
+  ]
+}

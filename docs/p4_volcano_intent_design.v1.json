@@ -1,0 +1,88 @@
+{
+  "schema": "weather_router.p4_volcano_intent_design.v1",
+  "status": "done",
+  "date": "2026-10-06",
+  "public_capability_count": 226,
+  "public_contracts": {
+    "natural_hazards.volcano.activity": {
+      "candidate": "smithsonian_volcanoes/weekly_volcanic_activity",
+      "strategy": "single"
+    },
+    "natural_hazards.volcano.warnings": {
+      "candidate": "usgs_volcanoes/elevated_us_volcanoes",
+      "strategy": "single"
+    }
+  },
+  "no_shared_fallback": true,
+  "event_field": "volcano_semantics",
+  "semantic_classes": [
+    "weekly_volcanic_activity_report_event",
+    "official_volcano_status_event",
+    "disaster_awareness_volcanic_event",
+    "seismic_catalog_volcanic_event"
+  ],
+  "optional_fields": [
+    "report_type",
+    "report_categories",
+    "aviation_color_code",
+    "volcano_alert_level",
+    "smithsonian_vnum",
+    "volcano_code",
+    "observatory",
+    "region",
+    "nvews_threat",
+    "notice_type",
+    "source_event_type",
+    "legacy_severity_band"
+  ],
+  "mappings": {
+    "smithsonian_volcanoes": {
+      "semantic_class": "weekly_volcanic_activity_report_event",
+      "observation_kind": "observation"
+    },
+    "usgs_volcanoes": {
+      "semantic_class": "official_volcano_status_event",
+      "observation_kind": "warning_event"
+    },
+    "gdacs": {
+      "conditional_hazard_type": "volcanic_activity",
+      "semantic_class": "disaster_awareness_volcanic_event"
+    },
+    "usgs_seismic_events": {
+      "conditional_hazard_type": "volcanic_activity",
+      "semantic_class": "seismic_catalog_volcanic_event"
+    },
+    "aviation_weather": {
+      "volcano_semantics": false
+    }
+  },
+  "spatial": {
+    "global": "no_spatial_event_filter",
+    "bbox": {
+      "mode": "volcano_event_point_bbox",
+      "detection_completeness_claim": false
+    },
+    "point": {
+      "action": "reject_for_dedicated_volcano_public_ids",
+      "code": "requirements_not_met",
+      "future_radius_contract_out_of_scope": true
+    }
+  },
+  "diagnostics": [
+    "volcano_semantic_classes",
+    "volcano_report_types",
+    "volcano_aviation_color_codes",
+    "volcano_alert_levels",
+    "volcano_source_event_types"
+  ],
+  "new_request_filters": false,
+  "provider_priority": false,
+  "cross_provider_deduplication": false,
+  "cross_feed_deduplication": false,
+  "target_runtime": {
+    "build_version": "0.10.131",
+    "loader_revision": "0.10-loader-134",
+    "public_capability_count": 226
+  },
+  "next_active_point": "P4-VOLCANO-40"
+}

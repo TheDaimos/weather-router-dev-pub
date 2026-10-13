@@ -1,0 +1,110 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "weather_router.consumer.capabilities.request.v1",
+  "title": "WeatherRouter Consumer Capabilities Request V1",
+  "type": "object",
+  "required": [
+    "type",
+    "contract_version"
+  ],
+  "properties": {
+    "type": {
+      "const": "weather_router/consumer/capabilities"
+    },
+    "contract_version": {
+      "const": 1
+    },
+    "filter": {
+      "type": "object",
+      "properties": {
+        "domains": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "weather",
+              "pollen",
+              "natural_hazards",
+              "civil_protection",
+              "security",
+              "aviation",
+              "space",
+              "biological_hazards"
+            ]
+          }
+        },
+        "families": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "phenomena": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "temperature",
+              "dew_point",
+              "humidity",
+              "pressure",
+              "rain",
+              "precipitation",
+              "snow",
+              "wind",
+              "clouds",
+              "visibility",
+              "fog",
+              "thunderstorm",
+              "lightning",
+              "uv",
+              "weather_condition",
+              "pollen",
+              "wildlife",
+              "predator",
+              "crocodilian",
+              "marine",
+              "venomous",
+              "snake",
+              "toxic",
+              "toxic_plant",
+              "toxic_fungus",
+              "vector"
+            ]
+          }
+        },
+        "resource_types": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "value",
+              "raster_tile",
+              "hazard_feed",
+              "event_feed",
+              "image_sequence",
+              "live_stream",
+              "planetary_tile",
+              "data_file"
+            ]
+          }
+        },
+        "available_only": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    },
+    "profile_id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_-]{0,63}$"
+    }
+  },
+  "additionalProperties": false
+}

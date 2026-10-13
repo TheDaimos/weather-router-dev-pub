@@ -1,0 +1,568 @@
+{
+  "schema": "weather_router.p2_cloud_semantics.v1",
+  "date": "2026-10-02",
+  "scope": "P2-CLOUD-20 semantics only; no intent implementation or scoring changes",
+  "semantic_families": {
+    "cloud_cover_total_forecast_point": {
+      "resource_type": "value",
+      "semantic_quantity": "cloud_cover_fraction_total",
+      "numeric": true,
+      "canonical_unit_for_future_routing": "%",
+      "observation_kind": "forecast",
+      "data_origin": "model",
+      "candidates": [
+        "open_meteo/cloud_cover",
+        "met_norway/cloud_cover",
+        "fmi/cloud_cover",
+        "smhi/cloud_cover"
+      ],
+      "notes": [
+        "These four candidates expose total cloud-cover forecasts in percent.",
+        "ECCC station cloud_cover is excluded from this forecast class by default."
+      ]
+    },
+    "cloud_cover_low_forecast_point": {
+      "resource_type": "value",
+      "semantic_quantity": "cloud_cover_fraction_low",
+      "numeric": true,
+      "canonical_unit_for_future_routing": "%",
+      "observation_kind": "forecast",
+      "data_origin": "model",
+      "candidates": [
+        "open_meteo/cloud_cover_low",
+        "met_norway/cloud_cover_low",
+        "smhi/cloud_cover_low"
+      ],
+      "notes": [
+        "Low-cloud fraction is a distinct vertical-layer quantity and must not collapse into total cloud cover."
+      ]
+    },
+    "cloud_cover_mid_forecast_point": {
+      "resource_type": "value",
+      "semantic_quantity": "cloud_cover_fraction_mid",
+      "numeric": true,
+      "canonical_unit_for_future_routing": "%",
+      "observation_kind": "forecast",
+      "data_origin": "model",
+      "candidates": [
+        "open_meteo/cloud_cover_mid",
+        "met_norway/cloud_cover_mid",
+        "smhi/cloud_cover_mid"
+      ],
+      "notes": [
+        "Mid-cloud fraction is a distinct vertical-layer quantity and must not collapse into total or low/high cloud cover."
+      ]
+    },
+    "cloud_cover_high_forecast_point": {
+      "resource_type": "value",
+      "semantic_quantity": "cloud_cover_fraction_high",
+      "numeric": true,
+      "canonical_unit_for_future_routing": "%",
+      "observation_kind": "forecast",
+      "data_origin": "model",
+      "candidates": [
+        "open_meteo/cloud_cover_high",
+        "met_norway/cloud_cover_high",
+        "smhi/cloud_cover_high"
+      ],
+      "notes": [
+        "High-cloud fraction is a distinct vertical-layer quantity and must not collapse into total or low/mid cloud cover."
+      ]
+    },
+    "cloud_cover_station_observation": {
+      "resource_type": "value",
+      "semantic_quantity": "total_cloud_amount_observed",
+      "numeric": "provider_value_if_present",
+      "canonical_unit_for_future_routing": null,
+      "observation_kind": "observation",
+      "data_origin": "station",
+      "candidates": [
+        "eccc_geomet/cloud_cover"
+      ],
+      "notes": [
+        "ECCC reads tot_cld_amt from SWOB and may receive a runtime UOM from tot_cld_amt-uom.",
+        "The static provider contract has no fixed unit, therefore percent-equivalence is not proven.",
+        "Station observation is a different observation class from model forecast."
+      ]
+    },
+    "satellite_cloud_composite_layer": {
+      "resource_type": "raster_tile",
+      "numeric": false,
+      "observation_kind": "observation",
+      "data_origin": "satellite",
+      "candidates": [
+        "dwd/satellite_clouds",
+        "eumetview/satellite_clouds"
+      ],
+      "notes": [
+        "Both are cloud-oriented satellite render products.",
+        "Product composition, cadence and coverage remain candidate-specific.",
+        "This class may support a visual-layer contract, but P2-CLOUD-20 does not decide the final intent."
+      ]
+    },
+    "satellite_true_color_layer": {
+      "resource_type": "raster_tile",
+      "numeric": false,
+      "observation_kind": "observation",
+      "data_origin": "satellite",
+      "candidates": [
+        "nasa_gibs/satellite_imagery_true_color"
+      ],
+      "temporal_character": "daily",
+      "notes": [
+        "True-color imagery is a visual Earth-observation product, not a cloud-cover fraction."
+      ]
+    },
+    "satellite_geocolor_layer": {
+      "resource_type": "raster_tile",
+      "numeric": false,
+      "observation_kind": "observation",
+      "data_origin": "satellite",
+      "candidates": [
+        "nasa_gibs/satellite_goes_east_geocolor",
+        "nasa_gibs/satellite_goes_west_geocolor"
+      ],
+      "temporal_character": "typically_about_10_minutes",
+      "notes": [
+        "GeoColor combines daytime near-true-color and nighttime multispectral infrared; region/coverage stays candidate-specific."
+      ]
+    },
+    "satellite_clean_infrared_layer": {
+      "resource_type": "raster_tile",
+      "numeric": false,
+      "observation_kind": "observation",
+      "data_origin": "satellite",
+      "candidates": [
+        "nasa_gibs/satellite_goes_east_clean_ir",
+        "nasa_gibs/satellite_goes_west_clean_ir",
+        "nasa_gibs/satellite_himawari_clean_ir"
+      ],
+      "temporal_character": "typically_about_10_minutes",
+      "daylight_dependency": false,
+      "notes": [
+        "Clean infrared is a dedicated IR cloud-structure/cloud-top product and is not equivalent to true-color or visible-red imagery."
+      ]
+    },
+    "satellite_visible_red_layer": {
+      "resource_type": "raster_tile",
+      "numeric": false,
+      "observation_kind": "observation",
+      "data_origin": "satellite",
+      "candidates": [
+        "nasa_gibs/satellite_goes_east_visible_red",
+        "nasa_gibs/satellite_goes_west_visible_red",
+        "nasa_gibs/satellite_himawari_visible_red"
+      ],
+      "temporal_character": "typically_about_10_minutes",
+      "daylight_dependency": true,
+      "notes": [
+        "Visible-red imagery depends on daylight and remains distinct from infrared imagery."
+      ]
+    },
+    "satellite_air_mass_layer": {
+      "resource_type": "raster_tile",
+      "numeric": false,
+      "observation_kind": "observation",
+      "data_origin": "satellite",
+      "candidates": [
+        "nasa_gibs/satellite_goes_east_air_mass",
+        "nasa_gibs/satellite_goes_west_air_mass",
+        "nasa_gibs/satellite_himawari_air_mass"
+      ],
+      "temporal_character": "typically_about_10_minutes",
+      "daylight_dependency": false,
+      "notes": [
+        "Air Mass is a multispectral atmospheric-composite product.",
+        "It is meteorologically cloud-adjacent but not a direct cloud-cover measurement."
+      ]
+    }
+  },
+  "candidate_classification": [
+    {
+      "provider": "dwd",
+      "capability": "satellite_clouds",
+      "public_capabilities": [
+        "weather.satellite.clouds"
+      ],
+      "semantic_class": "satellite_cloud_composite_layer",
+      "resource_type": "raster_tile",
+      "observation_kind": "observation",
+      "unit": null,
+      "coverage_scope": "bbox",
+      "compatibility": "visual_candidate_product_specific"
+    },
+    {
+      "provider": "eccc_geomet",
+      "capability": "cloud_cover",
+      "public_capabilities": [
+        "weather.point.cloud_cover"
+      ],
+      "semantic_class": "cloud_cover_station_observation",
+      "resource_type": "value",
+      "observation_kind": "observation",
+      "unit": null,
+      "coverage_scope": "unknown",
+      "compatibility": "separate_observation_unknown_static_unit"
+    },
+    {
+      "provider": "eumetview",
+      "capability": "satellite_clouds",
+      "public_capabilities": [
+        "weather.satellite.clouds"
+      ],
+      "semantic_class": "satellite_cloud_composite_layer",
+      "resource_type": "raster_tile",
+      "observation_kind": "observation",
+      "unit": null,
+      "coverage_scope": "unknown",
+      "compatibility": "visual_candidate_product_specific"
+    },
+    {
+      "provider": "fmi",
+      "capability": "cloud_cover",
+      "public_capabilities": [
+        "weather.point.cloud_cover"
+      ],
+      "semantic_class": "cloud_cover_total_forecast_point",
+      "resource_type": "value",
+      "observation_kind": "forecast",
+      "unit": "%",
+      "coverage_scope": "unknown",
+      "compatibility": "candidate"
+    },
+    {
+      "provider": "met_norway",
+      "capability": "cloud_cover",
+      "public_capabilities": [
+        "weather.point.cloud_cover"
+      ],
+      "semantic_class": "cloud_cover_total_forecast_point",
+      "resource_type": "value",
+      "observation_kind": "forecast",
+      "unit": "%",
+      "coverage_scope": "unknown",
+      "compatibility": "candidate"
+    },
+    {
+      "provider": "met_norway",
+      "capability": "cloud_cover_high",
+      "public_capabilities": [
+        "weather.point.cloud_cover_high"
+      ],
+      "semantic_class": "cloud_cover_high_forecast_point",
+      "resource_type": "value",
+      "observation_kind": "forecast",
+      "unit": "%",
+      "coverage_scope": "unknown",
+      "compatibility": "candidate"
+    },
+    {
+      "provider": "met_norway",
+      "capability": "cloud_cover_low",
+      "public_capabilities": [
+        "weather.point.cloud_cover_low"
+      ],
+      "semantic_class": "cloud_cover_low_forecast_point",
+      "resource_type": "value",
+      "observation_kind": "forecast",
+      "unit": "%",
+      "coverage_scope": "unknown",
+      "compatibility": "candidate"
+    },
+    {
+      "provider": "met_norway",
+      "capability": "cloud_cover_mid",
+      "public_capabilities": [
+        "weather.point.cloud_cover_mid"
+      ],
+      "semantic_class": "cloud_cover_mid_forecast_point",
+      "resource_type": "value",
+      "observation_kind": "forecast",
+      "unit": "%",
+      "coverage_scope": "unknown",
+      "compatibility": "candidate"
+    },
+    {
+      "provider": "nasa_gibs",
+      "capability": "satellite_goes_east_air_mass",
+      "public_capabilities": [
+        "weather.satellite.air_mass.goes_east"
+      ],
+      "semantic_class": "satellite_air_mass_layer",
+      "resource_type": "raster_tile",
+      "observation_kind": "observation",
+      "unit": null,
+      "coverage_scope": "bbox",
+      "compatibility": "specialized_atmospheric_composite"
+    },
+    {
+      "provider": "nasa_gibs",
+      "capability": "satellite_goes_east_clean_ir",
+      "public_capabilities": [
+        "weather.satellite.infrared.goes_east"
+      ],
+      "semantic_class": "satellite_clean_infrared_layer",
+      "resource_type": "raster_tile",
+      "observation_kind": "observation",
+      "unit": null,
+      "coverage_scope": "bbox",
+      "compatibility": "same_product_family_region_specific"
+    },
+    {
+      "provider": "nasa_gibs",
+      "capability": "satellite_goes_east_geocolor",
+      "public_capabilities": [
+        "weather.satellite.geocolor.goes_east"
+      ],
+      "semantic_class": "satellite_geocolor_layer",
+      "resource_type": "raster_tile",
+      "observation_kind": "observation",
+      "unit": null,
+      "coverage_scope": "bbox",
+      "compatibility": "same_product_family_region_specific"
+    },
+    {
+      "provider": "nasa_gibs",
+      "capability": "satellite_goes_east_visible_red",
+      "public_capabilities": [
+        "weather.satellite.visible_red.goes_east"
+      ],
+      "semantic_class": "satellite_visible_red_layer",
+      "resource_type": "raster_tile",
+      "observation_kind": "observation",
+      "unit": null,
+      "coverage_scope": "bbox",
+      "compatibility": "same_product_family_daylight_dependent"
+    },
+    {
+      "provider": "nasa_gibs",
+      "capability": "satellite_goes_west_air_mass",
+      "public_capabilities": [
+        "weather.satellite.air_mass.goes_west"
+      ],
+      "semantic_class": "satellite_air_mass_layer",
+      "resource_type": "raster_tile",
+      "observation_kind": "observation",
+      "unit": null,
+      "coverage_scope": "bbox",
+      "compatibility": "specialized_atmospheric_composite"
+    },
+    {
+      "provider": "nasa_gibs",
+      "capability": "satellite_goes_west_clean_ir",
+      "public_capabilities": [
+        "weather.satellite.infrared.goes_west"
+      ],
+      "semantic_class": "satellite_clean_infrared_layer",
+      "resource_type": "raster_tile",
+      "observation_kind": "observation",
+      "unit": null,
+      "coverage_scope": "bbox",
+      "compatibility": "same_product_family_region_specific"
+    },
+    {
+      "provider": "nasa_gibs",
+      "capability": "satellite_goes_west_geocolor",
+      "public_capabilities": [
+        "weather.satellite.geocolor.goes_west"
+      ],
+      "semantic_class": "satellite_geocolor_layer",
+      "resource_type": "raster_tile",
+      "observation_kind": "observation",
+      "unit": null,
+      "coverage_scope": "bbox",
+      "compatibility": "same_product_family_region_specific"
+    },
+    {
+      "provider": "nasa_gibs",
+      "capability": "satellite_goes_west_visible_red",
+      "public_capabilities": [
+        "weather.satellite.visible_red.goes_west"
+      ],
+      "semantic_class": "satellite_visible_red_layer",
+      "resource_type": "raster_tile",
+      "observation_kind": "observation",
+      "unit": null,
+      "coverage_scope": "bbox",
+      "compatibility": "same_product_family_daylight_dependent"
+    },
+    {
+      "provider": "nasa_gibs",
+      "capability": "satellite_himawari_air_mass",
+      "public_capabilities": [
+        "weather.satellite.air_mass.himawari_9"
+      ],
+      "semantic_class": "satellite_air_mass_layer",
+      "resource_type": "raster_tile",
+      "observation_kind": "observation",
+      "unit": null,
+      "coverage_scope": "bbox",
+      "compatibility": "specialized_atmospheric_composite"
+    },
+    {
+      "provider": "nasa_gibs",
+      "capability": "satellite_himawari_clean_ir",
+      "public_capabilities": [
+        "weather.satellite.infrared.himawari_9"
+      ],
+      "semantic_class": "satellite_clean_infrared_layer",
+      "resource_type": "raster_tile",
+      "observation_kind": "observation",
+      "unit": null,
+      "coverage_scope": "bbox",
+      "compatibility": "same_product_family_region_specific"
+    },
+    {
+      "provider": "nasa_gibs",
+      "capability": "satellite_himawari_visible_red",
+      "public_capabilities": [
+        "weather.satellite.visible_red.himawari_9"
+      ],
+      "semantic_class": "satellite_visible_red_layer",
+      "resource_type": "raster_tile",
+      "observation_kind": "observation",
+      "unit": null,
+      "coverage_scope": "bbox",
+      "compatibility": "same_product_family_daylight_dependent"
+    },
+    {
+      "provider": "nasa_gibs",
+      "capability": "satellite_imagery_true_color",
+      "public_capabilities": [
+        "weather.satellite.true_color"
+      ],
+      "semantic_class": "satellite_true_color_layer",
+      "resource_type": "raster_tile",
+      "observation_kind": "observation",
+      "unit": null,
+      "coverage_scope": "bbox",
+      "compatibility": "specialized"
+    },
+    {
+      "provider": "open_meteo",
+      "capability": "cloud_cover",
+      "public_capabilities": [
+        "weather.point.cloud_cover"
+      ],
+      "semantic_class": "cloud_cover_total_forecast_point",
+      "resource_type": "value",
+      "observation_kind": "forecast",
+      "unit": "%",
+      "coverage_scope": "unknown",
+      "compatibility": "candidate"
+    },
+    {
+      "provider": "open_meteo",
+      "capability": "cloud_cover_high",
+      "public_capabilities": [
+        "weather.point.cloud_cover_high"
+      ],
+      "semantic_class": "cloud_cover_high_forecast_point",
+      "resource_type": "value",
+      "observation_kind": "forecast",
+      "unit": "%",
+      "coverage_scope": "unknown",
+      "compatibility": "candidate"
+    },
+    {
+      "provider": "open_meteo",
+      "capability": "cloud_cover_low",
+      "public_capabilities": [
+        "weather.point.cloud_cover_low"
+      ],
+      "semantic_class": "cloud_cover_low_forecast_point",
+      "resource_type": "value",
+      "observation_kind": "forecast",
+      "unit": "%",
+      "coverage_scope": "unknown",
+      "compatibility": "candidate"
+    },
+    {
+      "provider": "open_meteo",
+      "capability": "cloud_cover_mid",
+      "public_capabilities": [
+        "weather.point.cloud_cover_mid"
+      ],
+      "semantic_class": "cloud_cover_mid_forecast_point",
+      "resource_type": "value",
+      "observation_kind": "forecast",
+      "unit": "%",
+      "coverage_scope": "unknown",
+      "compatibility": "candidate"
+    },
+    {
+      "provider": "smhi",
+      "capability": "cloud_cover",
+      "public_capabilities": [
+        "weather.point.cloud_cover"
+      ],
+      "semantic_class": "cloud_cover_total_forecast_point",
+      "resource_type": "value",
+      "observation_kind": "forecast",
+      "unit": "%",
+      "coverage_scope": "unknown",
+      "compatibility": "candidate"
+    },
+    {
+      "provider": "smhi",
+      "capability": "cloud_cover_high",
+      "public_capabilities": [
+        "weather.point.cloud_cover_high"
+      ],
+      "semantic_class": "cloud_cover_high_forecast_point",
+      "resource_type": "value",
+      "observation_kind": "forecast",
+      "unit": "%",
+      "coverage_scope": "unknown",
+      "compatibility": "candidate"
+    },
+    {
+      "provider": "smhi",
+      "capability": "cloud_cover_low",
+      "public_capabilities": [
+        "weather.point.cloud_cover_low"
+      ],
+      "semantic_class": "cloud_cover_low_forecast_point",
+      "resource_type": "value",
+      "observation_kind": "forecast",
+      "unit": "%",
+      "coverage_scope": "unknown",
+      "compatibility": "candidate"
+    },
+    {
+      "provider": "smhi",
+      "capability": "cloud_cover_mid",
+      "public_capabilities": [
+        "weather.point.cloud_cover_mid"
+      ],
+      "semantic_class": "cloud_cover_mid_forecast_point",
+      "resource_type": "value",
+      "observation_kind": "forecast",
+      "unit": "%",
+      "coverage_scope": "unknown",
+      "compatibility": "candidate"
+    }
+  ],
+  "invariants": [
+    "total cloud cover != low cloud cover != mid cloud cover != high cloud cover",
+    "station observation != model forecast by default",
+    "unknown or runtime-only unit does not prove percent equivalence",
+    "numeric point value != raster satellite imagery",
+    "true color != GeoColor != clean infrared != visible red != air mass by default",
+    "daylight-dependent visible imagery remains distinguishable from day/night products",
+    "different frame cadence remains part of product semantics",
+    "provider id is not a quality or scoring axis",
+    "unknown coverage remains unknown",
+    "endpoint reachability is not coverage evidence",
+    "existing specialized public capabilities remain preserved"
+  ],
+  "decisions_for_p2_cloud_30": [
+    "Decide whether the four model total-cloud-cover candidates should harden the existing weather.point.cloud_cover public id as a forecast-only shared intent.",
+    "Decide how ECCC station cloud_cover should remain accessible without silently mixing an observation of unknown static unit into a forecast-percent intent.",
+    "Keep total, low, mid and high cloud-cover quantities separate and refine normalized quantities before implementation.",
+    "Decide whether weather.satellite.clouds should be formalized as a generic visual cloud-layer intent for DWD and EUMETView with candidate-specific product metadata.",
+    "Keep True Color, GeoColor, Clean Infrared, Visible Red and Air Mass specialized unless an explicit product-class contract justifies grouping.",
+    "Decide whether cloud-relevant specialized NASA satellite public capabilities should receive phenomena=[clouds] additively without changing their specialized ids.",
+    "Preserve candidate-specific cadence, daylight constraints and machine-readable coverage in any satellite-layer design."
+  ]
+}

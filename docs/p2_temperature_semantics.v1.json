@@ -1,0 +1,240 @@
+{
+  "schema": "weather_router.p2_temperature_semantics.v1",
+  "date": "2026-10-02",
+  "scope": "P2-TEMP-20 semantics only; no intent implementation or scoring changes",
+  "semantic_families": {
+    "air_temperature_forecast_point": {
+      "resource_type": "value",
+      "semantic_quantity": "air_temperature",
+      "numeric": true,
+      "canonical_unit_for_future_routing": "°C",
+      "observation_kind": "forecast",
+      "candidates": [
+        "open_meteo/temperature",
+        "met_norway/temperature",
+        "noaa_nws/temperature",
+        "fmi/temperature",
+        "smhi/temperature",
+        "jma/temperature"
+      ],
+      "notes": [
+        "All six candidates expose forecast air temperature in degrees Celsius.",
+        "Exact height/reference representation is not uniformly machine-encoded and must not be overclaimed.",
+        "ECCC station temperature is excluded from this forecast class by default."
+      ]
+    },
+    "air_temperature_station_observation": {
+      "resource_type": "value",
+      "semantic_quantity": "air_temperature",
+      "numeric": true,
+      "canonical_unit_for_future_routing": "°C",
+      "observation_kind": "observation",
+      "data_origin": "station",
+      "candidates": [
+        "eccc_geomet/temperature"
+      ],
+      "notes": [
+        "ECCC SWOB temperature is a station observation and a different observation class from model/area forecasts.",
+        "Same quantity and unit do not erase the observation-vs-forecast distinction."
+      ]
+    },
+    "air_temperature_nowcast_point": {
+      "resource_type": "value",
+      "semantic_quantity": "air_temperature",
+      "numeric": true,
+      "canonical_unit_for_future_routing": "°C",
+      "observation_kind": "nowcast",
+      "data_origin": "nowcast",
+      "candidates": [
+        "met_norway/nowcast_temperature"
+      ],
+      "notes": [
+        "MET Norway nowcast temperature remains a specialized nowcast product.",
+        "Same quantity and unit do not make it interchangeable with forecast semantics by default."
+      ]
+    },
+    "air_temperature_2m_model_layer": {
+      "resource_type": "raster_tile",
+      "semantic_quantity": "air_temperature",
+      "numeric": "rendered_model_field",
+      "canonical_unit_for_future_routing": "°C",
+      "observation_kind": "forecast",
+      "data_origin": "model",
+      "candidates": [
+        "dwd/icon_temperature_2m"
+      ],
+      "notes": [
+        "DWD ICON 2 m temperature is a rendered spatial model field.",
+        "Raster and point-value resources are not interchangeable merely because quantity and unit match."
+      ]
+    },
+    "fire_temperature_satellite_layer": {
+      "resource_type": "raster_tile",
+      "semantic_quantity": null,
+      "numeric": false,
+      "canonical_unit_for_future_routing": null,
+      "observation_kind": "observation",
+      "data_origin": "satellite",
+      "candidates": [
+        "nasa_gibs/satellite_goes_east_fire_temperature",
+        "nasa_gibs/satellite_goes_west_fire_temperature"
+      ],
+      "notes": [
+        "Fire Temperature is exposed as satellite imagery, not as a numeric air-temperature value.",
+        "The product family is region-specific imagery and must not be merged into air-temperature routing."
+      ]
+    }
+  },
+  "candidate_classification": [
+    {
+      "provider": "open_meteo",
+      "capability": "temperature",
+      "public_capabilities": [
+        "weather.point.temperature"
+      ],
+      "semantic_class": "air_temperature_forecast_point",
+      "resource_type": "value",
+      "observation_kind": "forecast",
+      "unit": "°C",
+      "coverage_scope": "unknown",
+      "compatibility": "forecast_candidate"
+    },
+    {
+      "provider": "met_norway",
+      "capability": "temperature",
+      "public_capabilities": [
+        "weather.point.temperature"
+      ],
+      "semantic_class": "air_temperature_forecast_point",
+      "resource_type": "value",
+      "observation_kind": "forecast",
+      "unit": "°C",
+      "coverage_scope": "unknown",
+      "compatibility": "forecast_candidate"
+    },
+    {
+      "provider": "noaa_nws",
+      "capability": "temperature",
+      "public_capabilities": [
+        "weather.point.temperature"
+      ],
+      "semantic_class": "air_temperature_forecast_point",
+      "resource_type": "value",
+      "observation_kind": "forecast",
+      "unit": "°C",
+      "coverage_scope": "unknown",
+      "compatibility": "forecast_candidate"
+    },
+    {
+      "provider": "fmi",
+      "capability": "temperature",
+      "public_capabilities": [
+        "weather.point.temperature"
+      ],
+      "semantic_class": "air_temperature_forecast_point",
+      "resource_type": "value",
+      "observation_kind": "forecast",
+      "unit": "°C",
+      "coverage_scope": "unknown",
+      "compatibility": "forecast_candidate"
+    },
+    {
+      "provider": "smhi",
+      "capability": "temperature",
+      "public_capabilities": [
+        "weather.point.temperature"
+      ],
+      "semantic_class": "air_temperature_forecast_point",
+      "resource_type": "value",
+      "observation_kind": "forecast",
+      "unit": "°C",
+      "coverage_scope": "unknown",
+      "compatibility": "forecast_candidate"
+    },
+    {
+      "provider": "jma",
+      "capability": "temperature",
+      "public_capabilities": [
+        "weather.point.temperature"
+      ],
+      "semantic_class": "air_temperature_forecast_point",
+      "resource_type": "value",
+      "observation_kind": "forecast",
+      "unit": "°C",
+      "coverage_scope": "unknown",
+      "compatibility": "forecast_candidate"
+    },
+    {
+      "provider": "eccc_geomet",
+      "capability": "temperature",
+      "public_capabilities": [
+        "weather.point.temperature"
+      ],
+      "semantic_class": "air_temperature_station_observation",
+      "resource_type": "value",
+      "observation_kind": "observation",
+      "unit": "°C",
+      "coverage_scope": "unknown",
+      "compatibility": "separate_observation"
+    },
+    {
+      "provider": "met_norway",
+      "capability": "nowcast_temperature",
+      "public_capabilities": [
+        "weather.nowcast.temperature"
+      ],
+      "semantic_class": "air_temperature_nowcast_point",
+      "resource_type": "value",
+      "observation_kind": "nowcast",
+      "unit": "°C",
+      "coverage_scope": "unknown",
+      "compatibility": "specialized_nowcast"
+    },
+    {
+      "provider": "dwd",
+      "capability": "icon_temperature_2m",
+      "public_capabilities": [
+        "weather.model.temperature_2m.layer"
+      ],
+      "semantic_class": "air_temperature_2m_model_layer",
+      "resource_type": "raster_tile",
+      "observation_kind": "forecast",
+      "unit": "°C",
+      "coverage_scope": "bbox",
+      "compatibility": "specialized_raster_model_field"
+    },
+    {
+      "provider": "nasa_gibs",
+      "capability": "satellite_goes_east_fire_temperature",
+      "public_capabilities": [
+        "weather.satellite.fire_temperature.goes_east"
+      ],
+      "semantic_class": "fire_temperature_satellite_layer",
+      "resource_type": "raster_tile",
+      "observation_kind": "observation",
+      "unit": null,
+      "coverage_scope": "bbox",
+      "compatibility": "specialized_satellite_imagery"
+    },
+    {
+      "provider": "nasa_gibs",
+      "capability": "satellite_goes_west_fire_temperature",
+      "public_capabilities": [
+        "weather.satellite.fire_temperature.goes_west"
+      ],
+      "semantic_class": "fire_temperature_satellite_layer",
+      "resource_type": "raster_tile",
+      "observation_kind": "observation",
+      "unit": null,
+      "coverage_scope": "bbox",
+      "compatibility": "specialized_satellite_imagery"
+    }
+  ],
+  "rules": {
+    "endpoint_reachability_is_not_coverage": true,
+    "unknown_coverage_stays_unknown": true,
+    "provider_id_is_not_scoring_axis": true,
+    "profiles_remain_deny_only": true,
+    "no_intent_decision_in_this_step": true
+  }
+}

@@ -1,0 +1,5862 @@
+{
+  "schema": "weather_router.p6_010_island_inventory.v1",
+  "date": "2026-10-09",
+  "status": "PARTIAL_CLASSIFICATION_P6_010_ACTIVE",
+  "source_contract": "custom_components/weather_router/consumer_capability_map.json",
+  "source_contract_blob_sha": "1c38373d382609e5a32aa5386bf4c05ab54369c3",
+  "legacy_audit": "docs/consumer_routing_audit.v1.json",
+  "legacy_audit_blob_sha": "f3d5dc845aeb66bfc27cc7d5b48c8e3d4a14eeaf",
+  "constraints": [
+    "Do not infer semantic interchangeability from the same topic or phenomenon.",
+    "Preserve resource type, physical quantity, unit, origin, measurement method, observation kind, time and coverage semantics.",
+    "Never treat opt-in providers or domains as automatically available.",
+    "No candidate removal or merge without evidence and individual acceptance.",
+    "Provider and candidate inventory reflects core mapping, not potentially loaded private extensions."
+  ],
+  "summary": {
+    "core_providers": 38,
+    "current_public_capabilities": 227,
+    "legacy_public_capabilities": 226,
+    "legacy_missing_in_current": [],
+    "added_since_legacy": [
+      "space.aurora.probability.grid"
+    ],
+    "with_multiple_direct_candidates": 23,
+    "with_single_direct_candidate": 204,
+    "validated_specialized_bio": 88,
+    "requires_semantic_review": 116,
+    "unmapped_public_capabilities": [],
+    "historical_classification_distribution": {
+      "single_candidate_specialized": 75,
+      "single_candidate_with_phenomenon_peers": 128,
+      "routable_multi_candidate": 23
+    },
+    "historical_findings_isolation_counts": {
+      "single_candidate_specialized": 75,
+      "single_candidate_with_phenomenon_peers": 126,
+      "routable_multi_candidate": 23
+    }
+  },
+  "entries": [
+    {
+      "id": "aviation.airmet.us",
+      "family": "airmet",
+      "strategy": null,
+      "resource_types": [
+        "hazard_feed"
+      ],
+      "phenomena": [],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "aviation_weather",
+          "capability": "us_airsigmet_current",
+          "resource_type": "hazard_feed",
+          "quantity": null,
+          "observation_kind": "warning_event"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_specialized",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "aviation.gairmet.us",
+      "family": "gairmet",
+      "strategy": null,
+      "resource_types": [
+        "hazard_feed"
+      ],
+      "phenomena": [],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "aviation_weather",
+          "capability": "us_gairmet_current",
+          "resource_type": "hazard_feed",
+          "quantity": null,
+          "observation_kind": "warning_event"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_specialized",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "aviation.sigmet.international",
+      "family": "sigmet",
+      "strategy": null,
+      "resource_types": [
+        "hazard_feed"
+      ],
+      "phenomena": [],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "aviation_weather",
+          "capability": "international_sigmet_worldwide",
+          "resource_type": "hazard_feed",
+          "quantity": null,
+          "observation_kind": "warning_event"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_specialized",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "biological_hazards.occurrence.aconite.density",
+      "family": "biological_occurrence_density",
+      "strategy": "single",
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [
+        "toxic_plant",
+        "toxic"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "gbif_biodiversity",
+          "capability": "occurrence_density_aconite",
+          "resource_type": "raster_tile",
+          "quantity": "occurrence_density",
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "specialized_only",
+      "evidence": "P5-BIO-70 DONE: intentional taxon-specific historical GBIF occurrence-density raster."
+    },
+    {
+      "id": "biological_hazards.occurrence.aedes_aegypti.density",
+      "family": "biological_occurrence_density",
+      "strategy": "single",
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [
+        "vector",
+        "wildlife"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "gbif_biodiversity",
+          "capability": "occurrence_density_aedes_aegypti",
+          "resource_type": "raster_tile",
+          "quantity": "occurrence_density",
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "specialized_only",
+      "evidence": "P5-BIO-70 DONE: intentional taxon-specific historical GBIF occurrence-density raster."
+    },
+    {
+      "id": "biological_hazards.occurrence.aedes_albopictus.density",
+      "family": "biological_occurrence_density",
+      "strategy": "single",
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [
+        "vector",
+        "wildlife"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "gbif_biodiversity",
+          "capability": "occurrence_density_aedes_albopictus",
+          "resource_type": "raster_tile",
+          "quantity": "occurrence_density",
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "specialized_only",
+      "evidence": "P5-BIO-70 DONE: intentional taxon-specific historical GBIF occurrence-density raster."
+    },
+    {
+      "id": "biological_hazards.occurrence.african_buffalo.density",
+      "family": "biological_occurrence_density",
+      "strategy": "single",
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [
+        "wildlife"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "gbif_biodiversity",
+          "capability": "occurrence_density_african_buffalo",
+          "resource_type": "raster_tile",
+          "quantity": "occurrence_density",
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "specialized_only",
+      "evidence": "P5-BIO-70 DONE: intentional taxon-specific historical GBIF occurrence-density raster."
+    },
+    {
+      "id": "biological_hazards.occurrence.african_wild_dog.density",
+      "family": "biological_occurrence_density",
+      "strategy": "single",
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [
+        "wildlife",
+        "predator"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "gbif_biodiversity",
+          "capability": "occurrence_density_african_wild_dog",
+          "resource_type": "raster_tile",
+          "quantity": "occurrence_density",
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "specialized_only",
+      "evidence": "P5-BIO-70 DONE: intentional taxon-specific historical GBIF occurrence-density raster."
+    },
+    {
+      "id": "biological_hazards.occurrence.alligatoridae.density",
+      "family": "biological_occurrence_density",
+      "strategy": "single",
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [
+        "wildlife",
+        "crocodilian"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "gbif_biodiversity",
+          "capability": "occurrence_density_alligatoridae",
+          "resource_type": "raster_tile",
+          "quantity": "occurrence_density",
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "specialized_only",
+      "evidence": "P5-BIO-70 DONE: intentional taxon-specific historical GBIF occurrence-density raster."
+    },
+    {
+      "id": "biological_hazards.occurrence.american_alligator.density",
+      "family": "biological_occurrence_density",
+      "strategy": "single",
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [
+        "wildlife",
+        "crocodilian"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "gbif_biodiversity",
+          "capability": "occurrence_density_american_alligator",
+          "resource_type": "raster_tile",
+          "quantity": "occurrence_density",
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "specialized_only",
+      "evidence": "P5-BIO-70 DONE: intentional taxon-specific historical GBIF occurrence-density raster."
+    },
+    {
+      "id": "biological_hazards.occurrence.anopheles.density",
+      "family": "biological_occurrence_density",
+      "strategy": "single",
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [
+        "vector",
+        "wildlife"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "gbif_biodiversity",
+          "capability": "occurrence_density_anopheles",
+          "resource_type": "raster_tile",
+          "quantity": "occurrence_density",
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "specialized_only",
+      "evidence": "P5-BIO-70 DONE: intentional taxon-specific historical GBIF occurrence-density raster."
+    },
+    {
+      "id": "biological_hazards.occurrence.autumn_crocus.density",
+      "family": "biological_occurrence_density",
+      "strategy": "single",
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [
+        "toxic_plant",
+        "toxic"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "gbif_biodiversity",
+          "capability": "occurrence_density_autumn_crocus",
+          "resource_type": "raster_tile",
+          "quantity": "occurrence_density",
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "specialized_only",
+      "evidence": "P5-BIO-70 DONE: intentional taxon-specific historical GBIF occurrence-density raster."
+    },
+    {
+      "id": "biological_hazards.occurrence.black_widows.density",
+      "family": "biological_occurrence_density",
+      "strategy": "single",
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [
+        "wildlife",
+        "venomous"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "gbif_biodiversity",
+          "capability": "occurrence_density_black_widows",
+          "resource_type": "raster_tile",
+          "quantity": "occurrence_density",
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "specialized_only",
+      "evidence": "P5-BIO-70 DONE: intentional taxon-specific historical GBIF occurrence-density raster."
+    },
+    {
+      "id": "biological_hazards.occurrence.blue_ringed_octopus.density",
+      "family": "biological_occurrence_density",
+      "strategy": "single",
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [
+        "wildlife",
+        "marine",
+        "venomous"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "gbif_biodiversity",
+          "capability": "occurrence_density_blue_ringed_octopus",
+          "resource_type": "raster_tile",
+          "quantity": "occurrence_density",
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "specialized_only",
+      "evidence": "P5-BIO-70 DONE: intentional taxon-specific historical GBIF occurrence-density raster."
+    },
+    {
+      "id": "biological_hazards.occurrence.box_jellyfish.density",
+      "family": "biological_occurrence_density",
+      "strategy": "single",
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [
+        "wildlife",
+        "marine",
+        "venomous"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "gbif_biodiversity",
+          "capability": "occurrence_density_box_jellyfish",
+          "resource_type": "raster_tile",
+          "quantity": "occurrence_density",
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "specialized_only",
+      "evidence": "P5-BIO-70 DONE: intentional taxon-specific historical GBIF occurrence-density raster."
+    },
+    {
+      "id": "biological_hazards.occurrence.brown_bear.density",
+      "family": "biological_occurrence_density",
+      "strategy": "single",
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [
+        "wildlife",
+        "predator"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "gbif_biodiversity",
+          "capability": "occurrence_density_brown_bear",
+          "resource_type": "raster_tile",
+          "quantity": "occurrence_density",
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "specialized_only",
+      "evidence": "P5-BIO-70 DONE: intentional taxon-specific historical GBIF occurrence-density raster."
+    },
+    {
+      "id": "biological_hazards.occurrence.brugmansia.density",
+      "family": "biological_occurrence_density",
+      "strategy": "single",
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [
+        "toxic_plant",
+        "toxic"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "gbif_biodiversity",
+          "capability": "occurrence_density_brugmansia",
+          "resource_type": "raster_tile",
+          "quantity": "occurrence_density",
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "specialized_only",
+      "evidence": "P5-BIO-70 DONE: intentional taxon-specific historical GBIF occurrence-density raster."
+    },
+    {
+      "id": "biological_hazards.occurrence.bull_shark.density",
+      "family": "biological_occurrence_density",
+      "strategy": "single",
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [
+        "wildlife",
+        "marine"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "gbif_biodiversity",
+          "capability": "occurrence_density_bull_shark",
+          "resource_type": "raster_tile",
+          "quantity": "occurrence_density",
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "specialized_only",
+      "evidence": "P5-BIO-70 DONE: intentional taxon-specific historical GBIF occurrence-density raster."
+    },
+    {
+      "id": "biological_hazards.occurrence.buthidae.density",
+      "family": "biological_occurrence_density",
+      "strategy": "single",
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [
+        "wildlife",
+        "venomous"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "gbif_biodiversity",
+          "capability": "occurrence_density_buthidae",
+          "resource_type": "raster_tile",
+          "quantity": "occurrence_density",
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "specialized_only",
+      "evidence": "P5-BIO-70 DONE: intentional taxon-specific historical GBIF occurrence-density raster."
+    },
+    {
+      "id": "biological_hazards.occurrence.caiman.density",
+      "family": "biological_occurrence_density",
+      "strategy": "single",
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [
+        "wildlife",
+        "crocodilian"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "gbif_biodiversity",
+          "capability": "occurrence_density_caiman",
+          "resource_type": "raster_tile",
+          "quantity": "occurrence_density",
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "specialized_only",
+      "evidence": "P5-BIO-70 DONE: intentional taxon-specific historical GBIF occurrence-density raster."
+    },
+    {
+      "id": "biological_hazards.occurrence.castor_bean.density",
+      "family": "biological_occurrence_density",
+      "strategy": "single",
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [
+        "toxic_plant",
+        "toxic"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "gbif_biodiversity",
+          "capability": "occurrence_density_castor_bean",
+          "resource_type": "raster_tile",
+          "quantity": "occurrence_density",
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "specialized_only",
+      "evidence": "P5-BIO-70 DONE: intentional taxon-specific historical GBIF occurrence-density raster."
+    },
+    {
+      "id": "biological_hazards.occurrence.cheetah.density",
+      "family": "biological_occurrence_density",
+      "strategy": "single",
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [
+        "wildlife",
+        "predator"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "gbif_biodiversity",
+          "capability": "occurrence_density_cheetah",
+          "resource_type": "raster_tile",
+          "quantity": "occurrence_density",
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "specialized_only",
+      "evidence": "P5-BIO-70 DONE: intentional taxon-specific historical GBIF occurrence-density raster."
+    },
+    {
+      "id": "biological_hazards.occurrence.chironex_fleckeri.density",
+      "family": "biological_occurrence_density",
+      "strategy": "single",
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [
+        "wildlife",
+        "marine",
+        "venomous"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "gbif_biodiversity",
+          "capability": "occurrence_density_chironex_fleckeri",
+          "resource_type": "raster_tile",
+          "quantity": "occurrence_density",
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "specialized_only",
+      "evidence": "P5-BIO-70 DONE: intentional taxon-specific historical GBIF occurrence-density raster."
+    },
+    {
+      "id": "biological_hazards.occurrence.cobras.density",
+      "family": "biological_occurrence_density",
+      "strategy": "single",
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [
+        "wildlife",
+        "snake",
+        "venomous"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "gbif_biodiversity",
+          "capability": "occurrence_density_cobras",
+          "resource_type": "raster_tile",
+          "quantity": "occurrence_density",
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "specialized_only",
+      "evidence": "P5-BIO-70 DONE: intentional taxon-specific historical GBIF occurrence-density raster."
+    },
+    {
+      "id": "biological_hazards.occurrence.cone_snails.density",
+      "family": "biological_occurrence_density",
+      "strategy": "single",
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [
+        "wildlife",
+        "marine",
+        "venomous"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "gbif_biodiversity",
+          "capability": "occurrence_density_cone_snails",
+          "resource_type": "raster_tile",
+          "quantity": "occurrence_density",
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "specialized_only",
+      "evidence": "P5-BIO-70 DONE: intentional taxon-specific historical GBIF occurrence-density raster."
+    },
+    {
+      "id": "biological_hazards.occurrence.coral_snakes.density",
+      "family": "biological_occurrence_density",
+      "strategy": "single",
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [
+        "wildlife",
+        "snake",
+        "venomous"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "gbif_biodiversity",
+          "capability": "occurrence_density_coral_snakes",
+          "resource_type": "raster_tile",
+          "quantity": "occurrence_density",
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "specialized_only",
+      "evidence": "P5-BIO-70 DONE: intentional taxon-specific historical GBIF occurrence-density raster."
+    },
+    {
+      "id": "biological_hazards.occurrence.crocodylia.density",
+      "family": "biological_occurrence_density",
+      "strategy": "single",
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [
+        "wildlife",
+        "crocodilian"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "gbif_biodiversity",
+          "capability": "occurrence_density_crocodylia",
+          "resource_type": "raster_tile",
+          "quantity": "occurrence_density",
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "specialized_only",
+      "evidence": "P5-BIO-70 DONE: intentional taxon-specific historical GBIF occurrence-density raster."
+    },
+    {
+      "id": "biological_hazards.occurrence.crocodylus.density",
+      "family": "biological_occurrence_density",
+      "strategy": "single",
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [
+        "wildlife",
+        "crocodilian"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "gbif_biodiversity",
+          "capability": "occurrence_density_crocodylus",
+          "resource_type": "raster_tile",
+          "quantity": "occurrence_density",
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "specialized_only",
+      "evidence": "P5-BIO-70 DONE: intentional taxon-specific historical GBIF occurrence-density raster."
+    },
+    {
+      "id": "biological_hazards.occurrence.datura.density",
+      "family": "biological_occurrence_density",
+      "strategy": "single",
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [
+        "toxic_plant",
+        "toxic"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "gbif_biodiversity",
+          "capability": "occurrence_density_datura",
+          "resource_type": "raster_tile",
+          "quantity": "occurrence_density",
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "specialized_only",
+      "evidence": "P5-BIO-70 DONE: intentional taxon-specific historical GBIF occurrence-density raster."
+    },
+    {
+      "id": "biological_hazards.occurrence.deadly_nightshade.density",
+      "family": "biological_occurrence_density",
+      "strategy": "single",
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [
+        "toxic_plant",
+        "toxic"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "gbif_biodiversity",
+          "capability": "occurrence_density_deadly_nightshade",
+          "resource_type": "raster_tile",
+          "quantity": "occurrence_density",
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "specialized_only",
+      "evidence": "P5-BIO-70 DONE: intentional taxon-specific historical GBIF occurrence-density raster."
+    },
+    {
+      "id": "biological_hazards.occurrence.deadly_webcap.density",
+      "family": "biological_occurrence_density",
+      "strategy": "single",
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [
+        "toxic_fungus",
+        "toxic"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "gbif_biodiversity",
+          "capability": "occurrence_density_deadly_webcap",
+          "resource_type": "raster_tile",
+          "quantity": "occurrence_density",
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "specialized_only",
+      "evidence": "P5-BIO-70 DONE: intentional taxon-specific historical GBIF occurrence-density raster."
+    },
+    {
+      "id": "biological_hazards.occurrence.death_cap.density",
+      "family": "biological_occurrence_density",
+      "strategy": "single",
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [
+        "toxic_fungus",
+        "toxic"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "gbif_biodiversity",
+          "capability": "occurrence_density_death_cap",
+          "resource_type": "raster_tile",
+          "quantity": "occurrence_density",
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "specialized_only",
+      "evidence": "P5-BIO-70 DONE: intentional taxon-specific historical GBIF occurrence-density raster."
+    },
+    {
+      "id": "biological_hazards.occurrence.destroying_angel.density",
+      "family": "biological_occurrence_density",
+      "strategy": "single",
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [
+        "toxic_fungus",
+        "toxic"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "gbif_biodiversity",
+          "capability": "occurrence_density_destroying_angel",
+          "resource_type": "raster_tile",
+          "quantity": "occurrence_density",
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "specialized_only",
+      "evidence": "P5-BIO-70 DONE: intentional taxon-specific historical GBIF occurrence-density raster."
+    },
+    {
+      "id": "biological_hazards.occurrence.elapidae.density",
+      "family": "biological_occurrence_density",
+      "strategy": "single",
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [
+        "wildlife",
+        "snake",
+        "venomous"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "gbif_biodiversity",
+          "capability": "occurrence_density_elapidae",
+          "resource_type": "raster_tile",
+          "quantity": "occurrence_density",
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "specialized_only",
+      "evidence": "P5-BIO-70 DONE: intentional taxon-specific historical GBIF occurrence-density raster."
+    },
+    {
+      "id": "biological_hazards.occurrence.elephantidae.density",
+      "family": "biological_occurrence_density",
+      "strategy": "single",
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [
+        "wildlife"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "gbif_biodiversity",
+          "capability": "occurrence_density_elephantidae",
+          "resource_type": "raster_tile",
+          "quantity": "occurrence_density",
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "specialized_only",
+      "evidence": "P5-BIO-70 DONE: intentional taxon-specific historical GBIF occurrence-density raster."
+    },
+    {
+      "id": "biological_hazards.occurrence.false_morel.density",
+      "family": "biological_occurrence_density",
+      "strategy": "single",
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [
+        "toxic_fungus",
+        "toxic"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "gbif_biodiversity",
+          "capability": "occurrence_density_false_morel",
+          "resource_type": "raster_tile",
+          "quantity": "occurrence_density",
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "specialized_only",
+      "evidence": "P5-BIO-70 DONE: intentional taxon-specific historical GBIF occurrence-density raster."
+    },
+    {
+      "id": "biological_hazards.occurrence.felidae.density",
+      "family": "biological_occurrence_density",
+      "strategy": "single",
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [
+        "wildlife",
+        "predator"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "gbif_biodiversity",
+          "capability": "occurrence_density_felidae",
+          "resource_type": "raster_tile",
+          "quantity": "occurrence_density",
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "specialized_only",
+      "evidence": "P5-BIO-70 DONE: intentional taxon-specific historical GBIF occurrence-density raster."
+    },
+    {
+      "id": "biological_hazards.occurrence.foxglove.density",
+      "family": "biological_occurrence_density",
+      "strategy": "single",
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [
+        "toxic_plant",
+        "toxic"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "gbif_biodiversity",
+          "capability": "occurrence_density_foxglove",
+          "resource_type": "raster_tile",
+          "quantity": "occurrence_density",
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "specialized_only",
+      "evidence": "P5-BIO-70 DONE: intentional taxon-specific historical GBIF occurrence-density raster."
+    },
+    {
+      "id": "biological_hazards.occurrence.funnel_web_spiders.density",
+      "family": "biological_occurrence_density",
+      "strategy": "single",
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [
+        "wildlife",
+        "venomous"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "gbif_biodiversity",
+          "capability": "occurrence_density_funnel_web_spiders",
+          "resource_type": "raster_tile",
+          "quantity": "occurrence_density",
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "specialized_only",
+      "evidence": "P5-BIO-70 DONE: intentional taxon-specific historical GBIF occurrence-density raster."
+    },
+    {
+      "id": "biological_hazards.occurrence.galerina_marginata.density",
+      "family": "biological_occurrence_density",
+      "strategy": "single",
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [
+        "toxic_fungus",
+        "toxic"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "gbif_biodiversity",
+          "capability": "occurrence_density_galerina_marginata",
+          "resource_type": "raster_tile",
+          "quantity": "occurrence_density",
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "specialized_only",
+      "evidence": "P5-BIO-70 DONE: intentional taxon-specific historical GBIF occurrence-density raster."
+    },
+    {
+      "id": "biological_hazards.occurrence.giant_hogweed.density",
+      "family": "biological_occurrence_density",
+      "strategy": "single",
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [
+        "toxic_plant",
+        "toxic"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "gbif_biodiversity",
+          "capability": "occurrence_density_giant_hogweed",
+          "resource_type": "raster_tile",
+          "quantity": "occurrence_density",
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "specialized_only",
+      "evidence": "P5-BIO-70 DONE: intentional taxon-specific historical GBIF occurrence-density raster."
+    },
+    {
+      "id": "biological_hazards.occurrence.golden_chain.density",
+      "family": "biological_occurrence_density",
+      "strategy": "single",
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [
+        "toxic_plant",
+        "toxic"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "gbif_biodiversity",
+          "capability": "occurrence_density_golden_chain",
+          "resource_type": "raster_tile",
+          "quantity": "occurrence_density",
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "specialized_only",
+      "evidence": "P5-BIO-70 DONE: intentional taxon-specific historical GBIF occurrence-density raster."
+    },
+    {
+      "id": "biological_hazards.occurrence.great_white_shark.density",
+      "family": "biological_occurrence_density",
+      "strategy": "single",
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [
+        "wildlife",
+        "marine"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "gbif_biodiversity",
+          "capability": "occurrence_density_great_white_shark",
+          "resource_type": "raster_tile",
+          "quantity": "occurrence_density",
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "specialized_only",
+      "evidence": "P5-BIO-70 DONE: intentional taxon-specific historical GBIF occurrence-density raster."
+    },
+    {
+      "id": "biological_hazards.occurrence.gympie_gympie.density",
+      "family": "biological_occurrence_density",
+      "strategy": "single",
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [
+        "toxic_plant",
+        "toxic"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "gbif_biodiversity",
+          "capability": "occurrence_density_gympie_gympie",
+          "resource_type": "raster_tile",
+          "quantity": "occurrence_density",
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "specialized_only",
+      "evidence": "P5-BIO-70 DONE: intentional taxon-specific historical GBIF occurrence-density raster."
+    },
+    {
+      "id": "biological_hazards.occurrence.hammerhead_sharks.density",
+      "family": "biological_occurrence_density",
+      "strategy": "single",
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [
+        "wildlife",
+        "marine"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "gbif_biodiversity",
+          "capability": "occurrence_density_hammerhead_sharks",
+          "resource_type": "raster_tile",
+          "quantity": "occurrence_density",
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "specialized_only",
+      "evidence": "P5-BIO-70 DONE: intentional taxon-specific historical GBIF occurrence-density raster."
+    },
+    {
+      "id": "biological_hazards.occurrence.hippopotamus.density",
+      "family": "biological_occurrence_density",
+      "strategy": "single",
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [
+        "wildlife"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "gbif_biodiversity",
+          "capability": "occurrence_density_hippopotamus",
+          "resource_type": "raster_tile",
+          "quantity": "occurrence_density",
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "specialized_only",
+      "evidence": "P5-BIO-70 DONE: intentional taxon-specific historical GBIF occurrence-density raster."
+    },
+    {
+      "id": "biological_hazards.occurrence.hyaenidae.density",
+      "family": "biological_occurrence_density",
+      "strategy": "single",
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [
+        "wildlife",
+        "predator"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "gbif_biodiversity",
+          "capability": "occurrence_density_hyaenidae",
+          "resource_type": "raster_tile",
+          "quantity": "occurrence_density",
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "specialized_only",
+      "evidence": "P5-BIO-70 DONE: intentional taxon-specific historical GBIF occurrence-density raster."
+    },
+    {
+      "id": "biological_hazards.occurrence.jaguar.density",
+      "family": "biological_occurrence_density",
+      "strategy": "single",
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [
+        "wildlife",
+        "predator"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "gbif_biodiversity",
+          "capability": "occurrence_density_jaguar",
+          "resource_type": "raster_tile",
+          "quantity": "occurrence_density",
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "specialized_only",
+      "evidence": "P5-BIO-70 DONE: intentional taxon-specific historical GBIF occurrence-density raster."
+    },
+    {
+      "id": "biological_hazards.occurrence.kraits.density",
+      "family": "biological_occurrence_density",
+      "strategy": "single",
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [
+        "wildlife",
+        "snake",
+        "venomous"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "gbif_biodiversity",
+          "capability": "occurrence_density_kraits",
+          "resource_type": "raster_tile",
+          "quantity": "occurrence_density",
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "specialized_only",
+      "evidence": "P5-BIO-70 DONE: intentional taxon-specific historical GBIF occurrence-density raster."
+    },
+    {
+      "id": "biological_hazards.occurrence.lanceheads.density",
+      "family": "biological_occurrence_density",
+      "strategy": "single",
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [
+        "wildlife",
+        "snake",
+        "venomous"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "gbif_biodiversity",
+          "capability": "occurrence_density_lanceheads",
+          "resource_type": "raster_tile",
+          "quantity": "occurrence_density",
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "specialized_only",
+      "evidence": "P5-BIO-70 DONE: intentional taxon-specific historical GBIF occurrence-density raster."
+    },
+    {
+      "id": "biological_hazards.occurrence.leopard.density",
+      "family": "biological_occurrence_density",
+      "strategy": "single",
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [
+        "wildlife",
+        "predator"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "gbif_biodiversity",
+          "capability": "occurrence_density_leopard",
+          "resource_type": "raster_tile",
+          "quantity": "occurrence_density",
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "specialized_only",
+      "evidence": "P5-BIO-70 DONE: intentional taxon-specific historical GBIF occurrence-density raster."
+    },
+    {
+      "id": "biological_hazards.occurrence.lion.density",
+      "family": "biological_occurrence_density",
+      "strategy": "single",
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [
+        "wildlife",
+        "predator"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "gbif_biodiversity",
+          "capability": "occurrence_density_lion",
+          "resource_type": "raster_tile",
+          "quantity": "occurrence_density",
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "specialized_only",
+      "evidence": "P5-BIO-70 DONE: intentional taxon-specific historical GBIF occurrence-density raster."
+    },
+    {
+      "id": "biological_hazards.occurrence.mambas.density",
+      "family": "biological_occurrence_density",
+      "strategy": "single",
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [
+        "wildlife",
+        "snake",
+        "venomous"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "gbif_biodiversity",
+          "capability": "occurrence_density_mambas",
+          "resource_type": "raster_tile",
+          "quantity": "occurrence_density",
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "specialized_only",
+      "evidence": "P5-BIO-70 DONE: intentional taxon-specific historical GBIF occurrence-density raster."
+    },
+    {
+      "id": "biological_hazards.occurrence.manchineel.density",
+      "family": "biological_occurrence_density",
+      "strategy": "single",
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [
+        "toxic_plant",
+        "toxic"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "gbif_biodiversity",
+          "capability": "occurrence_density_manchineel",
+          "resource_type": "raster_tile",
+          "quantity": "occurrence_density",
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "specialized_only",
+      "evidence": "P5-BIO-70 DONE: intentional taxon-specific historical GBIF occurrence-density raster."
+    },
+    {
+      "id": "biological_hazards.occurrence.nile_crocodile.density",
+      "family": "biological_occurrence_density",
+      "strategy": "single",
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [
+        "wildlife",
+        "crocodilian"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "gbif_biodiversity",
+          "capability": "occurrence_density_nile_crocodile",
+          "resource_type": "raster_tile",
+          "quantity": "occurrence_density",
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "specialized_only",
+      "evidence": "P5-BIO-70 DONE: intentional taxon-specific historical GBIF occurrence-density raster."
+    },
+    {
+      "id": "biological_hazards.occurrence.oleander.density",
+      "family": "biological_occurrence_density",
+      "strategy": "single",
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [
+        "toxic_plant",
+        "toxic"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "gbif_biodiversity",
+          "capability": "occurrence_density_oleander",
+          "resource_type": "raster_tile",
+          "quantity": "occurrence_density",
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "specialized_only",
+      "evidence": "P5-BIO-70 DONE: intentional taxon-specific historical GBIF occurrence-density raster."
+    },
+    {
+      "id": "biological_hazards.occurrence.panthera.density",
+      "family": "biological_occurrence_density",
+      "strategy": "single",
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [
+        "wildlife",
+        "predator"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "gbif_biodiversity",
+          "capability": "occurrence_density_panthera",
+          "resource_type": "raster_tile",
+          "quantity": "occurrence_density",
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "specialized_only",
+      "evidence": "P5-BIO-70 DONE: intentional taxon-specific historical GBIF occurrence-density raster."
+    },
+    {
+      "id": "biological_hazards.occurrence.pit_vipers.density",
+      "family": "biological_occurrence_density",
+      "strategy": "single",
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [
+        "wildlife",
+        "snake",
+        "venomous"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "gbif_biodiversity",
+          "capability": "occurrence_density_pit_vipers",
+          "resource_type": "raster_tile",
+          "quantity": "occurrence_density",
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "specialized_only",
+      "evidence": "P5-BIO-70 DONE: intentional taxon-specific historical GBIF occurrence-density raster."
+    },
+    {
+      "id": "biological_hazards.occurrence.poison_dart_frogs.density",
+      "family": "biological_occurrence_density",
+      "strategy": "single",
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [
+        "wildlife",
+        "toxic"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "gbif_biodiversity",
+          "capability": "occurrence_density_poison_dart_frogs",
+          "resource_type": "raster_tile",
+          "quantity": "occurrence_density",
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "specialized_only",
+      "evidence": "P5-BIO-70 DONE: intentional taxon-specific historical GBIF occurrence-density raster."
+    },
+    {
+      "id": "biological_hazards.occurrence.poison_hemlock.density",
+      "family": "biological_occurrence_density",
+      "strategy": "single",
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [
+        "toxic_plant",
+        "toxic"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "gbif_biodiversity",
+          "capability": "occurrence_density_poison_hemlock",
+          "resource_type": "raster_tile",
+          "quantity": "occurrence_density",
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "specialized_only",
+      "evidence": "P5-BIO-70 DONE: intentional taxon-specific historical GBIF occurrence-density raster."
+    },
+    {
+      "id": "biological_hazards.occurrence.polar_bear.density",
+      "family": "biological_occurrence_density",
+      "strategy": "single",
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [
+        "wildlife",
+        "predator"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "gbif_biodiversity",
+          "capability": "occurrence_density_polar_bear",
+          "resource_type": "raster_tile",
+          "quantity": "occurrence_density",
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "specialized_only",
+      "evidence": "P5-BIO-70 DONE: intentional taxon-specific historical GBIF occurrence-density raster."
+    },
+    {
+      "id": "biological_hazards.occurrence.portuguese_man_o_war.density",
+      "family": "biological_occurrence_density",
+      "strategy": "single",
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [
+        "wildlife",
+        "marine",
+        "venomous"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "gbif_biodiversity",
+          "capability": "occurrence_density_portuguese_man_o_war",
+          "resource_type": "raster_tile",
+          "quantity": "occurrence_density",
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "specialized_only",
+      "evidence": "P5-BIO-70 DONE: intentional taxon-specific historical GBIF occurrence-density raster."
+    },
+    {
+      "id": "biological_hazards.occurrence.puff_adders.density",
+      "family": "biological_occurrence_density",
+      "strategy": "single",
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [
+        "wildlife",
+        "snake",
+        "venomous"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "gbif_biodiversity",
+          "capability": "occurrence_density_puff_adders",
+          "resource_type": "raster_tile",
+          "quantity": "occurrence_density",
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "specialized_only",
+      "evidence": "P5-BIO-70 DONE: intentional taxon-specific historical GBIF occurrence-density raster."
+    },
+    {
+      "id": "biological_hazards.occurrence.puma.density",
+      "family": "biological_occurrence_density",
+      "strategy": "single",
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [
+        "wildlife",
+        "predator"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "gbif_biodiversity",
+          "capability": "occurrence_density_puma",
+          "resource_type": "raster_tile",
+          "quantity": "occurrence_density",
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "specialized_only",
+      "evidence": "P5-BIO-70 DONE: intentional taxon-specific historical GBIF occurrence-density raster."
+    },
+    {
+      "id": "biological_hazards.occurrence.rattlesnakes.density",
+      "family": "biological_occurrence_density",
+      "strategy": "single",
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [
+        "wildlife",
+        "snake",
+        "venomous"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "gbif_biodiversity",
+          "capability": "occurrence_density_rattlesnakes",
+          "resource_type": "raster_tile",
+          "quantity": "occurrence_density",
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "specialized_only",
+      "evidence": "P5-BIO-70 DONE: intentional taxon-specific historical GBIF occurrence-density raster."
+    },
+    {
+      "id": "biological_hazards.occurrence.recluse_spiders.density",
+      "family": "biological_occurrence_density",
+      "strategy": "single",
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [
+        "wildlife",
+        "venomous"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "gbif_biodiversity",
+          "capability": "occurrence_density_recluse_spiders",
+          "resource_type": "raster_tile",
+          "quantity": "occurrence_density",
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "specialized_only",
+      "evidence": "P5-BIO-70 DONE: intentional taxon-specific historical GBIF occurrence-density raster."
+    },
+    {
+      "id": "biological_hazards.occurrence.requiem_sharks.density",
+      "family": "biological_occurrence_density",
+      "strategy": "single",
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [
+        "wildlife",
+        "marine"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "gbif_biodiversity",
+          "capability": "occurrence_density_requiem_sharks",
+          "resource_type": "raster_tile",
+          "quantity": "occurrence_density",
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "specialized_only",
+      "evidence": "P5-BIO-70 DONE: intentional taxon-specific historical GBIF occurrence-density raster."
+    },
+    {
+      "id": "biological_hazards.occurrence.rhinocerotidae.density",
+      "family": "biological_occurrence_density",
+      "strategy": "single",
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [
+        "wildlife"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "gbif_biodiversity",
+          "capability": "occurrence_density_rhinocerotidae",
+          "resource_type": "raster_tile",
+          "quantity": "occurrence_density",
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "specialized_only",
+      "evidence": "P5-BIO-70 DONE: intentional taxon-specific historical GBIF occurrence-density raster."
+    },
+    {
+      "id": "biological_hazards.occurrence.rosary_pea.density",
+      "family": "biological_occurrence_density",
+      "strategy": "single",
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [
+        "toxic_plant",
+        "toxic"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "gbif_biodiversity",
+          "capability": "occurrence_density_rosary_pea",
+          "resource_type": "raster_tile",
+          "quantity": "occurrence_density",
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "specialized_only",
+      "evidence": "P5-BIO-70 DONE: intentional taxon-specific historical GBIF occurrence-density raster."
+    },
+    {
+      "id": "biological_hazards.occurrence.saltwater_crocodile.density",
+      "family": "biological_occurrence_density",
+      "strategy": "single",
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [
+        "wildlife",
+        "crocodilian"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "gbif_biodiversity",
+          "capability": "occurrence_density_saltwater_crocodile",
+          "resource_type": "raster_tile",
+          "quantity": "occurrence_density",
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "specialized_only",
+      "evidence": "P5-BIO-70 DONE: intentional taxon-specific historical GBIF occurrence-density raster."
+    },
+    {
+      "id": "biological_hazards.occurrence.saw_scaled_vipers.density",
+      "family": "biological_occurrence_density",
+      "strategy": "single",
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [
+        "wildlife",
+        "snake",
+        "venomous"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "gbif_biodiversity",
+          "capability": "occurrence_density_saw_scaled_vipers",
+          "resource_type": "raster_tile",
+          "quantity": "occurrence_density",
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "specialized_only",
+      "evidence": "P5-BIO-70 DONE: intentional taxon-specific historical GBIF occurrence-density raster."
+    },
+    {
+      "id": "biological_hazards.occurrence.scorpions.density",
+      "family": "biological_occurrence_density",
+      "strategy": "single",
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [
+        "wildlife",
+        "venomous"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "gbif_biodiversity",
+          "capability": "occurrence_density_scorpions",
+          "resource_type": "raster_tile",
+          "quantity": "occurrence_density",
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "specialized_only",
+      "evidence": "P5-BIO-70 DONE: intentional taxon-specific historical GBIF occurrence-density raster."
+    },
+    {
+      "id": "biological_hazards.occurrence.sea_snakes.density",
+      "family": "biological_occurrence_density",
+      "strategy": "single",
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [
+        "wildlife",
+        "snake",
+        "venomous"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "gbif_biodiversity",
+          "capability": "occurrence_density_sea_snakes",
+          "resource_type": "raster_tile",
+          "quantity": "occurrence_density",
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "specialized_only",
+      "evidence": "P5-BIO-70 DONE: intentional taxon-specific historical GBIF occurrence-density raster."
+    },
+    {
+      "id": "biological_hazards.occurrence.serpentes.density",
+      "family": "biological_occurrence_density",
+      "strategy": "single",
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [
+        "wildlife",
+        "snake"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "gbif_biodiversity",
+          "capability": "occurrence_density_serpentes",
+          "resource_type": "raster_tile",
+          "quantity": "occurrence_density",
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "specialized_only",
+      "evidence": "P5-BIO-70 DONE: intentional taxon-specific historical GBIF occurrence-density raster."
+    },
+    {
+      "id": "biological_hazards.occurrence.sharks.density",
+      "family": "biological_occurrence_density",
+      "strategy": "single",
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [
+        "wildlife",
+        "marine"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "gbif_biodiversity",
+          "capability": "occurrence_density_sharks",
+          "resource_type": "raster_tile",
+          "quantity": "occurrence_density",
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "specialized_only",
+      "evidence": "P5-BIO-70 DONE: intentional taxon-specific historical GBIF occurrence-density raster."
+    },
+    {
+      "id": "biological_hazards.occurrence.snow_leopard.density",
+      "family": "biological_occurrence_density",
+      "strategy": "single",
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [
+        "wildlife",
+        "predator"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "gbif_biodiversity",
+          "capability": "occurrence_density_snow_leopard",
+          "resource_type": "raster_tile",
+          "quantity": "occurrence_density",
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "specialized_only",
+      "evidence": "P5-BIO-70 DONE: intentional taxon-specific historical GBIF occurrence-density raster."
+    },
+    {
+      "id": "biological_hazards.occurrence.stingrays.density",
+      "family": "biological_occurrence_density",
+      "strategy": "single",
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [
+        "wildlife",
+        "marine"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "gbif_biodiversity",
+          "capability": "occurrence_density_stingrays",
+          "resource_type": "raster_tile",
+          "quantity": "occurrence_density",
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "specialized_only",
+      "evidence": "P5-BIO-70 DONE: intentional taxon-specific historical GBIF occurrence-density raster."
+    },
+    {
+      "id": "biological_hazards.occurrence.stonefish.density",
+      "family": "biological_occurrence_density",
+      "strategy": "single",
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [
+        "wildlife",
+        "marine",
+        "venomous"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "gbif_biodiversity",
+          "capability": "occurrence_density_stonefish",
+          "resource_type": "raster_tile",
+          "quantity": "occurrence_density",
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "specialized_only",
+      "evidence": "P5-BIO-70 DONE: intentional taxon-specific historical GBIF occurrence-density raster."
+    },
+    {
+      "id": "biological_hazards.occurrence.strychnine_tree.density",
+      "family": "biological_occurrence_density",
+      "strategy": "single",
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [
+        "toxic_plant",
+        "toxic"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "gbif_biodiversity",
+          "capability": "occurrence_density_strychnine_tree",
+          "resource_type": "raster_tile",
+          "quantity": "occurrence_density",
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "specialized_only",
+      "evidence": "P5-BIO-70 DONE: intentional taxon-specific historical GBIF occurrence-density raster."
+    },
+    {
+      "id": "biological_hazards.occurrence.suicide_tree.density",
+      "family": "biological_occurrence_density",
+      "strategy": "single",
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [
+        "toxic_plant",
+        "toxic"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "gbif_biodiversity",
+          "capability": "occurrence_density_suicide_tree",
+          "resource_type": "raster_tile",
+          "quantity": "occurrence_density",
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "specialized_only",
+      "evidence": "P5-BIO-70 DONE: intentional taxon-specific historical GBIF occurrence-density raster."
+    },
+    {
+      "id": "biological_hazards.occurrence.taipans.density",
+      "family": "biological_occurrence_density",
+      "strategy": "single",
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [
+        "wildlife",
+        "snake",
+        "venomous"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "gbif_biodiversity",
+          "capability": "occurrence_density_taipans",
+          "resource_type": "raster_tile",
+          "quantity": "occurrence_density",
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "specialized_only",
+      "evidence": "P5-BIO-70 DONE: intentional taxon-specific historical GBIF occurrence-density raster."
+    },
+    {
+      "id": "biological_hazards.occurrence.ticks.density",
+      "family": "biological_occurrence_density",
+      "strategy": "single",
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [
+        "vector",
+        "wildlife"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "gbif_biodiversity",
+          "capability": "occurrence_density_ticks",
+          "resource_type": "raster_tile",
+          "quantity": "occurrence_density",
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "specialized_only",
+      "evidence": "P5-BIO-70 DONE: intentional taxon-specific historical GBIF occurrence-density raster."
+    },
+    {
+      "id": "biological_hazards.occurrence.tiger_shark.density",
+      "family": "biological_occurrence_density",
+      "strategy": "single",
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [
+        "wildlife",
+        "marine"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "gbif_biodiversity",
+          "capability": "occurrence_density_tiger_shark",
+          "resource_type": "raster_tile",
+          "quantity": "occurrence_density",
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "specialized_only",
+      "evidence": "P5-BIO-70 DONE: intentional taxon-specific historical GBIF occurrence-density raster."
+    },
+    {
+      "id": "biological_hazards.occurrence.tiger.density",
+      "family": "biological_occurrence_density",
+      "strategy": "single",
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [
+        "wildlife",
+        "predator"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "gbif_biodiversity",
+          "capability": "occurrence_density_tiger",
+          "resource_type": "raster_tile",
+          "quantity": "occurrence_density",
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "specialized_only",
+      "evidence": "P5-BIO-70 DONE: intentional taxon-specific historical GBIF occurrence-density raster."
+    },
+    {
+      "id": "biological_hazards.occurrence.toxicodendron.density",
+      "family": "biological_occurrence_density",
+      "strategy": "single",
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [
+        "toxic_plant",
+        "toxic"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "gbif_biodiversity",
+          "capability": "occurrence_density_toxicodendron",
+          "resource_type": "raster_tile",
+          "quantity": "occurrence_density",
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "specialized_only",
+      "evidence": "P5-BIO-70 DONE: intentional taxon-specific historical GBIF occurrence-density raster."
+    },
+    {
+      "id": "biological_hazards.occurrence.ursidae.density",
+      "family": "biological_occurrence_density",
+      "strategy": "single",
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [
+        "wildlife",
+        "predator"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "gbif_biodiversity",
+          "capability": "occurrence_density_ursidae",
+          "resource_type": "raster_tile",
+          "quantity": "occurrence_density",
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "specialized_only",
+      "evidence": "P5-BIO-70 DONE: intentional taxon-specific historical GBIF occurrence-density raster."
+    },
+    {
+      "id": "biological_hazards.occurrence.viperidae.density",
+      "family": "biological_occurrence_density",
+      "strategy": "single",
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [
+        "wildlife",
+        "snake",
+        "venomous"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "gbif_biodiversity",
+          "capability": "occurrence_density_viperidae",
+          "resource_type": "raster_tile",
+          "quantity": "occurrence_density",
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "specialized_only",
+      "evidence": "P5-BIO-70 DONE: intentional taxon-specific historical GBIF occurrence-density raster."
+    },
+    {
+      "id": "biological_hazards.occurrence.wandering_spiders.density",
+      "family": "biological_occurrence_density",
+      "strategy": "single",
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [
+        "wildlife",
+        "venomous"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "gbif_biodiversity",
+          "capability": "occurrence_density_wandering_spiders",
+          "resource_type": "raster_tile",
+          "quantity": "occurrence_density",
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "specialized_only",
+      "evidence": "P5-BIO-70 DONE: intentional taxon-specific historical GBIF occurrence-density raster."
+    },
+    {
+      "id": "biological_hazards.occurrence.water_hemlock.density",
+      "family": "biological_occurrence_density",
+      "strategy": "single",
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [
+        "toxic_plant",
+        "toxic"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "gbif_biodiversity",
+          "capability": "occurrence_density_water_hemlock",
+          "resource_type": "raster_tile",
+          "quantity": "occurrence_density",
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "specialized_only",
+      "evidence": "P5-BIO-70 DONE: intentional taxon-specific historical GBIF occurrence-density raster."
+    },
+    {
+      "id": "biological_hazards.occurrence.wolf.density",
+      "family": "biological_occurrence_density",
+      "strategy": "single",
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [
+        "wildlife",
+        "predator"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "gbif_biodiversity",
+          "capability": "occurrence_density_wolf",
+          "resource_type": "raster_tile",
+          "quantity": "occurrence_density",
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "specialized_only",
+      "evidence": "P5-BIO-70 DONE: intentional taxon-specific historical GBIF occurrence-density raster."
+    },
+    {
+      "id": "biological_hazards.occurrence.yew.density",
+      "family": "biological_occurrence_density",
+      "strategy": "single",
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [
+        "toxic_plant",
+        "toxic"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "gbif_biodiversity",
+          "capability": "occurrence_density_yew",
+          "resource_type": "raster_tile",
+          "quantity": "occurrence_density",
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "specialized_only",
+      "evidence": "P5-BIO-70 DONE: intentional taxon-specific historical GBIF occurrence-density raster."
+    },
+    {
+      "id": "civil_protection.warning.official",
+      "family": "warning",
+      "strategy": "aggregate",
+      "resource_types": [
+        "hazard_feed"
+      ],
+      "phenomena": [],
+      "candidate_count": 4,
+      "candidates": [
+        {
+          "provider": "bbk_mowas",
+          "capability": "civil_protection_warnings_germany",
+          "resource_type": "hazard_feed",
+          "quantity": null,
+          "observation_kind": "warning_event"
+        },
+        {
+          "provider": "nina_flood",
+          "capability": "flood_information_germany",
+          "resource_type": "hazard_feed",
+          "quantity": null,
+          "observation_kind": "warning_event"
+        },
+        {
+          "provider": "nina_katwarn",
+          "capability": "katwarn_public_warnings",
+          "resource_type": "hazard_feed",
+          "quantity": null,
+          "observation_kind": "warning_event"
+        },
+        {
+          "provider": "nina_biwapp",
+          "capability": "biwapp_public_warnings",
+          "resource_type": "hazard_feed",
+          "quantity": null,
+          "observation_kind": "warning_event"
+        }
+      ],
+      "legacy_isolation_class": "routable_multi_candidate",
+      "classification": "routable_multi_candidate",
+      "evidence": "Current provider mapping contains multiple direct candidates; full semantic equivalence remains separately tested."
+    },
+    {
+      "id": "natural_hazards.disaster_awareness.events",
+      "family": "disaster_awareness",
+      "strategy": null,
+      "resource_types": [
+        "hazard_feed"
+      ],
+      "phenomena": [],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "gdacs",
+          "capability": "global_disaster_alerts_7d",
+          "resource_type": "hazard_feed",
+          "quantity": null,
+          "observation_kind": "warning_event"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_specialized",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "natural_hazards.earthquake.events",
+      "family": "earthquake",
+      "strategy": null,
+      "resource_types": [
+        "hazard_feed"
+      ],
+      "phenomena": [],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "usgs_earthquakes",
+          "capability": "earthquakes_past_day",
+          "resource_type": "hazard_feed",
+          "quantity": null,
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_specialized",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "natural_hazards.earthquake.significant_events",
+      "family": "earthquake",
+      "strategy": null,
+      "resource_types": [
+        "hazard_feed"
+      ],
+      "phenomena": [],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "usgs_earthquakes",
+          "capability": "significant_earthquakes_past_month",
+          "resource_type": "hazard_feed",
+          "quantity": null,
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_specialized",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "natural_hazards.flood.hazard_100y.layer",
+      "family": "flood",
+      "strategy": "single",
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "glofas",
+          "capability": "flood_hazard_100y",
+          "resource_type": "raster_tile",
+          "quantity": null,
+          "observation_kind": "model"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_specialized",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "natural_hazards.flood.probability_20y.layer",
+      "family": "flood",
+      "strategy": "single",
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "glofas",
+          "capability": "flood_probability_20y",
+          "resource_type": "raster_tile",
+          "quantity": "flood_probability",
+          "observation_kind": "model"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_specialized",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "natural_hazards.flood.probability_5y.layer",
+      "family": "flood",
+      "strategy": "single",
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "glofas",
+          "capability": "flood_probability_5y",
+          "resource_type": "raster_tile",
+          "quantity": "flood_probability",
+          "observation_kind": "model"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_specialized",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "natural_hazards.flood.rapid_impact.layer",
+      "family": "flood",
+      "strategy": "single",
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "glofas",
+          "capability": "rapid_impact_assessment",
+          "resource_type": "raster_tile",
+          "quantity": null,
+          "observation_kind": "model"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_specialized",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "natural_hazards.flood.rapid_mapping.layer",
+      "family": "flood",
+      "strategy": "single",
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "glofas",
+          "capability": "rapid_flood_mapping",
+          "resource_type": "raster_tile",
+          "quantity": null,
+          "observation_kind": "model"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_specialized",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "natural_hazards.flood.reporting_points.layer",
+      "family": "flood",
+      "strategy": "single",
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "glofas",
+          "capability": "flood_reporting_points",
+          "resource_type": "raster_tile",
+          "quantity": null,
+          "observation_kind": "model"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_specialized",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "natural_hazards.flood.summary_1_3d.layer",
+      "family": "flood",
+      "strategy": "single",
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "glofas",
+          "capability": "flood_summary_1_3d",
+          "resource_type": "raster_tile",
+          "quantity": null,
+          "observation_kind": "model"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_specialized",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "natural_hazards.flood.summary_11_30d.layer",
+      "family": "flood",
+      "strategy": "single",
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "glofas",
+          "capability": "flood_summary_11_30d",
+          "resource_type": "raster_tile",
+          "quantity": null,
+          "observation_kind": "model"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_specialized",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "natural_hazards.flood.summary_4_10d.layer",
+      "family": "flood",
+      "strategy": "single",
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "glofas",
+          "capability": "flood_summary_4_10d",
+          "resource_type": "raster_tile",
+          "quantity": null,
+          "observation_kind": "model"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_specialized",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "natural_hazards.flood.warning",
+      "family": "flood",
+      "strategy": null,
+      "resource_types": [
+        "hazard_feed"
+      ],
+      "phenomena": [],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "nina_flood",
+          "capability": "flood_information_germany",
+          "resource_type": "hazard_feed",
+          "quantity": null,
+          "observation_kind": "warning_event"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_specialized",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "natural_hazards.seismic_non_earthquake.events",
+      "family": "seismic_non_earthquake",
+      "strategy": null,
+      "resource_types": [
+        "hazard_feed"
+      ],
+      "phenomena": [],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "usgs_seismic_events",
+          "capability": "non_earthquake_seismic_past_day",
+          "resource_type": "hazard_feed",
+          "quantity": null,
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_specialized",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "natural_hazards.tropical_cyclone.events",
+      "family": "tropical_cyclone",
+      "strategy": null,
+      "resource_types": [
+        "hazard_feed"
+      ],
+      "phenomena": [],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "nhc_tropical_cyclones",
+          "capability": "active_tropical_cyclones",
+          "resource_type": "hazard_feed",
+          "quantity": null,
+          "observation_kind": "warning_event"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_specialized",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "natural_hazards.tsunami.observations",
+      "family": "tsunami",
+      "strategy": null,
+      "resource_types": [
+        "hazard_feed"
+      ],
+      "phenomena": [],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "jma",
+          "capability": "tsunami_observations_japan",
+          "resource_type": "hazard_feed",
+          "quantity": null,
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_specialized",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "natural_hazards.tsunami.potential",
+      "family": "tsunami",
+      "strategy": null,
+      "resource_types": [
+        "hazard_feed"
+      ],
+      "phenomena": [],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "bmkg_tsunami",
+          "capability": "tsunami_potential_earthquake",
+          "resource_type": "hazard_feed",
+          "quantity": null,
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_specialized",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "natural_hazards.tsunami.warnings",
+      "family": "tsunami",
+      "strategy": "aggregate",
+      "resource_types": [
+        "hazard_feed"
+      ],
+      "phenomena": [],
+      "candidate_count": 3,
+      "candidates": [
+        {
+          "provider": "jma",
+          "capability": "official_tsunami_warnings_japan",
+          "resource_type": "hazard_feed",
+          "quantity": null,
+          "observation_kind": "warning_event"
+        },
+        {
+          "provider": "noaa_tsunami",
+          "capability": "official_tsunami_alerts",
+          "resource_type": "hazard_feed",
+          "quantity": null,
+          "observation_kind": "warning_event"
+        },
+        {
+          "provider": "bom_tsunami",
+          "capability": "official_tsunami_warnings_australia",
+          "resource_type": "hazard_feed",
+          "quantity": null,
+          "observation_kind": "warning_event"
+        }
+      ],
+      "legacy_isolation_class": "routable_multi_candidate",
+      "classification": "routable_multi_candidate",
+      "evidence": "Current provider mapping contains multiple direct candidates; full semantic equivalence remains separately tested."
+    },
+    {
+      "id": "natural_hazards.volcano.activity",
+      "family": "volcano",
+      "strategy": null,
+      "resource_types": [
+        "hazard_feed"
+      ],
+      "phenomena": [],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "smithsonian_volcanoes",
+          "capability": "weekly_volcanic_activity",
+          "resource_type": "hazard_feed",
+          "quantity": null,
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_specialized",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "natural_hazards.volcano.warnings",
+      "family": "volcano",
+      "strategy": null,
+      "resource_types": [
+        "hazard_feed"
+      ],
+      "phenomena": [],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "usgs_volcanoes",
+          "capability": "elevated_us_volcanoes",
+          "resource_type": "hazard_feed",
+          "quantity": null,
+          "observation_kind": "warning_event"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_specialized",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "pollen.alder",
+      "family": "pollen",
+      "strategy": "single",
+      "resource_types": [
+        "value"
+      ],
+      "phenomena": [
+        "pollen"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "open_meteo_pollen",
+          "capability": "alder_pollen",
+          "resource_type": "value",
+          "quantity": "pollen_concentration",
+          "observation_kind": "forecast"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "pollen.birch",
+      "family": "pollen",
+      "strategy": "single",
+      "resource_types": [
+        "value"
+      ],
+      "phenomena": [
+        "pollen"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "open_meteo_pollen",
+          "capability": "birch_pollen",
+          "resource_type": "value",
+          "quantity": "pollen_concentration",
+          "observation_kind": "forecast"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "pollen.grass",
+      "family": "pollen",
+      "strategy": "single",
+      "resource_types": [
+        "value"
+      ],
+      "phenomena": [
+        "pollen"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "open_meteo_pollen",
+          "capability": "grass_pollen",
+          "resource_type": "value",
+          "quantity": "pollen_concentration",
+          "observation_kind": "forecast"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "pollen.mugwort",
+      "family": "pollen",
+      "strategy": "single",
+      "resource_types": [
+        "value"
+      ],
+      "phenomena": [
+        "pollen"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "open_meteo_pollen",
+          "capability": "mugwort_pollen",
+          "resource_type": "value",
+          "quantity": "pollen_concentration",
+          "observation_kind": "forecast"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "pollen.olive",
+      "family": "pollen",
+      "strategy": "single",
+      "resource_types": [
+        "value"
+      ],
+      "phenomena": [
+        "pollen"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "open_meteo_pollen",
+          "capability": "olive_pollen",
+          "resource_type": "value",
+          "quantity": "pollen_concentration",
+          "observation_kind": "forecast"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "pollen.ragweed",
+      "family": "pollen",
+      "strategy": "single",
+      "resource_types": [
+        "value"
+      ],
+      "phenomena": [
+        "pollen"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "open_meteo_pollen",
+          "capability": "ragweed_pollen",
+          "resource_type": "value",
+          "quantity": "pollen_concentration",
+          "observation_kind": "forecast"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "security.public_warning.official",
+      "family": "public_warning",
+      "strategy": null,
+      "resource_types": [
+        "hazard_feed"
+      ],
+      "phenomena": [],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "bbk_police",
+          "capability": "police_public_safety_warnings_germany",
+          "resource_type": "hazard_feed",
+          "quantity": null,
+          "observation_kind": "warning_event"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_specialized",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "space.aurora.probability.grid",
+      "family": "aurora",
+      "strategy": "single",
+      "resource_types": [
+        "data_file"
+      ],
+      "phenomena": [
+        "aurora"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "noaa_swpc",
+          "capability": "aurora_ovation_latest",
+          "resource_type": "data_file",
+          "quantity": null,
+          "observation_kind": "forecast"
+        }
+      ],
+      "legacy_isolation_class": null,
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "space.iss.live",
+      "family": "iss",
+      "strategy": null,
+      "resource_types": [
+        "live_stream"
+      ],
+      "phenomena": [],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "nasa_iss",
+          "capability": "iss_earth_live",
+          "resource_type": "live_stream",
+          "quantity": null,
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_specialized",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "space.moon.age_days",
+      "family": "moon",
+      "strategy": "single",
+      "resource_types": [
+        "value"
+      ],
+      "phenomena": [],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "met_norway_astronomy",
+          "capability": "moon_age_days",
+          "resource_type": "value",
+          "quantity": "age",
+          "observation_kind": "estimate"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_specialized",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "space.moon.high_elevation",
+      "family": "moon",
+      "strategy": "single",
+      "resource_types": [
+        "value"
+      ],
+      "phenomena": [],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "met_norway_astronomy",
+          "capability": "high_moon_elevation",
+          "resource_type": "value",
+          "quantity": "elevation_angle",
+          "observation_kind": "estimate"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_specialized",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "space.moon.high_time",
+      "family": "moon",
+      "strategy": "single",
+      "resource_types": [
+        "value"
+      ],
+      "phenomena": [],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "met_norway_astronomy",
+          "capability": "high_moon_time",
+          "resource_type": "value",
+          "quantity": null,
+          "observation_kind": "estimate"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_specialized",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "space.moon.high_visible",
+      "family": "moon",
+      "strategy": "single",
+      "resource_types": [
+        "value"
+      ],
+      "phenomena": [],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "met_norway_astronomy",
+          "capability": "high_moon_visible",
+          "resource_type": "value",
+          "quantity": null,
+          "observation_kind": "estimate"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_specialized",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "space.moon.illumination",
+      "family": "moon",
+      "strategy": "single",
+      "resource_types": [
+        "value"
+      ],
+      "phenomena": [],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "met_norway_astronomy",
+          "capability": "moon_illumination",
+          "resource_type": "value",
+          "quantity": "illumination_fraction",
+          "observation_kind": "estimate"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_specialized",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "space.moon.low_elevation",
+      "family": "moon",
+      "strategy": "single",
+      "resource_types": [
+        "value"
+      ],
+      "phenomena": [],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "met_norway_astronomy",
+          "capability": "low_moon_elevation",
+          "resource_type": "value",
+          "quantity": "elevation_angle",
+          "observation_kind": "estimate"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_specialized",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "space.moon.low_time",
+      "family": "moon",
+      "strategy": "single",
+      "resource_types": [
+        "value"
+      ],
+      "phenomena": [],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "met_norway_astronomy",
+          "capability": "low_moon_time",
+          "resource_type": "value",
+          "quantity": null,
+          "observation_kind": "estimate"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_specialized",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "space.moon.low_visible",
+      "family": "moon",
+      "strategy": "single",
+      "resource_types": [
+        "value"
+      ],
+      "phenomena": [],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "met_norway_astronomy",
+          "capability": "low_moon_visible",
+          "resource_type": "value",
+          "quantity": null,
+          "observation_kind": "estimate"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_specialized",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "space.moon.phase_angle",
+      "family": "moon",
+      "strategy": "single",
+      "resource_types": [
+        "value"
+      ],
+      "phenomena": [],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "met_norway_astronomy",
+          "capability": "moon_phase_angle",
+          "resource_type": "value",
+          "quantity": "phase_angle",
+          "observation_kind": "estimate"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_specialized",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "space.moon.phase_name",
+      "family": "moon",
+      "strategy": "single",
+      "resource_types": [
+        "value"
+      ],
+      "phenomena": [],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "met_norway_astronomy",
+          "capability": "moon_phase_name",
+          "resource_type": "value",
+          "quantity": null,
+          "observation_kind": "estimate"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_specialized",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "space.moon.rise_azimuth",
+      "family": "moon",
+      "strategy": "single",
+      "resource_types": [
+        "value"
+      ],
+      "phenomena": [],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "met_norway_astronomy",
+          "capability": "moonrise_azimuth",
+          "resource_type": "value",
+          "quantity": "azimuth",
+          "observation_kind": "estimate"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_specialized",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "space.moon.rise_time",
+      "family": "moon",
+      "strategy": "single",
+      "resource_types": [
+        "value"
+      ],
+      "phenomena": [],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "met_norway_astronomy",
+          "capability": "moonrise_time",
+          "resource_type": "value",
+          "quantity": null,
+          "observation_kind": "estimate"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_specialized",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "space.moon.set_azimuth",
+      "family": "moon",
+      "strategy": "single",
+      "resource_types": [
+        "value"
+      ],
+      "phenomena": [],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "met_norway_astronomy",
+          "capability": "moonset_azimuth",
+          "resource_type": "value",
+          "quantity": "azimuth",
+          "observation_kind": "estimate"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_specialized",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "space.moon.set_time",
+      "family": "moon",
+      "strategy": "single",
+      "resource_types": [
+        "value"
+      ],
+      "phenomena": [],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "met_norway_astronomy",
+          "capability": "moonset_time",
+          "resource_type": "value",
+          "quantity": null,
+          "observation_kind": "estimate"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_specialized",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "space.moon.tiles",
+      "family": "moon",
+      "strategy": null,
+      "resource_types": [
+        "planetary_tile"
+      ],
+      "phenomena": [],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "nasa_moon",
+          "capability": "moon_lro_wac_global",
+          "resource_type": "planetary_tile",
+          "quantity": null,
+          "observation_kind": "reference"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_specialized",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "space.solar.suvi.094_angstrom",
+      "family": "solar",
+      "strategy": null,
+      "resource_types": [
+        "image_sequence"
+      ],
+      "phenomena": [],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "noaa_swpc",
+          "capability": "solar_suvi_094",
+          "resource_type": "image_sequence",
+          "quantity": null,
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_specialized",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "space.solar.suvi.131_angstrom",
+      "family": "solar",
+      "strategy": null,
+      "resource_types": [
+        "image_sequence"
+      ],
+      "phenomena": [],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "noaa_swpc",
+          "capability": "solar_suvi_131",
+          "resource_type": "image_sequence",
+          "quantity": null,
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_specialized",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "space.solar.suvi.171_angstrom",
+      "family": "solar",
+      "strategy": null,
+      "resource_types": [
+        "image_sequence"
+      ],
+      "phenomena": [],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "noaa_swpc",
+          "capability": "solar_suvi_171",
+          "resource_type": "image_sequence",
+          "quantity": null,
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_specialized",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "space.solar.suvi.195_angstrom",
+      "family": "solar",
+      "strategy": null,
+      "resource_types": [
+        "image_sequence"
+      ],
+      "phenomena": [],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "noaa_swpc",
+          "capability": "solar_suvi_195",
+          "resource_type": "image_sequence",
+          "quantity": null,
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_specialized",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "space.solar.suvi.284_angstrom",
+      "family": "solar",
+      "strategy": null,
+      "resource_types": [
+        "image_sequence"
+      ],
+      "phenomena": [],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "noaa_swpc",
+          "capability": "solar_suvi_284",
+          "resource_type": "image_sequence",
+          "quantity": null,
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_specialized",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "space.solar.suvi.304_angstrom",
+      "family": "solar",
+      "strategy": null,
+      "resource_types": [
+        "image_sequence"
+      ],
+      "phenomena": [],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "noaa_swpc",
+          "capability": "solar_suvi_304",
+          "resource_type": "image_sequence",
+          "quantity": null,
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_specialized",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "space.sun.high_elevation",
+      "family": "sun",
+      "strategy": "single",
+      "resource_types": [
+        "value"
+      ],
+      "phenomena": [],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "met_norway_astronomy",
+          "capability": "solar_noon_elevation",
+          "resource_type": "value",
+          "quantity": "elevation_angle",
+          "observation_kind": "estimate"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_specialized",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "space.sun.high_time",
+      "family": "sun",
+      "strategy": "single",
+      "resource_types": [
+        "value"
+      ],
+      "phenomena": [],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "met_norway_astronomy",
+          "capability": "solar_noon_time",
+          "resource_type": "value",
+          "quantity": null,
+          "observation_kind": "estimate"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_specialized",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "space.sun.high_visible",
+      "family": "sun",
+      "strategy": "single",
+      "resource_types": [
+        "value"
+      ],
+      "phenomena": [],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "met_norway_astronomy",
+          "capability": "solar_noon_visible",
+          "resource_type": "value",
+          "quantity": null,
+          "observation_kind": "estimate"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_specialized",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "space.sun.low_elevation",
+      "family": "sun",
+      "strategy": "single",
+      "resource_types": [
+        "value"
+      ],
+      "phenomena": [],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "met_norway_astronomy",
+          "capability": "solar_midnight_elevation",
+          "resource_type": "value",
+          "quantity": "elevation_angle",
+          "observation_kind": "estimate"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_specialized",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "space.sun.low_time",
+      "family": "sun",
+      "strategy": "single",
+      "resource_types": [
+        "value"
+      ],
+      "phenomena": [],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "met_norway_astronomy",
+          "capability": "solar_midnight_time",
+          "resource_type": "value",
+          "quantity": null,
+          "observation_kind": "estimate"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_specialized",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "space.sun.low_visible",
+      "family": "sun",
+      "strategy": "single",
+      "resource_types": [
+        "value"
+      ],
+      "phenomena": [],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "met_norway_astronomy",
+          "capability": "solar_midnight_visible",
+          "resource_type": "value",
+          "quantity": null,
+          "observation_kind": "estimate"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_specialized",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "space.sun.rise_azimuth",
+      "family": "sun",
+      "strategy": "single",
+      "resource_types": [
+        "value"
+      ],
+      "phenomena": [],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "met_norway_astronomy",
+          "capability": "sunrise_azimuth",
+          "resource_type": "value",
+          "quantity": "azimuth",
+          "observation_kind": "estimate"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_specialized",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "space.sun.rise_time",
+      "family": "sun",
+      "strategy": "single",
+      "resource_types": [
+        "value"
+      ],
+      "phenomena": [],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "met_norway_astronomy",
+          "capability": "sunrise_time",
+          "resource_type": "value",
+          "quantity": null,
+          "observation_kind": "estimate"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_specialized",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "space.sun.set_azimuth",
+      "family": "sun",
+      "strategy": "single",
+      "resource_types": [
+        "value"
+      ],
+      "phenomena": [],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "met_norway_astronomy",
+          "capability": "sunset_azimuth",
+          "resource_type": "value",
+          "quantity": "azimuth",
+          "observation_kind": "estimate"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_specialized",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "space.sun.set_time",
+      "family": "sun",
+      "strategy": "single",
+      "resource_types": [
+        "value"
+      ],
+      "phenomena": [],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "met_norway_astronomy",
+          "capability": "sunset_time",
+          "resource_type": "value",
+          "quantity": null,
+          "observation_kind": "estimate"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_specialized",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "weather.convection.thunderstorm_cells",
+      "family": "convection",
+      "strategy": "single",
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [
+        "thunderstorm"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "dwd",
+          "capability": "thunderstorm_cells",
+          "resource_type": "raster_tile",
+          "quantity": null,
+          "observation_kind": "nowcast"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "weather.lightning.density",
+      "family": "lightning",
+      "strategy": "single",
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [
+        "thunderstorm"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "dwd",
+          "capability": "lightning_density",
+          "resource_type": "raster_tile",
+          "quantity": "lightning_density",
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "weather.lightning.observed.density",
+      "family": "lightning_density",
+      "strategy": "single",
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [
+        "lightning",
+        "thunderstorm"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "eccc_lightning",
+          "capability": "lightning_density_2_5km",
+          "resource_type": "raster_tile",
+          "quantity": "lightning_density",
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "weather.lightning.observed.events",
+      "family": "lightning_observation",
+      "strategy": "single",
+      "resource_types": [
+        "event_feed"
+      ],
+      "phenomena": [
+        "lightning",
+        "thunderstorm"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "fmi_lightning",
+          "capability": "lightning_strikes_observed",
+          "resource_type": "event_feed",
+          "quantity": null,
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "weather.lightning.observed.nearest_azimuth",
+      "family": "lightning_observation",
+      "strategy": "single",
+      "resource_types": [
+        "value"
+      ],
+      "phenomena": [
+        "lightning",
+        "thunderstorm"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "fmi_lightning",
+          "capability": "lightning_nearest_azimuth",
+          "resource_type": "value",
+          "quantity": "azimuth",
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "weather.lightning.observed.nearest_distance",
+      "family": "lightning_observation",
+      "strategy": "single",
+      "resource_types": [
+        "value"
+      ],
+      "phenomena": [
+        "lightning",
+        "thunderstorm"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "fmi_lightning",
+          "capability": "lightning_nearest_distance",
+          "resource_type": "value",
+          "quantity": "distance",
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "weather.lightning.satellite.glm_east.lcfa",
+      "family": "lightning_satellite",
+      "strategy": "single",
+      "resource_types": [
+        "data_file"
+      ],
+      "phenomena": [
+        "lightning",
+        "thunderstorm"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "noaa_goes_glm",
+          "capability": "glm_east_lcfa",
+          "resource_type": "data_file",
+          "quantity": null,
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "weather.lightning.satellite.glm_west.lcfa",
+      "family": "lightning_satellite",
+      "strategy": "single",
+      "resource_types": [
+        "data_file"
+      ],
+      "phenomena": [
+        "lightning",
+        "thunderstorm"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "noaa_goes_glm",
+          "capability": "glm_west_lcfa",
+          "resource_type": "data_file",
+          "quantity": null,
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "weather.lightning.satellite.mtg_li.accumulated_flashes",
+      "family": "lightning_satellite",
+      "strategy": "single",
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [
+        "lightning",
+        "thunderstorm"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "eumetsat_mtg_li",
+          "capability": "mtg_li_accumulated_flashes",
+          "resource_type": "raster_tile",
+          "quantity": "lightning_flash_accumulation",
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "weather.model.aifs.data_file",
+      "family": "model",
+      "strategy": null,
+      "resource_types": [
+        "data_file"
+      ],
+      "phenomena": [],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "ecmwf_open_data",
+          "capability": "aifs_open_grib",
+          "resource_type": "data_file",
+          "quantity": null,
+          "observation_kind": "model"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_specialized",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "weather.model.ifs.data_file",
+      "family": "model",
+      "strategy": null,
+      "resource_types": [
+        "data_file"
+      ],
+      "phenomena": [],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "ecmwf_open_data",
+          "capability": "ifs_open_grib",
+          "resource_type": "data_file",
+          "quantity": null,
+          "observation_kind": "model"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_specialized",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "weather.model.precipitation_1h.layer",
+      "family": "model",
+      "strategy": null,
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [
+        "precipitation"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "dwd",
+          "capability": "icon_eu_precipitation_1h",
+          "resource_type": "raster_tile",
+          "quantity": "precipitation_accumulation_1h",
+          "observation_kind": "forecast"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "weather.model.temperature_2m.layer",
+      "family": "model",
+      "strategy": null,
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [
+        "temperature"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "dwd",
+          "capability": "icon_temperature_2m",
+          "resource_type": "raster_tile",
+          "quantity": "air_temperature",
+          "observation_kind": "forecast"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "weather.model.wind_10m.layer",
+      "family": "model",
+      "strategy": null,
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [
+        "wind"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "dwd",
+          "capability": "icon_wind_10m",
+          "resource_type": "raster_tile",
+          "quantity": "wind_speed",
+          "observation_kind": "forecast"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "weather.nowcast.precipitation",
+      "family": "nowcast",
+      "strategy": null,
+      "resource_types": [
+        "value"
+      ],
+      "phenomena": [
+        "precipitation"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "met_norway",
+          "capability": "nowcast_precipitation",
+          "resource_type": "value",
+          "quantity": "precipitation_amount",
+          "observation_kind": "nowcast"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "weather.nowcast.precipitation_rate",
+      "family": "nowcast",
+      "strategy": null,
+      "resource_types": [
+        "value"
+      ],
+      "phenomena": [
+        "precipitation"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "met_norway",
+          "capability": "nowcast_precipitation_rate",
+          "resource_type": "value",
+          "quantity": "precipitation_rate",
+          "observation_kind": "nowcast"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "weather.nowcast.relative_humidity",
+      "family": "nowcast",
+      "strategy": null,
+      "resource_types": [
+        "value"
+      ],
+      "phenomena": [
+        "humidity"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "met_norway",
+          "capability": "nowcast_relative_humidity",
+          "resource_type": "value",
+          "quantity": "relative_humidity",
+          "observation_kind": "nowcast"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "weather.nowcast.temperature",
+      "family": "nowcast",
+      "strategy": null,
+      "resource_types": [
+        "value"
+      ],
+      "phenomena": [
+        "temperature"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "met_norway",
+          "capability": "nowcast_temperature",
+          "resource_type": "value",
+          "quantity": "air_temperature",
+          "observation_kind": "nowcast"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "weather.nowcast.wind_direction",
+      "family": "nowcast",
+      "strategy": null,
+      "resource_types": [
+        "value"
+      ],
+      "phenomena": [
+        "wind"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "met_norway",
+          "capability": "nowcast_wind_direction",
+          "resource_type": "value",
+          "quantity": "wind_from_direction",
+          "observation_kind": "nowcast"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "weather.nowcast.wind_gusts",
+      "family": "nowcast",
+      "strategy": null,
+      "resource_types": [
+        "value"
+      ],
+      "phenomena": [
+        "wind"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "met_norway",
+          "capability": "nowcast_wind_gusts",
+          "resource_type": "value",
+          "quantity": "wind_gust_speed",
+          "observation_kind": "nowcast"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "weather.nowcast.wind_speed",
+      "family": "nowcast",
+      "strategy": null,
+      "resource_types": [
+        "value"
+      ],
+      "phenomena": [
+        "wind"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "met_norway",
+          "capability": "nowcast_wind_speed",
+          "resource_type": "value",
+          "quantity": "wind_speed",
+          "observation_kind": "nowcast"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "weather.observation.cloud_cover",
+      "family": "observation",
+      "strategy": "single",
+      "resource_types": [
+        "value"
+      ],
+      "phenomena": [
+        "clouds"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "eccc_geomet",
+          "capability": "cloud_cover",
+          "resource_type": "value",
+          "quantity": "total_cloud_amount_observed",
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "weather.observation.temperature",
+      "family": "observation",
+      "strategy": null,
+      "resource_types": [
+        "value"
+      ],
+      "phenomena": [
+        "temperature"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "eccc_geomet",
+          "capability": "temperature",
+          "resource_type": "value",
+          "quantity": "air_temperature",
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "weather.observation.visibility",
+      "family": "observation",
+      "strategy": null,
+      "resource_types": [
+        "value"
+      ],
+      "phenomena": [
+        "visibility"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "eccc_geomet",
+          "capability": "visibility",
+          "resource_type": "value",
+          "quantity": "visibility_distance",
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "weather.observation.wind_direction_at_max_speed",
+      "family": "observation",
+      "strategy": "single",
+      "resource_types": [
+        "value"
+      ],
+      "phenomena": [
+        "wind"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "eccc_geomet",
+          "capability": "wind_direction",
+          "resource_type": "value",
+          "quantity": "wind_direction_at_max_speed",
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "weather.point.air_pressure",
+      "family": "point",
+      "strategy": null,
+      "resource_types": [
+        "value"
+      ],
+      "phenomena": [
+        "pressure"
+      ],
+      "candidate_count": 4,
+      "candidates": [
+        {
+          "provider": "met_norway",
+          "capability": "air_pressure",
+          "resource_type": "value",
+          "quantity": "air_pressure",
+          "observation_kind": "forecast"
+        },
+        {
+          "provider": "fmi",
+          "capability": "air_pressure",
+          "resource_type": "value",
+          "quantity": "air_pressure",
+          "observation_kind": "forecast"
+        },
+        {
+          "provider": "smhi",
+          "capability": "air_pressure",
+          "resource_type": "value",
+          "quantity": "air_pressure",
+          "observation_kind": "forecast"
+        },
+        {
+          "provider": "eccc_geomet",
+          "capability": "air_pressure",
+          "resource_type": "value",
+          "quantity": "air_pressure",
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "routable_multi_candidate",
+      "classification": "routable_multi_candidate",
+      "evidence": "Current provider mapping contains multiple direct candidates; full semantic equivalence remains separately tested."
+    },
+    {
+      "id": "weather.point.cloud_cover",
+      "family": "point",
+      "strategy": null,
+      "resource_types": [
+        "value"
+      ],
+      "phenomena": [
+        "clouds"
+      ],
+      "candidate_count": 4,
+      "candidates": [
+        {
+          "provider": "open_meteo",
+          "capability": "cloud_cover",
+          "resource_type": "value",
+          "quantity": "cloud_cover_fraction_total",
+          "observation_kind": "forecast"
+        },
+        {
+          "provider": "met_norway",
+          "capability": "cloud_cover",
+          "resource_type": "value",
+          "quantity": "cloud_cover_fraction_total",
+          "observation_kind": "forecast"
+        },
+        {
+          "provider": "fmi",
+          "capability": "cloud_cover",
+          "resource_type": "value",
+          "quantity": "cloud_cover_fraction_total",
+          "observation_kind": "forecast"
+        },
+        {
+          "provider": "smhi",
+          "capability": "cloud_cover",
+          "resource_type": "value",
+          "quantity": "cloud_cover_fraction_total",
+          "observation_kind": "forecast"
+        }
+      ],
+      "legacy_isolation_class": "routable_multi_candidate",
+      "classification": "routable_multi_candidate",
+      "evidence": "Current provider mapping contains multiple direct candidates; full semantic equivalence remains separately tested."
+    },
+    {
+      "id": "weather.point.cloud_cover_high",
+      "family": "point",
+      "strategy": null,
+      "resource_types": [
+        "value"
+      ],
+      "phenomena": [
+        "clouds"
+      ],
+      "candidate_count": 3,
+      "candidates": [
+        {
+          "provider": "open_meteo",
+          "capability": "cloud_cover_high",
+          "resource_type": "value",
+          "quantity": "cloud_cover_fraction_high",
+          "observation_kind": "forecast"
+        },
+        {
+          "provider": "met_norway",
+          "capability": "cloud_cover_high",
+          "resource_type": "value",
+          "quantity": "cloud_cover_fraction_high",
+          "observation_kind": "forecast"
+        },
+        {
+          "provider": "smhi",
+          "capability": "cloud_cover_high",
+          "resource_type": "value",
+          "quantity": "cloud_cover_fraction_high",
+          "observation_kind": "forecast"
+        }
+      ],
+      "legacy_isolation_class": "routable_multi_candidate",
+      "classification": "routable_multi_candidate",
+      "evidence": "Current provider mapping contains multiple direct candidates; full semantic equivalence remains separately tested."
+    },
+    {
+      "id": "weather.point.cloud_cover_low",
+      "family": "point",
+      "strategy": null,
+      "resource_types": [
+        "value"
+      ],
+      "phenomena": [
+        "clouds"
+      ],
+      "candidate_count": 3,
+      "candidates": [
+        {
+          "provider": "open_meteo",
+          "capability": "cloud_cover_low",
+          "resource_type": "value",
+          "quantity": "cloud_cover_fraction_low",
+          "observation_kind": "forecast"
+        },
+        {
+          "provider": "met_norway",
+          "capability": "cloud_cover_low",
+          "resource_type": "value",
+          "quantity": "cloud_cover_fraction_low",
+          "observation_kind": "forecast"
+        },
+        {
+          "provider": "smhi",
+          "capability": "cloud_cover_low",
+          "resource_type": "value",
+          "quantity": "cloud_cover_fraction_low",
+          "observation_kind": "forecast"
+        }
+      ],
+      "legacy_isolation_class": "routable_multi_candidate",
+      "classification": "routable_multi_candidate",
+      "evidence": "Current provider mapping contains multiple direct candidates; full semantic equivalence remains separately tested."
+    },
+    {
+      "id": "weather.point.cloud_cover_mid",
+      "family": "point",
+      "strategy": null,
+      "resource_types": [
+        "value"
+      ],
+      "phenomena": [
+        "clouds"
+      ],
+      "candidate_count": 3,
+      "candidates": [
+        {
+          "provider": "open_meteo",
+          "capability": "cloud_cover_mid",
+          "resource_type": "value",
+          "quantity": "cloud_cover_fraction_mid",
+          "observation_kind": "forecast"
+        },
+        {
+          "provider": "met_norway",
+          "capability": "cloud_cover_mid",
+          "resource_type": "value",
+          "quantity": "cloud_cover_fraction_mid",
+          "observation_kind": "forecast"
+        },
+        {
+          "provider": "smhi",
+          "capability": "cloud_cover_mid",
+          "resource_type": "value",
+          "quantity": "cloud_cover_fraction_mid",
+          "observation_kind": "forecast"
+        }
+      ],
+      "legacy_isolation_class": "routable_multi_candidate",
+      "classification": "routable_multi_candidate",
+      "evidence": "Current provider mapping contains multiple direct candidates; full semantic equivalence remains separately tested."
+    },
+    {
+      "id": "weather.point.dew_point",
+      "family": "point",
+      "strategy": null,
+      "resource_types": [
+        "value"
+      ],
+      "phenomena": [
+        "dew_point"
+      ],
+      "candidate_count": 4,
+      "candidates": [
+        {
+          "provider": "met_norway",
+          "capability": "dew_point",
+          "resource_type": "value",
+          "quantity": "dew_point_temperature",
+          "observation_kind": "forecast"
+        },
+        {
+          "provider": "noaa_nws",
+          "capability": "dew_point",
+          "resource_type": "value",
+          "quantity": "dew_point_temperature",
+          "observation_kind": "forecast"
+        },
+        {
+          "provider": "fmi",
+          "capability": "dew_point",
+          "resource_type": "value",
+          "quantity": "dew_point_temperature",
+          "observation_kind": "forecast"
+        },
+        {
+          "provider": "eccc_geomet",
+          "capability": "dew_point",
+          "resource_type": "value",
+          "quantity": "dew_point_temperature",
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "routable_multi_candidate",
+      "classification": "routable_multi_candidate",
+      "evidence": "Current provider mapping contains multiple direct candidates; full semantic equivalence remains separately tested."
+    },
+    {
+      "id": "weather.point.fog",
+      "family": "point",
+      "strategy": null,
+      "resource_types": [
+        "value"
+      ],
+      "phenomena": [
+        "fog"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "met_norway",
+          "capability": "fog",
+          "resource_type": "value",
+          "quantity": "fog_fraction",
+          "observation_kind": "forecast"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_specialized",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "weather.point.precipitation",
+      "family": "point",
+      "strategy": null,
+      "resource_types": [
+        "value"
+      ],
+      "phenomena": [
+        "precipitation"
+      ],
+      "candidate_count": 4,
+      "candidates": [
+        {
+          "provider": "open_meteo",
+          "capability": "precipitation",
+          "resource_type": "value",
+          "quantity": "precipitation_amount",
+          "observation_kind": "forecast"
+        },
+        {
+          "provider": "met_norway",
+          "capability": "precipitation",
+          "resource_type": "value",
+          "quantity": "precipitation_amount",
+          "observation_kind": "forecast"
+        },
+        {
+          "provider": "fmi",
+          "capability": "precipitation",
+          "resource_type": "value",
+          "quantity": "precipitation_amount",
+          "observation_kind": "forecast"
+        },
+        {
+          "provider": "smhi",
+          "capability": "precipitation",
+          "resource_type": "value",
+          "quantity": "precipitation_amount",
+          "observation_kind": "forecast"
+        }
+      ],
+      "legacy_isolation_class": "routable_multi_candidate",
+      "classification": "routable_multi_candidate",
+      "evidence": "Current provider mapping contains multiple direct candidates; full semantic equivalence remains separately tested."
+    },
+    {
+      "id": "weather.point.precipitation_1h",
+      "family": "point",
+      "strategy": null,
+      "resource_types": [
+        "value"
+      ],
+      "phenomena": [
+        "precipitation"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "eccc_geomet",
+          "capability": "precipitation_1h",
+          "resource_type": "value",
+          "quantity": "precipitation_accumulation_1h",
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "weather.point.precipitation_probability",
+      "family": "point",
+      "strategy": null,
+      "resource_types": [
+        "value"
+      ],
+      "phenomena": [
+        "precipitation"
+      ],
+      "candidate_count": 4,
+      "candidates": [
+        {
+          "provider": "met_norway",
+          "capability": "precipitation_probability",
+          "resource_type": "value",
+          "quantity": "precipitation_probability",
+          "observation_kind": "forecast"
+        },
+        {
+          "provider": "noaa_nws",
+          "capability": "precipitation_probability",
+          "resource_type": "value",
+          "quantity": "precipitation_probability",
+          "observation_kind": "forecast"
+        },
+        {
+          "provider": "smhi",
+          "capability": "precipitation_probability",
+          "resource_type": "value",
+          "quantity": "precipitation_probability",
+          "observation_kind": "forecast"
+        },
+        {
+          "provider": "jma",
+          "capability": "precipitation_probability",
+          "resource_type": "value",
+          "quantity": "precipitation_probability",
+          "observation_kind": "forecast"
+        }
+      ],
+      "legacy_isolation_class": "routable_multi_candidate",
+      "classification": "routable_multi_candidate",
+      "evidence": "Current provider mapping contains multiple direct candidates; full semantic equivalence remains separately tested."
+    },
+    {
+      "id": "weather.point.rain",
+      "family": "point",
+      "strategy": null,
+      "resource_types": [
+        "value"
+      ],
+      "phenomena": [
+        "rain",
+        "precipitation"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "open_meteo",
+          "capability": "rain",
+          "resource_type": "value",
+          "quantity": "precipitation_amount",
+          "observation_kind": "forecast"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "weather.point.relative_humidity",
+      "family": "point",
+      "strategy": null,
+      "resource_types": [
+        "value"
+      ],
+      "phenomena": [
+        "humidity"
+      ],
+      "candidate_count": 5,
+      "candidates": [
+        {
+          "provider": "met_norway",
+          "capability": "relative_humidity",
+          "resource_type": "value",
+          "quantity": "relative_humidity",
+          "observation_kind": "forecast"
+        },
+        {
+          "provider": "noaa_nws",
+          "capability": "relative_humidity",
+          "resource_type": "value",
+          "quantity": "relative_humidity",
+          "observation_kind": "forecast"
+        },
+        {
+          "provider": "fmi",
+          "capability": "relative_humidity",
+          "resource_type": "value",
+          "quantity": "relative_humidity",
+          "observation_kind": "forecast"
+        },
+        {
+          "provider": "smhi",
+          "capability": "relative_humidity",
+          "resource_type": "value",
+          "quantity": "relative_humidity",
+          "observation_kind": "forecast"
+        },
+        {
+          "provider": "eccc_geomet",
+          "capability": "relative_humidity",
+          "resource_type": "value",
+          "quantity": "relative_humidity",
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "routable_multi_candidate",
+      "classification": "routable_multi_candidate",
+      "evidence": "Current provider mapping contains multiple direct candidates; full semantic equivalence remains separately tested."
+    },
+    {
+      "id": "weather.point.showers",
+      "family": "point",
+      "strategy": null,
+      "resource_types": [
+        "value"
+      ],
+      "phenomena": [
+        "rain",
+        "precipitation"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "open_meteo",
+          "capability": "showers",
+          "resource_type": "value",
+          "quantity": "precipitation_amount",
+          "observation_kind": "forecast"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "weather.point.snowfall",
+      "family": "point",
+      "strategy": null,
+      "resource_types": [
+        "value"
+      ],
+      "phenomena": [
+        "snow",
+        "precipitation"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "open_meteo",
+          "capability": "snowfall",
+          "resource_type": "value",
+          "quantity": "snowfall_amount",
+          "observation_kind": "forecast"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "weather.point.temperature",
+      "family": "point",
+      "strategy": null,
+      "resource_types": [
+        "value"
+      ],
+      "phenomena": [
+        "temperature"
+      ],
+      "candidate_count": 6,
+      "candidates": [
+        {
+          "provider": "open_meteo",
+          "capability": "temperature",
+          "resource_type": "value",
+          "quantity": "air_temperature",
+          "observation_kind": "forecast"
+        },
+        {
+          "provider": "met_norway",
+          "capability": "temperature",
+          "resource_type": "value",
+          "quantity": "air_temperature",
+          "observation_kind": "forecast"
+        },
+        {
+          "provider": "noaa_nws",
+          "capability": "temperature",
+          "resource_type": "value",
+          "quantity": "air_temperature",
+          "observation_kind": "forecast"
+        },
+        {
+          "provider": "fmi",
+          "capability": "temperature",
+          "resource_type": "value",
+          "quantity": "air_temperature",
+          "observation_kind": "forecast"
+        },
+        {
+          "provider": "smhi",
+          "capability": "temperature",
+          "resource_type": "value",
+          "quantity": "air_temperature",
+          "observation_kind": "forecast"
+        },
+        {
+          "provider": "jma",
+          "capability": "temperature",
+          "resource_type": "value",
+          "quantity": "air_temperature",
+          "observation_kind": "forecast"
+        }
+      ],
+      "legacy_isolation_class": "routable_multi_candidate",
+      "classification": "routable_multi_candidate",
+      "evidence": "Current provider mapping contains multiple direct candidates; full semantic equivalence remains separately tested."
+    },
+    {
+      "id": "weather.point.thunder_probability",
+      "family": "point",
+      "strategy": "single",
+      "resource_types": [
+        "value"
+      ],
+      "phenomena": [
+        "thunderstorm"
+      ],
+      "candidate_count": 2,
+      "candidates": [
+        {
+          "provider": "met_norway",
+          "capability": "thunder_probability",
+          "resource_type": "value",
+          "quantity": "thunderstorm_probability",
+          "observation_kind": "forecast"
+        },
+        {
+          "provider": "smhi",
+          "capability": "thunder_probability",
+          "resource_type": "value",
+          "quantity": "thunderstorm_probability",
+          "observation_kind": "forecast"
+        }
+      ],
+      "legacy_isolation_class": "routable_multi_candidate",
+      "classification": "routable_multi_candidate",
+      "evidence": "Current provider mapping contains multiple direct candidates; full semantic equivalence remains separately tested."
+    },
+    {
+      "id": "weather.point.uv_index",
+      "family": "point",
+      "strategy": null,
+      "resource_types": [
+        "value"
+      ],
+      "phenomena": [
+        "uv"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "open_meteo",
+          "capability": "uv_index",
+          "resource_type": "value",
+          "quantity": "uv_index",
+          "observation_kind": "forecast"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "weather.point.uv_index_clear_sky",
+      "family": "point",
+      "strategy": null,
+      "resource_types": [
+        "value"
+      ],
+      "phenomena": [
+        "uv"
+      ],
+      "candidate_count": 2,
+      "candidates": [
+        {
+          "provider": "open_meteo",
+          "capability": "uv_index_clear_sky",
+          "resource_type": "value",
+          "quantity": "uv_index",
+          "observation_kind": "forecast"
+        },
+        {
+          "provider": "met_norway",
+          "capability": "uv_index",
+          "resource_type": "value",
+          "quantity": "uv_index",
+          "observation_kind": "forecast"
+        }
+      ],
+      "legacy_isolation_class": "routable_multi_candidate",
+      "classification": "routable_multi_candidate",
+      "evidence": "Current provider mapping contains multiple direct candidates; full semantic equivalence remains separately tested."
+    },
+    {
+      "id": "weather.point.uv_index_clear_sky_max_today",
+      "family": "point",
+      "strategy": null,
+      "resource_types": [
+        "value"
+      ],
+      "phenomena": [
+        "uv"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "open_meteo",
+          "capability": "uv_index_clear_sky_max_today",
+          "resource_type": "value",
+          "quantity": "uv_index",
+          "observation_kind": "forecast"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "weather.point.uv_index_max_today",
+      "family": "point",
+      "strategy": null,
+      "resource_types": [
+        "value"
+      ],
+      "phenomena": [
+        "uv"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "open_meteo",
+          "capability": "uv_index_max_today",
+          "resource_type": "value",
+          "quantity": "uv_index",
+          "observation_kind": "forecast"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "weather.point.visibility",
+      "family": "point",
+      "strategy": null,
+      "resource_types": [
+        "value"
+      ],
+      "phenomena": [
+        "visibility"
+      ],
+      "candidate_count": 3,
+      "candidates": [
+        {
+          "provider": "open_meteo",
+          "capability": "visibility",
+          "resource_type": "value",
+          "quantity": "visibility_distance",
+          "observation_kind": "forecast"
+        },
+        {
+          "provider": "fmi",
+          "capability": "visibility",
+          "resource_type": "value",
+          "quantity": "visibility_distance",
+          "observation_kind": "forecast"
+        },
+        {
+          "provider": "smhi",
+          "capability": "visibility",
+          "resource_type": "value",
+          "quantity": "visibility_distance",
+          "observation_kind": "forecast"
+        }
+      ],
+      "legacy_isolation_class": "routable_multi_candidate",
+      "classification": "routable_multi_candidate",
+      "evidence": "Current provider mapping contains multiple direct candidates; full semantic equivalence remains separately tested."
+    },
+    {
+      "id": "weather.point.weather_code",
+      "family": "point",
+      "strategy": null,
+      "resource_types": [
+        "value"
+      ],
+      "phenomena": [
+        "weather_condition"
+      ],
+      "candidate_count": 3,
+      "candidates": [
+        {
+          "provider": "open_meteo",
+          "capability": "weather_code",
+          "resource_type": "value",
+          "quantity": null,
+          "observation_kind": "forecast"
+        },
+        {
+          "provider": "smhi",
+          "capability": "weather_code",
+          "resource_type": "value",
+          "quantity": null,
+          "observation_kind": "forecast"
+        },
+        {
+          "provider": "jma",
+          "capability": "weather_code",
+          "resource_type": "value",
+          "quantity": null,
+          "observation_kind": "forecast"
+        }
+      ],
+      "legacy_isolation_class": "routable_multi_candidate",
+      "classification": "routable_multi_candidate",
+      "evidence": "Current provider mapping contains multiple direct candidates; full semantic equivalence remains separately tested."
+    },
+    {
+      "id": "weather.point.weather_summary",
+      "family": "point",
+      "strategy": null,
+      "resource_types": [
+        "value"
+      ],
+      "phenomena": [
+        "weather_condition"
+      ],
+      "candidate_count": 2,
+      "candidates": [
+        {
+          "provider": "noaa_nws",
+          "capability": "weather_summary",
+          "resource_type": "value",
+          "quantity": null,
+          "observation_kind": "forecast"
+        },
+        {
+          "provider": "jma",
+          "capability": "weather_summary",
+          "resource_type": "value",
+          "quantity": null,
+          "observation_kind": "forecast"
+        }
+      ],
+      "legacy_isolation_class": "routable_multi_candidate",
+      "classification": "routable_multi_candidate",
+      "evidence": "Current provider mapping contains multiple direct candidates; full semantic equivalence remains separately tested."
+    },
+    {
+      "id": "weather.point.wind_direction",
+      "family": "point",
+      "strategy": null,
+      "resource_types": [
+        "value"
+      ],
+      "phenomena": [
+        "wind"
+      ],
+      "candidate_count": 5,
+      "candidates": [
+        {
+          "provider": "open_meteo",
+          "capability": "wind_direction",
+          "resource_type": "value",
+          "quantity": "wind_from_direction",
+          "observation_kind": "forecast"
+        },
+        {
+          "provider": "met_norway",
+          "capability": "wind_direction",
+          "resource_type": "value",
+          "quantity": "wind_from_direction",
+          "observation_kind": "forecast"
+        },
+        {
+          "provider": "noaa_nws",
+          "capability": "wind_direction",
+          "resource_type": "value",
+          "quantity": "wind_from_direction",
+          "observation_kind": "forecast"
+        },
+        {
+          "provider": "fmi",
+          "capability": "wind_direction",
+          "resource_type": "value",
+          "quantity": "wind_from_direction",
+          "observation_kind": "forecast"
+        },
+        {
+          "provider": "smhi",
+          "capability": "wind_direction",
+          "resource_type": "value",
+          "quantity": "wind_from_direction",
+          "observation_kind": "forecast"
+        }
+      ],
+      "legacy_isolation_class": "routable_multi_candidate",
+      "classification": "routable_multi_candidate",
+      "evidence": "Current provider mapping contains multiple direct candidates; full semantic equivalence remains separately tested."
+    },
+    {
+      "id": "weather.point.wind_gusts",
+      "family": "point",
+      "strategy": null,
+      "resource_types": [
+        "value"
+      ],
+      "phenomena": [
+        "wind"
+      ],
+      "candidate_count": 4,
+      "candidates": [
+        {
+          "provider": "open_meteo",
+          "capability": "wind_gusts",
+          "resource_type": "value",
+          "quantity": "wind_gust_speed",
+          "observation_kind": "forecast"
+        },
+        {
+          "provider": "met_norway",
+          "capability": "wind_gusts",
+          "resource_type": "value",
+          "quantity": "wind_gust_speed",
+          "observation_kind": "forecast"
+        },
+        {
+          "provider": "fmi",
+          "capability": "wind_gusts",
+          "resource_type": "value",
+          "quantity": "wind_gust_speed",
+          "observation_kind": "forecast"
+        },
+        {
+          "provider": "smhi",
+          "capability": "wind_gusts",
+          "resource_type": "value",
+          "quantity": "wind_gust_speed",
+          "observation_kind": "forecast"
+        }
+      ],
+      "legacy_isolation_class": "routable_multi_candidate",
+      "classification": "routable_multi_candidate",
+      "evidence": "Current provider mapping contains multiple direct candidates; full semantic equivalence remains separately tested."
+    },
+    {
+      "id": "weather.point.wind_speed",
+      "family": "point",
+      "strategy": null,
+      "resource_types": [
+        "value"
+      ],
+      "phenomena": [
+        "wind"
+      ],
+      "candidate_count": 5,
+      "candidates": [
+        {
+          "provider": "open_meteo",
+          "capability": "wind_speed",
+          "resource_type": "value",
+          "quantity": "wind_speed",
+          "observation_kind": "forecast"
+        },
+        {
+          "provider": "met_norway",
+          "capability": "wind_speed",
+          "resource_type": "value",
+          "quantity": "wind_speed",
+          "observation_kind": "forecast"
+        },
+        {
+          "provider": "noaa_nws",
+          "capability": "wind_speed",
+          "resource_type": "value",
+          "quantity": "wind_speed",
+          "observation_kind": "forecast"
+        },
+        {
+          "provider": "fmi",
+          "capability": "wind_speed",
+          "resource_type": "value",
+          "quantity": "wind_speed",
+          "observation_kind": "forecast"
+        },
+        {
+          "provider": "smhi",
+          "capability": "wind_speed",
+          "resource_type": "value",
+          "quantity": "wind_speed",
+          "observation_kind": "forecast"
+        }
+      ],
+      "legacy_isolation_class": "routable_multi_candidate",
+      "classification": "routable_multi_candidate",
+      "evidence": "Current provider mapping contains multiple direct candidates; full semantic equivalence remains separately tested."
+    },
+    {
+      "id": "weather.point.wind_summary",
+      "family": "point",
+      "strategy": null,
+      "resource_types": [
+        "value"
+      ],
+      "phenomena": [
+        "wind"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "jma",
+          "capability": "wind_summary",
+          "resource_type": "value",
+          "quantity": null,
+          "observation_kind": "forecast"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "weather.precipitation.layer",
+      "family": "precipitation",
+      "strategy": "single",
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [
+        "precipitation"
+      ],
+      "candidate_count": 5,
+      "candidates": [
+        {
+          "provider": "rainviewer",
+          "capability": "radar_reflectivity",
+          "resource_type": "raster_tile",
+          "quantity": "radar_reflectivity",
+          "observation_kind": "observation"
+        },
+        {
+          "provider": "dwd",
+          "capability": "radar_precipitation",
+          "resource_type": "raster_tile",
+          "quantity": "precipitation_rate",
+          "observation_kind": "observation_forecast"
+        },
+        {
+          "provider": "dwd",
+          "capability": "radar_precipitation_quality_checked",
+          "resource_type": "raster_tile",
+          "quantity": "precipitation_rate",
+          "observation_kind": "observation"
+        },
+        {
+          "provider": "dwd",
+          "capability": "icon_eu_precipitation_1h",
+          "resource_type": "raster_tile",
+          "quantity": "precipitation_accumulation_1h",
+          "observation_kind": "forecast"
+        },
+        {
+          "provider": "nasa_gibs",
+          "capability": "satellite_precipitation_imerg_30min",
+          "resource_type": "raster_tile",
+          "quantity": "precipitation_rate",
+          "observation_kind": "estimate"
+        }
+      ],
+      "legacy_isolation_class": "routable_multi_candidate",
+      "classification": "routable_multi_candidate",
+      "evidence": "Current provider mapping contains multiple direct candidates; full semantic equivalence remains separately tested."
+    },
+    {
+      "id": "weather.radar.precipitation",
+      "family": "radar",
+      "strategy": "single",
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [
+        "precipitation"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "dwd",
+          "capability": "radar_precipitation",
+          "resource_type": "raster_tile",
+          "quantity": "precipitation_rate",
+          "observation_kind": "observation_forecast"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "weather.radar.precipitation.quality_checked",
+      "family": "radar",
+      "strategy": null,
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [
+        "precipitation"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "dwd",
+          "capability": "radar_precipitation_quality_checked",
+          "resource_type": "raster_tile",
+          "quantity": "precipitation_rate",
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "weather.radar.reflectivity",
+      "family": "radar",
+      "strategy": null,
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "rainviewer",
+          "capability": "radar_reflectivity",
+          "resource_type": "raster_tile",
+          "quantity": "radar_reflectivity",
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_specialized",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "weather.satellite.air_mass.goes_east",
+      "family": "satellite",
+      "strategy": null,
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "nasa_gibs",
+          "capability": "satellite_goes_east_air_mass",
+          "resource_type": "raster_tile",
+          "quantity": null,
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_specialized",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "weather.satellite.air_mass.goes_west",
+      "family": "satellite",
+      "strategy": null,
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "nasa_gibs",
+          "capability": "satellite_goes_west_air_mass",
+          "resource_type": "raster_tile",
+          "quantity": null,
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_specialized",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "weather.satellite.air_mass.himawari_9",
+      "family": "satellite",
+      "strategy": null,
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "nasa_gibs",
+          "capability": "satellite_himawari_air_mass",
+          "resource_type": "raster_tile",
+          "quantity": null,
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_specialized",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "weather.satellite.clouds",
+      "family": "satellite",
+      "strategy": "single",
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [
+        "clouds"
+      ],
+      "candidate_count": 2,
+      "candidates": [
+        {
+          "provider": "dwd",
+          "capability": "satellite_clouds",
+          "resource_type": "raster_tile",
+          "quantity": null,
+          "observation_kind": "observation"
+        },
+        {
+          "provider": "eumetview",
+          "capability": "satellite_clouds",
+          "resource_type": "raster_tile",
+          "quantity": null,
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "routable_multi_candidate",
+      "classification": "routable_multi_candidate",
+      "evidence": "Current provider mapping contains multiple direct candidates; full semantic equivalence remains separately tested."
+    },
+    {
+      "id": "weather.satellite.dust.goes_east",
+      "family": "satellite",
+      "strategy": null,
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "nasa_gibs",
+          "capability": "satellite_goes_east_dust",
+          "resource_type": "raster_tile",
+          "quantity": null,
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_specialized",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "weather.satellite.dust.goes_west",
+      "family": "satellite",
+      "strategy": null,
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "nasa_gibs",
+          "capability": "satellite_goes_west_dust",
+          "resource_type": "raster_tile",
+          "quantity": null,
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_specialized",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "weather.satellite.fire_temperature.goes_east",
+      "family": "satellite",
+      "strategy": null,
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "nasa_gibs",
+          "capability": "satellite_goes_east_fire_temperature",
+          "resource_type": "raster_tile",
+          "quantity": null,
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_specialized",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "weather.satellite.fire_temperature.goes_west",
+      "family": "satellite",
+      "strategy": null,
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "nasa_gibs",
+          "capability": "satellite_goes_west_fire_temperature",
+          "resource_type": "raster_tile",
+          "quantity": null,
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_specialized",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "weather.satellite.geocolor.goes_east",
+      "family": "satellite",
+      "strategy": null,
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "nasa_gibs",
+          "capability": "satellite_goes_east_geocolor",
+          "resource_type": "raster_tile",
+          "quantity": null,
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_specialized",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "weather.satellite.geocolor.goes_west",
+      "family": "satellite",
+      "strategy": null,
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "nasa_gibs",
+          "capability": "satellite_goes_west_geocolor",
+          "resource_type": "raster_tile",
+          "quantity": null,
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_specialized",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "weather.satellite.infrared.goes_east",
+      "family": "satellite",
+      "strategy": null,
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "nasa_gibs",
+          "capability": "satellite_goes_east_clean_ir",
+          "resource_type": "raster_tile",
+          "quantity": null,
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_specialized",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "weather.satellite.infrared.goes_west",
+      "family": "satellite",
+      "strategy": null,
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "nasa_gibs",
+          "capability": "satellite_goes_west_clean_ir",
+          "resource_type": "raster_tile",
+          "quantity": null,
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_specialized",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "weather.satellite.infrared.himawari_9",
+      "family": "satellite",
+      "strategy": null,
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "nasa_gibs",
+          "capability": "satellite_himawari_clean_ir",
+          "resource_type": "raster_tile",
+          "quantity": null,
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_specialized",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "weather.satellite.precipitation_rate",
+      "family": "satellite",
+      "strategy": null,
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [
+        "precipitation"
+      ],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "nasa_gibs",
+          "capability": "satellite_precipitation_imerg_30min",
+          "resource_type": "raster_tile",
+          "quantity": "precipitation_rate",
+          "observation_kind": "estimate"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_with_phenomenon_peers",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "weather.satellite.true_color",
+      "family": "satellite",
+      "strategy": null,
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "nasa_gibs",
+          "capability": "satellite_imagery_true_color",
+          "resource_type": "raster_tile",
+          "quantity": null,
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_specialized",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "weather.satellite.visible_red.goes_east",
+      "family": "satellite",
+      "strategy": null,
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "nasa_gibs",
+          "capability": "satellite_goes_east_visible_red",
+          "resource_type": "raster_tile",
+          "quantity": null,
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_specialized",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "weather.satellite.visible_red.goes_west",
+      "family": "satellite",
+      "strategy": null,
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "nasa_gibs",
+          "capability": "satellite_goes_west_visible_red",
+          "resource_type": "raster_tile",
+          "quantity": null,
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_specialized",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "weather.satellite.visible_red.himawari_9",
+      "family": "satellite",
+      "strategy": null,
+      "resource_types": [
+        "raster_tile"
+      ],
+      "phenomena": [],
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "provider": "nasa_gibs",
+          "capability": "satellite_himawari_visible_red",
+          "resource_type": "raster_tile",
+          "quantity": null,
+          "observation_kind": "observation"
+        }
+      ],
+      "legacy_isolation_class": "single_candidate_specialized",
+      "classification": "pending_semantic_review",
+      "evidence": "Single-candidate public path. Requires context-specific P6-010 decision; not an automatic orphan, merge candidate, or defect."
+    },
+    {
+      "id": "weather.warning.official",
+      "family": "warning",
+      "strategy": "aggregate",
+      "resource_types": [
+        "hazard_feed"
+      ],
+      "phenomena": [],
+      "candidate_count": 2,
+      "candidates": [
+        {
+          "provider": "dwd",
+          "capability": "official_weather_warnings",
+          "resource_type": "hazard_feed",
+          "quantity": null,
+          "observation_kind": "warning_event"
+        },
+        {
+          "provider": "noaa_nws",
+          "capability": "official_weather_alerts",
+          "resource_type": "hazard_feed",
+          "quantity": null,
+          "observation_kind": "warning_event"
+        }
+      ],
+      "legacy_isolation_class": "routable_multi_candidate",
+      "classification": "routable_multi_candidate",
+      "evidence": "Current provider mapping contains multiple direct candidates; full semantic equivalence remains separately tested."
+    }
+  ]
+}

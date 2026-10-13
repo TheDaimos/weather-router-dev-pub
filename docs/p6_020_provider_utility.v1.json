@@ -1,0 +1,3163 @@
+{
+  "schema": "weather_router.p6_020_provider_utility.v1",
+  "date": "2026-10-09",
+  "status": "STATIC_PROVIDER_UTILITY_COMPLETE_PENDING_CI",
+  "source_contract": "custom_components/weather_router/consumer_capability_map.json",
+  "summary": {
+    "core_provider_count": 38,
+    "with_public_contract": 38,
+    "without_public_contract": [],
+    "removal_recommended": 0
+  },
+  "rules": [
+    "Specific public API mapping, not raw provider count, defines consumer reachability.",
+    "Aggregate membership is public API reachability, not single-provider standalone resolve.",
+    "Actual real-world consumer usage and live provider health have not been measured.",
+    "Keep deliberate opt-in and specialized contracts even when only one provider exists.",
+    "Do not remove or prioritize providers without separate justified approval."
+  ],
+  "providers": [
+    {
+      "provider_id": "aviation_weather",
+      "decision": "keep_public_contract",
+      "consumer_need": "SIGMET, AIRMET und G-AIRMET als getrennte Luftfahrtwarnprodukte.",
+      "evidence_doc": "docs/P5_AVIATION_70_ABSCHLUSS_2026-10-08.md",
+      "core_internal_capabilities": 3,
+      "public_targets": [
+        "aviation.airmet.us",
+        "aviation.gairmet.us",
+        "aviation.sigmet.international"
+      ],
+      "public_routes": [
+        {
+          "public_id": "aviation.airmet.us",
+          "internal_capability": "us_airsigmet_current",
+          "public_family": "airmet",
+          "public_strategy": "specialized_default",
+          "resource_type": "hazard_feed",
+          "observation_kind": "warning_event"
+        },
+        {
+          "public_id": "aviation.gairmet.us",
+          "internal_capability": "us_gairmet_current",
+          "public_family": "gairmet",
+          "public_strategy": "specialized_default",
+          "resource_type": "hazard_feed",
+          "observation_kind": "warning_event"
+        },
+        {
+          "public_id": "aviation.sigmet.international",
+          "internal_capability": "international_sigmet_worldwide",
+          "public_family": "sigmet",
+          "public_strategy": "specialized_default",
+          "resource_type": "hazard_feed",
+          "observation_kind": "warning_event"
+        }
+      ],
+      "reachability": "core_provider_candidate_mapped_to_public_consumer_api",
+      "actual_consumer_usage_telemetry": "unknown_not_claimed",
+      "removal_recommended": false,
+      "limitations": "Static contract does not prove live API health, allowed policy, observed consumer usage or context coverage."
+    },
+    {
+      "provider_id": "bbk_mowas",
+      "decision": "keep_public_contract",
+      "consumer_need": "MoWaS/BBK-Bevölkerungsschutzwarnungen.",
+      "evidence_doc": "docs/P5_CIVIL_70_ABSCHLUSS_2026-10-08.md",
+      "core_internal_capabilities": 1,
+      "public_targets": [
+        "civil_protection.warning.official"
+      ],
+      "public_routes": [
+        {
+          "public_id": "civil_protection.warning.official",
+          "internal_capability": "civil_protection_warnings_germany",
+          "public_family": "warning",
+          "public_strategy": "aggregate",
+          "resource_type": "hazard_feed",
+          "observation_kind": "warning_event"
+        }
+      ],
+      "reachability": "core_provider_candidate_mapped_to_public_consumer_api",
+      "actual_consumer_usage_telemetry": "unknown_not_claimed",
+      "removal_recommended": false,
+      "limitations": "Static contract does not prove live API health, allowed policy, observed consumer usage or context coverage."
+    },
+    {
+      "provider_id": "bbk_police",
+      "decision": "keep_public_contract",
+      "consumer_need": "Öffentliche Sicherheits-/Polizeiwarnungen.",
+      "evidence_doc": "docs/P5_SECURITY_70_ABSCHLUSS_2026-10-08.md",
+      "core_internal_capabilities": 1,
+      "public_targets": [
+        "security.public_warning.official"
+      ],
+      "public_routes": [
+        {
+          "public_id": "security.public_warning.official",
+          "internal_capability": "police_public_safety_warnings_germany",
+          "public_family": "public_warning",
+          "public_strategy": "specialized_default",
+          "resource_type": "hazard_feed",
+          "observation_kind": "warning_event"
+        }
+      ],
+      "reachability": "core_provider_candidate_mapped_to_public_consumer_api",
+      "actual_consumer_usage_telemetry": "unknown_not_claimed",
+      "removal_recommended": false,
+      "limitations": "Static contract does not prove live API health, allowed policy, observed consumer usage or context coverage."
+    },
+    {
+      "provider_id": "bmkg_tsunami",
+      "decision": "keep_public_contract",
+      "consumer_need": "Erdbebenbasiertes BMKG-Tsunamipotenzial.",
+      "evidence_doc": "docs/P4_TSUNAMI_70_ABSCHLUSS_2026-10-06.md",
+      "core_internal_capabilities": 1,
+      "public_targets": [
+        "natural_hazards.tsunami.potential"
+      ],
+      "public_routes": [
+        {
+          "public_id": "natural_hazards.tsunami.potential",
+          "internal_capability": "tsunami_potential_earthquake",
+          "public_family": "tsunami",
+          "public_strategy": "specialized_default",
+          "resource_type": "hazard_feed",
+          "observation_kind": "observation"
+        }
+      ],
+      "reachability": "core_provider_candidate_mapped_to_public_consumer_api",
+      "actual_consumer_usage_telemetry": "unknown_not_claimed",
+      "removal_recommended": false,
+      "limitations": "Static contract does not prove live API health, allowed policy, observed consumer usage or context coverage."
+    },
+    {
+      "provider_id": "bom_tsunami",
+      "decision": "keep_public_contract",
+      "consumer_need": "Australische amtliche Tsunamiwarnungen.",
+      "evidence_doc": "docs/P4_TSUNAMI_70_ABSCHLUSS_2026-10-06.md",
+      "core_internal_capabilities": 1,
+      "public_targets": [
+        "natural_hazards.tsunami.warnings"
+      ],
+      "public_routes": [
+        {
+          "public_id": "natural_hazards.tsunami.warnings",
+          "internal_capability": "official_tsunami_warnings_australia",
+          "public_family": "tsunami",
+          "public_strategy": "aggregate",
+          "resource_type": "hazard_feed",
+          "observation_kind": "warning_event"
+        }
+      ],
+      "reachability": "core_provider_candidate_mapped_to_public_consumer_api",
+      "actual_consumer_usage_telemetry": "unknown_not_claimed",
+      "removal_recommended": false,
+      "limitations": "Static contract does not prove live API health, allowed policy, observed consumer usage or context coverage."
+    },
+    {
+      "provider_id": "dwd",
+      "decision": "keep_public_contract",
+      "consumer_need": "Deutsche Wetterwarnungen, Radar, Satelliten, Gewitterzellen und ICON-Modellkarten.",
+      "evidence_doc": "docs/P3_WARN_70_ABSCHLUSS_2026-10-04.md",
+      "core_internal_capabilities": 9,
+      "public_targets": [
+        "weather.convection.thunderstorm_cells",
+        "weather.lightning.density",
+        "weather.model.precipitation_1h.layer",
+        "weather.model.temperature_2m.layer",
+        "weather.model.wind_10m.layer",
+        "weather.precipitation.layer",
+        "weather.radar.precipitation",
+        "weather.radar.precipitation.quality_checked",
+        "weather.satellite.clouds",
+        "weather.warning.official"
+      ],
+      "public_routes": [
+        {
+          "public_id": "weather.convection.thunderstorm_cells",
+          "internal_capability": "thunderstorm_cells",
+          "public_family": "convection",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "nowcast"
+        },
+        {
+          "public_id": "weather.lightning.density",
+          "internal_capability": "lightning_density",
+          "public_family": "lightning",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "weather.model.precipitation_1h.layer",
+          "internal_capability": "icon_eu_precipitation_1h",
+          "public_family": "model",
+          "public_strategy": "specialized_default",
+          "resource_type": "raster_tile",
+          "observation_kind": "forecast"
+        },
+        {
+          "public_id": "weather.model.temperature_2m.layer",
+          "internal_capability": "icon_temperature_2m",
+          "public_family": "model",
+          "public_strategy": "specialized_default",
+          "resource_type": "raster_tile",
+          "observation_kind": "forecast"
+        },
+        {
+          "public_id": "weather.model.wind_10m.layer",
+          "internal_capability": "icon_wind_10m",
+          "public_family": "model",
+          "public_strategy": "specialized_default",
+          "resource_type": "raster_tile",
+          "observation_kind": "forecast"
+        },
+        {
+          "public_id": "weather.precipitation.layer",
+          "internal_capability": "radar_precipitation",
+          "public_family": "precipitation",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation_forecast"
+        },
+        {
+          "public_id": "weather.precipitation.layer",
+          "internal_capability": "radar_precipitation_quality_checked",
+          "public_family": "precipitation",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "weather.precipitation.layer",
+          "internal_capability": "icon_eu_precipitation_1h",
+          "public_family": "precipitation",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "forecast"
+        },
+        {
+          "public_id": "weather.radar.precipitation",
+          "internal_capability": "radar_precipitation",
+          "public_family": "radar",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation_forecast"
+        },
+        {
+          "public_id": "weather.radar.precipitation.quality_checked",
+          "internal_capability": "radar_precipitation_quality_checked",
+          "public_family": "radar",
+          "public_strategy": "specialized_default",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "weather.satellite.clouds",
+          "internal_capability": "satellite_clouds",
+          "public_family": "satellite",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "weather.warning.official",
+          "internal_capability": "official_weather_warnings",
+          "public_family": "warning",
+          "public_strategy": "aggregate",
+          "resource_type": "hazard_feed",
+          "observation_kind": "warning_event"
+        }
+      ],
+      "reachability": "core_provider_candidate_mapped_to_public_consumer_api",
+      "actual_consumer_usage_telemetry": "unknown_not_claimed",
+      "removal_recommended": false,
+      "limitations": "Static contract does not prove live API health, allowed policy, observed consumer usage or context coverage."
+    },
+    {
+      "provider_id": "eccc_geomet",
+      "decision": "keep_public_contract",
+      "consumer_need": "Kanadische Stationsbeobachtungen und Punktwerte.",
+      "evidence_doc": "docs/P2_VIS_70_ABSCHLUSS_2026-10-03.md",
+      "core_internal_capabilities": 8,
+      "public_targets": [
+        "weather.observation.cloud_cover",
+        "weather.observation.temperature",
+        "weather.observation.visibility",
+        "weather.observation.wind_direction_at_max_speed",
+        "weather.point.air_pressure",
+        "weather.point.dew_point",
+        "weather.point.precipitation_1h",
+        "weather.point.relative_humidity"
+      ],
+      "public_routes": [
+        {
+          "public_id": "weather.observation.cloud_cover",
+          "internal_capability": "cloud_cover",
+          "public_family": "observation",
+          "public_strategy": "single",
+          "resource_type": "value",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "weather.observation.temperature",
+          "internal_capability": "temperature",
+          "public_family": "observation",
+          "public_strategy": "specialized_default",
+          "resource_type": "value",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "weather.observation.visibility",
+          "internal_capability": "visibility",
+          "public_family": "observation",
+          "public_strategy": "specialized_default",
+          "resource_type": "value",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "weather.observation.wind_direction_at_max_speed",
+          "internal_capability": "wind_direction",
+          "public_family": "observation",
+          "public_strategy": "single",
+          "resource_type": "value",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "weather.point.air_pressure",
+          "internal_capability": "air_pressure",
+          "public_family": "point",
+          "public_strategy": "specialized_default",
+          "resource_type": "value",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "weather.point.dew_point",
+          "internal_capability": "dew_point",
+          "public_family": "point",
+          "public_strategy": "specialized_default",
+          "resource_type": "value",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "weather.point.precipitation_1h",
+          "internal_capability": "precipitation_1h",
+          "public_family": "point",
+          "public_strategy": "specialized_default",
+          "resource_type": "value",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "weather.point.relative_humidity",
+          "internal_capability": "relative_humidity",
+          "public_family": "point",
+          "public_strategy": "specialized_default",
+          "resource_type": "value",
+          "observation_kind": "observation"
+        }
+      ],
+      "reachability": "core_provider_candidate_mapped_to_public_consumer_api",
+      "actual_consumer_usage_telemetry": "unknown_not_claimed",
+      "removal_recommended": false,
+      "limitations": "Static contract does not prove live API health, allowed policy, observed consumer usage or context coverage."
+    },
+    {
+      "provider_id": "eccc_lightning",
+      "decision": "keep_public_contract",
+      "consumer_need": "Kanadisches ECCC-Blitzdichteraster.",
+      "evidence_doc": "docs/P3_LIGHTNING_70_ABSCHLUSS_2026-10-04.md",
+      "core_internal_capabilities": 1,
+      "public_targets": [
+        "weather.lightning.observed.density"
+      ],
+      "public_routes": [
+        {
+          "public_id": "weather.lightning.observed.density",
+          "internal_capability": "lightning_density_2_5km",
+          "public_family": "lightning_density",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        }
+      ],
+      "reachability": "core_provider_candidate_mapped_to_public_consumer_api",
+      "actual_consumer_usage_telemetry": "unknown_not_claimed",
+      "removal_recommended": false,
+      "limitations": "Static contract does not prove live API health, allowed policy, observed consumer usage or context coverage."
+    },
+    {
+      "provider_id": "ecmwf_open_data",
+      "decision": "keep_public_contract",
+      "consumer_need": "Offene IFS-/AIFS-Modelldateien.",
+      "evidence_doc": "docs/THEMEN_UND_ROUTING_STRATEGIE.md",
+      "core_internal_capabilities": 2,
+      "public_targets": [
+        "weather.model.aifs.data_file",
+        "weather.model.ifs.data_file"
+      ],
+      "public_routes": [
+        {
+          "public_id": "weather.model.aifs.data_file",
+          "internal_capability": "aifs_open_grib",
+          "public_family": "model",
+          "public_strategy": "specialized_default",
+          "resource_type": "data_file",
+          "observation_kind": "model"
+        },
+        {
+          "public_id": "weather.model.ifs.data_file",
+          "internal_capability": "ifs_open_grib",
+          "public_family": "model",
+          "public_strategy": "specialized_default",
+          "resource_type": "data_file",
+          "observation_kind": "model"
+        }
+      ],
+      "reachability": "core_provider_candidate_mapped_to_public_consumer_api",
+      "actual_consumer_usage_telemetry": "unknown_not_claimed",
+      "removal_recommended": false,
+      "limitations": "Static contract does not prove live API health, allowed policy, observed consumer usage or context coverage."
+    },
+    {
+      "provider_id": "eumetsat_mtg_li",
+      "decision": "keep_public_contract",
+      "consumer_need": "MTG-LI-Blitzakkumulation als Satellitenraster.",
+      "evidence_doc": "docs/P3_LIGHTNING_70_ABSCHLUSS_2026-10-04.md",
+      "core_internal_capabilities": 1,
+      "public_targets": [
+        "weather.lightning.satellite.mtg_li.accumulated_flashes"
+      ],
+      "public_routes": [
+        {
+          "public_id": "weather.lightning.satellite.mtg_li.accumulated_flashes",
+          "internal_capability": "mtg_li_accumulated_flashes",
+          "public_family": "lightning_satellite",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        }
+      ],
+      "reachability": "core_provider_candidate_mapped_to_public_consumer_api",
+      "actual_consumer_usage_telemetry": "unknown_not_claimed",
+      "removal_recommended": false,
+      "limitations": "Static contract does not prove live API health, allowed policy, observed consumer usage or context coverage."
+    },
+    {
+      "provider_id": "eumetview",
+      "decision": "keep_public_contract",
+      "consumer_need": "Europäische Wolkensatellitenbilder als Wolkenlayer-Kandidat.",
+      "evidence_doc": "docs/P2_CLOUD_70_ABSCHLUSS_2026-10-02.md",
+      "core_internal_capabilities": 1,
+      "public_targets": [
+        "weather.satellite.clouds"
+      ],
+      "public_routes": [
+        {
+          "public_id": "weather.satellite.clouds",
+          "internal_capability": "satellite_clouds",
+          "public_family": "satellite",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        }
+      ],
+      "reachability": "core_provider_candidate_mapped_to_public_consumer_api",
+      "actual_consumer_usage_telemetry": "unknown_not_claimed",
+      "removal_recommended": false,
+      "limitations": "Static contract does not prove live API health, allowed policy, observed consumer usage or context coverage."
+    },
+    {
+      "provider_id": "fmi",
+      "decision": "keep_public_contract",
+      "consumer_need": "Finnische Wetterpunktprognosen für Temperatur, Wind, Wolken und Sicht.",
+      "evidence_doc": "docs/P2_WIND_70_ABSCHLUSS_2026-10-02.md",
+      "core_internal_capabilities": 10,
+      "public_targets": [
+        "weather.point.air_pressure",
+        "weather.point.cloud_cover",
+        "weather.point.dew_point",
+        "weather.point.precipitation",
+        "weather.point.relative_humidity",
+        "weather.point.temperature",
+        "weather.point.visibility",
+        "weather.point.wind_direction",
+        "weather.point.wind_gusts",
+        "weather.point.wind_speed"
+      ],
+      "public_routes": [
+        {
+          "public_id": "weather.point.air_pressure",
+          "internal_capability": "air_pressure",
+          "public_family": "point",
+          "public_strategy": "specialized_default",
+          "resource_type": "value",
+          "observation_kind": "forecast"
+        },
+        {
+          "public_id": "weather.point.cloud_cover",
+          "internal_capability": "cloud_cover",
+          "public_family": "point",
+          "public_strategy": "specialized_default",
+          "resource_type": "value",
+          "observation_kind": "forecast"
+        },
+        {
+          "public_id": "weather.point.dew_point",
+          "internal_capability": "dew_point",
+          "public_family": "point",
+          "public_strategy": "specialized_default",
+          "resource_type": "value",
+          "observation_kind": "forecast"
+        },
+        {
+          "public_id": "weather.point.precipitation",
+          "internal_capability": "precipitation",
+          "public_family": "point",
+          "public_strategy": "specialized_default",
+          "resource_type": "value",
+          "observation_kind": "forecast"
+        },
+        {
+          "public_id": "weather.point.relative_humidity",
+          "internal_capability": "relative_humidity",
+          "public_family": "point",
+          "public_strategy": "specialized_default",
+          "resource_type": "value",
+          "observation_kind": "forecast"
+        },
+        {
+          "public_id": "weather.point.temperature",
+          "internal_capability": "temperature",
+          "public_family": "point",
+          "public_strategy": "specialized_default",
+          "resource_type": "value",
+          "observation_kind": "forecast"
+        },
+        {
+          "public_id": "weather.point.visibility",
+          "internal_capability": "visibility",
+          "public_family": "point",
+          "public_strategy": "specialized_default",
+          "resource_type": "value",
+          "observation_kind": "forecast"
+        },
+        {
+          "public_id": "weather.point.wind_direction",
+          "internal_capability": "wind_direction",
+          "public_family": "point",
+          "public_strategy": "specialized_default",
+          "resource_type": "value",
+          "observation_kind": "forecast"
+        },
+        {
+          "public_id": "weather.point.wind_gusts",
+          "internal_capability": "wind_gusts",
+          "public_family": "point",
+          "public_strategy": "specialized_default",
+          "resource_type": "value",
+          "observation_kind": "forecast"
+        },
+        {
+          "public_id": "weather.point.wind_speed",
+          "internal_capability": "wind_speed",
+          "public_family": "point",
+          "public_strategy": "specialized_default",
+          "resource_type": "value",
+          "observation_kind": "forecast"
+        }
+      ],
+      "reachability": "core_provider_candidate_mapped_to_public_consumer_api",
+      "actual_consumer_usage_telemetry": "unknown_not_claimed",
+      "removal_recommended": false,
+      "limitations": "Static contract does not prove live API health, allowed policy, observed consumer usage or context coverage."
+    },
+    {
+      "provider_id": "fmi_lightning",
+      "decision": "keep_public_contract",
+      "consumer_need": "FMI-Blitzereignisse sowie Entfernung und Azimut.",
+      "evidence_doc": "docs/P3_LIGHTNING_70_ABSCHLUSS_2026-10-04.md",
+      "core_internal_capabilities": 3,
+      "public_targets": [
+        "weather.lightning.observed.events",
+        "weather.lightning.observed.nearest_azimuth",
+        "weather.lightning.observed.nearest_distance"
+      ],
+      "public_routes": [
+        {
+          "public_id": "weather.lightning.observed.events",
+          "internal_capability": "lightning_strikes_observed",
+          "public_family": "lightning_observation",
+          "public_strategy": "single",
+          "resource_type": "event_feed",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "weather.lightning.observed.nearest_azimuth",
+          "internal_capability": "lightning_nearest_azimuth",
+          "public_family": "lightning_observation",
+          "public_strategy": "single",
+          "resource_type": "value",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "weather.lightning.observed.nearest_distance",
+          "internal_capability": "lightning_nearest_distance",
+          "public_family": "lightning_observation",
+          "public_strategy": "single",
+          "resource_type": "value",
+          "observation_kind": "observation"
+        }
+      ],
+      "reachability": "core_provider_candidate_mapped_to_public_consumer_api",
+      "actual_consumer_usage_telemetry": "unknown_not_claimed",
+      "removal_recommended": false,
+      "limitations": "Static contract does not prove live API health, allowed policy, observed consumer usage or context coverage."
+    },
+    {
+      "provider_id": "gbif_biodiversity",
+      "decision": "keep_public_contract",
+      "consumer_need": "Historische GBIF-Artennachweis-Raster für 88 Taxa.",
+      "evidence_doc": "docs/P5_BIO_70_ABSCHLUSS_2026-10-09.md",
+      "core_internal_capabilities": 88,
+      "public_targets": [
+        "biological_hazards.occurrence.aconite.density",
+        "biological_hazards.occurrence.aedes_aegypti.density",
+        "biological_hazards.occurrence.aedes_albopictus.density",
+        "biological_hazards.occurrence.african_buffalo.density",
+        "biological_hazards.occurrence.african_wild_dog.density",
+        "biological_hazards.occurrence.alligatoridae.density",
+        "biological_hazards.occurrence.american_alligator.density",
+        "biological_hazards.occurrence.anopheles.density",
+        "biological_hazards.occurrence.autumn_crocus.density",
+        "biological_hazards.occurrence.black_widows.density",
+        "biological_hazards.occurrence.blue_ringed_octopus.density",
+        "biological_hazards.occurrence.box_jellyfish.density",
+        "biological_hazards.occurrence.brown_bear.density",
+        "biological_hazards.occurrence.brugmansia.density",
+        "biological_hazards.occurrence.bull_shark.density",
+        "biological_hazards.occurrence.buthidae.density",
+        "biological_hazards.occurrence.caiman.density",
+        "biological_hazards.occurrence.castor_bean.density",
+        "biological_hazards.occurrence.cheetah.density",
+        "biological_hazards.occurrence.chironex_fleckeri.density",
+        "biological_hazards.occurrence.cobras.density",
+        "biological_hazards.occurrence.cone_snails.density",
+        "biological_hazards.occurrence.coral_snakes.density",
+        "biological_hazards.occurrence.crocodylia.density",
+        "biological_hazards.occurrence.crocodylus.density",
+        "biological_hazards.occurrence.datura.density",
+        "biological_hazards.occurrence.deadly_nightshade.density",
+        "biological_hazards.occurrence.deadly_webcap.density",
+        "biological_hazards.occurrence.death_cap.density",
+        "biological_hazards.occurrence.destroying_angel.density",
+        "biological_hazards.occurrence.elapidae.density",
+        "biological_hazards.occurrence.elephantidae.density",
+        "biological_hazards.occurrence.false_morel.density",
+        "biological_hazards.occurrence.felidae.density",
+        "biological_hazards.occurrence.foxglove.density",
+        "biological_hazards.occurrence.funnel_web_spiders.density",
+        "biological_hazards.occurrence.galerina_marginata.density",
+        "biological_hazards.occurrence.giant_hogweed.density",
+        "biological_hazards.occurrence.golden_chain.density",
+        "biological_hazards.occurrence.great_white_shark.density",
+        "biological_hazards.occurrence.gympie_gympie.density",
+        "biological_hazards.occurrence.hammerhead_sharks.density",
+        "biological_hazards.occurrence.hippopotamus.density",
+        "biological_hazards.occurrence.hyaenidae.density",
+        "biological_hazards.occurrence.jaguar.density",
+        "biological_hazards.occurrence.kraits.density",
+        "biological_hazards.occurrence.lanceheads.density",
+        "biological_hazards.occurrence.leopard.density",
+        "biological_hazards.occurrence.lion.density",
+        "biological_hazards.occurrence.mambas.density",
+        "biological_hazards.occurrence.manchineel.density",
+        "biological_hazards.occurrence.nile_crocodile.density",
+        "biological_hazards.occurrence.oleander.density",
+        "biological_hazards.occurrence.panthera.density",
+        "biological_hazards.occurrence.pit_vipers.density",
+        "biological_hazards.occurrence.poison_dart_frogs.density",
+        "biological_hazards.occurrence.poison_hemlock.density",
+        "biological_hazards.occurrence.polar_bear.density",
+        "biological_hazards.occurrence.portuguese_man_o_war.density",
+        "biological_hazards.occurrence.puff_adders.density",
+        "biological_hazards.occurrence.puma.density",
+        "biological_hazards.occurrence.rattlesnakes.density",
+        "biological_hazards.occurrence.recluse_spiders.density",
+        "biological_hazards.occurrence.requiem_sharks.density",
+        "biological_hazards.occurrence.rhinocerotidae.density",
+        "biological_hazards.occurrence.rosary_pea.density",
+        "biological_hazards.occurrence.saltwater_crocodile.density",
+        "biological_hazards.occurrence.saw_scaled_vipers.density",
+        "biological_hazards.occurrence.scorpions.density",
+        "biological_hazards.occurrence.sea_snakes.density",
+        "biological_hazards.occurrence.serpentes.density",
+        "biological_hazards.occurrence.sharks.density",
+        "biological_hazards.occurrence.snow_leopard.density",
+        "biological_hazards.occurrence.stingrays.density",
+        "biological_hazards.occurrence.stonefish.density",
+        "biological_hazards.occurrence.strychnine_tree.density",
+        "biological_hazards.occurrence.suicide_tree.density",
+        "biological_hazards.occurrence.taipans.density",
+        "biological_hazards.occurrence.ticks.density",
+        "biological_hazards.occurrence.tiger.density",
+        "biological_hazards.occurrence.tiger_shark.density",
+        "biological_hazards.occurrence.toxicodendron.density",
+        "biological_hazards.occurrence.ursidae.density",
+        "biological_hazards.occurrence.viperidae.density",
+        "biological_hazards.occurrence.wandering_spiders.density",
+        "biological_hazards.occurrence.water_hemlock.density",
+        "biological_hazards.occurrence.wolf.density",
+        "biological_hazards.occurrence.yew.density"
+      ],
+      "public_routes": [
+        {
+          "public_id": "biological_hazards.occurrence.aconite.density",
+          "internal_capability": "occurrence_density_aconite",
+          "public_family": "biological_occurrence_density",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "biological_hazards.occurrence.aedes_aegypti.density",
+          "internal_capability": "occurrence_density_aedes_aegypti",
+          "public_family": "biological_occurrence_density",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "biological_hazards.occurrence.aedes_albopictus.density",
+          "internal_capability": "occurrence_density_aedes_albopictus",
+          "public_family": "biological_occurrence_density",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "biological_hazards.occurrence.african_buffalo.density",
+          "internal_capability": "occurrence_density_african_buffalo",
+          "public_family": "biological_occurrence_density",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "biological_hazards.occurrence.african_wild_dog.density",
+          "internal_capability": "occurrence_density_african_wild_dog",
+          "public_family": "biological_occurrence_density",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "biological_hazards.occurrence.alligatoridae.density",
+          "internal_capability": "occurrence_density_alligatoridae",
+          "public_family": "biological_occurrence_density",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "biological_hazards.occurrence.american_alligator.density",
+          "internal_capability": "occurrence_density_american_alligator",
+          "public_family": "biological_occurrence_density",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "biological_hazards.occurrence.anopheles.density",
+          "internal_capability": "occurrence_density_anopheles",
+          "public_family": "biological_occurrence_density",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "biological_hazards.occurrence.autumn_crocus.density",
+          "internal_capability": "occurrence_density_autumn_crocus",
+          "public_family": "biological_occurrence_density",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "biological_hazards.occurrence.black_widows.density",
+          "internal_capability": "occurrence_density_black_widows",
+          "public_family": "biological_occurrence_density",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "biological_hazards.occurrence.blue_ringed_octopus.density",
+          "internal_capability": "occurrence_density_blue_ringed_octopus",
+          "public_family": "biological_occurrence_density",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "biological_hazards.occurrence.box_jellyfish.density",
+          "internal_capability": "occurrence_density_box_jellyfish",
+          "public_family": "biological_occurrence_density",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "biological_hazards.occurrence.brown_bear.density",
+          "internal_capability": "occurrence_density_brown_bear",
+          "public_family": "biological_occurrence_density",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "biological_hazards.occurrence.brugmansia.density",
+          "internal_capability": "occurrence_density_brugmansia",
+          "public_family": "biological_occurrence_density",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "biological_hazards.occurrence.bull_shark.density",
+          "internal_capability": "occurrence_density_bull_shark",
+          "public_family": "biological_occurrence_density",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "biological_hazards.occurrence.buthidae.density",
+          "internal_capability": "occurrence_density_buthidae",
+          "public_family": "biological_occurrence_density",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "biological_hazards.occurrence.caiman.density",
+          "internal_capability": "occurrence_density_caiman",
+          "public_family": "biological_occurrence_density",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "biological_hazards.occurrence.castor_bean.density",
+          "internal_capability": "occurrence_density_castor_bean",
+          "public_family": "biological_occurrence_density",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "biological_hazards.occurrence.cheetah.density",
+          "internal_capability": "occurrence_density_cheetah",
+          "public_family": "biological_occurrence_density",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "biological_hazards.occurrence.chironex_fleckeri.density",
+          "internal_capability": "occurrence_density_chironex_fleckeri",
+          "public_family": "biological_occurrence_density",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "biological_hazards.occurrence.cobras.density",
+          "internal_capability": "occurrence_density_cobras",
+          "public_family": "biological_occurrence_density",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "biological_hazards.occurrence.cone_snails.density",
+          "internal_capability": "occurrence_density_cone_snails",
+          "public_family": "biological_occurrence_density",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "biological_hazards.occurrence.coral_snakes.density",
+          "internal_capability": "occurrence_density_coral_snakes",
+          "public_family": "biological_occurrence_density",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "biological_hazards.occurrence.crocodylia.density",
+          "internal_capability": "occurrence_density_crocodylia",
+          "public_family": "biological_occurrence_density",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "biological_hazards.occurrence.crocodylus.density",
+          "internal_capability": "occurrence_density_crocodylus",
+          "public_family": "biological_occurrence_density",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "biological_hazards.occurrence.datura.density",
+          "internal_capability": "occurrence_density_datura",
+          "public_family": "biological_occurrence_density",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "biological_hazards.occurrence.deadly_nightshade.density",
+          "internal_capability": "occurrence_density_deadly_nightshade",
+          "public_family": "biological_occurrence_density",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "biological_hazards.occurrence.deadly_webcap.density",
+          "internal_capability": "occurrence_density_deadly_webcap",
+          "public_family": "biological_occurrence_density",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "biological_hazards.occurrence.death_cap.density",
+          "internal_capability": "occurrence_density_death_cap",
+          "public_family": "biological_occurrence_density",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "biological_hazards.occurrence.destroying_angel.density",
+          "internal_capability": "occurrence_density_destroying_angel",
+          "public_family": "biological_occurrence_density",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "biological_hazards.occurrence.elapidae.density",
+          "internal_capability": "occurrence_density_elapidae",
+          "public_family": "biological_occurrence_density",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "biological_hazards.occurrence.elephantidae.density",
+          "internal_capability": "occurrence_density_elephantidae",
+          "public_family": "biological_occurrence_density",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "biological_hazards.occurrence.false_morel.density",
+          "internal_capability": "occurrence_density_false_morel",
+          "public_family": "biological_occurrence_density",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "biological_hazards.occurrence.felidae.density",
+          "internal_capability": "occurrence_density_felidae",
+          "public_family": "biological_occurrence_density",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "biological_hazards.occurrence.foxglove.density",
+          "internal_capability": "occurrence_density_foxglove",
+          "public_family": "biological_occurrence_density",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "biological_hazards.occurrence.funnel_web_spiders.density",
+          "internal_capability": "occurrence_density_funnel_web_spiders",
+          "public_family": "biological_occurrence_density",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "biological_hazards.occurrence.galerina_marginata.density",
+          "internal_capability": "occurrence_density_galerina_marginata",
+          "public_family": "biological_occurrence_density",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "biological_hazards.occurrence.giant_hogweed.density",
+          "internal_capability": "occurrence_density_giant_hogweed",
+          "public_family": "biological_occurrence_density",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "biological_hazards.occurrence.golden_chain.density",
+          "internal_capability": "occurrence_density_golden_chain",
+          "public_family": "biological_occurrence_density",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "biological_hazards.occurrence.great_white_shark.density",
+          "internal_capability": "occurrence_density_great_white_shark",
+          "public_family": "biological_occurrence_density",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "biological_hazards.occurrence.gympie_gympie.density",
+          "internal_capability": "occurrence_density_gympie_gympie",
+          "public_family": "biological_occurrence_density",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "biological_hazards.occurrence.hammerhead_sharks.density",
+          "internal_capability": "occurrence_density_hammerhead_sharks",
+          "public_family": "biological_occurrence_density",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "biological_hazards.occurrence.hippopotamus.density",
+          "internal_capability": "occurrence_density_hippopotamus",
+          "public_family": "biological_occurrence_density",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "biological_hazards.occurrence.hyaenidae.density",
+          "internal_capability": "occurrence_density_hyaenidae",
+          "public_family": "biological_occurrence_density",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "biological_hazards.occurrence.jaguar.density",
+          "internal_capability": "occurrence_density_jaguar",
+          "public_family": "biological_occurrence_density",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "biological_hazards.occurrence.kraits.density",
+          "internal_capability": "occurrence_density_kraits",
+          "public_family": "biological_occurrence_density",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "biological_hazards.occurrence.lanceheads.density",
+          "internal_capability": "occurrence_density_lanceheads",
+          "public_family": "biological_occurrence_density",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "biological_hazards.occurrence.leopard.density",
+          "internal_capability": "occurrence_density_leopard",
+          "public_family": "biological_occurrence_density",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "biological_hazards.occurrence.lion.density",
+          "internal_capability": "occurrence_density_lion",
+          "public_family": "biological_occurrence_density",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "biological_hazards.occurrence.mambas.density",
+          "internal_capability": "occurrence_density_mambas",
+          "public_family": "biological_occurrence_density",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "biological_hazards.occurrence.manchineel.density",
+          "internal_capability": "occurrence_density_manchineel",
+          "public_family": "biological_occurrence_density",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "biological_hazards.occurrence.nile_crocodile.density",
+          "internal_capability": "occurrence_density_nile_crocodile",
+          "public_family": "biological_occurrence_density",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "biological_hazards.occurrence.oleander.density",
+          "internal_capability": "occurrence_density_oleander",
+          "public_family": "biological_occurrence_density",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "biological_hazards.occurrence.panthera.density",
+          "internal_capability": "occurrence_density_panthera",
+          "public_family": "biological_occurrence_density",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "biological_hazards.occurrence.pit_vipers.density",
+          "internal_capability": "occurrence_density_pit_vipers",
+          "public_family": "biological_occurrence_density",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "biological_hazards.occurrence.poison_dart_frogs.density",
+          "internal_capability": "occurrence_density_poison_dart_frogs",
+          "public_family": "biological_occurrence_density",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "biological_hazards.occurrence.poison_hemlock.density",
+          "internal_capability": "occurrence_density_poison_hemlock",
+          "public_family": "biological_occurrence_density",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "biological_hazards.occurrence.polar_bear.density",
+          "internal_capability": "occurrence_density_polar_bear",
+          "public_family": "biological_occurrence_density",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "biological_hazards.occurrence.portuguese_man_o_war.density",
+          "internal_capability": "occurrence_density_portuguese_man_o_war",
+          "public_family": "biological_occurrence_density",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "biological_hazards.occurrence.puff_adders.density",
+          "internal_capability": "occurrence_density_puff_adders",
+          "public_family": "biological_occurrence_density",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "biological_hazards.occurrence.puma.density",
+          "internal_capability": "occurrence_density_puma",
+          "public_family": "biological_occurrence_density",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "biological_hazards.occurrence.rattlesnakes.density",
+          "internal_capability": "occurrence_density_rattlesnakes",
+          "public_family": "biological_occurrence_density",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "biological_hazards.occurrence.recluse_spiders.density",
+          "internal_capability": "occurrence_density_recluse_spiders",
+          "public_family": "biological_occurrence_density",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "biological_hazards.occurrence.requiem_sharks.density",
+          "internal_capability": "occurrence_density_requiem_sharks",
+          "public_family": "biological_occurrence_density",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "biological_hazards.occurrence.rhinocerotidae.density",
+          "internal_capability": "occurrence_density_rhinocerotidae",
+          "public_family": "biological_occurrence_density",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "biological_hazards.occurrence.rosary_pea.density",
+          "internal_capability": "occurrence_density_rosary_pea",
+          "public_family": "biological_occurrence_density",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "biological_hazards.occurrence.saltwater_crocodile.density",
+          "internal_capability": "occurrence_density_saltwater_crocodile",
+          "public_family": "biological_occurrence_density",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "biological_hazards.occurrence.saw_scaled_vipers.density",
+          "internal_capability": "occurrence_density_saw_scaled_vipers",
+          "public_family": "biological_occurrence_density",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "biological_hazards.occurrence.scorpions.density",
+          "internal_capability": "occurrence_density_scorpions",
+          "public_family": "biological_occurrence_density",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "biological_hazards.occurrence.sea_snakes.density",
+          "internal_capability": "occurrence_density_sea_snakes",
+          "public_family": "biological_occurrence_density",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "biological_hazards.occurrence.serpentes.density",
+          "internal_capability": "occurrence_density_serpentes",
+          "public_family": "biological_occurrence_density",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "biological_hazards.occurrence.sharks.density",
+          "internal_capability": "occurrence_density_sharks",
+          "public_family": "biological_occurrence_density",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "biological_hazards.occurrence.snow_leopard.density",
+          "internal_capability": "occurrence_density_snow_leopard",
+          "public_family": "biological_occurrence_density",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "biological_hazards.occurrence.stingrays.density",
+          "internal_capability": "occurrence_density_stingrays",
+          "public_family": "biological_occurrence_density",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "biological_hazards.occurrence.stonefish.density",
+          "internal_capability": "occurrence_density_stonefish",
+          "public_family": "biological_occurrence_density",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "biological_hazards.occurrence.strychnine_tree.density",
+          "internal_capability": "occurrence_density_strychnine_tree",
+          "public_family": "biological_occurrence_density",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "biological_hazards.occurrence.suicide_tree.density",
+          "internal_capability": "occurrence_density_suicide_tree",
+          "public_family": "biological_occurrence_density",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "biological_hazards.occurrence.taipans.density",
+          "internal_capability": "occurrence_density_taipans",
+          "public_family": "biological_occurrence_density",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "biological_hazards.occurrence.ticks.density",
+          "internal_capability": "occurrence_density_ticks",
+          "public_family": "biological_occurrence_density",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "biological_hazards.occurrence.tiger_shark.density",
+          "internal_capability": "occurrence_density_tiger_shark",
+          "public_family": "biological_occurrence_density",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "biological_hazards.occurrence.tiger.density",
+          "internal_capability": "occurrence_density_tiger",
+          "public_family": "biological_occurrence_density",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "biological_hazards.occurrence.toxicodendron.density",
+          "internal_capability": "occurrence_density_toxicodendron",
+          "public_family": "biological_occurrence_density",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "biological_hazards.occurrence.ursidae.density",
+          "internal_capability": "occurrence_density_ursidae",
+          "public_family": "biological_occurrence_density",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "biological_hazards.occurrence.viperidae.density",
+          "internal_capability": "occurrence_density_viperidae",
+          "public_family": "biological_occurrence_density",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "biological_hazards.occurrence.wandering_spiders.density",
+          "internal_capability": "occurrence_density_wandering_spiders",
+          "public_family": "biological_occurrence_density",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "biological_hazards.occurrence.water_hemlock.density",
+          "internal_capability": "occurrence_density_water_hemlock",
+          "public_family": "biological_occurrence_density",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "biological_hazards.occurrence.wolf.density",
+          "internal_capability": "occurrence_density_wolf",
+          "public_family": "biological_occurrence_density",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "biological_hazards.occurrence.yew.density",
+          "internal_capability": "occurrence_density_yew",
+          "public_family": "biological_occurrence_density",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        }
+      ],
+      "reachability": "core_provider_candidate_mapped_to_public_consumer_api",
+      "actual_consumer_usage_telemetry": "unknown_not_claimed",
+      "removal_recommended": false,
+      "limitations": "Static contract does not prove live API health, allowed policy, observed consumer usage or context coverage."
+    },
+    {
+      "provider_id": "gdacs",
+      "decision": "keep_public_contract",
+      "consumer_need": "GDACS-Gesamtlagewarnungen für Naturkatastrophen.",
+      "evidence_doc": "docs/P4_VOLCANO_70_ABSCHLUSS_2026-10-07.md",
+      "core_internal_capabilities": 1,
+      "public_targets": [
+        "natural_hazards.disaster_awareness.events"
+      ],
+      "public_routes": [
+        {
+          "public_id": "natural_hazards.disaster_awareness.events",
+          "internal_capability": "global_disaster_alerts_7d",
+          "public_family": "disaster_awareness",
+          "public_strategy": "specialized_default",
+          "resource_type": "hazard_feed",
+          "observation_kind": "warning_event"
+        }
+      ],
+      "reachability": "core_provider_candidate_mapped_to_public_consumer_api",
+      "actual_consumer_usage_telemetry": "unknown_not_claimed",
+      "removal_recommended": false,
+      "limitations": "Static contract does not prove live API health, allowed policy, observed consumer usage or context coverage."
+    },
+    {
+      "provider_id": "glofas",
+      "decision": "keep_public_contract",
+      "consumer_need": "GloFAS-Hochwasserwahrscheinlichkeit, Berichts-/Zeitfenster, Rapid-Layer.",
+      "evidence_doc": "docs/P4_FLOOD_70_ABSCHLUSS_2026-10-05.md",
+      "core_internal_capabilities": 9,
+      "public_targets": [
+        "natural_hazards.flood.hazard_100y.layer",
+        "natural_hazards.flood.probability_20y.layer",
+        "natural_hazards.flood.probability_5y.layer",
+        "natural_hazards.flood.rapid_impact.layer",
+        "natural_hazards.flood.rapid_mapping.layer",
+        "natural_hazards.flood.reporting_points.layer",
+        "natural_hazards.flood.summary_11_30d.layer",
+        "natural_hazards.flood.summary_1_3d.layer",
+        "natural_hazards.flood.summary_4_10d.layer"
+      ],
+      "public_routes": [
+        {
+          "public_id": "natural_hazards.flood.hazard_100y.layer",
+          "internal_capability": "flood_hazard_100y",
+          "public_family": "flood",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "model"
+        },
+        {
+          "public_id": "natural_hazards.flood.probability_20y.layer",
+          "internal_capability": "flood_probability_20y",
+          "public_family": "flood",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "model"
+        },
+        {
+          "public_id": "natural_hazards.flood.probability_5y.layer",
+          "internal_capability": "flood_probability_5y",
+          "public_family": "flood",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "model"
+        },
+        {
+          "public_id": "natural_hazards.flood.rapid_impact.layer",
+          "internal_capability": "rapid_impact_assessment",
+          "public_family": "flood",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "model"
+        },
+        {
+          "public_id": "natural_hazards.flood.rapid_mapping.layer",
+          "internal_capability": "rapid_flood_mapping",
+          "public_family": "flood",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "model"
+        },
+        {
+          "public_id": "natural_hazards.flood.reporting_points.layer",
+          "internal_capability": "flood_reporting_points",
+          "public_family": "flood",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "model"
+        },
+        {
+          "public_id": "natural_hazards.flood.summary_1_3d.layer",
+          "internal_capability": "flood_summary_1_3d",
+          "public_family": "flood",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "model"
+        },
+        {
+          "public_id": "natural_hazards.flood.summary_11_30d.layer",
+          "internal_capability": "flood_summary_11_30d",
+          "public_family": "flood",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "model"
+        },
+        {
+          "public_id": "natural_hazards.flood.summary_4_10d.layer",
+          "internal_capability": "flood_summary_4_10d",
+          "public_family": "flood",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "model"
+        }
+      ],
+      "reachability": "core_provider_candidate_mapped_to_public_consumer_api",
+      "actual_consumer_usage_telemetry": "unknown_not_claimed",
+      "removal_recommended": false,
+      "limitations": "Static contract does not prove live API health, allowed policy, observed consumer usage or context coverage."
+    },
+    {
+      "provider_id": "jma",
+      "decision": "keep_public_contract",
+      "consumer_need": "Japanische Wetterprognosen und amtliche Tsunami-Informationen.",
+      "evidence_doc": "docs/P4_TSUNAMI_70_ABSCHLUSS_2026-10-06.md",
+      "core_internal_capabilities": 7,
+      "public_targets": [
+        "natural_hazards.tsunami.observations",
+        "natural_hazards.tsunami.warnings",
+        "weather.point.precipitation_probability",
+        "weather.point.temperature",
+        "weather.point.weather_code",
+        "weather.point.weather_summary",
+        "weather.point.wind_summary"
+      ],
+      "public_routes": [
+        {
+          "public_id": "natural_hazards.tsunami.observations",
+          "internal_capability": "tsunami_observations_japan",
+          "public_family": "tsunami",
+          "public_strategy": "specialized_default",
+          "resource_type": "hazard_feed",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "natural_hazards.tsunami.warnings",
+          "internal_capability": "official_tsunami_warnings_japan",
+          "public_family": "tsunami",
+          "public_strategy": "aggregate",
+          "resource_type": "hazard_feed",
+          "observation_kind": "warning_event"
+        },
+        {
+          "public_id": "weather.point.precipitation_probability",
+          "internal_capability": "precipitation_probability",
+          "public_family": "point",
+          "public_strategy": "specialized_default",
+          "resource_type": "value",
+          "observation_kind": "forecast"
+        },
+        {
+          "public_id": "weather.point.temperature",
+          "internal_capability": "temperature",
+          "public_family": "point",
+          "public_strategy": "specialized_default",
+          "resource_type": "value",
+          "observation_kind": "forecast"
+        },
+        {
+          "public_id": "weather.point.weather_code",
+          "internal_capability": "weather_code",
+          "public_family": "point",
+          "public_strategy": "specialized_default",
+          "resource_type": "value",
+          "observation_kind": "forecast"
+        },
+        {
+          "public_id": "weather.point.weather_summary",
+          "internal_capability": "weather_summary",
+          "public_family": "point",
+          "public_strategy": "specialized_default",
+          "resource_type": "value",
+          "observation_kind": "forecast"
+        },
+        {
+          "public_id": "weather.point.wind_summary",
+          "internal_capability": "wind_summary",
+          "public_family": "point",
+          "public_strategy": "specialized_default",
+          "resource_type": "value",
+          "observation_kind": "forecast"
+        }
+      ],
+      "reachability": "core_provider_candidate_mapped_to_public_consumer_api",
+      "actual_consumer_usage_telemetry": "unknown_not_claimed",
+      "removal_recommended": false,
+      "limitations": "Static contract does not prove live API health, allowed policy, observed consumer usage or context coverage."
+    },
+    {
+      "provider_id": "met_norway",
+      "decision": "keep_public_contract",
+      "consumer_need": "Wetterpunktprognosen und kurzfristige Nowcast-Punktwerte.",
+      "evidence_doc": "docs/P2_WIND_70_ABSCHLUSS_2026-10-02.md",
+      "core_internal_capabilities": 23,
+      "public_targets": [
+        "weather.nowcast.precipitation",
+        "weather.nowcast.precipitation_rate",
+        "weather.nowcast.relative_humidity",
+        "weather.nowcast.temperature",
+        "weather.nowcast.wind_direction",
+        "weather.nowcast.wind_gusts",
+        "weather.nowcast.wind_speed",
+        "weather.point.air_pressure",
+        "weather.point.cloud_cover",
+        "weather.point.cloud_cover_high",
+        "weather.point.cloud_cover_low",
+        "weather.point.cloud_cover_mid",
+        "weather.point.dew_point",
+        "weather.point.fog",
+        "weather.point.precipitation",
+        "weather.point.precipitation_probability",
+        "weather.point.relative_humidity",
+        "weather.point.temperature",
+        "weather.point.thunder_probability",
+        "weather.point.uv_index_clear_sky",
+        "weather.point.wind_direction",
+        "weather.point.wind_gusts",
+        "weather.point.wind_speed"
+      ],
+      "public_routes": [
+        {
+          "public_id": "weather.nowcast.precipitation",
+          "internal_capability": "nowcast_precipitation",
+          "public_family": "nowcast",
+          "public_strategy": "specialized_default",
+          "resource_type": "value",
+          "observation_kind": "nowcast"
+        },
+        {
+          "public_id": "weather.nowcast.precipitation_rate",
+          "internal_capability": "nowcast_precipitation_rate",
+          "public_family": "nowcast",
+          "public_strategy": "specialized_default",
+          "resource_type": "value",
+          "observation_kind": "nowcast"
+        },
+        {
+          "public_id": "weather.nowcast.relative_humidity",
+          "internal_capability": "nowcast_relative_humidity",
+          "public_family": "nowcast",
+          "public_strategy": "specialized_default",
+          "resource_type": "value",
+          "observation_kind": "nowcast"
+        },
+        {
+          "public_id": "weather.nowcast.temperature",
+          "internal_capability": "nowcast_temperature",
+          "public_family": "nowcast",
+          "public_strategy": "specialized_default",
+          "resource_type": "value",
+          "observation_kind": "nowcast"
+        },
+        {
+          "public_id": "weather.nowcast.wind_direction",
+          "internal_capability": "nowcast_wind_direction",
+          "public_family": "nowcast",
+          "public_strategy": "specialized_default",
+          "resource_type": "value",
+          "observation_kind": "nowcast"
+        },
+        {
+          "public_id": "weather.nowcast.wind_gusts",
+          "internal_capability": "nowcast_wind_gusts",
+          "public_family": "nowcast",
+          "public_strategy": "specialized_default",
+          "resource_type": "value",
+          "observation_kind": "nowcast"
+        },
+        {
+          "public_id": "weather.nowcast.wind_speed",
+          "internal_capability": "nowcast_wind_speed",
+          "public_family": "nowcast",
+          "public_strategy": "specialized_default",
+          "resource_type": "value",
+          "observation_kind": "nowcast"
+        },
+        {
+          "public_id": "weather.point.air_pressure",
+          "internal_capability": "air_pressure",
+          "public_family": "point",
+          "public_strategy": "specialized_default",
+          "resource_type": "value",
+          "observation_kind": "forecast"
+        },
+        {
+          "public_id": "weather.point.cloud_cover",
+          "internal_capability": "cloud_cover",
+          "public_family": "point",
+          "public_strategy": "specialized_default",
+          "resource_type": "value",
+          "observation_kind": "forecast"
+        },
+        {
+          "public_id": "weather.point.cloud_cover_high",
+          "internal_capability": "cloud_cover_high",
+          "public_family": "point",
+          "public_strategy": "specialized_default",
+          "resource_type": "value",
+          "observation_kind": "forecast"
+        },
+        {
+          "public_id": "weather.point.cloud_cover_low",
+          "internal_capability": "cloud_cover_low",
+          "public_family": "point",
+          "public_strategy": "specialized_default",
+          "resource_type": "value",
+          "observation_kind": "forecast"
+        },
+        {
+          "public_id": "weather.point.cloud_cover_mid",
+          "internal_capability": "cloud_cover_mid",
+          "public_family": "point",
+          "public_strategy": "specialized_default",
+          "resource_type": "value",
+          "observation_kind": "forecast"
+        },
+        {
+          "public_id": "weather.point.dew_point",
+          "internal_capability": "dew_point",
+          "public_family": "point",
+          "public_strategy": "specialized_default",
+          "resource_type": "value",
+          "observation_kind": "forecast"
+        },
+        {
+          "public_id": "weather.point.fog",
+          "internal_capability": "fog",
+          "public_family": "point",
+          "public_strategy": "specialized_default",
+          "resource_type": "value",
+          "observation_kind": "forecast"
+        },
+        {
+          "public_id": "weather.point.precipitation",
+          "internal_capability": "precipitation",
+          "public_family": "point",
+          "public_strategy": "specialized_default",
+          "resource_type": "value",
+          "observation_kind": "forecast"
+        },
+        {
+          "public_id": "weather.point.precipitation_probability",
+          "internal_capability": "precipitation_probability",
+          "public_family": "point",
+          "public_strategy": "specialized_default",
+          "resource_type": "value",
+          "observation_kind": "forecast"
+        },
+        {
+          "public_id": "weather.point.relative_humidity",
+          "internal_capability": "relative_humidity",
+          "public_family": "point",
+          "public_strategy": "specialized_default",
+          "resource_type": "value",
+          "observation_kind": "forecast"
+        },
+        {
+          "public_id": "weather.point.temperature",
+          "internal_capability": "temperature",
+          "public_family": "point",
+          "public_strategy": "specialized_default",
+          "resource_type": "value",
+          "observation_kind": "forecast"
+        },
+        {
+          "public_id": "weather.point.thunder_probability",
+          "internal_capability": "thunder_probability",
+          "public_family": "point",
+          "public_strategy": "single",
+          "resource_type": "value",
+          "observation_kind": "forecast"
+        },
+        {
+          "public_id": "weather.point.uv_index_clear_sky",
+          "internal_capability": "uv_index",
+          "public_family": "point",
+          "public_strategy": "specialized_default",
+          "resource_type": "value",
+          "observation_kind": "forecast"
+        },
+        {
+          "public_id": "weather.point.wind_direction",
+          "internal_capability": "wind_direction",
+          "public_family": "point",
+          "public_strategy": "specialized_default",
+          "resource_type": "value",
+          "observation_kind": "forecast"
+        },
+        {
+          "public_id": "weather.point.wind_gusts",
+          "internal_capability": "wind_gusts",
+          "public_family": "point",
+          "public_strategy": "specialized_default",
+          "resource_type": "value",
+          "observation_kind": "forecast"
+        },
+        {
+          "public_id": "weather.point.wind_speed",
+          "internal_capability": "wind_speed",
+          "public_family": "point",
+          "public_strategy": "specialized_default",
+          "resource_type": "value",
+          "observation_kind": "forecast"
+        }
+      ],
+      "reachability": "core_provider_candidate_mapped_to_public_consumer_api",
+      "actual_consumer_usage_telemetry": "unknown_not_claimed",
+      "removal_recommended": false,
+      "limitations": "Static contract does not prove live API health, allowed policy, observed consumer usage or context coverage."
+    },
+    {
+      "provider_id": "met_norway_astronomy",
+      "decision": "keep_public_contract",
+      "consumer_need": "Sonnen- und Mond-Ephemeriden für Zeiten, Winkel, Phasen und Sichtbarkeit.",
+      "evidence_doc": "docs/P5_SPACE_70_ABSCHLUSS_2026-10-07.md",
+      "core_internal_capabilities": 24,
+      "public_targets": [
+        "space.moon.age_days",
+        "space.moon.high_elevation",
+        "space.moon.high_time",
+        "space.moon.high_visible",
+        "space.moon.illumination",
+        "space.moon.low_elevation",
+        "space.moon.low_time",
+        "space.moon.low_visible",
+        "space.moon.phase_angle",
+        "space.moon.phase_name",
+        "space.moon.rise_azimuth",
+        "space.moon.rise_time",
+        "space.moon.set_azimuth",
+        "space.moon.set_time",
+        "space.sun.high_elevation",
+        "space.sun.high_time",
+        "space.sun.high_visible",
+        "space.sun.low_elevation",
+        "space.sun.low_time",
+        "space.sun.low_visible",
+        "space.sun.rise_azimuth",
+        "space.sun.rise_time",
+        "space.sun.set_azimuth",
+        "space.sun.set_time"
+      ],
+      "public_routes": [
+        {
+          "public_id": "space.moon.age_days",
+          "internal_capability": "moon_age_days",
+          "public_family": "moon",
+          "public_strategy": "single",
+          "resource_type": "value",
+          "observation_kind": "estimate"
+        },
+        {
+          "public_id": "space.moon.high_elevation",
+          "internal_capability": "high_moon_elevation",
+          "public_family": "moon",
+          "public_strategy": "single",
+          "resource_type": "value",
+          "observation_kind": "estimate"
+        },
+        {
+          "public_id": "space.moon.high_time",
+          "internal_capability": "high_moon_time",
+          "public_family": "moon",
+          "public_strategy": "single",
+          "resource_type": "value",
+          "observation_kind": "estimate"
+        },
+        {
+          "public_id": "space.moon.high_visible",
+          "internal_capability": "high_moon_visible",
+          "public_family": "moon",
+          "public_strategy": "single",
+          "resource_type": "value",
+          "observation_kind": "estimate"
+        },
+        {
+          "public_id": "space.moon.illumination",
+          "internal_capability": "moon_illumination",
+          "public_family": "moon",
+          "public_strategy": "single",
+          "resource_type": "value",
+          "observation_kind": "estimate"
+        },
+        {
+          "public_id": "space.moon.low_elevation",
+          "internal_capability": "low_moon_elevation",
+          "public_family": "moon",
+          "public_strategy": "single",
+          "resource_type": "value",
+          "observation_kind": "estimate"
+        },
+        {
+          "public_id": "space.moon.low_time",
+          "internal_capability": "low_moon_time",
+          "public_family": "moon",
+          "public_strategy": "single",
+          "resource_type": "value",
+          "observation_kind": "estimate"
+        },
+        {
+          "public_id": "space.moon.low_visible",
+          "internal_capability": "low_moon_visible",
+          "public_family": "moon",
+          "public_strategy": "single",
+          "resource_type": "value",
+          "observation_kind": "estimate"
+        },
+        {
+          "public_id": "space.moon.phase_angle",
+          "internal_capability": "moon_phase_angle",
+          "public_family": "moon",
+          "public_strategy": "single",
+          "resource_type": "value",
+          "observation_kind": "estimate"
+        },
+        {
+          "public_id": "space.moon.phase_name",
+          "internal_capability": "moon_phase_name",
+          "public_family": "moon",
+          "public_strategy": "single",
+          "resource_type": "value",
+          "observation_kind": "estimate"
+        },
+        {
+          "public_id": "space.moon.rise_azimuth",
+          "internal_capability": "moonrise_azimuth",
+          "public_family": "moon",
+          "public_strategy": "single",
+          "resource_type": "value",
+          "observation_kind": "estimate"
+        },
+        {
+          "public_id": "space.moon.rise_time",
+          "internal_capability": "moonrise_time",
+          "public_family": "moon",
+          "public_strategy": "single",
+          "resource_type": "value",
+          "observation_kind": "estimate"
+        },
+        {
+          "public_id": "space.moon.set_azimuth",
+          "internal_capability": "moonset_azimuth",
+          "public_family": "moon",
+          "public_strategy": "single",
+          "resource_type": "value",
+          "observation_kind": "estimate"
+        },
+        {
+          "public_id": "space.moon.set_time",
+          "internal_capability": "moonset_time",
+          "public_family": "moon",
+          "public_strategy": "single",
+          "resource_type": "value",
+          "observation_kind": "estimate"
+        },
+        {
+          "public_id": "space.sun.high_elevation",
+          "internal_capability": "solar_noon_elevation",
+          "public_family": "sun",
+          "public_strategy": "single",
+          "resource_type": "value",
+          "observation_kind": "estimate"
+        },
+        {
+          "public_id": "space.sun.high_time",
+          "internal_capability": "solar_noon_time",
+          "public_family": "sun",
+          "public_strategy": "single",
+          "resource_type": "value",
+          "observation_kind": "estimate"
+        },
+        {
+          "public_id": "space.sun.high_visible",
+          "internal_capability": "solar_noon_visible",
+          "public_family": "sun",
+          "public_strategy": "single",
+          "resource_type": "value",
+          "observation_kind": "estimate"
+        },
+        {
+          "public_id": "space.sun.low_elevation",
+          "internal_capability": "solar_midnight_elevation",
+          "public_family": "sun",
+          "public_strategy": "single",
+          "resource_type": "value",
+          "observation_kind": "estimate"
+        },
+        {
+          "public_id": "space.sun.low_time",
+          "internal_capability": "solar_midnight_time",
+          "public_family": "sun",
+          "public_strategy": "single",
+          "resource_type": "value",
+          "observation_kind": "estimate"
+        },
+        {
+          "public_id": "space.sun.low_visible",
+          "internal_capability": "solar_midnight_visible",
+          "public_family": "sun",
+          "public_strategy": "single",
+          "resource_type": "value",
+          "observation_kind": "estimate"
+        },
+        {
+          "public_id": "space.sun.rise_azimuth",
+          "internal_capability": "sunrise_azimuth",
+          "public_family": "sun",
+          "public_strategy": "single",
+          "resource_type": "value",
+          "observation_kind": "estimate"
+        },
+        {
+          "public_id": "space.sun.rise_time",
+          "internal_capability": "sunrise_time",
+          "public_family": "sun",
+          "public_strategy": "single",
+          "resource_type": "value",
+          "observation_kind": "estimate"
+        },
+        {
+          "public_id": "space.sun.set_azimuth",
+          "internal_capability": "sunset_azimuth",
+          "public_family": "sun",
+          "public_strategy": "single",
+          "resource_type": "value",
+          "observation_kind": "estimate"
+        },
+        {
+          "public_id": "space.sun.set_time",
+          "internal_capability": "sunset_time",
+          "public_family": "sun",
+          "public_strategy": "single",
+          "resource_type": "value",
+          "observation_kind": "estimate"
+        }
+      ],
+      "reachability": "core_provider_candidate_mapped_to_public_consumer_api",
+      "actual_consumer_usage_telemetry": "unknown_not_claimed",
+      "removal_recommended": false,
+      "limitations": "Static contract does not prove live API health, allowed policy, observed consumer usage or context coverage."
+    },
+    {
+      "provider_id": "nasa_gibs",
+      "decision": "keep_public_contract",
+      "consumer_need": "NASA-Satellitenbilder und IMERG-Niederschlagsschätzung.",
+      "evidence_doc": "docs/P2_CLOUD_70_ABSCHLUSS_2026-10-02.md",
+      "core_internal_capabilities": 17,
+      "public_targets": [
+        "weather.precipitation.layer",
+        "weather.satellite.air_mass.goes_east",
+        "weather.satellite.air_mass.goes_west",
+        "weather.satellite.air_mass.himawari_9",
+        "weather.satellite.dust.goes_east",
+        "weather.satellite.dust.goes_west",
+        "weather.satellite.fire_temperature.goes_east",
+        "weather.satellite.fire_temperature.goes_west",
+        "weather.satellite.geocolor.goes_east",
+        "weather.satellite.geocolor.goes_west",
+        "weather.satellite.infrared.goes_east",
+        "weather.satellite.infrared.goes_west",
+        "weather.satellite.infrared.himawari_9",
+        "weather.satellite.precipitation_rate",
+        "weather.satellite.true_color",
+        "weather.satellite.visible_red.goes_east",
+        "weather.satellite.visible_red.goes_west",
+        "weather.satellite.visible_red.himawari_9"
+      ],
+      "public_routes": [
+        {
+          "public_id": "weather.precipitation.layer",
+          "internal_capability": "satellite_precipitation_imerg_30min",
+          "public_family": "precipitation",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "estimate"
+        },
+        {
+          "public_id": "weather.satellite.air_mass.goes_east",
+          "internal_capability": "satellite_goes_east_air_mass",
+          "public_family": "satellite",
+          "public_strategy": "specialized_default",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "weather.satellite.air_mass.goes_west",
+          "internal_capability": "satellite_goes_west_air_mass",
+          "public_family": "satellite",
+          "public_strategy": "specialized_default",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "weather.satellite.air_mass.himawari_9",
+          "internal_capability": "satellite_himawari_air_mass",
+          "public_family": "satellite",
+          "public_strategy": "specialized_default",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "weather.satellite.dust.goes_east",
+          "internal_capability": "satellite_goes_east_dust",
+          "public_family": "satellite",
+          "public_strategy": "specialized_default",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "weather.satellite.dust.goes_west",
+          "internal_capability": "satellite_goes_west_dust",
+          "public_family": "satellite",
+          "public_strategy": "specialized_default",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "weather.satellite.fire_temperature.goes_east",
+          "internal_capability": "satellite_goes_east_fire_temperature",
+          "public_family": "satellite",
+          "public_strategy": "specialized_default",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "weather.satellite.fire_temperature.goes_west",
+          "internal_capability": "satellite_goes_west_fire_temperature",
+          "public_family": "satellite",
+          "public_strategy": "specialized_default",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "weather.satellite.geocolor.goes_east",
+          "internal_capability": "satellite_goes_east_geocolor",
+          "public_family": "satellite",
+          "public_strategy": "specialized_default",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "weather.satellite.geocolor.goes_west",
+          "internal_capability": "satellite_goes_west_geocolor",
+          "public_family": "satellite",
+          "public_strategy": "specialized_default",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "weather.satellite.infrared.goes_east",
+          "internal_capability": "satellite_goes_east_clean_ir",
+          "public_family": "satellite",
+          "public_strategy": "specialized_default",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "weather.satellite.infrared.goes_west",
+          "internal_capability": "satellite_goes_west_clean_ir",
+          "public_family": "satellite",
+          "public_strategy": "specialized_default",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "weather.satellite.infrared.himawari_9",
+          "internal_capability": "satellite_himawari_clean_ir",
+          "public_family": "satellite",
+          "public_strategy": "specialized_default",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "weather.satellite.precipitation_rate",
+          "internal_capability": "satellite_precipitation_imerg_30min",
+          "public_family": "satellite",
+          "public_strategy": "specialized_default",
+          "resource_type": "raster_tile",
+          "observation_kind": "estimate"
+        },
+        {
+          "public_id": "weather.satellite.true_color",
+          "internal_capability": "satellite_imagery_true_color",
+          "public_family": "satellite",
+          "public_strategy": "specialized_default",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "weather.satellite.visible_red.goes_east",
+          "internal_capability": "satellite_goes_east_visible_red",
+          "public_family": "satellite",
+          "public_strategy": "specialized_default",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "weather.satellite.visible_red.goes_west",
+          "internal_capability": "satellite_goes_west_visible_red",
+          "public_family": "satellite",
+          "public_strategy": "specialized_default",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "weather.satellite.visible_red.himawari_9",
+          "internal_capability": "satellite_himawari_visible_red",
+          "public_family": "satellite",
+          "public_strategy": "specialized_default",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        }
+      ],
+      "reachability": "core_provider_candidate_mapped_to_public_consumer_api",
+      "actual_consumer_usage_telemetry": "unknown_not_claimed",
+      "removal_recommended": false,
+      "limitations": "Static contract does not prove live API health, allowed policy, observed consumer usage or context coverage."
+    },
+    {
+      "provider_id": "nasa_iss",
+      "decision": "keep_public_contract",
+      "consumer_need": "NASA-Livebildstream der ISS.",
+      "evidence_doc": "docs/P5_SPACE_70_ABSCHLUSS_2026-10-07.md",
+      "core_internal_capabilities": 1,
+      "public_targets": [
+        "space.iss.live"
+      ],
+      "public_routes": [
+        {
+          "public_id": "space.iss.live",
+          "internal_capability": "iss_earth_live",
+          "public_family": "iss",
+          "public_strategy": "specialized_default",
+          "resource_type": "live_stream",
+          "observation_kind": "observation"
+        }
+      ],
+      "reachability": "core_provider_candidate_mapped_to_public_consumer_api",
+      "actual_consumer_usage_telemetry": "unknown_not_claimed",
+      "removal_recommended": false,
+      "limitations": "Static contract does not prove live API health, allowed policy, observed consumer usage or context coverage."
+    },
+    {
+      "provider_id": "nasa_moon",
+      "decision": "keep_public_contract",
+      "consumer_need": "Planetare NASA-Mondreferenzkarte.",
+      "evidence_doc": "docs/P5_SPACE_70_ABSCHLUSS_2026-10-07.md",
+      "core_internal_capabilities": 1,
+      "public_targets": [
+        "space.moon.tiles"
+      ],
+      "public_routes": [
+        {
+          "public_id": "space.moon.tiles",
+          "internal_capability": "moon_lro_wac_global",
+          "public_family": "moon",
+          "public_strategy": "specialized_default",
+          "resource_type": "planetary_tile",
+          "observation_kind": "reference"
+        }
+      ],
+      "reachability": "core_provider_candidate_mapped_to_public_consumer_api",
+      "actual_consumer_usage_telemetry": "unknown_not_claimed",
+      "removal_recommended": false,
+      "limitations": "Static contract does not prove live API health, allowed policy, observed consumer usage or context coverage."
+    },
+    {
+      "provider_id": "nhc_tropical_cyclones",
+      "decision": "keep_public_contract",
+      "consumer_need": "Ereignisse aktiver tropischer Wirbelstürme.",
+      "evidence_doc": "docs/P4_TROPICAL_70_ABSCHLUSS_2026-10-06.md",
+      "core_internal_capabilities": 1,
+      "public_targets": [
+        "natural_hazards.tropical_cyclone.events"
+      ],
+      "public_routes": [
+        {
+          "public_id": "natural_hazards.tropical_cyclone.events",
+          "internal_capability": "active_tropical_cyclones",
+          "public_family": "tropical_cyclone",
+          "public_strategy": "specialized_default",
+          "resource_type": "hazard_feed",
+          "observation_kind": "warning_event"
+        }
+      ],
+      "reachability": "core_provider_candidate_mapped_to_public_consumer_api",
+      "actual_consumer_usage_telemetry": "unknown_not_claimed",
+      "removal_recommended": false,
+      "limitations": "Static contract does not prove live API health, allowed policy, observed consumer usage or context coverage."
+    },
+    {
+      "provider_id": "nina_biwapp",
+      "decision": "keep_public_contract",
+      "consumer_need": "BIWAPP-Warnungen im Civil-Aggregat.",
+      "evidence_doc": "docs/P5_CIVIL_70_ABSCHLUSS_2026-10-08.md",
+      "core_internal_capabilities": 1,
+      "public_targets": [
+        "civil_protection.warning.official"
+      ],
+      "public_routes": [
+        {
+          "public_id": "civil_protection.warning.official",
+          "internal_capability": "biwapp_public_warnings",
+          "public_family": "warning",
+          "public_strategy": "aggregate",
+          "resource_type": "hazard_feed",
+          "observation_kind": "warning_event"
+        }
+      ],
+      "reachability": "core_provider_candidate_mapped_to_public_consumer_api",
+      "actual_consumer_usage_telemetry": "unknown_not_claimed",
+      "removal_recommended": false,
+      "limitations": "Static contract does not prove live API health, allowed policy, observed consumer usage or context coverage."
+    },
+    {
+      "provider_id": "nina_flood",
+      "decision": "keep_public_contract",
+      "consumer_need": "NINA-Hochwasserinformationen für den Flood-Feed und das Civil-Aggregat.",
+      "evidence_doc": "docs/P4_FLOOD_70_ABSCHLUSS_2026-10-05.md",
+      "core_internal_capabilities": 1,
+      "public_targets": [
+        "civil_protection.warning.official",
+        "natural_hazards.flood.warning"
+      ],
+      "public_routes": [
+        {
+          "public_id": "civil_protection.warning.official",
+          "internal_capability": "flood_information_germany",
+          "public_family": "warning",
+          "public_strategy": "aggregate",
+          "resource_type": "hazard_feed",
+          "observation_kind": "warning_event"
+        },
+        {
+          "public_id": "natural_hazards.flood.warning",
+          "internal_capability": "flood_information_germany",
+          "public_family": "flood",
+          "public_strategy": "specialized_default",
+          "resource_type": "hazard_feed",
+          "observation_kind": "warning_event"
+        }
+      ],
+      "reachability": "core_provider_candidate_mapped_to_public_consumer_api",
+      "actual_consumer_usage_telemetry": "unknown_not_claimed",
+      "removal_recommended": false,
+      "limitations": "Static contract does not prove live API health, allowed policy, observed consumer usage or context coverage."
+    },
+    {
+      "provider_id": "nina_katwarn",
+      "decision": "keep_public_contract",
+      "consumer_need": "KATWARN-Warnungen im Civil-Aggregat.",
+      "evidence_doc": "docs/P5_CIVIL_70_ABSCHLUSS_2026-10-08.md",
+      "core_internal_capabilities": 1,
+      "public_targets": [
+        "civil_protection.warning.official"
+      ],
+      "public_routes": [
+        {
+          "public_id": "civil_protection.warning.official",
+          "internal_capability": "katwarn_public_warnings",
+          "public_family": "warning",
+          "public_strategy": "aggregate",
+          "resource_type": "hazard_feed",
+          "observation_kind": "warning_event"
+        }
+      ],
+      "reachability": "core_provider_candidate_mapped_to_public_consumer_api",
+      "actual_consumer_usage_telemetry": "unknown_not_claimed",
+      "removal_recommended": false,
+      "limitations": "Static contract does not prove live API health, allowed policy, observed consumer usage or context coverage."
+    },
+    {
+      "provider_id": "noaa_goes_glm",
+      "decision": "keep_public_contract",
+      "consumer_need": "GOES-GLM-Blitzdateien East und West.",
+      "evidence_doc": "docs/P3_LIGHTNING_70_ABSCHLUSS_2026-10-04.md",
+      "core_internal_capabilities": 2,
+      "public_targets": [
+        "weather.lightning.satellite.glm_east.lcfa",
+        "weather.lightning.satellite.glm_west.lcfa"
+      ],
+      "public_routes": [
+        {
+          "public_id": "weather.lightning.satellite.glm_east.lcfa",
+          "internal_capability": "glm_east_lcfa",
+          "public_family": "lightning_satellite",
+          "public_strategy": "single",
+          "resource_type": "data_file",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "weather.lightning.satellite.glm_west.lcfa",
+          "internal_capability": "glm_west_lcfa",
+          "public_family": "lightning_satellite",
+          "public_strategy": "single",
+          "resource_type": "data_file",
+          "observation_kind": "observation"
+        }
+      ],
+      "reachability": "core_provider_candidate_mapped_to_public_consumer_api",
+      "actual_consumer_usage_telemetry": "unknown_not_claimed",
+      "removal_recommended": false,
+      "limitations": "Static contract does not prove live API health, allowed policy, observed consumer usage or context coverage."
+    },
+    {
+      "provider_id": "noaa_nws",
+      "decision": "keep_public_contract",
+      "consumer_need": "US-Wetterwarnungen, Zusammenfassung und regionale Wetterpunktprognosen.",
+      "evidence_doc": "docs/P3_WARN_70_ABSCHLUSS_2026-10-04.md",
+      "core_internal_capabilities": 8,
+      "public_targets": [
+        "weather.point.dew_point",
+        "weather.point.precipitation_probability",
+        "weather.point.relative_humidity",
+        "weather.point.temperature",
+        "weather.point.weather_summary",
+        "weather.point.wind_direction",
+        "weather.point.wind_speed",
+        "weather.warning.official"
+      ],
+      "public_routes": [
+        {
+          "public_id": "weather.point.dew_point",
+          "internal_capability": "dew_point",
+          "public_family": "point",
+          "public_strategy": "specialized_default",
+          "resource_type": "value",
+          "observation_kind": "forecast"
+        },
+        {
+          "public_id": "weather.point.precipitation_probability",
+          "internal_capability": "precipitation_probability",
+          "public_family": "point",
+          "public_strategy": "specialized_default",
+          "resource_type": "value",
+          "observation_kind": "forecast"
+        },
+        {
+          "public_id": "weather.point.relative_humidity",
+          "internal_capability": "relative_humidity",
+          "public_family": "point",
+          "public_strategy": "specialized_default",
+          "resource_type": "value",
+          "observation_kind": "forecast"
+        },
+        {
+          "public_id": "weather.point.temperature",
+          "internal_capability": "temperature",
+          "public_family": "point",
+          "public_strategy": "specialized_default",
+          "resource_type": "value",
+          "observation_kind": "forecast"
+        },
+        {
+          "public_id": "weather.point.weather_summary",
+          "internal_capability": "weather_summary",
+          "public_family": "point",
+          "public_strategy": "specialized_default",
+          "resource_type": "value",
+          "observation_kind": "forecast"
+        },
+        {
+          "public_id": "weather.point.wind_direction",
+          "internal_capability": "wind_direction",
+          "public_family": "point",
+          "public_strategy": "specialized_default",
+          "resource_type": "value",
+          "observation_kind": "forecast"
+        },
+        {
+          "public_id": "weather.point.wind_speed",
+          "internal_capability": "wind_speed",
+          "public_family": "point",
+          "public_strategy": "specialized_default",
+          "resource_type": "value",
+          "observation_kind": "forecast"
+        },
+        {
+          "public_id": "weather.warning.official",
+          "internal_capability": "official_weather_alerts",
+          "public_family": "warning",
+          "public_strategy": "aggregate",
+          "resource_type": "hazard_feed",
+          "observation_kind": "warning_event"
+        }
+      ],
+      "reachability": "core_provider_candidate_mapped_to_public_consumer_api",
+      "actual_consumer_usage_telemetry": "unknown_not_claimed",
+      "removal_recommended": false,
+      "limitations": "Static contract does not prove live API health, allowed policy, observed consumer usage or context coverage."
+    },
+    {
+      "provider_id": "noaa_swpc",
+      "decision": "keep_public_contract",
+      "consumer_need": "SWPC-SUVI-Sonnenbildkanäle und Aurora-OVATION-Wahrscheinlichkeitsgitter.",
+      "evidence_doc": "docs/P5_SPACE_70_ABSCHLUSS_2026-10-07.md",
+      "core_internal_capabilities": 7,
+      "public_targets": [
+        "space.aurora.probability.grid",
+        "space.solar.suvi.094_angstrom",
+        "space.solar.suvi.131_angstrom",
+        "space.solar.suvi.171_angstrom",
+        "space.solar.suvi.195_angstrom",
+        "space.solar.suvi.284_angstrom",
+        "space.solar.suvi.304_angstrom"
+      ],
+      "public_routes": [
+        {
+          "public_id": "space.aurora.probability.grid",
+          "internal_capability": "aurora_ovation_latest",
+          "public_family": "aurora",
+          "public_strategy": "single",
+          "resource_type": "data_file",
+          "observation_kind": "forecast"
+        },
+        {
+          "public_id": "space.solar.suvi.094_angstrom",
+          "internal_capability": "solar_suvi_094",
+          "public_family": "solar",
+          "public_strategy": "specialized_default",
+          "resource_type": "image_sequence",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "space.solar.suvi.131_angstrom",
+          "internal_capability": "solar_suvi_131",
+          "public_family": "solar",
+          "public_strategy": "specialized_default",
+          "resource_type": "image_sequence",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "space.solar.suvi.171_angstrom",
+          "internal_capability": "solar_suvi_171",
+          "public_family": "solar",
+          "public_strategy": "specialized_default",
+          "resource_type": "image_sequence",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "space.solar.suvi.195_angstrom",
+          "internal_capability": "solar_suvi_195",
+          "public_family": "solar",
+          "public_strategy": "specialized_default",
+          "resource_type": "image_sequence",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "space.solar.suvi.284_angstrom",
+          "internal_capability": "solar_suvi_284",
+          "public_family": "solar",
+          "public_strategy": "specialized_default",
+          "resource_type": "image_sequence",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "space.solar.suvi.304_angstrom",
+          "internal_capability": "solar_suvi_304",
+          "public_family": "solar",
+          "public_strategy": "specialized_default",
+          "resource_type": "image_sequence",
+          "observation_kind": "observation"
+        }
+      ],
+      "reachability": "core_provider_candidate_mapped_to_public_consumer_api",
+      "actual_consumer_usage_telemetry": "unknown_not_claimed",
+      "removal_recommended": false,
+      "limitations": "Static contract does not prove live API health, allowed policy, observed consumer usage or context coverage."
+    },
+    {
+      "provider_id": "noaa_tsunami",
+      "decision": "keep_public_contract",
+      "consumer_need": "Amtliche NOAA-Tsunamiwarnungen für den Tsunami-Sammelintent.",
+      "evidence_doc": "docs/P4_TSUNAMI_70_ABSCHLUSS_2026-10-06.md",
+      "core_internal_capabilities": 1,
+      "public_targets": [
+        "natural_hazards.tsunami.warnings"
+      ],
+      "public_routes": [
+        {
+          "public_id": "natural_hazards.tsunami.warnings",
+          "internal_capability": "official_tsunami_alerts",
+          "public_family": "tsunami",
+          "public_strategy": "aggregate",
+          "resource_type": "hazard_feed",
+          "observation_kind": "warning_event"
+        }
+      ],
+      "reachability": "core_provider_candidate_mapped_to_public_consumer_api",
+      "actual_consumer_usage_telemetry": "unknown_not_claimed",
+      "removal_recommended": false,
+      "limitations": "Static contract does not prove live API health, allowed policy, observed consumer usage or context coverage."
+    },
+    {
+      "provider_id": "open_meteo",
+      "decision": "keep_public_contract",
+      "consumer_need": "Punktprognosen für Temperatur, Wolken, Wind, Niederschlag, Schnee, UV und Sicht.",
+      "evidence_doc": "docs/P2_TEMP_70_ABSCHLUSS_2026-10-03.md",
+      "core_internal_capabilities": 18,
+      "public_targets": [
+        "weather.point.cloud_cover",
+        "weather.point.cloud_cover_high",
+        "weather.point.cloud_cover_low",
+        "weather.point.cloud_cover_mid",
+        "weather.point.precipitation",
+        "weather.point.rain",
+        "weather.point.showers",
+        "weather.point.snowfall",
+        "weather.point.temperature",
+        "weather.point.uv_index",
+        "weather.point.uv_index_clear_sky",
+        "weather.point.uv_index_clear_sky_max_today",
+        "weather.point.uv_index_max_today",
+        "weather.point.visibility",
+        "weather.point.weather_code",
+        "weather.point.wind_direction",
+        "weather.point.wind_gusts",
+        "weather.point.wind_speed"
+      ],
+      "public_routes": [
+        {
+          "public_id": "weather.point.cloud_cover",
+          "internal_capability": "cloud_cover",
+          "public_family": "point",
+          "public_strategy": "specialized_default",
+          "resource_type": "value",
+          "observation_kind": "forecast"
+        },
+        {
+          "public_id": "weather.point.cloud_cover_high",
+          "internal_capability": "cloud_cover_high",
+          "public_family": "point",
+          "public_strategy": "specialized_default",
+          "resource_type": "value",
+          "observation_kind": "forecast"
+        },
+        {
+          "public_id": "weather.point.cloud_cover_low",
+          "internal_capability": "cloud_cover_low",
+          "public_family": "point",
+          "public_strategy": "specialized_default",
+          "resource_type": "value",
+          "observation_kind": "forecast"
+        },
+        {
+          "public_id": "weather.point.cloud_cover_mid",
+          "internal_capability": "cloud_cover_mid",
+          "public_family": "point",
+          "public_strategy": "specialized_default",
+          "resource_type": "value",
+          "observation_kind": "forecast"
+        },
+        {
+          "public_id": "weather.point.precipitation",
+          "internal_capability": "precipitation",
+          "public_family": "point",
+          "public_strategy": "specialized_default",
+          "resource_type": "value",
+          "observation_kind": "forecast"
+        },
+        {
+          "public_id": "weather.point.rain",
+          "internal_capability": "rain",
+          "public_family": "point",
+          "public_strategy": "specialized_default",
+          "resource_type": "value",
+          "observation_kind": "forecast"
+        },
+        {
+          "public_id": "weather.point.showers",
+          "internal_capability": "showers",
+          "public_family": "point",
+          "public_strategy": "specialized_default",
+          "resource_type": "value",
+          "observation_kind": "forecast"
+        },
+        {
+          "public_id": "weather.point.snowfall",
+          "internal_capability": "snowfall",
+          "public_family": "point",
+          "public_strategy": "specialized_default",
+          "resource_type": "value",
+          "observation_kind": "forecast"
+        },
+        {
+          "public_id": "weather.point.temperature",
+          "internal_capability": "temperature",
+          "public_family": "point",
+          "public_strategy": "specialized_default",
+          "resource_type": "value",
+          "observation_kind": "forecast"
+        },
+        {
+          "public_id": "weather.point.uv_index",
+          "internal_capability": "uv_index",
+          "public_family": "point",
+          "public_strategy": "specialized_default",
+          "resource_type": "value",
+          "observation_kind": "forecast"
+        },
+        {
+          "public_id": "weather.point.uv_index_clear_sky",
+          "internal_capability": "uv_index_clear_sky",
+          "public_family": "point",
+          "public_strategy": "specialized_default",
+          "resource_type": "value",
+          "observation_kind": "forecast"
+        },
+        {
+          "public_id": "weather.point.uv_index_clear_sky_max_today",
+          "internal_capability": "uv_index_clear_sky_max_today",
+          "public_family": "point",
+          "public_strategy": "specialized_default",
+          "resource_type": "value",
+          "observation_kind": "forecast"
+        },
+        {
+          "public_id": "weather.point.uv_index_max_today",
+          "internal_capability": "uv_index_max_today",
+          "public_family": "point",
+          "public_strategy": "specialized_default",
+          "resource_type": "value",
+          "observation_kind": "forecast"
+        },
+        {
+          "public_id": "weather.point.visibility",
+          "internal_capability": "visibility",
+          "public_family": "point",
+          "public_strategy": "specialized_default",
+          "resource_type": "value",
+          "observation_kind": "forecast"
+        },
+        {
+          "public_id": "weather.point.weather_code",
+          "internal_capability": "weather_code",
+          "public_family": "point",
+          "public_strategy": "specialized_default",
+          "resource_type": "value",
+          "observation_kind": "forecast"
+        },
+        {
+          "public_id": "weather.point.wind_direction",
+          "internal_capability": "wind_direction",
+          "public_family": "point",
+          "public_strategy": "specialized_default",
+          "resource_type": "value",
+          "observation_kind": "forecast"
+        },
+        {
+          "public_id": "weather.point.wind_gusts",
+          "internal_capability": "wind_gusts",
+          "public_family": "point",
+          "public_strategy": "specialized_default",
+          "resource_type": "value",
+          "observation_kind": "forecast"
+        },
+        {
+          "public_id": "weather.point.wind_speed",
+          "internal_capability": "wind_speed",
+          "public_family": "point",
+          "public_strategy": "specialized_default",
+          "resource_type": "value",
+          "observation_kind": "forecast"
+        }
+      ],
+      "reachability": "core_provider_candidate_mapped_to_public_consumer_api",
+      "actual_consumer_usage_telemetry": "unknown_not_claimed",
+      "removal_recommended": false,
+      "limitations": "Static contract does not prove live API health, allowed policy, observed consumer usage or context coverage."
+    },
+    {
+      "provider_id": "open_meteo_pollen",
+      "decision": "keep_public_contract",
+      "consumer_need": "Artgetrennte Pollen-Konzentrationsprognosen.",
+      "evidence_doc": "docs/P5_POLLEN_70_ABSCHLUSS_2026-10-07.md",
+      "core_internal_capabilities": 6,
+      "public_targets": [
+        "pollen.alder",
+        "pollen.birch",
+        "pollen.grass",
+        "pollen.mugwort",
+        "pollen.olive",
+        "pollen.ragweed"
+      ],
+      "public_routes": [
+        {
+          "public_id": "pollen.alder",
+          "internal_capability": "alder_pollen",
+          "public_family": "pollen",
+          "public_strategy": "single",
+          "resource_type": "value",
+          "observation_kind": "forecast"
+        },
+        {
+          "public_id": "pollen.birch",
+          "internal_capability": "birch_pollen",
+          "public_family": "pollen",
+          "public_strategy": "single",
+          "resource_type": "value",
+          "observation_kind": "forecast"
+        },
+        {
+          "public_id": "pollen.grass",
+          "internal_capability": "grass_pollen",
+          "public_family": "pollen",
+          "public_strategy": "single",
+          "resource_type": "value",
+          "observation_kind": "forecast"
+        },
+        {
+          "public_id": "pollen.mugwort",
+          "internal_capability": "mugwort_pollen",
+          "public_family": "pollen",
+          "public_strategy": "single",
+          "resource_type": "value",
+          "observation_kind": "forecast"
+        },
+        {
+          "public_id": "pollen.olive",
+          "internal_capability": "olive_pollen",
+          "public_family": "pollen",
+          "public_strategy": "single",
+          "resource_type": "value",
+          "observation_kind": "forecast"
+        },
+        {
+          "public_id": "pollen.ragweed",
+          "internal_capability": "ragweed_pollen",
+          "public_family": "pollen",
+          "public_strategy": "single",
+          "resource_type": "value",
+          "observation_kind": "forecast"
+        }
+      ],
+      "reachability": "core_provider_candidate_mapped_to_public_consumer_api",
+      "actual_consumer_usage_telemetry": "unknown_not_claimed",
+      "removal_recommended": false,
+      "limitations": "Static contract does not prove live API health, allowed policy, observed consumer usage or context coverage."
+    },
+    {
+      "provider_id": "rainviewer",
+      "decision": "keep_public_contract",
+      "consumer_need": "RainViewer-Radarreflektivität als spezialisierte Karte und bestehender Niederschlagslayer-Kandidat.",
+      "evidence_doc": "docs/CONSUMER_ROUTING_AUDIT_2026-10-01.md",
+      "core_internal_capabilities": 1,
+      "public_targets": [
+        "weather.precipitation.layer",
+        "weather.radar.reflectivity"
+      ],
+      "public_routes": [
+        {
+          "public_id": "weather.precipitation.layer",
+          "internal_capability": "radar_reflectivity",
+          "public_family": "precipitation",
+          "public_strategy": "single",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "weather.radar.reflectivity",
+          "internal_capability": "radar_reflectivity",
+          "public_family": "radar",
+          "public_strategy": "specialized_default",
+          "resource_type": "raster_tile",
+          "observation_kind": "observation"
+        }
+      ],
+      "reachability": "core_provider_candidate_mapped_to_public_consumer_api",
+      "actual_consumer_usage_telemetry": "unknown_not_claimed",
+      "removal_recommended": false,
+      "limitations": "Static contract does not prove live API health, allowed policy, observed consumer usage or context coverage."
+    },
+    {
+      "provider_id": "smhi",
+      "decision": "keep_public_contract",
+      "consumer_need": "Schwedische Wetterpunktprognosen und Gewitterwahrscheinlichkeit.",
+      "evidence_doc": "docs/P3_THUNDER_70_ABSCHLUSS_2026-10-04.md",
+      "core_internal_capabilities": 15,
+      "public_targets": [
+        "weather.point.air_pressure",
+        "weather.point.cloud_cover",
+        "weather.point.cloud_cover_high",
+        "weather.point.cloud_cover_low",
+        "weather.point.cloud_cover_mid",
+        "weather.point.precipitation",
+        "weather.point.precipitation_probability",
+        "weather.point.relative_humidity",
+        "weather.point.temperature",
+        "weather.point.thunder_probability",
+        "weather.point.visibility",
+        "weather.point.weather_code",
+        "weather.point.wind_direction",
+        "weather.point.wind_gusts",
+        "weather.point.wind_speed"
+      ],
+      "public_routes": [
+        {
+          "public_id": "weather.point.air_pressure",
+          "internal_capability": "air_pressure",
+          "public_family": "point",
+          "public_strategy": "specialized_default",
+          "resource_type": "value",
+          "observation_kind": "forecast"
+        },
+        {
+          "public_id": "weather.point.cloud_cover",
+          "internal_capability": "cloud_cover",
+          "public_family": "point",
+          "public_strategy": "specialized_default",
+          "resource_type": "value",
+          "observation_kind": "forecast"
+        },
+        {
+          "public_id": "weather.point.cloud_cover_high",
+          "internal_capability": "cloud_cover_high",
+          "public_family": "point",
+          "public_strategy": "specialized_default",
+          "resource_type": "value",
+          "observation_kind": "forecast"
+        },
+        {
+          "public_id": "weather.point.cloud_cover_low",
+          "internal_capability": "cloud_cover_low",
+          "public_family": "point",
+          "public_strategy": "specialized_default",
+          "resource_type": "value",
+          "observation_kind": "forecast"
+        },
+        {
+          "public_id": "weather.point.cloud_cover_mid",
+          "internal_capability": "cloud_cover_mid",
+          "public_family": "point",
+          "public_strategy": "specialized_default",
+          "resource_type": "value",
+          "observation_kind": "forecast"
+        },
+        {
+          "public_id": "weather.point.precipitation",
+          "internal_capability": "precipitation",
+          "public_family": "point",
+          "public_strategy": "specialized_default",
+          "resource_type": "value",
+          "observation_kind": "forecast"
+        },
+        {
+          "public_id": "weather.point.precipitation_probability",
+          "internal_capability": "precipitation_probability",
+          "public_family": "point",
+          "public_strategy": "specialized_default",
+          "resource_type": "value",
+          "observation_kind": "forecast"
+        },
+        {
+          "public_id": "weather.point.relative_humidity",
+          "internal_capability": "relative_humidity",
+          "public_family": "point",
+          "public_strategy": "specialized_default",
+          "resource_type": "value",
+          "observation_kind": "forecast"
+        },
+        {
+          "public_id": "weather.point.temperature",
+          "internal_capability": "temperature",
+          "public_family": "point",
+          "public_strategy": "specialized_default",
+          "resource_type": "value",
+          "observation_kind": "forecast"
+        },
+        {
+          "public_id": "weather.point.thunder_probability",
+          "internal_capability": "thunder_probability",
+          "public_family": "point",
+          "public_strategy": "single",
+          "resource_type": "value",
+          "observation_kind": "forecast"
+        },
+        {
+          "public_id": "weather.point.visibility",
+          "internal_capability": "visibility",
+          "public_family": "point",
+          "public_strategy": "specialized_default",
+          "resource_type": "value",
+          "observation_kind": "forecast"
+        },
+        {
+          "public_id": "weather.point.weather_code",
+          "internal_capability": "weather_code",
+          "public_family": "point",
+          "public_strategy": "specialized_default",
+          "resource_type": "value",
+          "observation_kind": "forecast"
+        },
+        {
+          "public_id": "weather.point.wind_direction",
+          "internal_capability": "wind_direction",
+          "public_family": "point",
+          "public_strategy": "specialized_default",
+          "resource_type": "value",
+          "observation_kind": "forecast"
+        },
+        {
+          "public_id": "weather.point.wind_gusts",
+          "internal_capability": "wind_gusts",
+          "public_family": "point",
+          "public_strategy": "specialized_default",
+          "resource_type": "value",
+          "observation_kind": "forecast"
+        },
+        {
+          "public_id": "weather.point.wind_speed",
+          "internal_capability": "wind_speed",
+          "public_family": "point",
+          "public_strategy": "specialized_default",
+          "resource_type": "value",
+          "observation_kind": "forecast"
+        }
+      ],
+      "reachability": "core_provider_candidate_mapped_to_public_consumer_api",
+      "actual_consumer_usage_telemetry": "unknown_not_claimed",
+      "removal_recommended": false,
+      "limitations": "Static contract does not prove live API health, allowed policy, observed consumer usage or context coverage."
+    },
+    {
+      "provider_id": "smithsonian_volcanoes",
+      "decision": "keep_public_contract",
+      "consumer_need": "Smithsonian/GVP-Wochenberichte zur Vulkanaktivität.",
+      "evidence_doc": "docs/P4_VOLCANO_70_ABSCHLUSS_2026-10-07.md",
+      "core_internal_capabilities": 1,
+      "public_targets": [
+        "natural_hazards.volcano.activity"
+      ],
+      "public_routes": [
+        {
+          "public_id": "natural_hazards.volcano.activity",
+          "internal_capability": "weekly_volcanic_activity",
+          "public_family": "volcano",
+          "public_strategy": "specialized_default",
+          "resource_type": "hazard_feed",
+          "observation_kind": "observation"
+        }
+      ],
+      "reachability": "core_provider_candidate_mapped_to_public_consumer_api",
+      "actual_consumer_usage_telemetry": "unknown_not_claimed",
+      "removal_recommended": false,
+      "limitations": "Static contract does not prove live API health, allowed policy, observed consumer usage or context coverage."
+    },
+    {
+      "provider_id": "usgs_earthquakes",
+      "decision": "keep_public_contract",
+      "consumer_need": "USGS-Tageserdbeben und signifikante Monatsereignisse.",
+      "evidence_doc": "docs/P4_QUAKE_70_ABSCHLUSS_2026-10-06.md",
+      "core_internal_capabilities": 2,
+      "public_targets": [
+        "natural_hazards.earthquake.events",
+        "natural_hazards.earthquake.significant_events"
+      ],
+      "public_routes": [
+        {
+          "public_id": "natural_hazards.earthquake.events",
+          "internal_capability": "earthquakes_past_day",
+          "public_family": "earthquake",
+          "public_strategy": "specialized_default",
+          "resource_type": "hazard_feed",
+          "observation_kind": "observation"
+        },
+        {
+          "public_id": "natural_hazards.earthquake.significant_events",
+          "internal_capability": "significant_earthquakes_past_month",
+          "public_family": "earthquake",
+          "public_strategy": "specialized_default",
+          "resource_type": "hazard_feed",
+          "observation_kind": "observation"
+        }
+      ],
+      "reachability": "core_provider_candidate_mapped_to_public_consumer_api",
+      "actual_consumer_usage_telemetry": "unknown_not_claimed",
+      "removal_recommended": false,
+      "limitations": "Static contract does not prove live API health, allowed policy, observed consumer usage or context coverage."
+    },
+    {
+      "provider_id": "usgs_seismic_events",
+      "decision": "keep_public_contract",
+      "consumer_need": "USGS-Nicht-Erdbeben-Seismikereignisse.",
+      "evidence_doc": "docs/P4_QUAKE_70_ABSCHLUSS_2026-10-06.md",
+      "core_internal_capabilities": 1,
+      "public_targets": [
+        "natural_hazards.seismic_non_earthquake.events"
+      ],
+      "public_routes": [
+        {
+          "public_id": "natural_hazards.seismic_non_earthquake.events",
+          "internal_capability": "non_earthquake_seismic_past_day",
+          "public_family": "seismic_non_earthquake",
+          "public_strategy": "specialized_default",
+          "resource_type": "hazard_feed",
+          "observation_kind": "observation"
+        }
+      ],
+      "reachability": "core_provider_candidate_mapped_to_public_consumer_api",
+      "actual_consumer_usage_telemetry": "unknown_not_claimed",
+      "removal_recommended": false,
+      "limitations": "Static contract does not prove live API health, allowed policy, observed consumer usage or context coverage."
+    },
+    {
+      "provider_id": "usgs_volcanoes",
+      "decision": "keep_public_contract",
+      "consumer_need": "USGS-HANS-Vulkanstatuswarnungen.",
+      "evidence_doc": "docs/P4_VOLCANO_70_ABSCHLUSS_2026-10-07.md",
+      "core_internal_capabilities": 1,
+      "public_targets": [
+        "natural_hazards.volcano.warnings"
+      ],
+      "public_routes": [
+        {
+          "public_id": "natural_hazards.volcano.warnings",
+          "internal_capability": "elevated_us_volcanoes",
+          "public_family": "volcano",
+          "public_strategy": "specialized_default",
+          "resource_type": "hazard_feed",
+          "observation_kind": "warning_event"
+        }
+      ],
+      "reachability": "core_provider_candidate_mapped_to_public_consumer_api",
+      "actual_consumer_usage_telemetry": "unknown_not_claimed",
+      "removal_recommended": false,
+      "limitations": "Static contract does not prove live API health, allowed policy, observed consumer usage or context coverage."
+    }
+  ]
+}

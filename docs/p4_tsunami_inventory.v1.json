@@ -1,0 +1,217 @@
+{
+  "schema": "weather_router.p4_tsunami_inventory.v1",
+  "date": "2026-10-06",
+  "status": "inventory_only",
+  "scope": "standard_core_only",
+  "summary": {
+    "public_capabilities": 3,
+    "warning_candidates": 3,
+    "observation_candidates": 1,
+    "potential_candidates": 1,
+    "disaster_awareness_paths_with_tsunami": 1,
+    "dedicated_warning_global_primary_coverage": false
+  },
+  "canonical_hazard_types": {
+    "tsunami": {
+      "group": "geophysical"
+    },
+    "tsunami_potential": {
+      "group": "geophysical",
+      "distinct_from_warning": true
+    }
+  },
+  "public_paths": {
+    "warnings": {
+      "public_capability": "natural_hazards.tsunami.warnings",
+      "family": "tsunami",
+      "strategy": "aggregate",
+      "hazard_types": [
+        "tsunami"
+      ],
+      "resource_types": [
+        "hazard_feed"
+      ],
+      "candidates": [
+        "jma/official_tsunami_warnings_japan",
+        "noaa_tsunami/official_tsunami_alerts",
+        "bom_tsunami/official_tsunami_warnings_australia"
+      ]
+    },
+    "observations": {
+      "public_capability": "natural_hazards.tsunami.observations",
+      "family": "tsunami",
+      "hazard_types": [
+        "tsunami"
+      ],
+      "resource_types": [
+        "hazard_feed"
+      ],
+      "candidates": [
+        "jma/tsunami_observations_japan"
+      ]
+    },
+    "potential": {
+      "public_capability": "natural_hazards.tsunami.potential",
+      "family": "tsunami",
+      "hazard_types": [
+        "tsunami_potential"
+      ],
+      "resource_types": [
+        "hazard_feed"
+      ],
+      "candidates": [
+        "bmkg_tsunami/tsunami_potential_earthquake"
+      ]
+    },
+    "disaster_awareness": {
+      "public_capability": "natural_hazards.disaster_awareness.events",
+      "candidate": "gdacs/global_disaster_alerts_7d",
+      "event_mapping": {
+        "TS": "tsunami"
+      },
+      "source_class": "disaster_awareness",
+      "aggregator": true,
+      "primary_warning_authority": false,
+      "interchangeable_with_warning_intent": false
+    }
+  },
+  "providers": {
+    "jma": {
+      "default_enabled": true,
+      "revision": "wr-0.10.39-jma-tsunami-1",
+      "coverage": "Japan / JMA tsunami forecast regions and observation stations",
+      "warning_capability": "official_tsunami_warnings_japan",
+      "observation_capability": "tsunami_observations_japan",
+      "warning_source_class": "warning",
+      "observation_source_class": "observation",
+      "warning_geometry": "jma_area_codes_without_embedded_polygons",
+      "observation_geometry": "jma_area_codes_without_embedded_polygons",
+      "international_nwptac_role_in_current_public_contract": false
+    },
+    "noaa_tsunami": {
+      "default_enabled": true,
+      "revision": "wr-0.10.39-noaa-tsunami-cap-1",
+      "coverage": "NTWC and PTWC responsibility areas",
+      "capability": "official_tsunami_alerts",
+      "source_class": "warning",
+      "active_levels": [
+        "warning",
+        "advisory",
+        "watch",
+        "threat"
+      ],
+      "informational_levels": [
+        "information",
+        "no_threat"
+      ],
+      "active_filter": true,
+      "global_primary_coverage": false
+    },
+    "bom_tsunami": {
+      "default_enabled": true,
+      "revision": "wr-0.10.42-bom-tsunami-browser-rss-1",
+      "coverage": "Australia and Australian offshore territories",
+      "capability": "official_tsunami_warnings_australia",
+      "source_class": "warning",
+      "levels": [
+        "land_inundation_warning",
+        "marine_warning",
+        "warning",
+        "watch",
+        "information",
+        "no_threat",
+        "canceled"
+      ],
+      "event_geometry": "none",
+      "national_status_page_role": "fail_closed_no_warning_fallback",
+      "international_iotwms_tsp_role_in_current_public_contract": false
+    },
+    "bmkg_tsunami": {
+      "default_enabled": true,
+      "revision": "wr-0.10.39-bmkg-tsunami-potential-1",
+      "coverage": "Indonesia / BMKG earthquake service",
+      "capability": "tsunami_potential_earthquake",
+      "source_class": "event_indicator",
+      "hazard_type": "tsunami_potential",
+      "official_tsunami_warning": false,
+      "official_inatews_bulletin_candidate_currently_exposed": false
+    },
+    "gdacs": {
+      "default_enabled": false,
+      "capability": "global_disaster_alerts_7d",
+      "source_class": "disaster_awareness",
+      "tsunami_event_code": "TS",
+      "global": true,
+      "aggregator": true,
+      "primary_warning_authority": false
+    }
+  },
+  "current_mapping_discrepancies": [
+    {
+      "id": "jma_observation_kind",
+      "provider_truth": "tsunami_observations_japan is source_class=observation with observed wave timing/height",
+      "current_mapping": "observation_kind=warning_event",
+      "action_phase": "P4-TSUNAMI-20"
+    },
+    {
+      "id": "bmkg_potential_source_semantics",
+      "provider_truth": "tsunami_potential_earthquake is source_class=event_indicator and not an official tsunami warning",
+      "current_mapping": "data_origin=warning_authority; measurement_method=tsunami_warning_feed; observation_kind=warning_event",
+      "action_phase": "P4-TSUNAMI-20"
+    }
+  ],
+  "coverage_findings": {
+    "catalog_default": {
+      "coverage_scope": "dynamic",
+      "coverage_evidence": "runtime_event_geometry",
+      "routing_authority": "context_filter",
+      "endpoint_reachability_is_coverage": false
+    },
+    "jma_embedded_geometry": false,
+    "bom_embedded_geometry": false,
+    "noaa_cap_geometry": "available when source CAP carries polygon/circle",
+    "bmkg_potential_geometry": "earthquake point",
+    "invariant": "Missing geometry must not be converted to coverage proof or outside_coverage without evidence."
+  },
+  "global_coverage_gap": {
+    "official_warning_candidates_are_multi_regional_not_global": true,
+    "dedicated_global_primary_warning_coverage": false,
+    "gdacs_does_not_close_primary_authority_gap": true,
+    "bmkg_current_core_path_is_potential_only": true,
+    "jma_domestic_contract_is_not_nwptac_international_contract": true,
+    "bom_australia_contract_is_not_iotwms_global_contract": true
+  },
+  "invariants": [
+    "Tsunami potential is not an official tsunami warning.",
+    "Earthquake is not automatically tsunami.",
+    "Tsunami potential is not an observed tsunami.",
+    "Warning/advisory/watch/threat is not observed wave height.",
+    "Information/no-threat/cancellation is not automatically an active tsunami threat.",
+    "JMA tsunami observation remains observation semantics.",
+    "GDACS remains disaster awareness and not a primary tsunami warning authority.",
+    "NOAA responsibility areas are not global tsunami warning coverage.",
+    "BoM Australia warning coverage is not automatically IOTWMS global coverage.",
+    "JMA Japan warning coverage is not automatically NWPTAC international coverage.",
+    "Missing geometry is not outside_coverage.",
+    "Endpoint reachability is not coverage proof.",
+    "Provider ID is not a scoring axis.",
+    "Profiles remain deny-only.",
+    "Cross-provider deduplication is not introduced."
+  ],
+  "official_source_crosscheck": {
+    "noaa": "NTWC and PTWC have designated service areas; they are not one global national warning authority for all coasts.",
+    "jma": "JMA issues domestic tsunami warnings/advisories by forecast region; NWPTAC is a separate international advisory role.",
+    "bom": "JATWC issues watches/warnings for Australia and has a separate Indian Ocean TSP role.",
+    "bmkg": "InaTEWS publishes tsunami early-warning bulletins, but the current WeatherRouter BMKG adapter exposes only an earthquake tsunami-potential indicator."
+  },
+  "open_questions_for_p4_tsunami_20": [
+    "Define additive tsunami semantics for warning stage, observation, potential, expected arrival and wave height.",
+    "Correct observation semantics so JMA observations are not modeled as warning_event.",
+    "Correct BMKG potential semantics so event_indicator is not modeled as tsunami_warning_feed.",
+    "Define cancellation, no-threat and information handling across NOAA/JMA/BoM.",
+    "Define point/bbox behavior when JMA/BoM events lack embedded geometry.",
+    "Keep GDACS separate as disaster awareness.",
+    "Keep domestic warning coverage separate from international advisory/TSP roles.",
+    "Define path to broader primary-authority coverage without provider priority."
+  ]
+}

@@ -1,0 +1,146 @@
+{
+  "schema": "weather_router.p3_windhaz_semantics.v1",
+  "date": "2026-10-04",
+  "status": "semantics_only",
+  "scope": "P3-WINDHAZ-20 semantics; no runtime or public-contract change",
+  "semantic_classes": {
+    "official_wind_alert_event": {
+      "transport": "weather.warning.official",
+      "meaning": "official alert event with real severe-wind/gust hazard evidence",
+      "status": "defined_for_design_not_yet_runtime_field"
+    },
+    "official_downburst_alert_event": {
+      "transport": "weather.warning.official",
+      "meaning": "official alert event with specific downburst/microburst/macroburst/fallboe evidence",
+      "status": "defined_for_design_not_yet_runtime_field"
+    }
+  },
+  "downburst_specific_keywords": [
+    "downburst",
+    "microburst",
+    "macroburst",
+    "fallböe",
+    "fallboe"
+  ],
+  "broad_wind_evidence_examples": [
+    "high wind",
+    "wind warning",
+    "wind advisory",
+    "damaging wind",
+    "damaging winds",
+    "destructive wind",
+    "destructive winds",
+    "severe wind",
+    "severe winds",
+    "strong wind",
+    "strong winds",
+    "wind gust",
+    "wind gusts",
+    "gale",
+    "storm warning",
+    "hurricane force wind",
+    "sturm",
+    "orkan",
+    "windböe",
+    "windböen",
+    "sturmböe",
+    "sturmböen",
+    "stürmische böen"
+  ],
+  "broad_wind_evidence_rule": "Do not use isolated generic word wind as sufficient evidence.",
+  "primary_hazard_semantics": {
+    "current_model": "single_label_first_match",
+    "relevant_order": [
+      "downburst",
+      "severe_thunderstorm",
+      "windstorm"
+    ],
+    "primary_label_is_complete_semantics": false,
+    "runtime_change_in_p3_windhaz_20": false
+  },
+  "windhaz_evidence_scope": {
+    "explicit_event": {
+      "fields": [
+        "event",
+        "headline"
+      ]
+    },
+    "contextual_text": {
+      "fields": [
+        "description",
+        "instruction"
+      ]
+    },
+    "explicit_precedence": true
+  },
+  "semantic_precedence": {
+    "downburst_over_broad_wind": true,
+    "reason": "specific downburst evidence must not be collapsed into generic wind alert semantics"
+  },
+  "alert_stage": {
+    "reuse_existing_field": true,
+    "allowed": [
+      "warning",
+      "watch",
+      "outlook",
+      "statement",
+      "unspecified"
+    ],
+    "missing_stage": "must_not_be_invented"
+  },
+  "severe_thunderstorm_overlap": {
+    "severe_thunderstorm_is_automatically_windhaz": false,
+    "explicit_wind_evidence_can_add_official_wind_alert_event": true
+  },
+  "numeric_wind_contracts": {
+    "remain_separate": true,
+    "public_ids": [
+      "weather.point.wind_speed",
+      "weather.point.wind_gusts",
+      "weather.point.wind_direction",
+      "weather.point.wind_summary",
+      "weather.nowcast.wind_speed",
+      "weather.nowcast.wind_gusts",
+      "weather.nowcast.wind_direction",
+      "weather.model.wind_10m.layer"
+    ],
+    "high_numeric_value_is_official_warning": false,
+    "high_gust_is_downburst": false
+  },
+  "observation_classes": {
+    "observed_or_reported_wind_damage_event": "not_implemented",
+    "confirmed_downburst_observation_event": "not_implemented",
+    "downburst_radar_or_nowcast_signature": "not_implemented"
+  },
+  "provider_semantics": {
+    "dwd": {
+      "registry_topic_severe_wind": true,
+      "broad_official_wind_alert_supported": true,
+      "downburst_requires_specific_event_evidence": true
+    },
+    "noaa_nws": {
+      "registry_topic_severe_wind": true,
+      "broad_official_wind_alert_supported": true,
+      "severe_thunderstorm_with_real_wind_evidence_can_add_wind_semantics": true,
+      "downburst_requires_specific_event_evidence": true
+    }
+  },
+  "invariants": [
+    "Official wind alert is not observed wind damage.",
+    "Official downburst alert is not confirmed downburst.",
+    "Severe thunderstorm is not automatically wind hazard.",
+    "Real wind evidence must not be considered absent solely because severe_thunderstorm matched first.",
+    "Generic strong wind is not automatically downburst.",
+    "Forecast or nowcast wind value is not official warning.",
+    "High gust speed is not downburst.",
+    "Radar or nowcast signature is not confirmed downburst.",
+    "Severity is not wind speed.",
+    "Missing gust speed is not invented.",
+    "Provider ID is not a scoring axis.",
+    "Profiles remain deny-only.",
+    "Coverage unknown remains unknown.",
+    "Endpoint reachability is not coverage proof.",
+    "P2-WIND contracts remain semantically unchanged.",
+    "Private extensions remain outside the standard core contract."
+  ]
+}

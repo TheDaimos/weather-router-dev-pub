@@ -1,0 +1,56 @@
+{
+  "schema": "weather_router.p5_aviation_inventory.v1",
+  "date": "2026-10-07",
+  "status": "inventory_only",
+  "public_capability_count_total": 227,
+  "aviation_public_capability_count": 3,
+  "provider": {
+    "id": "aviation_weather",
+    "class": "AviationWeatherProvider",
+    "domain": "aviation",
+    "default_enabled": false,
+    "source": "NOAA/NWS Aviation Weather Center"
+  },
+  "public_contracts": {
+    "aviation.airmet.us": {
+      "ui_number": 1,
+      "candidate": "aviation_weather/us_airsigmet_current",
+      "resource_type": "hazard_feed",
+      "source_class": "official_advisory"
+    },
+    "aviation.gairmet.us": {
+      "ui_number": 2,
+      "candidate": "aviation_weather/us_gairmet_current",
+      "resource_type": "hazard_feed",
+      "source_class": "official_advisory"
+    },
+    "aviation.sigmet.international": {
+      "ui_number": 3,
+      "candidate": "aviation_weather/international_sigmet_worldwide",
+      "resource_type": "hazard_feed",
+      "source_class": "official_warning"
+    }
+  },
+  "shared_semantics": {
+    "data_origin": "warning_authority",
+    "measurement_method": "aviation_advisory_feed",
+    "observation_kind": "warning_event",
+    "coverage_scope": "dynamic",
+    "coverage_evidence": "runtime_event_geometry",
+    "routing_authority": "context_filter",
+    "coordinate_space": "earth",
+    "endpoint_reachability_is_coverage": false
+  },
+  "invariants": [
+    "Aviation warning is not a general public warning.",
+    "SIGMET is not AIRMET.",
+    "AIRMET is not G-AIRMET.",
+    "Hazard type does not replace aviation source role.",
+    "Altitude bands must be preserved when provided.",
+    "Validity times must be preserved when provided.",
+    "Endpoint reachability is not coverage proof.",
+    "Provider ID is not a scoring axis.",
+    "No silent fallback exists between aviation product classes."
+  ],
+  "next": "P5-AVIATION-20"
+}

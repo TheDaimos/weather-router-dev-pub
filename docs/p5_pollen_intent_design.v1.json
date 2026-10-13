@@ -1,0 +1,53 @@
+{
+  "schema": "weather_router.p5_pollen_intent_design.v1",
+  "status": "done",
+  "date": "2026-10-07",
+  "target_runtime": {
+    "build_version": "0.10.134",
+    "loader_revision": "0.10-loader-137",
+    "public_capability_count": 226
+  },
+  "public_contracts": [
+    "pollen.alder",
+    "pollen.birch",
+    "pollen.grass",
+    "pollen.mugwort",
+    "pollen.olive",
+    "pollen.ragweed"
+  ],
+  "strategy": "specialized_single_candidate",
+  "context_contract": {
+    "allowed": [
+      "point"
+    ],
+    "global": false,
+    "bbox": false,
+    "nearby": false,
+    "implicit_radius": false
+  },
+  "coverage_target": {
+    "coverage_scope": "regional",
+    "coverage_evidence": "machine_readable_runtime",
+    "routing_authority": "advisory",
+    "coordinate_space": "earth",
+    "endpoint_reachability_is_coverage": false,
+    "static_bbox_introduced": false,
+    "provider_runtime_status_authoritative": true
+  },
+  "implementation_files": [
+    "custom_components/weather_router/consumer_capability_map.json",
+    "contracts/consumer_v1/capability-map.draft.json"
+  ],
+  "provider_fetch_logic_changed": false,
+  "medical_thresholds_added": false,
+  "cross_species_fallback": false,
+  "cross_species_aggregation": false,
+  "static_acceptance_points": 12,
+  "next": "P5-POLLEN-40",
+  "correction_2026_10_07": {
+    "previous_routing_authority": "hard",
+    "corrected_routing_authority": "advisory",
+    "reason": "open_meteo_pollen has no separate async_get_coverage contract; coverage_status is returned by the point request",
+    "runtime_outside_coverage_remains_fail_closed": true
+  }
+}

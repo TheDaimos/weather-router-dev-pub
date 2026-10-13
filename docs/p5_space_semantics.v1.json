@@ -1,0 +1,88 @@
+{
+  "schema": "weather_router.p5_space_semantics.v1",
+  "date": "2026-10-07",
+  "status": "semantic_only",
+  "existing_classes": {
+    "solar_euv_observation": {
+      "providers": [
+        "noaa_swpc"
+      ],
+      "data_origin": "space_sensor",
+      "measurement_method": "solar_euv_imaging",
+      "observation_kind": "observation",
+      "resource_type": "image_sequence",
+      "coordinate_space": "sun"
+    },
+    "orbital_live_imagery": {
+      "providers": [
+        "nasa_iss"
+      ],
+      "data_origin": "space_sensor",
+      "measurement_method": "orbital_live_imagery",
+      "observation_kind": "observation",
+      "resource_type": "live_stream",
+      "coordinate_space": "orbital"
+    },
+    "lunar_reference_imagery": {
+      "providers": [
+        "nasa_moon"
+      ],
+      "data_origin": "space_sensor",
+      "measurement_method": "planetary_reference_imagery",
+      "observation_kind": "reference",
+      "resource_type": "planetary_tile",
+      "coordinate_space": "moon"
+    },
+    "astronomical_ephemeris": {
+      "providers": [
+        "met_norway_astronomy"
+      ],
+      "data_origin": "astronomical_ephemeris",
+      "measurement_method": "ephemeris_calculation",
+      "observation_kind": "estimate",
+      "resource_type": "value",
+      "coordinate_space": "earth",
+      "request_context": "point"
+    }
+  },
+  "coverage_decisions": {
+    "suvi": "global/static_provider_contract/advisory/sun",
+    "moon_tiles": "global/static_provider_contract/advisory/moon",
+    "iss": "dynamic/static_provider_contract/advisory/orbital",
+    "astronomy_current": "unknown/unknown/none/earth",
+    "astronomy_target_semantics": "worldwide Earth point availability; Point remains required; not a coordinate-free Global request"
+  },
+  "aurora_semantics": {
+    "current_public_contract_present": false,
+    "ovation_planned": true,
+    "future_spatial_coordinate_space": "earth",
+    "distinguish_nowcast_and_forecast": true,
+    "distinct_from_suvi": true,
+    "distinct_from_geomagnetic_index": true,
+    "local_visibility_not_implied": true,
+    "cloud_or_darkness_not_implicitly_combined": true
+  },
+  "geomagnetic_rules": {
+    "kp_is_local_visibility": false,
+    "geomagnetic_storm_is_visible_aurora": false,
+    "solar_wind_is_geomagnetic_effect": false,
+    "imf_bz_is_aurora_oval": false,
+    "generic_space_weather_severity_created": false
+  },
+  "invariants": [
+    "SUVI observation is not aurora probability.",
+    "Aurora oval is not point visibility.",
+    "Kp is not local aurora visibility.",
+    "Geomagnetic storm is not automatically visible aurora.",
+    "Ephemeris estimate is not sensor observation.",
+    "Astronomically visible is not cloud free.",
+    "Moon tile is not Earth layer.",
+    "ISS live stream is not a space-weather value.",
+    "Worldwide point coverage is not a coordinate-free Global request.",
+    "Endpoint reachability is not coverage proof.",
+    "Provider ID is not a scoring axis.",
+    "Profiles remain deny-only."
+  ],
+  "design_phase": "P5-SPACE-30",
+  "consumer_migration_phase": "P7-020"
+}

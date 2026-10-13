@@ -1,0 +1,104 @@
+{
+  "schema": "weather_router.p2_uv_intent_design.v1",
+  "date": "2026-10-03",
+  "scope": "P2-UV-30 intent design only; implementation follows in P2-UV-40",
+  "decisions": {
+    "new_public_capabilities": [],
+    "preserved_public_capabilities": [
+      "weather.point.uv_index",
+      "weather.point.uv_index_clear_sky",
+      "weather.point.uv_index_max_today",
+      "weather.point.uv_index_clear_sky_max_today"
+    ],
+    "canonical_unit": "1",
+    "quantity": "uv_index",
+    "observation_kind": "forecast",
+    "data_origin": "model"
+  },
+  "intents": {
+    "weather.point.uv_index": {
+      "semantic_class": "uv_index_all_sky_forecast_point",
+      "candidates": [
+        "open_meteo/uv_index"
+      ],
+      "resource_type": "value",
+      "numeric_interchangeable": true,
+      "sky_condition_policy": "all_sky_or_cloud_affected",
+      "temporal_policy": "current_or_near_current_forecast",
+      "unit_policy": "dimensionless_one",
+      "canonical_unit": "1",
+      "quantity_policy": "uv_index",
+      "observation_kind_policy": "forecast",
+      "coverage": "candidate_specific_unknown_allowed",
+      "fallback_policy": "only_declared_candidates"
+    },
+    "weather.point.uv_index_clear_sky": {
+      "semantic_class": "uv_index_clear_sky_forecast_point",
+      "candidates": [
+        "open_meteo/uv_index_clear_sky",
+        "met_norway/uv_index"
+      ],
+      "resource_type": "value",
+      "numeric_interchangeable": true,
+      "sky_condition_policy": "clear_sky",
+      "temporal_policy": "current_or_near_current_forecast",
+      "unit_policy": "dimensionless_one",
+      "canonical_unit": "1",
+      "quantity_policy": "uv_index",
+      "observation_kind_policy": "forecast",
+      "coverage": "candidate_specific_unknown_allowed",
+      "fallback_policy": "sequential_declared_candidates_only"
+    },
+    "weather.point.uv_index_max_today": {
+      "semantic_class": "uv_index_all_sky_daily_max_forecast_point",
+      "candidates": [
+        "open_meteo/uv_index_max_today"
+      ],
+      "resource_type": "value",
+      "numeric_interchangeable": true,
+      "sky_condition_policy": "all_sky_or_cloud_affected",
+      "temporal_policy": "maximum_for_local_day_today",
+      "unit_policy": "dimensionless_one",
+      "canonical_unit": "1",
+      "quantity_policy": "uv_index",
+      "observation_kind_policy": "forecast",
+      "coverage": "candidate_specific_unknown_allowed",
+      "fallback_policy": "only_declared_candidates"
+    },
+    "weather.point.uv_index_clear_sky_max_today": {
+      "semantic_class": "uv_index_clear_sky_daily_max_forecast_point",
+      "candidates": [
+        "open_meteo/uv_index_clear_sky_max_today"
+      ],
+      "resource_type": "value",
+      "numeric_interchangeable": true,
+      "sky_condition_policy": "clear_sky",
+      "temporal_policy": "maximum_for_local_day_today",
+      "unit_policy": "dimensionless_one",
+      "canonical_unit": "1",
+      "quantity_policy": "uv_index",
+      "observation_kind_policy": "forecast",
+      "coverage": "candidate_specific_unknown_allowed",
+      "fallback_policy": "only_declared_candidates"
+    }
+  },
+  "forbidden_fallbacks": [
+    "all_sky_to_clear_sky",
+    "clear_sky_to_all_sky",
+    "current_to_daily_maximum",
+    "daily_maximum_to_current",
+    "space.solar.suvi.*",
+    "cloud_cover",
+    "solar_radiation",
+    "weather_code",
+    "warnings"
+  ],
+  "invariants": {
+    "provider_id_is_not_scoring_axis": true,
+    "profiles_remain_deny_only": true,
+    "unknown_coverage_stays_unknown": true,
+    "endpoint_reachability_is_not_coverage": true,
+    "specialized_public_ids_are_preserved": true,
+    "no_provider_specific_consumer_logic": true
+  }
+}

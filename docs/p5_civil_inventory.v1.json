@@ -1,0 +1,79 @@
+{
+  "schema": "weather_router.p5_civil_inventory.v1",
+  "date": "2026-10-08",
+  "status": "inventory_only",
+  "public_capability_count_total": 227,
+  "civil_public_capability_count": 1,
+  "public_contract": {
+    "id": "civil_protection.warning.official",
+    "ui_number": 92,
+    "family": "warning",
+    "strategy": "aggregate",
+    "resource_type": "hazard_feed",
+    "candidate_count": 4
+  },
+  "candidates": [
+    {
+      "key": "bbk_mowas/civil_protection_warnings_germany",
+      "provider_class": "BbkMowasProvider",
+      "domains": [
+        "civil_protection"
+      ],
+      "default_enabled": false
+    },
+    {
+      "key": "nina_flood/flood_information_germany",
+      "provider_class": "NinaFloodProvider",
+      "domains": [
+        "natural_hazards",
+        "civil_protection"
+      ],
+      "default_enabled": false
+    },
+    {
+      "key": "nina_katwarn/katwarn_public_warnings",
+      "provider_class": "NinaKatwarnProvider",
+      "domains": [
+        "civil_protection"
+      ],
+      "default_enabled": false
+    },
+    {
+      "key": "nina_biwapp/biwapp_public_warnings",
+      "provider_class": "NinaBiwappProvider",
+      "domains": [
+        "civil_protection"
+      ],
+      "default_enabled": false
+    }
+  ],
+  "shared_semantics": {
+    "data_origin": "warning_authority",
+    "measurement_method": "civil_protection_warning_feed",
+    "observation_kind": "warning_event",
+    "source_class": "official_warning",
+    "coverage_scope": "dynamic",
+    "coverage_evidence": "runtime_event_geometry",
+    "routing_authority": "context_filter",
+    "coordinate_space": "earth",
+    "endpoint_reachability_is_coverage": false
+  },
+  "aggregation": {
+    "preserves_source_provenance": true,
+    "prefixes_event_id_with_provider": true,
+    "cross_channel_content_deduplication": false,
+    "partial_source_failure_can_degrade": true,
+    "successful_empty_source_is_not_provider_error": true
+  },
+  "invariants": [
+    "Warning channel is not identical to a physical incident.",
+    "Multiple source warnings do not automatically mean multiple physical hazards.",
+    "Aggregation must not semantically escalate warnings.",
+    "Source provenance must be preserved.",
+    "Hazard type does not replace warning source role.",
+    "Endpoint reachability is not coverage proof.",
+    "A successful empty warning source is not a provider error.",
+    "Cross-domain nina_flood semantics must remain explicit."
+  ],
+  "next": "P5-CIVIL-20"
+}

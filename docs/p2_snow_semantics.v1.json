@@ -1,0 +1,234 @@
+{
+  "schema": "weather_router.p2_snow_semantics.v1",
+  "date": "2026-10-03",
+  "scope": "P2-SNOW-20 semantics only; no intent implementation, provider expansion or scoring changes",
+  "semantic_families": {
+    "snowfall_amount_recent_interval_forecast_point": {
+      "resource_type": "value",
+      "semantic_quantity": "snowfall_amount",
+      "numeric": true,
+      "canonical_unit_for_future_routing": "cm",
+      "observation_kind": "forecast",
+      "data_origin": "model",
+      "accumulation_semantics": "preceding_runtime_interval_sum",
+      "runtime_interval_source": "provider current.interval",
+      "candidates": [
+        "open_meteo/snowfall"
+      ],
+      "notes": [
+        "Open-Meteo documents snowfall as an amount, not snow depth on the ground.",
+        "WeatherRouter currently requests the Open-Meteo current field; current conditions are based on short-interval model data and the provider response exposes current.interval.",
+        "The routing contract must therefore preserve an interval/accumulation meaning instead of not_applicable.",
+        "Only one direct candidate exists, so no provider fallback or interchangeability claim exists yet."
+      ]
+    },
+    "weather_condition_code_forecast": {
+      "resource_type": "value",
+      "semantic_quantity": "not_applicable",
+      "numeric": false,
+      "canonical_unit_for_future_routing": null,
+      "observation_kind": "forecast",
+      "candidates": [
+        "open_meteo/weather_code",
+        "smhi/weather_code",
+        "jma/weather_code"
+      ],
+      "notes": [
+        "Weather-condition codes may encode snow, freezing rain or other winter conditions.",
+        "They are categorical state descriptions and are not snowfall_amount."
+      ]
+    },
+    "weather_condition_summary_forecast": {
+      "resource_type": "value",
+      "semantic_quantity": "not_applicable",
+      "numeric": false,
+      "canonical_unit_for_future_routing": null,
+      "observation_kind": "forecast",
+      "candidates": [
+        "noaa_nws/weather_summary",
+        "jma/weather_summary"
+      ],
+      "notes": [
+        "Text/summary forecasts may describe snow or ice.",
+        "They do not provide a numeric snowfall_amount."
+      ]
+    },
+    "official_weather_warning_event": {
+      "resource_type": "hazard_feed",
+      "semantic_quantity": "not_applicable",
+      "numeric": false,
+      "canonical_unit_for_future_routing": null,
+      "observation_kind": "warning_event",
+      "candidates": [
+        "dwd/official_weather_warnings",
+        "noaa_nws/official_weather_alerts"
+      ],
+      "notes": [
+        "Winter-weather warnings are event/warning semantics, not point snowfall values.",
+        "Dynamic event geometry is a different coverage model from point-data coverage."
+      ]
+    },
+    "biodiversity_false_positive": {
+      "resource_type": "raster_tile",
+      "semantic_quantity": "occurrence_density",
+      "numeric": true,
+      "canonical_unit_for_future_routing": "provider_capability",
+      "observation_kind": "observation",
+      "candidates": [
+        "gbif_biodiversity/occurrence_density_snow_leopard"
+      ],
+      "notes": [
+        "The lexical token snow in snow_leopard must not classify biodiversity occurrence density as meteorological snow/ice.",
+        "This candidate remains biological_hazards only for meteorological routing purposes."
+      ]
+    }
+  },
+  "candidate_classification": [
+    {
+      "provider": "open_meteo",
+      "capability": "snowfall",
+      "public_capabilities": [
+        "weather.point.snowfall"
+      ],
+      "semantic_class": "snowfall_amount_recent_interval_forecast_point",
+      "resource_type": "value",
+      "observation_kind": "forecast",
+      "quantity": "snowfall_amount",
+      "unit": "cm",
+      "accumulation_semantics": "preceding_runtime_interval_sum",
+      "coverage_scope": "unknown",
+      "compatibility": "direct_snowfall_amount"
+    },
+    {
+      "provider": "open_meteo",
+      "capability": "weather_code",
+      "public_capabilities": [
+        "weather.point.weather_code"
+      ],
+      "semantic_class": "weather_condition_code_forecast",
+      "resource_type": "value",
+      "observation_kind": "forecast",
+      "quantity": "not_applicable",
+      "unit": null,
+      "compatibility": "related_condition_not_snowfall_amount"
+    },
+    {
+      "provider": "smhi",
+      "capability": "weather_code",
+      "public_capabilities": [
+        "weather.point.weather_code"
+      ],
+      "semantic_class": "weather_condition_code_forecast",
+      "resource_type": "value",
+      "observation_kind": "forecast",
+      "quantity": "not_applicable",
+      "unit": null,
+      "compatibility": "related_condition_not_snowfall_amount"
+    },
+    {
+      "provider": "jma",
+      "capability": "weather_code",
+      "public_capabilities": [
+        "weather.point.weather_code"
+      ],
+      "semantic_class": "weather_condition_code_forecast",
+      "resource_type": "value",
+      "observation_kind": "forecast",
+      "quantity": "not_applicable",
+      "unit": null,
+      "compatibility": "related_condition_not_snowfall_amount"
+    },
+    {
+      "provider": "noaa_nws",
+      "capability": "weather_summary",
+      "public_capabilities": [
+        "weather.point.weather_summary"
+      ],
+      "semantic_class": "weather_condition_summary_forecast",
+      "resource_type": "value",
+      "observation_kind": "forecast",
+      "quantity": "not_applicable",
+      "unit": null,
+      "compatibility": "related_summary_not_snowfall_amount"
+    },
+    {
+      "provider": "jma",
+      "capability": "weather_summary",
+      "public_capabilities": [
+        "weather.point.weather_summary"
+      ],
+      "semantic_class": "weather_condition_summary_forecast",
+      "resource_type": "value",
+      "observation_kind": "forecast",
+      "quantity": "not_applicable",
+      "unit": null,
+      "compatibility": "related_summary_not_snowfall_amount"
+    },
+    {
+      "provider": "dwd",
+      "capability": "official_weather_warnings",
+      "public_capabilities": [
+        "weather.warning.official"
+      ],
+      "semantic_class": "official_weather_warning_event",
+      "resource_type": "hazard_feed",
+      "observation_kind": "warning_event",
+      "quantity": "not_applicable",
+      "unit": null,
+      "compatibility": "related_warning_not_snowfall_amount"
+    },
+    {
+      "provider": "noaa_nws",
+      "capability": "official_weather_alerts",
+      "public_capabilities": [
+        "weather.warning.official"
+      ],
+      "semantic_class": "official_weather_warning_event",
+      "resource_type": "hazard_feed",
+      "observation_kind": "warning_event",
+      "quantity": "not_applicable",
+      "unit": null,
+      "compatibility": "related_warning_not_snowfall_amount"
+    },
+    {
+      "provider": "gbif_biodiversity",
+      "capability": "occurrence_density_snow_leopard",
+      "public_capabilities": [
+        "biological_hazards.occurrence.snow_leopard.density"
+      ],
+      "semantic_class": "biodiversity_false_positive",
+      "resource_type": "raster_tile",
+      "observation_kind": "observation",
+      "quantity": "occurrence_density",
+      "unit": "provider_capability",
+      "compatibility": "exclude_from_meteorological_snow_ice"
+    }
+  ],
+  "direct_snowfall_semantic_decision": {
+    "existing_public_capability": "weather.point.snowfall",
+    "direct_candidates": [
+      "open_meteo/snowfall"
+    ],
+    "semantic_status": "single_candidate_specialized_path",
+    "multi_provider_interchangeability_proven": false,
+    "new_shared_intent_required_from_current_inventory": false,
+    "point_value_meaning": "snowfall amount accumulated over the provider runtime interval",
+    "not_equivalent_to": [
+      "snow depth on ground",
+      "snow water equivalent",
+      "weather condition code",
+      "weather condition summary",
+      "winter weather warning event",
+      "generic precipitation amount"
+    ]
+  },
+  "rules": {
+    "endpoint_reachability_is_not_coverage": true,
+    "unknown_coverage_stays_unknown": true,
+    "provider_id_is_not_scoring_axis": true,
+    "profiles_remain_deny_only": true,
+    "no_provider_expansion_in_this_step": true,
+    "no_intent_implementation_in_this_step": true,
+    "snow_leopard_is_not_meteorological_snow_ice": true
+  }
+}

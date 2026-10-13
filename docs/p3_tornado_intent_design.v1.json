@@ -1,0 +1,108 @@
+{
+  "schema": "weather_router.p3_tornado_intent_design.v1",
+  "date": "2026-10-04",
+  "status": "design_only",
+  "scope": "P3-TORNADO-30 intent design; no runtime change",
+  "public_capability_count_before": 226,
+  "public_capabilities_added": 0,
+  "public_capability_count_after": 226,
+  "public_intent": {
+    "id": "weather.warning.official",
+    "action": "reuse_existing",
+    "strategy": "aggregate",
+    "candidates": [
+      "dwd/official_weather_warnings",
+      "noaa_nws/official_weather_alerts"
+    ],
+    "hazard_filter_values": [
+      "tornado",
+      "waterspout"
+    ]
+  },
+  "additive_event_fields": {
+    "tornado_semantic_class": [
+      "official_tornado_alert_event",
+      "official_waterspout_alert_event"
+    ],
+    "alert_stage": [
+      "warning",
+      "watch",
+      "outlook",
+      "statement",
+      "unspecified"
+    ],
+    "hazard_match_scope": [
+      "explicit_event",
+      "contextual_text"
+    ]
+  },
+  "alert_stage_rules": {
+    "noaa_nws": [
+      {
+        "match": "warning",
+        "stage": "warning"
+      },
+      {
+        "match": "watch",
+        "stage": "watch"
+      },
+      {
+        "match": "outlook",
+        "stage": "outlook"
+      },
+      {
+        "match": "statement_or_update",
+        "stage": "statement"
+      },
+      {
+        "match": "otherwise",
+        "stage": "unspecified"
+      }
+    ],
+    "dwd": "warning"
+  },
+  "hazard_match_scope_rules": {
+    "explicit_event": "tornado/waterspout keyword appears in event or headline",
+    "contextual_text": "no event/headline match, but keyword appears in description or instruction",
+    "non_tornado_event": "null"
+  },
+  "event_filter_extensions": [
+    "alert_stages",
+    "hazard_match_scopes",
+    "tornado_semantic_classes"
+  ],
+  "diagnostics_extensions": [
+    "alert_stages",
+    "hazard_match_scopes",
+    "tornado_semantic_classes"
+  ],
+  "explicitly_not_implemented": [
+    "confirmed_tornado_observation_event",
+    "radar_rotation_signature",
+    "tornado_probability_forecast",
+    "dedicated_tornado_outlook_public_contract",
+    "provider_parameter_to_confirmed_tornado_promotion"
+  ],
+  "invariants": [
+    "No new public capability is introduced.",
+    "Candidate set remains DWD plus NOAA/NWS.",
+    "Provider ID is not a scoring axis.",
+    "Profiles remain deny-only.",
+    "Tornado Warning is not a confirmed tornado.",
+    "Radar rotation is not a confirmed tornado.",
+    "Waterspout remains distinct from tornado.",
+    "Missing alert stage becomes unspecified rather than invented.",
+    "Provider raw parameters are not promoted to confirmed tornado semantics in this phase."
+  ],
+  "implementation_tasks": [
+    "Add alert-stage normalization helper.",
+    "Add tornado/waterspout match-scope helper.",
+    "Add tornado_semantic_class to relevant events.",
+    "Set DWD warning-stage from its official warning-feed contract.",
+    "Normalize NWS stage from event/headline.",
+    "Extend event_filter with alert_stages, hazard_match_scopes and tornado_semantic_classes.",
+    "Expose the three dimensions in routing diagnostics.",
+    "Add regression tests.",
+    "Bump build/loader because runtime changes."
+  ]
+}

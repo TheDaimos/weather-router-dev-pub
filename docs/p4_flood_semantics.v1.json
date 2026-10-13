@@ -1,0 +1,203 @@
+{
+  "schema": "weather_router.p4_flood_semantics.v1",
+  "date": "2026-10-05",
+  "status": "semantics_only",
+  "scope": "P4-FLOOD-20 semantics; no runtime or public-contract change",
+  "official_event_classes": [
+    "official_flood_alert_event",
+    "official_flash_flood_alert_event",
+    "official_surface_water_flood_alert_event",
+    "official_debris_flow_alert_event",
+    "official_levee_failure_alert_event",
+    "official_dam_failure_alert_event",
+    "official_glof_alert_event",
+    "official_ice_jam_flood_alert_event"
+  ],
+  "generic_fallback": {
+    "class": "official_flood_alert_event",
+    "meaning": "official flooding/overflow/inundation evidence without a more specific supported flood subtype",
+    "lower_specificity_than_named_subtypes": true
+  },
+  "subtype_semantics": {
+    "flash_flood": {
+      "class": "official_flash_flood_alert_event",
+      "meaning": "rapid flooding/high-water rise; may be caused by intense rainfall, dam failure, levee failure, ice jam release or other sudden water release",
+      "cause_is_not_same_as_manifestation": true
+    },
+    "surface_water_flood": {
+      "class": "official_surface_water_flood_alert_event",
+      "meaning": "pluvial/surface-water flooding where rainfall exceeds drainage, watercourse or infiltration capacity",
+      "not_automatic_river_flood": true
+    },
+    "debris_flow": {
+      "class": "official_debris_flow_alert_event",
+      "meaning": "debris/mud/rock-water flow; retained as a distinct hazard even when flood-related",
+      "not_automatic_generic_flood": true
+    },
+    "levee_failure": {
+      "class": "official_levee_failure_alert_event",
+      "meaning": "failure/breach of a levee or dike; a cause/mechanism that can coexist with flood or flash-flood manifestation",
+      "not_synonym_for_flash_flood": true
+    },
+    "dam_failure": {
+      "class": "official_dam_failure_alert_event",
+      "meaning": "failure/breach of a dam or reservoir structure; a cause/mechanism that can coexist with flood or flash-flood manifestation",
+      "not_synonym_for_flash_flood": true
+    },
+    "glacial_lake_outburst_flood": {
+      "class": "official_glof_alert_event",
+      "meaning": "sudden drainage/outburst of water impounded by glacier, moraine or ice-related barriers",
+      "distinct_subtype": true
+    },
+    "ice_jam_flood": {
+      "class": "official_ice_jam_flood_alert_event",
+      "meaning": "flooding associated with river ice accumulation restricting flow; breakup can also trigger downstream flash flooding",
+      "distinct_subtype": true
+    }
+  },
+  "multi_hazard_rule": {
+    "classes_are_not_mutually_exclusive": true,
+    "preserve_all_supported_evidence": true,
+    "examples": [
+      "dam failure + flash flood",
+      "ice jam flood + flash flood",
+      "levee failure + generic flood"
+    ],
+    "primary_hazard_type_is_not_complete_semantics": true
+  },
+  "evidence_scope": {
+    "explicit_event": {
+      "fields": [
+        "event",
+        "headline"
+      ]
+    },
+    "contextual_text": {
+      "fields": [
+        "description",
+        "instruction"
+      ]
+    },
+    "explicit_precedence": true
+  },
+  "heavy_rain": {
+    "hazard_type": "heavy_rain",
+    "semantic_role": "weather_hazard_or_possible_precursor",
+    "is_automatic_flood": false,
+    "is_automatic_flash_flood": false,
+    "is_part_of_dedicated_flood_warning_contract": false,
+    "official_heavy_rain_warning_must_remain_weather_semantics": true
+  },
+  "source_classes": {
+    "official_warning": {
+      "eligible_for_official_flood_event_classes": true,
+      "examples": [
+        "nina_flood/flood_information_germany",
+        "dwd/official_weather_warnings",
+        "noaa_nws/official_weather_alerts"
+      ]
+    },
+    "glofas_model": {
+      "eligible_for_official_flood_event_classes": false,
+      "data_origin": "model",
+      "measurement_method": "hydrological_model",
+      "products_remain_distinct": [
+        "reporting points",
+        "5-year threshold exceedance probability",
+        "20-year threshold exceedance probability",
+        "1-3 day summary",
+        "4-10 day summary",
+        "11-30 day summary",
+        "rapid flood mapping",
+        "rapid impact assessment",
+        "100-year hazard climatology"
+      ]
+    }
+  },
+  "contract_relationship": {
+    "weather.warning.official_and_natural_hazards.flood.warning": "complementary_not_interchangeable",
+    "reason": "both can carry official flood evidence, but source scope, coverage, family and candidate sets differ",
+    "civil_protection.warning.official": "alternate consumer view of official civil-protection sources; does not strengthen source semantics"
+  },
+  "nina_gap": {
+    "current_classifier_input": "title_only",
+    "directly_reachable": [
+      "flood",
+      "flash_flood",
+      "surface_water_flood",
+      "debris_flow",
+      "levee_failure",
+      "dam_failure"
+    ],
+    "declared_but_not_directly_reachable": [
+      "glacial_lake_outburst_flood",
+      "ice_jam_flood"
+    ],
+    "semantic_rule": "unreachable subtype semantics must not be synthesized; design must either add real evidence extraction or narrow the reachable contract"
+  },
+  "related_distinct_semantics": {
+    "storm_surge": "coastal water-level hazard; not silently collapsed into river/pluvial flood",
+    "coastal_event": "coastal/high-surf hazard; not silently collapsed into flood",
+    "debris_flow_in_seismic_contract": "same stable hazard type can occur outside the dedicated flood-warning intent; source/contract provenance remains relevant"
+  },
+  "alert_stage": {
+    "reuse_existing_field_for_official_warning_events": true,
+    "missing_stage": "must_not_be_invented"
+  },
+  "authoritative_references": [
+    {
+      "source": "NOAA/NWS Flood and Flash Flood Definitions",
+      "url": "https://www.weather.gov/mrx/flood_and_flash",
+      "finding": "Flood and flash flood are distinct; flash floods can follow intense rainfall, levee/dam failure or sudden debris/ice-jam releases."
+    },
+    {
+      "source": "NOAA/NWS Glossary - Flash Flood",
+      "url": "https://forecast.weather.gov/glossary.php?word=flash+flood",
+      "finding": "Flash flood is rapid/extreme high water beginning shortly after a causative event."
+    },
+    {
+      "source": "NOAA/NWS Glossary - Ice Jam",
+      "url": "https://forecast.weather.gov/glossary.php?word=ice+jam",
+      "finding": "Ice jam is a stationary accumulation restricting or blocking streamflow."
+    },
+    {
+      "source": "USGS - Glacier-related outburst floods",
+      "url": "https://www.usgs.gov/publications/glacier-related-outburst-floods",
+      "finding": "Glacier-, moraine- and ice-impounded water bodies can drain suddenly with downstream flood consequences."
+    },
+    {
+      "source": "UK local flood authority guidance - Surface water flooding",
+      "url": "https://www.west-norfolk.gov.uk/info/20098/water_management_and_flooding/173/surface_water_flooding",
+      "finding": "Surface-water/pluvial flooding occurs when rainfall exceeds drainage, watercourse or ground absorption capacity."
+    },
+    {
+      "source": "Copernicus Emergency Management Service - GloFAS",
+      "url": "https://global-flood.emergency.copernicus.eu/",
+      "finding": "GloFAS provides global flood-awareness/model products and is kept distinct from local authority-issued warnings."
+    }
+  ],
+  "invariants": [
+    "Specific flood subtypes remain distinct from generic flood.",
+    "Cause/mechanism and flood manifestation can coexist.",
+    "Flood semantic classes are not mutually exclusive when real evidence supports multiple classes.",
+    "Heavy rain is not automatically flood or flash flood.",
+    "GloFAS model output is not an official warning.",
+    "Flood probability is not observed flooding.",
+    "Rapid mapping is not automatically an authority-issued warning.",
+    "100-year hazard climatology is not a current event.",
+    "Storm surge and coastal event remain distinct.",
+    "Unreachable NINA GLOF/ice-jam semantics are not synthesized.",
+    "Provider ID is not a scoring axis.",
+    "Profiles remain deny-only.",
+    "Coverage unknown remains unknown.",
+    "Endpoint reachability is not coverage proof."
+  ],
+  "decisions_for_p4_flood_30": [
+    "Preserve multiple simultaneous flood subtype semantics additively instead of relying only on one primary hazard_type.",
+    "Keep weather.warning.official and natural_hazards.flood.warning as complementary public intents unless a design-level compatibility proof justifies sharing candidates.",
+    "Do not route GloFAS raster/model products into official-warning event contracts.",
+    "Resolve the NINA GLOF/ice-jam reachability gap using real source evidence only.",
+    "Keep heavy-rain weather-warning semantics separate from flood-event semantics.",
+    "Reuse alert_stage for official warning events where source data supports it."
+  ]
+}

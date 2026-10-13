@@ -1,0 +1,17 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Set up WeatherRouter",
+        "description": "Install the optional WeatherRouter service and its internal diagnostic lab."
+      }
+    }
+  },
+  "entity": {
+    "select": {
+      "reference_location": {
+        "name": "Reference location"
+      }
+    }
+  }
+}

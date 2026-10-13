@@ -1,0 +1,542 @@
+{
+  "schema_version": 1,
+  "source": "GBIF-mediated occurrence data",
+  "semantics": "occurrence_density_not_population_density_or_risk",
+  "from_year": 2000,
+  "taxa": [
+    {
+      "id": "felidae",
+      "name": "Katzenartige (Felidae)",
+      "scientific_name": "Felidae",
+      "group": "predator"
+    },
+    {
+      "id": "panthera",
+      "name": "Großkatzen · Panthera",
+      "scientific_name": "Panthera",
+      "group": "predator"
+    },
+    {
+      "id": "lion",
+      "name": "Löwe",
+      "scientific_name": "Panthera leo",
+      "group": "predator"
+    },
+    {
+      "id": "tiger",
+      "name": "Tiger",
+      "scientific_name": "Panthera tigris",
+      "group": "predator"
+    },
+    {
+      "id": "leopard",
+      "name": "Leopard",
+      "scientific_name": "Panthera pardus",
+      "group": "predator"
+    },
+    {
+      "id": "jaguar",
+      "name": "Jaguar",
+      "scientific_name": "Panthera onca",
+      "group": "predator"
+    },
+    {
+      "id": "puma",
+      "name": "Puma / Cougar",
+      "scientific_name": "Puma concolor",
+      "group": "predator"
+    },
+    {
+      "id": "snow_leopard",
+      "name": "Schneeleopard",
+      "scientific_name": "Panthera uncia",
+      "group": "predator"
+    },
+    {
+      "id": "cheetah",
+      "name": "Gepard",
+      "scientific_name": "Acinonyx jubatus",
+      "group": "predator"
+    },
+    {
+      "id": "ursidae",
+      "name": "Bären (Ursidae)",
+      "scientific_name": "Ursidae",
+      "group": "predator"
+    },
+    {
+      "id": "brown_bear",
+      "name": "Braunbär",
+      "scientific_name": "Ursus arctos",
+      "group": "predator"
+    },
+    {
+      "id": "polar_bear",
+      "name": "Eisbär",
+      "scientific_name": "Ursus maritimus",
+      "group": "predator"
+    },
+    {
+      "id": "wolf",
+      "name": "Wolf",
+      "scientific_name": "Canis lupus",
+      "group": "predator"
+    },
+    {
+      "id": "hyaenidae",
+      "name": "Hyänen (Hyaenidae)",
+      "scientific_name": "Hyaenidae",
+      "group": "predator"
+    },
+    {
+      "id": "african_wild_dog",
+      "name": "Afrikanischer Wildhund",
+      "scientific_name": "Lycaon pictus",
+      "group": "predator"
+    },
+    {
+      "id": "elephantidae",
+      "name": "Elefanten (Elephantidae)",
+      "scientific_name": "Elephantidae",
+      "group": "large_wildlife"
+    },
+    {
+      "id": "hippopotamus",
+      "name": "Flusspferd",
+      "scientific_name": "Hippopotamus amphibius",
+      "group": "large_wildlife"
+    },
+    {
+      "id": "african_buffalo",
+      "name": "Afrikanischer Büffel",
+      "scientific_name": "Syncerus caffer",
+      "group": "large_wildlife"
+    },
+    {
+      "id": "rhinocerotidae",
+      "name": "Nashörner (Rhinocerotidae)",
+      "scientific_name": "Rhinocerotidae",
+      "group": "large_wildlife"
+    },
+    {
+      "id": "crocodylia",
+      "name": "Krokodilartige (Crocodylia)",
+      "scientific_name": "Crocodylia",
+      "group": "crocodilian"
+    },
+    {
+      "id": "crocodylus",
+      "name": "Echte Krokodile (Crocodylus)",
+      "scientific_name": "Crocodylus",
+      "group": "crocodilian"
+    },
+    {
+      "id": "nile_crocodile",
+      "name": "Nilkrokodil",
+      "scientific_name": "Crocodylus niloticus",
+      "group": "crocodilian"
+    },
+    {
+      "id": "saltwater_crocodile",
+      "name": "Leistenkrokodil / Salzwasserkrokodil",
+      "scientific_name": "Crocodylus porosus",
+      "group": "crocodilian"
+    },
+    {
+      "id": "alligatoridae",
+      "name": "Alligatoren & Kaimane (Alligatoridae)",
+      "scientific_name": "Alligatoridae",
+      "group": "crocodilian"
+    },
+    {
+      "id": "american_alligator",
+      "name": "Mississippi-Alligator",
+      "scientific_name": "Alligator mississippiensis",
+      "group": "crocodilian"
+    },
+    {
+      "id": "caiman",
+      "name": "Kaimane (Caiman)",
+      "scientific_name": "Caiman",
+      "group": "crocodilian"
+    },
+    {
+      "id": "sharks",
+      "name": "Haie (Selachimorpha)",
+      "scientific_name": "Selachimorpha",
+      "group": "marine"
+    },
+    {
+      "id": "requiem_sharks",
+      "name": "Requiemhaie (Carcharhinidae)",
+      "scientific_name": "Carcharhinidae",
+      "group": "marine"
+    },
+    {
+      "id": "great_white_shark",
+      "name": "Weißer Hai",
+      "scientific_name": "Carcharodon carcharias",
+      "group": "marine"
+    },
+    {
+      "id": "tiger_shark",
+      "name": "Tigerhai",
+      "scientific_name": "Galeocerdo cuvier",
+      "group": "marine"
+    },
+    {
+      "id": "bull_shark",
+      "name": "Bullenhai",
+      "scientific_name": "Carcharhinus leucas",
+      "group": "marine"
+    },
+    {
+      "id": "hammerhead_sharks",
+      "name": "Hammerhaie (Sphyrnidae)",
+      "scientific_name": "Sphyrnidae",
+      "group": "marine"
+    },
+    {
+      "id": "stingrays",
+      "name": "Stechrochen (Dasyatidae)",
+      "scientific_name": "Dasyatidae",
+      "group": "marine"
+    },
+    {
+      "id": "box_jellyfish",
+      "name": "Würfelquallen (Cubozoa)",
+      "scientific_name": "Cubozoa",
+      "group": "marine_venomous"
+    },
+    {
+      "id": "chironex_fleckeri",
+      "name": "Seewespe",
+      "scientific_name": "Chironex fleckeri",
+      "group": "marine_venomous"
+    },
+    {
+      "id": "portuguese_man_o_war",
+      "name": "Portugiesische Galeere",
+      "scientific_name": "Physalia physalis",
+      "group": "marine_venomous"
+    },
+    {
+      "id": "cone_snails",
+      "name": "Kegelschnecken (Conidae)",
+      "scientific_name": "Conidae",
+      "group": "marine_venomous"
+    },
+    {
+      "id": "stonefish",
+      "name": "Steinfische (Synanceia)",
+      "scientific_name": "Synanceia",
+      "group": "marine_venomous"
+    },
+    {
+      "id": "blue_ringed_octopus",
+      "name": "Blaugeringelte Kraken (Hapalochlaena)",
+      "scientific_name": "Hapalochlaena",
+      "group": "marine_venomous"
+    },
+    {
+      "id": "sea_snakes",
+      "name": "Seeschlangen (Hydrophiinae)",
+      "scientific_name": "Hydrophiinae",
+      "group": "venomous_snake"
+    },
+    {
+      "id": "serpentes",
+      "name": "Schlangen (Serpentes)",
+      "scientific_name": "Serpentes",
+      "group": "snake"
+    },
+    {
+      "id": "elapidae",
+      "name": "Giftnattern (Elapidae)",
+      "scientific_name": "Elapidae",
+      "group": "venomous_snake"
+    },
+    {
+      "id": "viperidae",
+      "name": "Vipern (Viperidae)",
+      "scientific_name": "Viperidae",
+      "group": "venomous_snake"
+    },
+    {
+      "id": "pit_vipers",
+      "name": "Grubenottern (Crotalinae)",
+      "scientific_name": "Crotalinae",
+      "group": "venomous_snake"
+    },
+    {
+      "id": "cobras",
+      "name": "Kobras (Naja)",
+      "scientific_name": "Naja",
+      "group": "venomous_snake"
+    },
+    {
+      "id": "mambas",
+      "name": "Mambas (Dendroaspis)",
+      "scientific_name": "Dendroaspis",
+      "group": "venomous_snake"
+    },
+    {
+      "id": "taipans",
+      "name": "Taipane (Oxyuranus)",
+      "scientific_name": "Oxyuranus",
+      "group": "venomous_snake"
+    },
+    {
+      "id": "kraits",
+      "name": "Kraits (Bungarus)",
+      "scientific_name": "Bungarus",
+      "group": "venomous_snake"
+    },
+    {
+      "id": "coral_snakes",
+      "name": "Korallenschlangen (Micrurus)",
+      "scientific_name": "Micrurus",
+      "group": "venomous_snake"
+    },
+    {
+      "id": "puff_adders",
+      "name": "Puffottern (Bitis)",
+      "scientific_name": "Bitis",
+      "group": "venomous_snake"
+    },
+    {
+      "id": "lanceheads",
+      "name": "Lanzenottern (Bothrops)",
+      "scientific_name": "Bothrops",
+      "group": "venomous_snake"
+    },
+    {
+      "id": "rattlesnakes",
+      "name": "Klapperschlangen (Crotalus)",
+      "scientific_name": "Crotalus",
+      "group": "venomous_snake"
+    },
+    {
+      "id": "saw_scaled_vipers",
+      "name": "Sandrasselottern (Echis)",
+      "scientific_name": "Echis",
+      "group": "venomous_snake"
+    },
+    {
+      "id": "scorpions",
+      "name": "Skorpione (Scorpiones)",
+      "scientific_name": "Scorpiones",
+      "group": "venomous_arthropod"
+    },
+    {
+      "id": "buthidae",
+      "name": "Buthidae-Skorpione",
+      "scientific_name": "Buthidae",
+      "group": "venomous_arthropod"
+    },
+    {
+      "id": "black_widows",
+      "name": "Witwen (Latrodectus)",
+      "scientific_name": "Latrodectus",
+      "group": "venomous_arthropod"
+    },
+    {
+      "id": "recluse_spiders",
+      "name": "Einsiedlerspinnen (Loxosceles)",
+      "scientific_name": "Loxosceles",
+      "group": "venomous_arthropod"
+    },
+    {
+      "id": "wandering_spiders",
+      "name": "Wanderspinnen (Phoneutria)",
+      "scientific_name": "Phoneutria",
+      "group": "venomous_arthropod"
+    },
+    {
+      "id": "funnel_web_spiders",
+      "name": "Atrax-Trichternetzspinnen",
+      "scientific_name": "Atrax",
+      "group": "venomous_arthropod"
+    },
+    {
+      "id": "poison_dart_frogs",
+      "name": "Pfeilgiftfrösche (Dendrobatidae)",
+      "scientific_name": "Dendrobatidae",
+      "group": "poisonous_amphibian"
+    },
+    {
+      "id": "aconite",
+      "name": "Eisenhut (Aconitum)",
+      "scientific_name": "Aconitum",
+      "group": "toxic_plant"
+    },
+    {
+      "id": "deadly_nightshade",
+      "name": "Tollkirsche",
+      "scientific_name": "Atropa belladonna",
+      "group": "toxic_plant"
+    },
+    {
+      "id": "foxglove",
+      "name": "Fingerhut (Digitalis)",
+      "scientific_name": "Digitalis",
+      "group": "toxic_plant",
+      "match_rank": "GENUS",
+      "match_kingdom": "Plantae",
+      "match_authorship": "L."
+    },
+    {
+      "id": "castor_bean",
+      "name": "Wunderbaum / Rizinus",
+      "scientific_name": "Ricinus communis",
+      "group": "toxic_plant"
+    },
+    {
+      "id": "oleander",
+      "name": "Oleander",
+      "scientific_name": "Nerium oleander",
+      "group": "toxic_plant"
+    },
+    {
+      "id": "yew",
+      "name": "Eiben (Taxus)",
+      "scientific_name": "Taxus",
+      "group": "toxic_plant",
+      "match_rank": "GENUS",
+      "match_kingdom": "Plantae",
+      "match_authorship": "L."
+    },
+    {
+      "id": "poison_hemlock",
+      "name": "Gefleckter Schierling",
+      "scientific_name": "Conium maculatum",
+      "group": "toxic_plant"
+    },
+    {
+      "id": "datura",
+      "name": "Stechäpfel (Datura)",
+      "scientific_name": "Datura",
+      "group": "toxic_plant"
+    },
+    {
+      "id": "brugmansia",
+      "name": "Engelstrompeten (Brugmansia)",
+      "scientific_name": "Brugmansia",
+      "group": "toxic_plant"
+    },
+    {
+      "id": "toxicodendron",
+      "name": "Giftsumach / Poison Ivy (Toxicodendron)",
+      "scientific_name": "Toxicodendron",
+      "group": "toxic_plant"
+    },
+    {
+      "id": "giant_hogweed",
+      "name": "Riesen-Bärenklau",
+      "scientific_name": "Heracleum mantegazzianum",
+      "group": "toxic_plant"
+    },
+    {
+      "id": "gympie_gympie",
+      "name": "Gympie-Gympie",
+      "scientific_name": "Dendrocnide moroides",
+      "group": "toxic_plant"
+    },
+    {
+      "id": "manchineel",
+      "name": "Manchinelbaum",
+      "scientific_name": "Hippomane mancinella",
+      "group": "toxic_plant"
+    },
+    {
+      "id": "rosary_pea",
+      "name": "Paternostererbse",
+      "scientific_name": "Abrus precatorius",
+      "group": "toxic_plant"
+    },
+    {
+      "id": "suicide_tree",
+      "name": "Cerbera odollam",
+      "scientific_name": "Cerbera odollam",
+      "group": "toxic_plant"
+    },
+    {
+      "id": "strychnine_tree",
+      "name": "Brechnuss / Strychninbaum",
+      "scientific_name": "Strychnos nux-vomica",
+      "group": "toxic_plant"
+    },
+    {
+      "id": "water_hemlock",
+      "name": "Wasserschierling (Cicuta)",
+      "scientific_name": "Cicuta",
+      "group": "toxic_plant"
+    },
+    {
+      "id": "autumn_crocus",
+      "name": "Herbstzeitlose",
+      "scientific_name": "Colchicum autumnale",
+      "group": "toxic_plant"
+    },
+    {
+      "id": "golden_chain",
+      "name": "Goldregen",
+      "scientific_name": "Laburnum anagyroides",
+      "group": "toxic_plant"
+    },
+    {
+      "id": "death_cap",
+      "name": "Grüner Knollenblätterpilz",
+      "scientific_name": "Amanita phalloides",
+      "group": "toxic_fungus"
+    },
+    {
+      "id": "destroying_angel",
+      "name": "Kegelhütiger Knollenblätterpilz",
+      "scientific_name": "Amanita virosa",
+      "group": "toxic_fungus"
+    },
+    {
+      "id": "galerina_marginata",
+      "name": "Gifthäubling",
+      "scientific_name": "Galerina marginata",
+      "group": "toxic_fungus"
+    },
+    {
+      "id": "deadly_webcap",
+      "name": "Spitzgebuckelter Raukopf",
+      "scientific_name": "Cortinarius rubellus",
+      "group": "toxic_fungus"
+    },
+    {
+      "id": "false_morel",
+      "name": "Frühjahrs-Giftlorchel",
+      "scientific_name": "Gyromitra esculenta",
+      "group": "toxic_fungus"
+    },
+    {
+      "id": "ticks",
+      "name": "Schildzecken (Ixodidae)",
+      "scientific_name": "Ixodidae",
+      "group": "vector"
+    },
+    {
+      "id": "aedes_aegypti",
+      "name": "Gelbfiebermücke",
+      "scientific_name": "Aedes aegypti",
+      "group": "vector"
+    },
+    {
+      "id": "aedes_albopictus",
+      "name": "Asiatische Tigermücke",
+      "scientific_name": "Aedes albopictus",
+      "group": "vector"
+    },
+    {
+      "id": "anopheles",
+      "name": "Malariamücken (Anopheles)",
+      "scientific_name": "Anopheles",
+      "group": "vector"
+    }
+  ]
+}

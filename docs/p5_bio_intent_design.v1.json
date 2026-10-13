@@ -1,0 +1,124 @@
+{
+  "schema": "weather_router.p5_bio_intent_design.v1",
+  "date": "2026-10-09",
+  "stage": "P5-BIO-30",
+  "status": "design_only",
+  "baseline": {
+    "weather_router": "0.10.141",
+    "loader": "0.10-loader-144",
+    "public_capability_count": 227,
+    "biological_public_capability_count": 88
+  },
+  "public_contract": {
+    "family": "biological_occurrence_density",
+    "public_pattern": "biological_hazards.occurrence.<taxon>.density",
+    "internal_pattern": "gbif_biodiversity/occurrence_density_<taxon>",
+    "strategy": "single",
+    "resource_type": "raster_tile",
+    "provider": "gbif_biodiversity",
+    "default_enabled": false,
+    "new_public_capability_count": 0,
+    "new_shared_intent": false
+  },
+  "context_contract": {
+    "global": "map_layer_allowed",
+    "bbox": "same_map_layer_no_server_filter",
+    "point": "same_map_layer_no_point_sample",
+    "nearby": "no_implicit_radius_or_local_risk",
+    "risk_estimation": "not_supported"
+  },
+  "spatial_coverage": {
+    "coverage_scope": "unknown",
+    "coverage_evidence": "unknown",
+    "routing_authority": "none",
+    "coordinate_space": "earth",
+    "endpoint_reachability_is_coverage": false
+  },
+  "provider_resource": {
+    "method": "async_get_map_layer",
+    "result_resource_type": "raster_tile",
+    "required_fields": [
+      "tile_url",
+      "tile_size",
+      "max_zoom",
+      "attribution",
+      "provider_metadata"
+    ],
+    "provenance_keys": [
+      "scientific_name_requested",
+      "scientific_name_matched",
+      "taxon_key",
+      "taxon_rank",
+      "taxon_status",
+      "match_confidence",
+      "from_year",
+      "to_year",
+      "group",
+      "data_user_agreement"
+    ],
+    "quality_filter": "hasGeospatialIssue=false",
+    "tile_template_is_not_download_proof": true,
+    "required_warning": "Vorkommensnachweise sind keine aktuelle Anwesenheits- oder Gefahrenprognose."
+  },
+  "behavior": {
+    "no_new_provider_or_public_ids": true,
+    "no_generated_hazard_feed": true,
+    "no_population_or_risk_estimator": true,
+    "no_taxon_group_aggregation": true,
+    "no_inferred_global_coverage": true,
+    "keep_existing_domain_opt_in": true,
+    "keep_deny_only_profiles": true,
+    "keep_admin_dynamic_taxon_nonpublic": true,
+    "provenance_required": true,
+    "temporal_warning_required": true
+  },
+  "implementation_plan": {
+    "phase": "P5-BIO-40",
+    "approach": "verify_existing_runtime_then_only_minimal_hardening_if_missing",
+    "runtime_version_bump_required_only_if_runtime_changes": true,
+    "existing_provider_implementation_expected": true,
+    "static_regression_test_required": true,
+    "no_backend_reimplementation_without_gap": true,
+    "deployment_required_if_runtime_changes": true
+  },
+  "static_acceptance": {
+    "phase": "P5-BIO-50",
+    "checks": [
+      "all_88_ids_stable",
+      "227_public_total_stable",
+      "provider_registry_default_disabled",
+      "specialized_single_raster_contract",
+      "all_candidate_source_observation_time_coverage_fields_stable",
+      "no_aggregate_hazard_or_disease_claims",
+      "global_bbox_point_map_only",
+      "unknown_coverage_no_inference",
+      "GBIF_attribution_and_warning_persist",
+      "taxon_matching_failure_not_absence",
+      "CI_green_before_HA_tests"
+    ]
+  },
+  "ha_test_plan": {
+    "phase": "P5-BIO-60",
+    "requirements": "only after P5-BIO-50 green and, if runtime changed, deployment",
+    "mandatory_test_names": [
+      "provider_global_lion_map_layer",
+      "bbox_map_only_not_local_filter",
+      "point_map_only_not_presence_assessment",
+      "provider_disabled_opt_in_guard",
+      "biological_domain_disabled_guard",
+      "taxonomy_and_provenance_alternate_taxon"
+    ],
+    "do_not_require_live_tile_pixels_from_diagnostic_alone": true
+  },
+  "next": "P5-BIO-40",
+  "invariants": [
+    "Preserve all 88 specialized biological Public IDs.",
+    "No new public biological danger intent without new semantic evidence.",
+    "Point and BBOX request do not provide local occurrence measurements.",
+    "A GBIF tile template is not a validated downloaded tile.",
+    "GBIF observation data is not an official biological warning.",
+    "No automatic species absence or harm probability can be inferred.",
+    "No domain or provider opt-in bypass.",
+    "No runtime change without explicit gap, tests, version sync, and green CI."
+  ]
+}

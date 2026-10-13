@@ -1,0 +1,128 @@
+{
+  "schema": "weather_router.p3_hail_inventory.v1",
+  "date": "2026-10-04",
+  "status": "inventory_only",
+  "scope": "standard_core_only",
+  "summary": {
+    "dedicated_public_capabilities": 0,
+    "existing_public_paths_carrying_hail_semantics": 1,
+    "standard_core_candidates_in_warning_path": 2,
+    "stable_direct_hazard_types": 1,
+    "dedicated_observation_public_capabilities": 0,
+    "dedicated_hail_size_public_capabilities": 0,
+    "dedicated_probability_public_capabilities": 0,
+    "dedicated_radar_hail_signature_public_capabilities": 0
+  },
+  "public_paths": {
+    "weather.warning.official": {
+      "family": "warning",
+      "strategy": "aggregate",
+      "resource_type": "hazard_feed",
+      "candidates": [
+        "dwd/official_weather_warnings",
+        "noaa_nws/official_weather_alerts"
+      ],
+      "carries_hazard_types": [
+        "hail"
+      ]
+    }
+  },
+  "hazard_normalization": {
+    "hail": {
+      "keywords": [
+        "hail",
+        "hagel"
+      ],
+      "group": "convective_hazards"
+    },
+    "current_model": "single_label_first_match",
+    "ordering_observation": "severe_thunderstorm_precedes_hail"
+  },
+  "providers": [
+    {
+      "provider": "dwd",
+      "capability": "official_weather_warnings",
+      "default_enabled": true,
+      "domains": [
+        "weather",
+        "natural_hazards"
+      ],
+      "registry_topics": [
+        "thunderstorm",
+        "tornado",
+        "hail",
+        "severe_wind"
+      ],
+      "capability_explicit_hail_text": true,
+      "dedicated_hail_contract": false,
+      "current_semantic_path": "official_weather_warning_event_feed",
+      "note": "DWD capability description explicitly names Hagel inside the generic official warning feed."
+    },
+    {
+      "provider": "noaa_nws",
+      "capability": "official_weather_alerts",
+      "default_enabled": true,
+      "domains": [
+        "weather",
+        "natural_hazards"
+      ],
+      "registry_topics": [
+        "thunderstorm",
+        "tornado",
+        "hail",
+        "severe_wind"
+      ],
+      "capability_explicit_hail_text": true,
+      "dedicated_hail_contract": false,
+      "current_semantic_path": "official_weather_warning_event_feed",
+      "note": "NWS capability description explicitly names Hagel inside the generic official warning feed."
+    }
+  ],
+  "hard_boundaries": [
+    "official_hail_warning_is_not_observed_hail",
+    "severe_thunderstorm_is_not_automatically_hail",
+    "radar_hail_signature_is_not_observed_hail",
+    "hail_probability_is_not_official_warning",
+    "hail_size_is_not_implied_by_hail_hazard_type"
+  ],
+  "implemented_semantic_classes": [
+    "official_weather_warning_event_feed",
+    "hail"
+  ],
+  "not_implemented_as_dedicated_hail_classes": [
+    "observed_or_reported_hail_event",
+    "hail_size_measurement_or_forecast",
+    "radar_hail_signature",
+    "hail_probability_forecast",
+    "dedicated_hail_warning_public_contract"
+  ],
+  "planned_sources": [
+    {
+      "provider": "bom",
+      "status": "planned",
+      "intended_semantics": [
+        "official_weather_warning",
+        "severe_thunderstorm",
+        "hail"
+      ]
+    }
+  ],
+  "open_semantic_questions": [
+    "Whether hail is an event class or only a text-derived label in the current warning path.",
+    "How simultaneous severe-thunderstorm and hail semantics must be represented.",
+    "Whether the single-label first-match normalizer is sufficient.",
+    "Whether hail needs an additive multi-label semantic dimension.",
+    "How explicit hail event/headline evidence is separated from contextual description text.",
+    "Whether observed/reported hail needs a separate public contract.",
+    "Whether hail size needs a separate numerical contract.",
+    "Whether radar hail signatures need a separate non-observation contract.",
+    "Whether hail probability needs a separate forecast contract."
+  ],
+  "invariants": [
+    "Inventory contains standard core only.",
+    "Future/planned providers do not count as current coverage.",
+    "Provider ID is not a scoring axis.",
+    "Profiles remain deny-only.",
+    "P3-HAIL-10 does not change runtime normalization ordering."
+  ]
+}

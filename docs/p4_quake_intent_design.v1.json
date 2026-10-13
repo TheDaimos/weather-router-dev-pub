@@ -1,0 +1,192 @@
+{
+  "schema": "weather_router.p4_quake_intent_design.v1",
+  "date": "2026-10-06",
+  "status": "design_only",
+  "runtime_changed": false,
+  "public_capability_count_target": 226,
+  "public_contracts": {
+    "natural_hazards.earthquake.events": {
+      "keep": true,
+      "strategy": "single_candidate_specialized",
+      "candidate": "usgs_earthquakes/earthquakes_past_day",
+      "role": "rolling general earthquake catalog"
+    },
+    "natural_hazards.earthquake.significant_events": {
+      "keep": true,
+      "strategy": "single_candidate_specialized",
+      "candidate": "usgs_earthquakes/significant_earthquakes_past_month",
+      "role": "upstream USGS significant-event selection"
+    }
+  },
+  "no_shared_fallback_between_earthquake_feeds": {
+    "enabled": true,
+    "reasons": [
+      "Different time windows.",
+      "Significant-month is an upstream selected subset/class, not a complete replacement for all-day.",
+      "All-day is not a valid replacement for significant-event semantics.",
+      "Mutual fallback can create semantic drift and duplicate-event ambiguity."
+    ]
+  },
+  "additive_event_field": {
+    "name": "earthquake_semantics",
+    "required": [
+      "semantic_class"
+    ],
+    "semantic_classes": [
+      "seismic_catalog_earthquake_event",
+      "disaster_awareness_earthquake_event"
+    ],
+    "optional_fields": [
+      "catalog_selection",
+      "magnitude",
+      "magnitude_type",
+      "depth_km",
+      "felt_reports",
+      "community_intensity_cdi",
+      "instrumental_intensity_mmi",
+      "pager_alert",
+      "significance",
+      "tsunami_flag",
+      "source_status",
+      "catalog_updated",
+      "legacy_magnitude_display_band"
+    ],
+    "numeric_fields_nullable": true,
+    "preserve_existing_parameters": true
+  },
+  "provider_mapping": {
+    "usgs_earthquakes": {
+      "semantic_class": "seismic_catalog_earthquake_event",
+      "catalog_selection": {
+        "earthquakes_past_day": "all_day",
+        "significant_earthquakes_past_month": "significant_month"
+      },
+      "populate_from_existing_parameters": true,
+      "keep_hazard_type": "earthquake",
+      "keep_source_class": "observation"
+    },
+    "gdacs": {
+      "only_when_hazard_type": "earthquake",
+      "semantic_class": "disaster_awareness_earthquake_event",
+      "populate_usgs_measurement_fields": false,
+      "keep_source_class": "disaster_awareness",
+      "primary_seismic_catalog": false
+    },
+    "usgs_seismic_events": {
+      "earthquake_semantics": false,
+      "reason": "Explicit type != earthquake contract."
+    },
+    "bmkg_tsunami": {
+      "earthquake_semantics": false,
+      "reason": "Current public role is tsunami_potential; triggering earthquake data remains nested and must not become a dedicated quake event."
+    }
+  },
+  "point_bbox_global": {
+    "global": {
+      "action": "allow",
+      "filtering": "none"
+    },
+    "bbox": {
+      "action": "allow",
+      "filtering": "provider event-point BBOX filter",
+      "diagnostic_mode": "earthquake_event_point_bbox",
+      "point_geometry_is_impact_area": false
+    },
+    "point": {
+      "action": "reject_for_dedicated_earthquake_public_ids",
+      "unavailable_code": "requirements_not_met",
+      "retryable": false,
+      "message_semantics": "A nearby-earthquake point query needs an explicit radius/distance contract; use BBOX or Global.",
+      "reason": "Exact coordinate equality is not useful nearby semantics and no implicit radius may be invented.",
+      "future_radius_contract_out_of_scope": true
+    }
+  },
+  "generic_severity": {
+    "keep_for_backward_compatibility": true,
+    "canonical_earthquake_semantics": false,
+    "expose_basis": "weather_router_magnitude_display_band",
+    "typed_copy_field": "legacy_magnitude_display_band",
+    "do_not_use_for": [
+      "intensity",
+      "damage",
+      "PAGER",
+      "official_warning"
+    ]
+  },
+  "diagnostics": {
+    "resource_summary_add": [
+      "earthquake_semantic_classes",
+      "earthquake_catalog_selections",
+      "earthquake_magnitude_types",
+      "earthquake_pager_alerts",
+      "earthquake_tsunami_flag_count",
+      "earthquake_magnitude_range",
+      "earthquake_depth_km_range"
+    ],
+    "preserve": [
+      "event_types",
+      "severities",
+      "geometry_count",
+      "source_diagnostics",
+      "spatial_filter"
+    ],
+    "no_provider_priority": true
+  },
+  "schema_changes": {
+    "hazard_feed_event": [
+      "earthquake_semantics"
+    ],
+    "routing_diagnostic_resource_summary": [
+      "earthquake_semantic_classes",
+      "earthquake_catalog_selections",
+      "earthquake_magnitude_types",
+      "earthquake_pager_alerts",
+      "earthquake_tsunami_flag_count",
+      "earthquake_magnitude_range",
+      "earthquake_depth_km_range"
+    ],
+    "resolve_request_new_fields": [],
+    "new_public_capabilities": []
+  },
+  "version_target": {
+    "weather_router": "0.10.130 DEV",
+    "loader": "0.10-loader-133",
+    "usgs_earthquakes_revision": "wr-0.10.130-quake-semantics-1",
+    "gdacs_revision": "wr-0.10.130-quake-semantics-1"
+  },
+  "implementation_scope": [
+    "Add validated earthquake_semantics helper.",
+    "Emit earthquake_semantics from USGS earthquake events.",
+    "Mark GDACS EQ with disaster-awareness earthquake semantics.",
+    "Preserve and validate earthquake_semantics in Consumer V1 normalization.",
+    "Reject Point context for the two dedicated earthquake public IDs until explicit distance/radius semantics exist.",
+    "Add BBOX spatial-filter diagnostics for dedicated earthquake event-point filtering without changing provider BBOX behavior.",
+    "Add quake-specific routing diagnostic summaries.",
+    "Synchronize Consumer V1 and diagnostic schemas.",
+    "Add regression/implementation tests.",
+    "Keep Public-Capability count at 226."
+  ],
+  "hard_limits": [
+    "No new public capability.",
+    "No fallback or aggregation between all-day and significant-month.",
+    "No provider priority.",
+    "No cross-provider deduplication.",
+    "No cross-feed deduplication.",
+    "No earthquake promotion from USGS non-earthquake seismic events.",
+    "No BMKG tsunami-potential promotion to dedicated earthquake event.",
+    "No GDACS promotion to primary seismic observation.",
+    "No exact-coordinate Point match as nearby-earthquake semantics.",
+    "No implicit radius.",
+    "No endpoint reachability as coverage proof."
+  ],
+  "acceptance": {
+    "status": "done",
+    "design_commit": "7babe15a0bd9df4d37281cc6857ce6dcb4fa423d",
+    "ci_run_number": 3168,
+    "ci_status": "success",
+    "runtime_changed": false,
+    "dra_promotion": false,
+    "new_public_capability": false,
+    "next_active_point": "P4-QUAKE-40"
+  }
+}

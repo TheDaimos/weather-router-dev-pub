@@ -1,0 +1,153 @@
+{
+  "schema": "weather_router.p3_supercell_intent_design.v1",
+  "date": "2026-10-05",
+  "status": "design_only",
+  "public_capability_count_before": 226,
+  "public_capability_count_after": 226,
+  "public_capabilities_added": 0,
+  "public_transport": {
+    "id": "weather.warning.official",
+    "strategy": "aggregate",
+    "resource_type": "hazard_feed",
+    "candidates": [
+      "dwd/official_weather_warnings",
+      "noaa_nws/official_weather_alerts"
+    ]
+  },
+  "primary_hazard_type": {
+    "reorder_patterns": false,
+    "relevant_order": [
+      "waterspout",
+      "tornado",
+      "supercell",
+      "downburst",
+      "severe_thunderstorm",
+      "hail"
+    ],
+    "supercell_keywords_before": [
+      "supercell",
+      "superzelle",
+      "mesocyclone",
+      "mesozyklone"
+    ],
+    "supercell_keywords_after": [
+      "supercell",
+      "superzelle"
+    ],
+    "remove_mesocyclone_aliases_from_supercell": true,
+    "reason": "mesocyclone is a rotation-signature concept and is not semantically identical to supercell"
+  },
+  "additive_event_fields": {
+    "supercell_semantic_class": {
+      "values": [
+        "official_supercell_alert_event"
+      ],
+      "independent_of_primary_hazard_type": true
+    },
+    "supercell_match_scope": {
+      "values": [
+        "explicit_event",
+        "contextual_text"
+      ],
+      "explicit_fields": [
+        "event",
+        "headline"
+      ],
+      "contextual_fields": [
+        "description",
+        "instruction"
+      ],
+      "explicit_precedence": true
+    },
+    "alert_stage": {
+      "reuse_existing_field": true,
+      "values": [
+        "warning",
+        "watch",
+        "outlook",
+        "statement",
+        "unspecified"
+      ]
+    }
+  },
+  "evidence": {
+    "official_supercell": [
+      "supercell",
+      "superzelle"
+    ],
+    "mesocyclone_is_supercell_evidence": false,
+    "mesocyclone_keywords_kept_outside_supercell_class": [
+      "mesocyclone",
+      "mesozyklone"
+    ]
+  },
+  "provider_rules": {
+    "dwd": {
+      "real_supercell_evidence_required": true,
+      "alert_stage": "warning"
+    },
+    "noaa_nws": {
+      "real_supercell_evidence_required": true,
+      "alert_stage_normalizer": "normalize_alert_stage(event, headline)"
+    }
+  },
+  "event_filter_additions": {
+    "supercell_semantic_classes": [
+      "official_supercell_alert_event"
+    ],
+    "supercell_match_scopes": [
+      "explicit_event",
+      "contextual_text"
+    ],
+    "reuse_alert_stages": true,
+    "specialized_filter_does_not_require_primary_supercell_hazard_type": true,
+    "capability_gate_requires_hazard_type_supercell": true
+  },
+  "preservation": {
+    "consumer_normalization_fields": [
+      "supercell_semantic_class",
+      "supercell_match_scope",
+      "alert_stage"
+    ],
+    "resource_diagnostic_fields": [
+      "supercell_semantic_classes",
+      "supercell_match_scopes",
+      "alert_stages"
+    ]
+  },
+  "related_contracts_unchanged": [
+    "weather.convection.thunderstorm_cells",
+    "weather.point.thunder_probability"
+  ],
+  "excluded": [
+    "mesocyclone_rotation_signature_runtime_field",
+    "confirmed_supercell_observation_event",
+    "observed_or_reported_supercell_event",
+    "supercell_probability_forecast",
+    "new_supercell_public_capability",
+    "new_supercell_provider",
+    "provider_priority",
+    "cross_provider_deduplication",
+    "coverage_semantics_change",
+    "primary_hazard_pattern_reordering",
+    "thunderstorm_cell_to_supercell_inference",
+    "thunder_probability_to_supercell_inference"
+  ],
+  "invariants": [
+    "No new supercell public capability.",
+    "weather.warning.official remains aggregate with DWD and NOAA/NWS.",
+    "Primary hazard pattern ordering is not changed.",
+    "Mesocyclone aliases are removed from automatic supercell primary normalization.",
+    "Supercell semantics are additive and independent of the primary hazard label.",
+    "Existing alert_stage is reused.",
+    "Thunderstorm-cell nowcast remains unchanged and is not supercell classification.",
+    "Thunderstorm probability remains unchanged and is not supercell probability.",
+    "Official supercell alert is not confirmed supercell observation.",
+    "Mesocyclone is not automatically supercell.",
+    "Provider ID is not a scoring axis.",
+    "Profiles remain deny-only.",
+    "Coverage unknown remains unknown.",
+    "Endpoint reachability is not coverage proof.",
+    "Private extensions remain outside the standard core contract."
+  ]
+}

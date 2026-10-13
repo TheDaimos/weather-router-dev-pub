@@ -1,0 +1,121 @@
+{
+  "schema": "weather_router.p3_thunder_semantics.v1",
+  "date": "2026-10-04",
+  "scope": "P3-THUNDER-20 semantics only; no intent implementation or scoring changes",
+  "semantic_families": {
+    "convective_thunderstorm_cell_nowcast_raster": {
+      "resource_type": "raster_tile",
+      "semantic_quantity": null,
+      "data_origin": "nowcast",
+      "measurement_method": "convective_cell_detection",
+      "observation_kind": "nowcast",
+      "numeric": false,
+      "compatibility": "separate_cell_nowcast_contract",
+      "coverage": "hard_bbox"
+    },
+    "thunderstorm_probability_point_forecast": {
+      "resource_type": "value",
+      "semantic_quantity": "thunderstorm_probability",
+      "data_origin": "model",
+      "observation_kind": "forecast",
+      "canonical_unit_for_future_routing": "%",
+      "valid_range_inclusive": [
+        0,
+        100
+      ],
+      "numeric_interchangeability": "not_proven_due_to_temporal_semantics",
+      "blockers": [
+        "MET Norway exposes candidate period 1h/6h/12h from the shortest available forecast block.",
+        "SMHI current adapter exposes first forecast time but no equivalent explicit probability period.",
+        "Coverage is statically unknown for both candidates."
+      ]
+    }
+  },
+  "candidate_classification": [
+    {
+      "provider": "dwd",
+      "capability": "thunderstorm_cells",
+      "public_capability": "weather.convection.thunderstorm_cells",
+      "semantic_class": "convective_thunderstorm_cell_nowcast_raster",
+      "resource_type": "raster_tile",
+      "data_origin": "nowcast",
+      "measurement_method": "convective_cell_detection",
+      "observation_kind": "nowcast",
+      "compatibility": "separate_cell_nowcast_contract",
+      "coverage": "hard_bbox"
+    },
+    {
+      "provider": "met_norway",
+      "capability": "thunder_probability",
+      "public_capability": "weather.point.thunder_probability",
+      "semantic_class": "thunderstorm_probability_point_forecast",
+      "resource_type": "value",
+      "quantity": "thunderstorm_probability",
+      "unit": "%",
+      "data_origin": "model",
+      "measurement_method": "nwp_point_forecast",
+      "observation_kind": "forecast",
+      "forecast_period_semantics": "shortest_available_1h_6h_12h_exposed_at_runtime",
+      "compatibility": "same_probability_class_temporal_equivalence_not_proven",
+      "coverage": "unknown"
+    },
+    {
+      "provider": "smhi",
+      "capability": "thunder_probability",
+      "public_capability": "weather.point.thunder_probability",
+      "semantic_class": "thunderstorm_probability_point_forecast",
+      "resource_type": "value",
+      "quantity": "thunderstorm_probability",
+      "unit": "%",
+      "data_origin": "model",
+      "measurement_method": "regional_nwp_point_forecast",
+      "observation_kind": "forecast",
+      "forecast_period_semantics": "first_forecast_time_period_not_explicit_in_current_adapter",
+      "compatibility": "same_probability_class_temporal_equivalence_not_proven",
+      "coverage": "unknown"
+    }
+  ],
+  "temporal_rules": {
+    "dwd_cells": "latest nowcast raster; runtime data/valid time and frame cadence remain candidate-specific",
+    "met_norway_probability": "first forecast time; shortest available next_1_hours/next_6_hours/next_12_hours block with runtime period marker",
+    "smhi_probability": "first SNOW1gv1 forecast time; current adapter exposes no equivalent probability interval marker"
+  },
+  "numeric_rules": {
+    "thunderstorm_probability": {
+      "canonical_unit": "%",
+      "minimum": 0,
+      "maximum": 100,
+      "inclusive": true,
+      "null_means": "missing_or_unavailable_not_zero",
+      "boolean_allowed": false,
+      "fail_closed_on_invalid_unit_or_range": true
+    }
+  },
+  "coverage_rules": {
+    "dwd_cells": "hard machine-readable bbox",
+    "met_norway_probability": "static unknown",
+    "smhi_probability": "static unknown; provider may return explicit runtime outside_coverage after request",
+    "endpoint_reachability_is_coverage": false,
+    "provider_prose_is_hard_coverage": false
+  },
+  "rules": {
+    "cell_is_not_probability": true,
+    "probability_is_not_warning": true,
+    "probability_is_not_lightning_observation": true,
+    "raster_is_not_numeric_point_value": true,
+    "same_quantity_and_unit_do_not_prove_temporal_interchangeability": true,
+    "missing_probability_is_not_zero": true,
+    "unknown_coverage_stays_unknown_preflight": true,
+    "endpoint_reachability_is_not_coverage": true,
+    "provider_id_is_not_scoring_axis": true,
+    "profiles_are_deny_only": true,
+    "private_extensions_outside_standard_core_contract": true
+  },
+  "decisions_for_p3_thunder_30": [
+    "Keep the DWD thunderstorm-cell raster as a distinct specialized contract.",
+    "Decide how to protect weather.point.thunder_probability while MET Norway and SMHI probability periods are not explicitly harmonized.",
+    "Encode canonical percent unit and 0..100 fail-closed numeric semantics.",
+    "Preserve candidate-specific temporal meaning; do not silently equate different probability periods.",
+    "Do not introduce warning, lightning, tornado, hail, downburst or supercell fallbacks."
+  ]
+}

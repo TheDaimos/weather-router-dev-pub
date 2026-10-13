@@ -1,0 +1,154 @@
+{
+  "schema": "weather_router.p4_tropical_inventory.v1",
+  "date": "2026-10-05",
+  "status": "inventory_only",
+  "scope": "standard_core_only",
+  "summary": {
+    "dedicated_public_capabilities": 1,
+    "dedicated_candidates": 1,
+    "dedicated_provider": "nhc_tropical_cyclones/active_tropical_cyclones",
+    "general_weather_warning_paths_with_tropical_cyclone": 1,
+    "disaster_awareness_paths_with_tropical_cyclone": 1,
+    "aviation_paths_with_tropical_cyclone": 3
+  },
+  "canonical_hazard_type": "tropical_cyclone",
+  "related_but_distinct": [
+    "storm_surge",
+    "coastal_event",
+    "disaster_awareness_alert",
+    "official_aviation_warning"
+  ],
+  "dedicated_path": {
+    "public_capability": "natural_hazards.tropical_cyclone.events",
+    "family": "tropical_cyclone",
+    "resource_type": "hazard_feed",
+    "candidates": [
+      "nhc_tropical_cyclones/active_tropical_cyclones"
+    ],
+    "provider_default_enabled": true,
+    "provider_revision": "wr-hazard-nhc-1",
+    "coverage": "Atlantic and eastern/central North Pacific according to NHC responsibility",
+    "source_class": "warning",
+    "data_origin": "warning_authority",
+    "measurement_method": "tropical_cyclone_advisory_feed",
+    "event_hazard_type": "tropical_cyclone",
+    "classification_preserved_in": [
+      "headline",
+      "parameters.classification"
+    ],
+    "intensity_preserved_in": [
+      "parameters.intensity_kt",
+      "parameters.pressure_hpa"
+    ],
+    "resources": [
+      "public_advisory",
+      "forecast_advisory",
+      "forecast_discussion",
+      "forecast_track",
+      "track_cone",
+      "wind_watches_warnings",
+      "initial_wind_extent",
+      "forecast_wind_radii",
+      "wind_speed_probabilities",
+      "storm_surge_watch_warning",
+      "potential_storm_surge_flooding",
+      "peak_surge"
+    ]
+  },
+  "general_weather_warning_path": {
+    "public_capability": "weather.warning.official",
+    "strategy": "aggregate",
+    "candidates": [
+      "dwd/official_weather_warnings",
+      "noaa_nws/official_weather_alerts"
+    ],
+    "contains_hazard_type": "tropical_cyclone",
+    "recognized_terms": [
+      "hurricane",
+      "tropical cyclone",
+      "tropical storm",
+      "typhoon"
+    ],
+    "role": "general_official_weather_warning",
+    "interchangeable_with_dedicated_nhc": false
+  },
+  "disaster_awareness_path": {
+    "public_capability": "natural_hazards.disaster_awareness.events",
+    "candidate": "gdacs/global_disaster_alerts_7d",
+    "provider_default_enabled": false,
+    "coverage": "Global",
+    "event_type_mapping": {
+      "TC": "tropical_cyclone"
+    },
+    "source_class": "disaster_awareness",
+    "aggregator": true,
+    "primary_warning_authority": false,
+    "interchangeable_with_dedicated_nhc": false
+  },
+  "aviation_paths": [
+    {
+      "public_capability": "aviation.airmet.us",
+      "candidate": "aviation_weather/us_airsigmet_current"
+    },
+    {
+      "public_capability": "aviation.gairmet.us",
+      "candidate": "aviation_weather/us_gairmet_current"
+    },
+    {
+      "public_capability": "aviation.sigmet.international",
+      "candidate": "aviation_weather/international_sigmet_worldwide"
+    }
+  ],
+  "aviation_semantics": {
+    "recognized_terms": [
+      "tc",
+      "tropical cyclone"
+    ],
+    "hazard_type": "tropical_cyclone",
+    "role": "official_aviation_warning_or_advisory",
+    "general_public_warning": false
+  },
+  "coverage_gap": {
+    "dedicated_global_primary_coverage": false,
+    "missing_dedicated_core_candidates_for": [
+      "western North Pacific",
+      "North Indian Ocean",
+      "South Indian Ocean",
+      "Australian region",
+      "South Pacific",
+      "South Atlantic"
+    ],
+    "gdacs_does_not_close_primary_authority_gap": true,
+    "aviation_does_not_close_general_warning_gap": true
+  },
+  "current_semantic_gaps": [
+    "The dedicated public contract normalizes all NHC systems to tropical_cyclone.",
+    "NHC classification is preserved but has no dedicated normalized semantic class.",
+    "Intensity and pressure are preserved as parameters but are not a public hazard classification.",
+    "Track, cone and wind-field resources are linked resources, not separate public resource contracts.",
+    "Storm-surge links are not automatically emitted as storm_surge events.",
+    "Dedicated primary-authority coverage is not global."
+  ],
+  "invariants": [
+    "NHC coverage is not global tropical-cyclone coverage.",
+    "GDACS is not a primary tropical-cyclone warning authority.",
+    "Aviation SIGMET is not a general public warning.",
+    "Tropical cyclone is not automatically storm surge.",
+    "NHC storm-surge resource links are not automatically separate storm-surge events.",
+    "Classification is not warning stage.",
+    "Intensity is not watch/warning status.",
+    "Track/cone is not observed impact area.",
+    "Provider ID is not a scoring axis.",
+    "Profiles remain deny-only.",
+    "Coverage unknown remains unknown.",
+    "Endpoint reachability is not coverage proof."
+  ],
+  "open_questions_for_p4_tropical_20": [
+    "Define additive event semantics for depression, tropical storm, hurricane and typhoon without unnecessary public capability growth.",
+    "Separate physical intensity/classification from watch/warning stage.",
+    "Define whether track, cone and wind radii stay metadata or need explicit resource semantics.",
+    "Keep NHC, general weather warning, GDACS and aviation roles distinct.",
+    "Define a path toward global primary-authority coverage without reclassifying GDACS or aviation feeds.",
+    "Define storm-surge linkage without collapsing tropical cyclone and storm surge into one hazard."
+  ]
+}

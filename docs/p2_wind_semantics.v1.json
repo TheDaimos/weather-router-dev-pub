@@ -1,0 +1,268 @@
+{
+  "schema": "weather_router.p2_wind_semantics.v1",
+  "date": "2026-10-02",
+  "scope": "P2-WIND-20 semantics only; no intent implementation or scoring changes",
+  "semantic_families": {
+    "wind_speed_point": {
+      "resource_type": "value",
+      "semantic_quantity": "wind_speed",
+      "expected_height_m": 10,
+      "numeric": true,
+      "unit_dimension": "speed",
+      "canonical_unit_for_future_routing": "m/s",
+      "compatible_units": [
+        "m/s",
+        "km/h"
+      ],
+      "unit_conversion_required": true,
+      "observation_classes": [
+        "forecast",
+        "nowcast"
+      ],
+      "notes": [
+        "Forecast and nowcast remain distinct observation classes even when the physical quantity matches.",
+        "A shared future intent may only mix them if its contract explicitly permits both classes."
+      ]
+    },
+    "wind_gust_point": {
+      "resource_type": "value",
+      "semantic_quantity": "wind_gust_speed",
+      "expected_height_m": 10,
+      "numeric": true,
+      "unit_dimension": "speed",
+      "canonical_unit_for_future_routing": "m/s",
+      "compatible_units": [
+        "m/s",
+        "km/h"
+      ],
+      "unit_conversion_required": true,
+      "statistic": "gust/max over provider-defined period",
+      "notes": [
+        "Not interchangeable with mean/instant wind speed.",
+        "Current P1 normalized quantity=wind_speed is too coarse to express gust statistic and should be refined before shared numeric routing."
+      ]
+    },
+    "wind_direction_point": {
+      "resource_type": "value",
+      "semantic_quantity": "wind_from_direction",
+      "numeric": true,
+      "unit_dimension": "angle",
+      "canonical_unit_for_future_routing": "degree",
+      "compatible_units": [
+        "°"
+      ],
+      "convention": "meteorological from-direction where provider contract supports it",
+      "notes": [
+        "Model/forecast directions can form one semantic candidate class after convention verification.",
+        "ECCC station direction at maximum wind over a lookback period is a separate observational statistic."
+      ]
+    },
+    "wind_layer": {
+      "resource_type": "raster_tile",
+      "semantic_quantity": "wind_speed_field",
+      "numeric_semantics_exposed_by_provider": "m/s",
+      "observation_kind": "forecast",
+      "data_origin": "model",
+      "notes": [
+        "Resource-incompatible with point values.",
+        "Current inventory has only DWD icon_wind_10m, so there is no multi-provider raster interchangeability to decide yet."
+      ]
+    },
+    "wind_summary_text": {
+      "resource_type": "value",
+      "semantic_quantity": null,
+      "numeric": false,
+      "notes": [
+        "JMA wind_summary is textual and not numerically interchangeable with speed, gust or direction."
+      ]
+    },
+    "wind_hazard_products": {
+      "resource_type": "hazard_feed",
+      "numeric": false,
+      "notes": [
+        "Warnings/events are separate hazard semantics and excluded from meteorological wind-value routing."
+      ]
+    }
+  },
+  "candidate_classification": [
+    {
+      "provider": "open_meteo",
+      "capability": "wind_speed",
+      "class": "wind_speed_point",
+      "observation_kind": "forecast",
+      "unit": "km/h",
+      "compatibility": "conditional_after_unit_normalization"
+    },
+    {
+      "provider": "met_norway",
+      "capability": "wind_speed",
+      "class": "wind_speed_point",
+      "observation_kind": "forecast",
+      "unit": "m/s",
+      "compatibility": "candidate"
+    },
+    {
+      "provider": "noaa_nws",
+      "capability": "wind_speed",
+      "class": "wind_speed_point",
+      "observation_kind": "forecast",
+      "unit": "m/s",
+      "compatibility": "candidate"
+    },
+    {
+      "provider": "fmi",
+      "capability": "wind_speed",
+      "class": "wind_speed_point",
+      "observation_kind": "forecast",
+      "unit": "m/s",
+      "compatibility": "candidate"
+    },
+    {
+      "provider": "smhi",
+      "capability": "wind_speed",
+      "class": "wind_speed_point",
+      "observation_kind": "forecast",
+      "unit": "m/s",
+      "compatibility": "candidate"
+    },
+    {
+      "provider": "met_norway",
+      "capability": "nowcast_wind_speed",
+      "class": "wind_speed_point",
+      "observation_kind": "nowcast",
+      "unit": "m/s",
+      "compatibility": "same_physical_quantity_distinct_observation_class"
+    },
+    {
+      "provider": "open_meteo",
+      "capability": "wind_gusts",
+      "class": "wind_gust_point",
+      "observation_kind": "forecast",
+      "unit": "km/h",
+      "compatibility": "conditional_after_unit_normalization"
+    },
+    {
+      "provider": "met_norway",
+      "capability": "wind_gusts",
+      "class": "wind_gust_point",
+      "observation_kind": "forecast",
+      "unit": "m/s",
+      "compatibility": "candidate"
+    },
+    {
+      "provider": "fmi",
+      "capability": "wind_gusts",
+      "class": "wind_gust_point",
+      "observation_kind": "forecast",
+      "unit": "m/s",
+      "compatibility": "candidate"
+    },
+    {
+      "provider": "smhi",
+      "capability": "wind_gusts",
+      "class": "wind_gust_point",
+      "observation_kind": "forecast",
+      "unit": "m/s",
+      "compatibility": "candidate"
+    },
+    {
+      "provider": "met_norway",
+      "capability": "nowcast_wind_gusts",
+      "class": "wind_gust_point",
+      "observation_kind": "nowcast",
+      "unit": "m/s",
+      "compatibility": "same_physical_quantity_distinct_observation_class"
+    },
+    {
+      "provider": "open_meteo",
+      "capability": "wind_direction",
+      "class": "wind_direction_point",
+      "observation_kind": "forecast",
+      "unit": "°",
+      "compatibility": "candidate"
+    },
+    {
+      "provider": "met_norway",
+      "capability": "wind_direction",
+      "class": "wind_direction_point",
+      "observation_kind": "forecast",
+      "unit": "°",
+      "compatibility": "candidate"
+    },
+    {
+      "provider": "noaa_nws",
+      "capability": "wind_direction",
+      "class": "wind_direction_point",
+      "observation_kind": "forecast",
+      "unit": "°",
+      "compatibility": "candidate"
+    },
+    {
+      "provider": "fmi",
+      "capability": "wind_direction",
+      "class": "wind_direction_point",
+      "observation_kind": "forecast",
+      "unit": "°",
+      "compatibility": "candidate"
+    },
+    {
+      "provider": "smhi",
+      "capability": "wind_direction",
+      "class": "wind_direction_point",
+      "observation_kind": "forecast",
+      "unit": "°",
+      "compatibility": "candidate"
+    },
+    {
+      "provider": "met_norway",
+      "capability": "nowcast_wind_direction",
+      "class": "wind_direction_point",
+      "observation_kind": "nowcast",
+      "unit": "°",
+      "compatibility": "same_physical_quantity_distinct_observation_class"
+    },
+    {
+      "provider": "eccc_geomet",
+      "capability": "wind_direction",
+      "class": "wind_direction_at_maximum_observed_wind",
+      "observation_kind": "observation",
+      "unit": "°",
+      "compatibility": "not_generic_direction_without_statistic_contract"
+    },
+    {
+      "provider": "dwd",
+      "capability": "icon_wind_10m",
+      "class": "wind_layer",
+      "observation_kind": "forecast",
+      "unit": "m/s",
+      "compatibility": "raster_only"
+    },
+    {
+      "provider": "jma",
+      "capability": "wind_summary",
+      "class": "wind_summary_text",
+      "observation_kind": "forecast",
+      "unit": null,
+      "compatibility": "text_only"
+    }
+  ],
+  "invariants": [
+    "wind_gust_speed != generic wind_speed",
+    "raster_tile != point value",
+    "text summary != numeric value",
+    "station observation != model forecast by default",
+    "nowcast != forecast by default",
+    "unit convertibility does not imply semantic interchangeability",
+    "provider id is not a quality or scoring axis",
+    "unknown coverage remains unknown",
+    "hazard feeds remain separate"
+  ],
+  "decisions_for_p2_wind_30": [
+    "Design separate provider-neutral numeric intents for speed, gust and direction if needed.",
+    "Decide whether forecast-only and nowcast-inclusive contracts should be separate intents or explicit observation-kind variants.",
+    "Do not create a shared raster intent with only one current raster candidate unless the abstraction still provides consumer value.",
+    "Keep JMA wind_summary and ECCC specialized observational direction outside generic numeric routing unless a precise contract is designed.",
+    "Require explicit unit normalization before numeric shared routing.",
+    "Refine gust physical semantics from quantity=wind_speed to an explicit gust statistic before implementation."
+  ]
+}

@@ -1,0 +1,361 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "weather_router.consumer.resolve.request.v1",
+  "title": "WeatherRouter Consumer Resolve Request V1",
+  "type": "object",
+  "required": [
+    "type",
+    "contract_version",
+    "capability",
+    "context",
+    "time"
+  ],
+  "properties": {
+    "type": {
+      "const": "weather_router/consumer/resolve"
+    },
+    "contract_version": {
+      "const": 1
+    },
+    "capability": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]*(?:\\.[a-z0-9_]+)+$"
+    },
+    "context": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": [
+            "type"
+          ],
+          "properties": {
+            "type": {
+              "const": "global"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "type",
+            "latitude",
+            "longitude"
+          ],
+          "properties": {
+            "type": {
+              "const": "point"
+            },
+            "latitude": {
+              "type": "number",
+              "minimum": -90,
+              "maximum": 90
+            },
+            "longitude": {
+              "type": "number",
+              "minimum": -180,
+              "maximum": 180
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "type",
+            "west",
+            "south",
+            "east",
+            "north"
+          ],
+          "properties": {
+            "type": {
+              "const": "bbox"
+            },
+            "west": {
+              "type": "number",
+              "minimum": -180,
+              "maximum": 180
+            },
+            "south": {
+              "type": "number",
+              "minimum": -90,
+              "maximum": 90
+            },
+            "east": {
+              "type": "number",
+              "minimum": -180,
+              "maximum": 180
+            },
+            "north": {
+              "type": "number",
+              "minimum": -90,
+              "maximum": 90
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "time": {
+      "type": "object",
+      "required": [
+        "mode"
+      ],
+      "properties": {
+        "mode": {
+          "const": "latest"
+        }
+      },
+      "additionalProperties": false
+    },
+    "requirements": {
+      "type": "object",
+      "properties": {
+        "resource_types": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "value",
+              "raster_tile",
+              "hazard_feed",
+              "event_feed",
+              "image_sequence",
+              "live_stream",
+              "planetary_tile",
+              "data_file"
+            ]
+          }
+        },
+        "source_classes": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "max_age_seconds": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "timeline_required": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    },
+    "event_filter": {
+      "type": "object",
+      "properties": {
+        "hazard_types": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "severities": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "unknown",
+              "minor",
+              "moderate",
+              "severe",
+              "extreme"
+            ]
+          }
+        },
+        "alert_stages": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "warning",
+              "watch",
+              "outlook",
+              "statement",
+              "unspecified"
+            ]
+          }
+        },
+        "hazard_match_scopes": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "explicit_event",
+              "contextual_text"
+            ]
+          }
+        },
+        "tornado_semantic_classes": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "official_tornado_alert_event",
+              "official_waterspout_alert_event"
+            ]
+          }
+        },
+        "hail_match_scopes": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "explicit_event",
+              "contextual_text"
+            ]
+          }
+        },
+        "hail_semantic_classes": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "official_hail_alert_event"
+            ]
+          }
+        },
+        "wind_hazard_match_scopes": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "explicit_event",
+              "contextual_text"
+            ]
+          }
+        },
+        "wind_hazard_semantic_classes": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "official_wind_alert_event",
+              "official_downburst_alert_event"
+            ]
+          }
+        },
+        "supercell_match_scopes": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "explicit_event",
+              "contextual_text"
+            ]
+          }
+        },
+        "supercell_semantic_classes": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "official_supercell_alert_event"
+            ]
+          }
+        },
+        "flood_match_scopes": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "explicit_event",
+              "contextual_text"
+            ]
+          }
+        },
+        "flood_semantic_classes": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "official_flood_alert_event",
+              "official_flash_flood_alert_event",
+              "official_surface_water_flood_alert_event",
+              "official_debris_flow_alert_event",
+              "official_levee_failure_alert_event",
+              "official_dam_failure_alert_event",
+              "official_glof_alert_event",
+              "official_ice_jam_flood_alert_event"
+            ]
+          }
+        },
+        "tropical_system_classes": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "potential_tropical_cyclone",
+              "tropical_depression",
+              "tropical_storm",
+              "hurricane_strength_tropical_cyclone",
+              "subtropical_cyclone",
+              "post_tropical_cyclone",
+              "tropical_cyclone_unspecified"
+            ]
+          }
+        },
+        "tsunami_semantic_classes": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "official_tsunami_warning_event",
+              "tsunami_observation_event",
+              "tsunami_potential_indicator_event",
+              "disaster_awareness_tsunami_event"
+            ]
+          }
+        },
+        "tsunami_alert_stages": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "warning",
+              "advisory",
+              "watch",
+              "threat",
+              "marine_warning",
+              "land_inundation_warning",
+              "information",
+              "no_threat",
+              "canceled"
+            ]
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "profile_id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_-]{0,63}$"
+    }
+  },
+  "additionalProperties": false
+}

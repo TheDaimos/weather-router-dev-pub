@@ -1,0 +1,491 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://weather-router.local/contracts/diagnostics/routing_diagnostic.v1.schema.json",
+  "title": "WeatherRouter Routing Diagnostic V1",
+  "type": "object",
+  "required": [
+    "schema",
+    "meta",
+    "request",
+    "context",
+    "policy",
+    "candidates",
+    "coverage",
+    "decision",
+    "network",
+    "cache",
+    "performance",
+    "errors"
+  ],
+  "properties": {
+    "schema": {
+      "const": "weather_router.routing_diagnostic.v1"
+    },
+    "meta": {
+      "type": "object",
+      "required": [
+        "trace_id",
+        "started_at",
+        "completed_at",
+        "duration_ms",
+        "consumer_contract_version",
+        "caller",
+        "build_version",
+        "loader_revision"
+      ],
+      "additionalProperties": true,
+      "properties": {
+        "build_version": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "loader_revision": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "request": {
+      "type": "object",
+      "required": [
+        "capability",
+        "context_type",
+        "requirements"
+      ],
+      "additionalProperties": true
+    },
+    "context": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": true
+    },
+    "policy": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "profile": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": true
+    },
+    "candidates": {
+      "type": "array",
+      "maxItems": 200,
+      "items": {
+        "type": "object",
+        "required": [
+          "provider_id",
+          "capability_id",
+          "candidate_scope",
+          "extension_id",
+          "resource_type",
+          "intent",
+          "topics",
+          "data_origin",
+          "measurement_method",
+          "observation_kind",
+          "quantity",
+          "unit",
+          "time_semantics",
+          "coverage_semantics",
+          "freshness",
+          "routing_score",
+          "order",
+          "checks",
+          "coverage",
+          "attempted",
+          "duration_ms",
+          "result",
+          "reason"
+        ],
+        "properties": {
+          "provider_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "provider_name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "capability_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "resource_type": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "source_class": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "intent": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "topics": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "uniqueItems": true
+          },
+          "data_origin": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "measurement_method": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "observation_kind": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "quantity": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "unit": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "time_semantics": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": true
+          },
+          "coverage_semantics": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": true
+          },
+          "freshness": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": true
+          },
+          "routing_score": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "integer"
+            }
+          },
+          "order": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "checks": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "coverage": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": true
+          },
+          "attempted": {
+            "type": "boolean"
+          },
+          "duration_ms": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "minimum": 0
+          },
+          "result": {
+            "type": "string"
+          },
+          "reason": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "candidate_scope": {
+            "type": "string",
+            "enum": [
+              "standard_core",
+              "extension"
+            ]
+          },
+          "extension_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "additionalProperties": true
+      }
+    },
+    "coverage": {
+      "type": "array",
+      "maxItems": 200,
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+    "decision": {
+      "type": "object",
+      "required": [
+        "status",
+        "code",
+        "selected_provider",
+        "fallback_count"
+      ],
+      "additionalProperties": true
+    },
+    "resource": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": true,
+      "properties": {
+        "tsunami_semantic_classes": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "official_tsunami_warning_event",
+              "tsunami_observation_event",
+              "tsunami_potential_indicator_event",
+              "disaster_awareness_tsunami_event"
+            ]
+          }
+        },
+        "tsunami_alert_stages": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "warning",
+              "advisory",
+              "watch",
+              "threat",
+              "marine_warning",
+              "land_inundation_warning",
+              "information",
+              "no_threat",
+              "canceled"
+            ]
+          }
+        },
+        "tsunami_wave_evidence": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "expected",
+              "observed",
+              "mixed",
+              "none"
+            ]
+          }
+        },
+        "spatial_filter": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": true
+        },
+        "earthquake_semantic_classes": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "seismic_catalog_earthquake_event",
+              "disaster_awareness_earthquake_event"
+            ]
+          }
+        },
+        "earthquake_catalog_selections": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "all_day",
+              "significant_month"
+            ]
+          }
+        },
+        "earthquake_magnitude_types": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string"
+          }
+        },
+        "earthquake_pager_alerts": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string"
+          }
+        },
+        "earthquake_tsunami_flag_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "earthquake_magnitude_range": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "required": [
+            "min",
+            "max"
+          ],
+          "properties": {
+            "min": {
+              "type": "number"
+            },
+            "max": {
+              "type": "number"
+            }
+          },
+          "additionalProperties": false
+        },
+        "earthquake_depth_km_range": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "required": [
+            "min",
+            "max"
+          ],
+          "properties": {
+            "min": {
+              "type": "number"
+            },
+            "max": {
+              "type": "number"
+            }
+          },
+          "additionalProperties": false
+        },
+        "volcano_semantic_classes": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "weekly_volcanic_activity_report_event",
+              "official_volcano_status_event",
+              "disaster_awareness_volcanic_event",
+              "seismic_catalog_volcanic_event"
+            ]
+          }
+        },
+        "volcano_report_types": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string"
+          }
+        },
+        "volcano_aviation_color_codes": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string"
+          }
+        },
+        "volcano_alert_levels": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string"
+          }
+        },
+        "volcano_source_event_types": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "timeline": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": true
+    },
+    "freshness": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": true
+    },
+    "network": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "cache": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "performance": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "errors": {
+      "type": "array",
+      "maxItems": 200,
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    }
+  },
+  "additionalProperties": true
+}

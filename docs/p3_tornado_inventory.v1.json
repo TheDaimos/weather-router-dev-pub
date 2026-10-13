@@ -1,0 +1,142 @@
+{
+  "schema": "weather_router.p3_tornado_inventory.v1",
+  "date": "2026-10-04",
+  "status": "inventory_only",
+  "scope": "standard_core_only",
+  "summary": {
+    "dedicated_public_capabilities": 0,
+    "existing_public_paths_carrying_tornado_semantics": 1,
+    "standard_core_candidates_in_warning_path": 2,
+    "stable_direct_hazard_types": 2,
+    "dedicated_observation_capabilities": 0,
+    "dedicated_radar_rotation_capabilities": 0,
+    "dedicated_probability_capabilities": 0,
+    "dedicated_watch_or_outlook_public_capabilities": 0
+  },
+  "public_paths": {
+    "weather.warning.official": {
+      "family": "warning",
+      "strategy": "aggregate",
+      "resource_type": "hazard_feed",
+      "candidates": [
+        "dwd/official_weather_warnings",
+        "noaa_nws/official_weather_alerts"
+      ],
+      "carries_hazard_types": [
+        "tornado",
+        "waterspout"
+      ]
+    }
+  },
+  "hazard_normalization": {
+    "tornado": {
+      "keywords": [
+        "tornado",
+        "windhose"
+      ],
+      "group": "convective_hazards"
+    },
+    "waterspout": {
+      "keywords": [
+        "waterspout",
+        "wasserhose"
+      ],
+      "group": "convective_hazards"
+    }
+  },
+  "providers": [
+    {
+      "provider": "dwd",
+      "capability": "official_weather_warnings",
+      "default_enabled": true,
+      "domains": [
+        "weather",
+        "natural_hazards"
+      ],
+      "registry_topics": [
+        "thunderstorm",
+        "tornado",
+        "hail",
+        "severe_wind"
+      ],
+      "capability_explicit_tornado_text": false,
+      "dedicated_tornado_contract": false,
+      "current_semantic_path": "official_weather_warning_event_feed",
+      "note": "Generic DWD CAP warning events may normalize to tornado/waterspout only when real provider event text supports it."
+    },
+    {
+      "provider": "noaa_nws",
+      "capability": "official_weather_alerts",
+      "default_enabled": true,
+      "domains": [
+        "weather",
+        "natural_hazards"
+      ],
+      "registry_topics": [
+        "thunderstorm",
+        "tornado",
+        "hail",
+        "severe_wind"
+      ],
+      "capability_explicit_tornado_text": true,
+      "dedicated_tornado_contract": false,
+      "current_semantic_path": "official_weather_warning_event_feed",
+      "note": "Provider description explicitly names Tornado Warnings."
+    }
+  ],
+  "hard_boundaries": [
+    "official_tornado_warning_is_not_confirmed_tornado",
+    "confirmed_tornado_is_not_radar_rotation_signal",
+    "radar_rotation_signal_is_not_thunderstorm_cell",
+    "thunderstorm_cell_is_not_tornado_warning",
+    "tornado_probability_is_not_official_warning",
+    "watch_or_outlook_is_not_warning"
+  ],
+  "implemented_semantic_classes": [
+    "official_weather_warning_event_feed"
+  ],
+  "not_implemented_as_dedicated_tornado_classes": [
+    "confirmed_or_observed_tornado_event",
+    "radar_rotation_signature",
+    "tornado_probability",
+    "tornado_watch",
+    "convective_outlook"
+  ],
+  "planned_sources": [
+    {
+      "provider": "eccc",
+      "status": "planned",
+      "intended_semantics": [
+        "official_weather_warning",
+        "tornado"
+      ]
+    },
+    {
+      "provider": "meteoalarm",
+      "status": "planned",
+      "intended_semantics": [
+        "official_weather_warning"
+      ],
+      "tornado_specific_contract_proven": false
+    }
+  ],
+  "open_semantic_questions": [
+    "Which classes must remain distinct: warning, watch, outlook, confirmed event, radar rotation and probability?",
+    "Whether Windhose remains inside tornado or needs finer semantics.",
+    "Whether waterspout must remain a separate stable class.",
+    "Which NWS event names qualify for tornado warning semantics.",
+    "Whether DWD registry topic tornado is backed by a real CAP event taxonomy.",
+    "Whether event-filtered weather.warning.official is sufficient as the final tornado-warning intent.",
+    "Whether an observed/confirmed tornado public contract is needed.",
+    "Whether a radar-rotation contract is needed and must explicitly deny confirmed-tornado semantics.",
+    "How authority coverage is handled regionally without provider priority."
+  ],
+  "invariants": [
+    "Inventory contains standard core only.",
+    "A radar rotation signal must never be presented as a confirmed tornado.",
+    "Thunderstorm cells do not prove tornado semantics.",
+    "Future/planned providers do not count as current coverage.",
+    "Provider ID is not a scoring axis.",
+    "Profiles remain deny-only."
+  ]
+}

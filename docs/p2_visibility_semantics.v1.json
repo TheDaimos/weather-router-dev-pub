@@ -1,0 +1,152 @@
+{
+  "schema": "weather_router.p2_visibility_semantics.v1",
+  "date": "2026-10-03",
+  "scope": "P2-VIS-20 semantics only; no intent implementation or scoring changes",
+  "semantic_families": {
+    "visibility_distance_forecast_point": {
+      "resource_type": "value",
+      "semantic_quantity": "visibility_distance",
+      "numeric": true,
+      "canonical_unit_for_future_routing": "m",
+      "observation_kind": "forecast",
+      "data_origin": "model",
+      "candidates": [
+        "open_meteo/visibility",
+        "fmi/visibility",
+        "smhi/visibility"
+      ],
+      "provider_units": {
+        "open_meteo/visibility": "m",
+        "fmi/visibility": "m",
+        "smhi/visibility": "km"
+      },
+      "notes": [
+        "All three candidates expose forecast horizontal visibility distance.",
+        "SMHI uses km while Open-Meteo and FMI use m; a shared numeric route requires explicit unit normalization.",
+        "ECCC station visibility is excluded from this forecast class."
+      ]
+    },
+    "visibility_distance_station_observation": {
+      "resource_type": "value",
+      "semantic_quantity": "visibility_distance",
+      "numeric": true,
+      "canonical_unit_for_future_routing": "m",
+      "observation_kind": "observation",
+      "data_origin": "station",
+      "candidates": [
+        "eccc_geomet/visibility"
+      ],
+      "notes": [
+        "ECCC SWOB visibility is a real station observation.",
+        "Same physical quantity does not erase the observation-vs-forecast distinction."
+      ]
+    },
+    "fog_fraction_forecast_point": {
+      "resource_type": "value",
+      "semantic_quantity": "fog_fraction",
+      "numeric": true,
+      "canonical_unit_for_future_routing": "%",
+      "observation_kind": "forecast",
+      "data_origin": "model",
+      "candidates": [
+        "met_norway/fog"
+      ],
+      "notes": [
+        "Fog fraction is a percentage-like modeled area fraction.",
+        "Fog fraction is not visibility distance and must not be used as a numeric fallback for visibility."
+      ]
+    }
+  },
+  "candidate_classification": [
+    {
+      "provider": "open_meteo",
+      "capability": "visibility",
+      "public_capabilities": [
+        "weather.point.visibility"
+      ],
+      "semantic_class": "visibility_distance_forecast_point",
+      "resource_type": "value",
+      "observation_kind": "forecast",
+      "data_origin": "model",
+      "provider_unit": "m",
+      "canonical_unit_for_future_routing": "m",
+      "coverage_scope": "unknown",
+      "compatibility": "forecast_candidate"
+    },
+    {
+      "provider": "fmi",
+      "capability": "visibility",
+      "public_capabilities": [
+        "weather.point.visibility"
+      ],
+      "semantic_class": "visibility_distance_forecast_point",
+      "resource_type": "value",
+      "observation_kind": "forecast",
+      "data_origin": "model",
+      "provider_unit": "m",
+      "canonical_unit_for_future_routing": "m",
+      "coverage_scope": "unknown",
+      "compatibility": "forecast_candidate"
+    },
+    {
+      "provider": "smhi",
+      "capability": "visibility",
+      "public_capabilities": [
+        "weather.point.visibility"
+      ],
+      "semantic_class": "visibility_distance_forecast_point",
+      "resource_type": "value",
+      "observation_kind": "forecast",
+      "data_origin": "model",
+      "provider_unit": "km",
+      "canonical_unit_for_future_routing": "m",
+      "coverage_scope": "unknown",
+      "compatibility": "forecast_candidate_requires_unit_normalization"
+    },
+    {
+      "provider": "eccc_geomet",
+      "capability": "visibility",
+      "public_capabilities": [
+        "weather.point.visibility"
+      ],
+      "semantic_class": "visibility_distance_station_observation",
+      "resource_type": "value",
+      "observation_kind": "observation",
+      "data_origin": "station",
+      "provider_unit": "m",
+      "canonical_unit_for_future_routing": "m",
+      "coverage_scope": "unknown",
+      "compatibility": "separate_observation"
+    },
+    {
+      "provider": "met_norway",
+      "capability": "fog",
+      "public_capabilities": [
+        "weather.point.fog"
+      ],
+      "semantic_class": "fog_fraction_forecast_point",
+      "resource_type": "value",
+      "observation_kind": "forecast",
+      "data_origin": "model",
+      "provider_unit": "%",
+      "canonical_unit_for_future_routing": "%",
+      "coverage_scope": "unknown",
+      "compatibility": "separate_physical_quantity"
+    }
+  ],
+  "related_but_non_interchangeable": [
+    "cloud_cover_low",
+    "weather.point.weather_code",
+    "weather.point.weather_summary",
+    "weather.warning.official"
+  ],
+  "rules": {
+    "endpoint_reachability_is_not_coverage": true,
+    "unknown_coverage_stays_unknown": true,
+    "provider_id_is_not_scoring_axis": true,
+    "profiles_remain_deny_only": true,
+    "fog_fraction_is_not_visibility_distance": true,
+    "observation_is_not_forecast": true,
+    "no_intent_decision_in_this_step": true
+  }
+}

@@ -1,0 +1,231 @@
+{
+  "schema": "weather_router.p4_tropical_intent_design.v1",
+  "date": "2026-10-05",
+  "status": "design_only",
+  "public_capability_count_before": 226,
+  "public_capability_count_after": 226,
+  "public_capabilities_added": 0,
+  "public_transports": [
+    "natural_hazards.tropical_cyclone.events",
+    "weather.warning.official",
+    "natural_hazards.disaster_awareness.events",
+    "aviation.airmet.us",
+    "aviation.gairmet.us",
+    "aviation.sigmet.international"
+  ],
+  "primary_hazard_type": {
+    "value": "tropical_cyclone",
+    "remains_for_compatibility": true,
+    "sufficient_proof_of_current_lifecycle": false
+  },
+  "event_semantics": {
+    "field": "tropical_system",
+    "shape": "object",
+    "required_fields": [
+      "system_class"
+    ],
+    "optional_fields": [
+      "source_classification",
+      "regional_term",
+      "classification_source"
+    ],
+    "system_classes": [
+      "potential_tropical_cyclone",
+      "tropical_depression",
+      "tropical_storm",
+      "hurricane_strength_tropical_cyclone",
+      "subtropical_cyclone",
+      "post_tropical_cyclone",
+      "tropical_cyclone_unspecified"
+    ],
+    "classification_sources": [
+      "structured_provider_field",
+      "explicit_event_text"
+    ]
+  },
+  "nhc_design": {
+    "source_field": "classification",
+    "preserve_raw_source_classification": true,
+    "mapping": {
+      "potential_tropical_cyclone": [
+        "potential tropical cyclone"
+      ],
+      "tropical_depression": [
+        "tropical depression"
+      ],
+      "tropical_storm": [
+        "tropical storm"
+      ],
+      "hurricane_strength_tropical_cyclone": [
+        "hurricane"
+      ],
+      "subtropical_cyclone": [
+        "subtropical depression",
+        "subtropical storm",
+        "subtropical cyclone"
+      ],
+      "post_tropical_cyclone": [
+        "post-tropical",
+        "post tropical",
+        "remnants",
+        "remnant low"
+      ]
+    },
+    "fallback": "tropical_cyclone_unspecified",
+    "structured_source": "structured_provider_field",
+    "regional_term_from_explicit_source_only": true,
+    "nhc_hurricane_regional_term": "hurricane",
+    "preserve_existing_parameters": [
+      "classification",
+      "intensity_kt",
+      "pressure_hpa",
+      "movement_direction_deg",
+      "movement_speed_kt",
+      "resources"
+    ],
+    "planned_revision": "wr-0.10.127-tropical-semantics-1",
+    "source_classification_codes": {
+      "PC": "potential_tropical_cyclone",
+      "TD": "tropical_depression",
+      "TS": "tropical_storm",
+      "HU": "hurricane_strength_tropical_cyclone",
+      "MH": "hurricane_strength_tropical_cyclone",
+      "STD": "subtropical_cyclone",
+      "STS": "subtropical_cyclone",
+      "SD": "subtropical_cyclone",
+      "SS": "subtropical_cyclone",
+      "PTC": "post_tropical_cyclone",
+      "TY": "hurricane_strength_tropical_cyclone"
+    },
+    "source_classification_code_reference": "https://www.nhc.noaa.gov/productexamples/NHC_Tropical_Cyclone_Status_JSON_File_Reference.pdf",
+    "corrective_revision": "wr-0.10.128-tropical-semantics-2"
+  },
+  "general_weather_warning_design": {
+    "attach_from_explicit_event_or_headline_only": true,
+    "description_or_instruction_only": false,
+    "generic_explicit_tropical_cyclone_class": "tropical_cyclone_unspecified",
+    "do_not_promote_future_forecast_language": true
+  },
+  "gdacs_design": {
+    "tc_event_class": "tropical_cyclone_unspecified",
+    "preserve_disaster_awareness_role": true,
+    "infer_finer_intensity": false
+  },
+  "aviation_design": {
+    "tc_event_class": "tropical_cyclone_unspecified",
+    "preserve_aviation_role": true,
+    "infer_finer_intensity": false
+  },
+  "regional_term": {
+    "field": "regional_term",
+    "allowed": [
+      "hurricane",
+      "typhoon",
+      "cyclone",
+      "severe_tropical_cyclone"
+    ],
+    "derive_from_provider_id": false,
+    "derive_from_geography": false,
+    "source_explicit_only": true
+  },
+  "alert_stage": {
+    "remains_separate": true,
+    "embedded_in_tropical_system": false
+  },
+  "forecast_resources": {
+    "new_public_capability": false,
+    "new_resource_type": false,
+    "remain_under_parameters_resources": true,
+    "track_is_event_geometry": false,
+    "cone_is_hazard_area": false,
+    "wind_probability_is_observation": false
+  },
+  "storm_surge": {
+    "auto_event_from_nhc_resource_link": false,
+    "remains_distinct_hazard": true
+  },
+  "event_filter_additions": {
+    "tropical_system_classes": [
+      "potential_tropical_cyclone",
+      "tropical_depression",
+      "tropical_storm",
+      "hurricane_strength_tropical_cyclone",
+      "subtropical_cyclone",
+      "post_tropical_cyclone",
+      "tropical_cyclone_unspecified"
+    ],
+    "compatible_public_capabilities": [
+      "natural_hazards.tropical_cyclone.events",
+      "weather.warning.official",
+      "natural_hazards.disaster_awareness.events",
+      "aviation.airmet.us",
+      "aviation.gairmet.us",
+      "aviation.sigmet.international"
+    ],
+    "filter_path": "tropical_system.system_class",
+    "regional_term_filter_added": false
+  },
+  "consumer_preservation": {
+    "event_fields": [
+      "tropical_system",
+      "alert_stage"
+    ],
+    "resource_diagnostic_fields": [
+      "tropical_system_classes",
+      "tropical_regional_terms"
+    ]
+  },
+  "versions": {
+    "planned_build_version": "0.10.127",
+    "planned_loader_revision": "0.10-loader-130",
+    "corrective_build_version": "0.10.128",
+    "corrective_loader_revision": "0.10-loader-131"
+  },
+  "global_provider_expansion": {
+    "in_scope": false,
+    "coverage_gap_remains_documented": true
+  },
+  "excluded": [
+    "new_public_capability",
+    "provider_priority",
+    "cross_provider_deduplication",
+    "invented_global_coverage",
+    "potential_tropical_cyclone_to_confirmed_tropical_cyclone_promotion",
+    "post_tropical_to_current_tropical_cyclone_promotion",
+    "description_only_current_lifecycle_inference",
+    "global_intensity_class_from_provider_neutral_wind_value",
+    "regional_term_from_provider_id",
+    "track_or_cone_to_observed_hazard_geometry",
+    "surge_link_to_storm_surge_event"
+  ],
+  "invariants": [
+    "No new public capability.",
+    "Primary tropical_cyclone remains a compatibility label and is not complete lifecycle semantics.",
+    "Potential tropical cyclone is not promoted to confirmed tropical cyclone.",
+    "Post-tropical cyclone is not promoted to current tropical cyclone.",
+    "Source classification is preserved.",
+    "Regional term is explicit-source provenance, not a provider-ID inference.",
+    "Alert stage remains separate from system classification.",
+    "Track and cone are not observed hazard geometry.",
+    "Storm surge remains distinct.",
+    "GDACS remains disaster-awareness semantics.",
+    "Aviation remains aviation semantics.",
+    "Provider ID is not a scoring axis.",
+    "Profiles remain deny-only.",
+    "Coverage unknown remains unknown.",
+    "Endpoint reachability is not coverage proof."
+  ],
+  "implementation_order": [
+    "shared tropical classification helper",
+    "NHC structured classification",
+    "general weather-warning explicit classification",
+    "GDACS TC annotation",
+    "aviation TC annotation",
+    "consumer normalization",
+    "event filter and capability gating",
+    "resource diagnostics",
+    "Consumer V1 schemas",
+    "regression tests",
+    "version bump"
+  ]
+}

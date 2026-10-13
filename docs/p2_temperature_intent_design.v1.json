@@ -1,0 +1,83 @@
+{
+  "schema": "weather_router.p2_temperature_intent_design.v1",
+  "date": "2026-10-02",
+  "scope": "P2-TEMP-30 design only; no runtime implementation",
+  "decisions": {
+    "shared_point_intent": {
+      "public_id": "weather.point.temperature",
+      "reuse_existing_id": true,
+      "resource_type": "value",
+      "observation_kind": "forecast",
+      "semantic_quantity": "air_temperature",
+      "canonical_unit": "°C",
+      "numeric_interchangeable": true,
+      "coverage_policy": "candidate_specific_unknown_allowed",
+      "candidate_set": [
+        "open_meteo/temperature",
+        "met_norway/temperature",
+        "noaa_nws/temperature",
+        "fmi/temperature",
+        "smhi/temperature",
+        "jma/temperature"
+      ],
+      "guarantees": [
+        "numeric_point_value",
+        "forecast_semantics",
+        "air_temperature_quantity",
+        "canonical_unit_celsius",
+        "candidate_semantics"
+      ],
+      "non_guarantees": [
+        "uniform_forecast_model",
+        "uniform_temporal_resolution",
+        "uniform_reference_height",
+        "machine_readable_preflight_coverage"
+      ]
+    },
+    "new_specialized_public_capability": {
+      "public_id": "weather.observation.temperature",
+      "candidate": "eccc_geomet/temperature",
+      "resource_type": "value",
+      "observation_kind": "observation",
+      "semantic_quantity": "air_temperature",
+      "canonical_unit": "°C",
+      "coverage_policy": "candidate_specific_unknown_allowed",
+      "reason": "ECCC SWOB temperature is a station observation and must not silently participate in the forecast intent."
+    },
+    "specialized_nowcast_preserved": {
+      "public_id": "weather.nowcast.temperature",
+      "candidate": "met_norway/nowcast_temperature",
+      "preserve": true
+    },
+    "specialized_model_layer_preserved": {
+      "public_id": "weather.model.temperature_2m.layer",
+      "candidate": "dwd/icon_temperature_2m",
+      "preserve": true,
+      "reason": "Single raster candidate; different resource class from numeric point value."
+    },
+    "specialized_fire_temperature_preserved": [
+      "weather.satellite.fire_temperature.goes_east",
+      "weather.satellite.fire_temperature.goes_west"
+    ],
+    "fire_temperature_numeric_routing": false,
+    "scoring_policy": {
+      "provider_id_axis": false,
+      "profiles": "deny_only",
+      "coverage_unknown": "preserve_unknown"
+    },
+    "height_policy": {
+      "exact_height_guaranteed": false,
+      "reason": "Not all forecast providers encode a uniform machine-readable reference height; shared intent guarantees air temperature, not an exact common height."
+    }
+  },
+  "implementation_requirements": [
+    "Harden weather.point.temperature as a six-candidate forecast intent.",
+    "Remove eccc_geomet/temperature from weather.point.temperature and expose it additively as weather.observation.temperature.",
+    "Keep weather.nowcast.temperature unchanged and specialized.",
+    "Keep weather.model.temperature_2m.layer unchanged and specialized.",
+    "Keep both NASA Fire Temperature public ids unchanged and out of numeric temperature routing.",
+    "Keep canonical shared forecast output in °C.",
+    "Do not introduce provider-priority scoring.",
+    "Do not infer hard coverage from provider descriptions or endpoint reachability."
+  ]
+}

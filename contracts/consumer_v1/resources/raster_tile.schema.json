@@ -1,0 +1,139 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "weather_router.consumer.resource.raster_tile.v1",
+  "title": "WeatherRouter Raster Tile Resource V1",
+  "type": "object",
+  "required": [
+    "tile_url",
+    "tile_size",
+    "max_zoom"
+  ],
+  "properties": {
+    "tile_url": {
+      "type": "string",
+      "minLength": 1
+    },
+    "tile_size": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "min_zoom": {
+      "type": "number",
+      "minimum": 0
+    },
+    "max_zoom": {
+      "type": "number",
+      "minimum": 0
+    },
+    "default_opacity": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0,
+      "maximum": 1
+    },
+    "attribution": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "timeline": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "mode": {
+          "enum": [
+            "frames",
+            "time_dimension"
+          ]
+        },
+        "default": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "loop": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "frames": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "time",
+              "tile_url"
+            ],
+            "properties": {
+              "time": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "tile_url": {
+                "type": "string",
+                "minLength": 1
+              },
+              "kind": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "additionalProperties": true
+          }
+        },
+        "default_index": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "current_index": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        }
+      },
+      "additionalProperties": true
+    },
+    "legend": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "properties": {
+        "url": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "title": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "style": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true
+}

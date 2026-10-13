@@ -1,0 +1,17 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Set up WeatherRouter",
+        "description": "Install the optional WeatherRouter service. Weather providers and consumer APIs will be added in later development stages."
+      }
+    }
+  },
+  "entity": {
+    "select": {
+      "reference_location": {
+        "name": "Reference location"
+      }
+    }
+  }
+}

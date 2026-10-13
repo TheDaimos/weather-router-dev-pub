@@ -1,0 +1,60 @@
+{
+  "schema": "weather_router.p5_civil_semantics.v1",
+  "date": "2026-10-08",
+  "status": "semantic_only",
+  "public_id": "civil_protection.warning.official",
+  "strategy": "aggregate",
+  "context_contract": {
+    "global": "allowed",
+    "bbox": "allowed_event_geometry_filter",
+    "point": "fail_closed_requirements_not_met",
+    "nearby": "not_implicit"
+  },
+  "point_fail_closed": {
+    "code": "requirements_not_met",
+    "retryable": false,
+    "provider_contact": false,
+    "rationale": "Civil providers currently ignore latitude/longitude; Point must not silently become Global."
+  },
+  "aggregation_semantics": {
+    "aggregation_is_fallback": false,
+    "candidate_order_is_priority": false,
+    "source_event_is_physical_incident": false,
+    "cross_channel_deduplication": false,
+    "source_provenance_required": true,
+    "provider_prefixed_event_id_is_global_incident_id": false,
+    "partial_failure_can_be_degraded": true,
+    "successful_empty_source_is_error": false,
+    "successful_empty_aggregate_is_allowed_when_source_count_gt_zero": true
+  },
+  "severity_semantics": {
+    "synthetic_common_severity": false,
+    "synthetic_urgency": false,
+    "synthetic_certainty": false
+  },
+  "coverage": {
+    "coverage_scope": "dynamic",
+    "coverage_evidence": "runtime_event_geometry",
+    "routing_authority": "context_filter",
+    "coordinate_space": "earth",
+    "endpoint_reachability_is_coverage": false
+  },
+  "cross_domain_nina_flood": {
+    "preserve_source_provenance": true,
+    "preserve_flood_semantics": true,
+    "civil_use_is_hydrological_observation": false
+  },
+  "invariants": [
+    "Point must not silently become Global.",
+    "Aggregation is not fallback.",
+    "Candidate order is not provider priority.",
+    "Warning channel is not a physical incident.",
+    "Provider-prefixed source event ID is not a global incident ID.",
+    "No automatic cross-channel content deduplication is invented.",
+    "Successful empty warning source is not a provider error.",
+    "Partial source failure may produce a degraded successful aggregate.",
+    "Source provenance must be preserved.",
+    "Endpoint reachability is not coverage proof."
+  ],
+  "next": "P5-CIVIL-30"
+}

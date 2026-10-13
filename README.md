@@ -1,23 +1,43 @@
-# WeatherRouter – Öffentlicher Entwicklungs- und Prüfstand
+# WeatherRouter – Öffentlicher DEV-Prüfstand
 
-> One weather brain for Home Assistant — combining radar, satellite, forecasts and multiple providers through intelligent routing.
+**Originalentwicklung und ursprünglicher Urheber: Christian Köhler**
 
-Dieses öffentliche Repository ist für freigegebene Entwicklungsstände und automatische Prüfungen des WeatherRouter vorgesehen.
+> WeatherRouter für Home Assistant · eine Wetterzentrale, viele Datenquellen.
 
-## Repositorys
+Dieses Repository enthält **ausschließlich einen gesondert geprüften Quellstand**
+für automatische Tests und die öffentliche Entwicklungsvalidierung.
 
-- **Private Entwicklung:** `TheDaimos/weather-router-dev` (nur für Berechtigte zugänglich)
-- **Öffentlicher Entwicklungs- und Prüfstand:** dieses Repository
-- **Öffentliche Veröffentlichung:** [weather-router-pub](https://github.com/TheDaimos/weather-router-pub)
+- Privater Entwicklungsursprung: `TheDaimos/weather-router-dev`.
+- Private Diagnose- und Testexporte: `TheDaimos/Project-Log-And-Export`.
+- Öffentliche Veröffentlichung: `TheDaimos/weather-router-pub`.
+- Die private Git-Historie und echte Home-Assistant-Diagnoseexporte werden
+  **nicht** in dieses Repository übernommen.
 
-## Sicherheits- und Freigaberegeln
+Der öffentliche Prüflauf ist ein technischer Nachweis für exakt den hier
+enthaltenen Quellstand. Eine grüne Prüfung ist weder eine selbstständige
+Home-Assistant-Realabnahme noch eine ungeprüfte Produktionsfreigabe.
 
-Vor der Übernahme von Entwicklungsdateien müssen die Inhalte auf Zugangsdaten, personenbezogene Daten, lokale Diagnose- und Home-Assistant-Exporte, private Erweiterungen sowie vertrauliche Dokumentation geprüft werden. Die private Git-Historie wird nicht ungeprüft übernommen.
+**Entwickler-Signatur:** C.K. – Eine Idee weiter gedacht.
 
-Eine erfolgreiche GitHub-Actions-Prüfung ist nur dann ein belastbarer Nachweis für den privaten Entwicklungsstand, wenn die geprüfte Quellcode- und Testdateimenge einem eindeutig bezeichneten privaten Commit entspricht und relevante Unterschiede dokumentiert sind.
+## Lizenz und Nutzungsrechte
 
-**Aktueller Zustand:** Das Repository ist vorbereitet. Es wurde noch kein WeatherRouter-Quellcode zur öffentlichen Prüfung freigegeben.
+WeatherRouter steht unter einer eigenen
+**Gemeinschaftslizenz (Modell B)**.
 
----
+- Private Nutzung und Weiterentwicklung: kostenlos
+- Kostenlose Weitergabe: erlaubt unter Lizenzbedingungen
+- Quellcode weitergegebener Fassungen: kostenlos verfügbar
+- Originalentwicklung: Christian Köhler
+- Urhebernennung: prominent und dauerhaft erhalten
+- Änderungen: kenntlich machen
+- Kommerzielle und berufliche Nutzung: nur mit Genehmigung
+- Logos und Projektkennzeichen: gesondert geschützt
 
-*C.K. – Eine Idee weiter gedacht.*
+Die vollständigen Regelungen stehen in:
+
+- [Lizenzbedingungen](LICENSE.md)
+- [Logos und Projektkennzeichen](BRANDING.md)
+- [Urheberrecht](COPYRIGHT.md)
+
+Es handelt sich nicht um eine OSI-anerkannte
+Open-Source-Lizenz.

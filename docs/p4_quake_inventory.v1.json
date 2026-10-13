@@ -1,0 +1,425 @@
+{
+  "schema": "weather_router.p4_quake_inventory.v1",
+  "date": "2026-10-06",
+  "status": "inventory_only",
+  "scope": "standard_core_only",
+  "runtime_unchanged": true,
+  "public_capability_count_unchanged": 226,
+  "summary": {
+    "dedicated_earthquake_public_capabilities": 2,
+    "dedicated_earthquake_candidates": 2,
+    "related_separate_public_paths": 3,
+    "usgs_earthquake_feeds": 2,
+    "cross_feed_deduplication_present": false,
+    "provider_priority_present": false
+  },
+  "public_paths": {
+    "earthquake_events": {
+      "public_capability": "natural_hazards.earthquake.events",
+      "family": "earthquake",
+      "hazard_types": [
+        "earthquake"
+      ],
+      "resource_types": [
+        "hazard_feed"
+      ],
+      "candidates": [
+        "usgs_earthquakes/earthquakes_past_day"
+      ]
+    },
+    "significant_events": {
+      "public_capability": "natural_hazards.earthquake.significant_events",
+      "family": "earthquake",
+      "hazard_types": [
+        "earthquake"
+      ],
+      "resource_types": [
+        "hazard_feed"
+      ],
+      "candidates": [
+        "usgs_earthquakes/significant_earthquakes_past_month"
+      ],
+      "significant_selection_owner": "USGS upstream summary feed",
+      "fixed_magnitude_threshold_encoded_in_weather_router": false
+    },
+    "seismic_non_earthquake": {
+      "public_capability": "natural_hazards.seismic_non_earthquake.events",
+      "candidate": "usgs_seismic_events/non_earthquake_seismic_past_day",
+      "source_class": "observation",
+      "explicit_filter": "type != earthquake",
+      "interchangeable_with_earthquake_contract": false
+    },
+    "disaster_awareness": {
+      "public_capability": "natural_hazards.disaster_awareness.events",
+      "candidate": "gdacs/global_disaster_alerts_7d",
+      "earthquake_event_mapping": "EQ -> earthquake",
+      "source_class": "disaster_awareness",
+      "aggregator": true,
+      "primary_warning_authority": false,
+      "interchangeable_with_primary_earthquake_observation": false
+    },
+    "tsunami_potential": {
+      "public_capability": "natural_hazards.tsunami.potential",
+      "candidate": "bmkg_tsunami/tsunami_potential_earthquake",
+      "hazard_type": "tsunami_potential",
+      "source_class": "event_indicator",
+      "triggering_earthquake_epicenter_location": "parameters.earthquake_epicenter",
+      "event_geometry": null,
+      "interchangeable_with_earthquake_contract": false,
+      "official_tsunami_warning": false
+    }
+  },
+  "providers": {
+    "usgs_earthquakes": {
+      "default_enabled": true,
+      "revision": "wr-0.10.40-usgs-earthquakes-1",
+      "source_class": "observation",
+      "data_origin": "seismic_network",
+      "measurement_method": "seismic_event_catalog",
+      "observation_kind": "observation",
+      "render_mode": "hazard_feed",
+      "network_target": {
+        "scheme": "https",
+        "host": "earthquake.usgs.gov",
+        "port": 443,
+        "required": true
+      },
+      "attribution": "U.S. Geological Survey · Earthquake Hazards Program",
+      "feeds": {
+        "earthquakes_past_day": {
+          "url": "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_day.geojson",
+          "window": "rolling 24 h",
+          "capability_description_coverage": "Global",
+          "adapter_event_type_filter": "type == earthquake"
+        },
+        "significant_earthquakes_past_month": {
+          "url": "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/significant_month.geojson",
+          "window": "rolling month",
+          "capability_description_coverage": "Global",
+          "adapter_event_type_filter": "type == earthquake",
+          "completeness": "not a complete earthquake catalog"
+        }
+      },
+      "geometry": {
+        "source": "GeoJSON Feature.geometry",
+        "accepted_type": "Point",
+        "output_coordinates": "longitude, latitude",
+        "third_coordinate": "depth_km",
+        "bbox_filter": "provider_side",
+        "antimeridian_bbox_supported": true,
+        "point_arguments": "accepted by Consumer API but ignored by provider adapter",
+        "global": "no provider-side spatial filter"
+      },
+      "fields": {
+        "preserved": [
+          "id/code",
+          "place",
+          "title",
+          "time",
+          "updated",
+          "magnitude",
+          "magnitude_type",
+          "depth_km",
+          "felt_reports",
+          "community_intensity_cdi",
+          "instrumental_intensity_mmi",
+          "pager_alert",
+          "significance",
+          "tsunami_flag",
+          "usgs_status",
+          "network",
+          "code",
+          "web_url"
+        ],
+        "event_time_mapping": {
+          "sent": "updated if present, else event time",
+          "effective": "event time",
+          "onset": "event time"
+        },
+        "update_time_separate_parameter": false
+      },
+      "magnitude_display_mapping": {
+        "basis": "weather_router_magnitude_display_band",
+        "bands": [
+          {
+            "condition": "M >= 7.0",
+            "severity": "extreme",
+            "label": "M7+"
+          },
+          {
+            "condition": "6.0 <= M < 7.0",
+            "severity": "severe",
+            "label": "M6"
+          },
+          {
+            "condition": "5.0 <= M < 6.0",
+            "severity": "moderate",
+            "label": "M5"
+          },
+          {
+            "condition": "M < 5.0",
+            "severity": "minor",
+            "label": "unter M5"
+          }
+        ],
+        "semantic_warning_level": false,
+        "intensity_or_damage_scale": false
+      },
+      "diagnostics": {
+        "provider_stage": "usgs_geojson_summary",
+        "sample_fields": [
+          "headline",
+          "magnitude",
+          "depth_km",
+          "effective",
+          "has_geometry"
+        ],
+        "routing_summary_quake_specific_fields": false
+      }
+    },
+    "usgs_seismic_events": {
+      "default_enabled": false,
+      "revision": "wr-0.10.48-usgs-non-earthquake-1",
+      "source_class": "observation",
+      "data_origin": "seismic_network",
+      "measurement_method": "seismic_event_catalog",
+      "observation_kind": "observation",
+      "feed_url": "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_day.geojson",
+      "feed_window": "rolling 24 h",
+      "explicit_filter": "type != earthquake",
+      "network_target": {
+        "scheme": "https",
+        "host": "earthquake.usgs.gov",
+        "port": 443,
+        "required": true
+      },
+      "fields": [
+        "usgs_event_type",
+        "magnitude",
+        "magnitude_type",
+        "depth_km",
+        "significance",
+        "network",
+        "code",
+        "updated"
+      ],
+      "geometry": "GeoJSON Point with optional depth",
+      "bbox_filter": "provider_side",
+      "point_arguments": "ignored by provider adapter",
+      "hazard_type_mapping": [
+        "seismic_explosion",
+        "collapse",
+        "debris_flow",
+        "landslide",
+        "avalanche",
+        "meteor",
+        "volcanic_activity",
+        "acoustic_event",
+        "seismic_non_earthquake"
+      ],
+      "topic_assignment": [
+        "earthquake",
+        "seismic_activity"
+      ]
+    },
+    "gdacs": {
+      "default_enabled": false,
+      "revision": "wr-0.10.129-tsunami-semantics-1",
+      "source_class": "disaster_awareness",
+      "data_origin": "warning_aggregator",
+      "measurement_method": "multi_hazard_alert_aggregation",
+      "observation_kind": "warning_event",
+      "feed_window": "7d",
+      "typical_feed_update": "about 6 minutes per provider capability description",
+      "network_target": {
+        "scheme": "https",
+        "host": "data.gdacs.org",
+        "port": 443,
+        "required": true
+      },
+      "earthquake_mapping": "EQ -> earthquake",
+      "alert_color_mapping": {
+        "green": "minor",
+        "orange": "severe",
+        "red": "extreme"
+      },
+      "aggregator": true,
+      "primary_warning_authority": false,
+      "bbox_filter": "provider-side geometry filter for non-tsunami events",
+      "point_arguments": "ignored by provider adapter; non-tsunami GDACS events are not centrally point-filtered",
+      "overlap_with_specialized_sources": "expected and documented"
+    },
+    "bmkg_tsunami": {
+      "default_enabled": true,
+      "revision": "wr-0.10.129-tsunami-semantics-1",
+      "source_class": "event_indicator",
+      "data_origin": "seismic_network",
+      "measurement_method": "seismic_event_catalog",
+      "observation_kind": "observation",
+      "network_target": {
+        "scheme": "https",
+        "host": "data.bmkg.go.id",
+        "port": 443,
+        "required": true,
+        "documented_limit": "60 requests/minute/IP"
+      },
+      "feed_window": "latest earthquake / event-driven",
+      "hazard_type": "tsunami_potential",
+      "event_geometry": null,
+      "triggering_earthquake_fields": [
+        "earthquake_epicenter",
+        "magnitude",
+        "depth_km",
+        "latitude_text",
+        "longitude_text",
+        "potential_text",
+        "felt",
+        "shakemap"
+      ],
+      "official_tsunami_warning": false
+    }
+  },
+  "normalized_contracts": {
+    "coverage": {
+      "scope": "dynamic",
+      "evidence": "runtime_event_geometry",
+      "routing_authority": "context_filter",
+      "coordinate_space": "earth",
+      "endpoint_reachability_is_coverage": false,
+      "applies_to": [
+        "usgs_earthquakes/earthquakes_past_day",
+        "usgs_earthquakes/significant_earthquakes_past_month",
+        "usgs_seismic_events/non_earthquake_seismic_past_day",
+        "gdacs/global_disaster_alerts_7d",
+        "bmkg_tsunami/tsunami_potential_earthquake"
+      ]
+    },
+    "time": {
+      "request_time_mode": "latest",
+      "data_time": "optional_runtime",
+      "valid_time": "optional_runtime",
+      "interval_start": "optional_runtime",
+      "interval_end": "optional_runtime",
+      "freshness_policy": "consumer_max_age_optional"
+    }
+  },
+  "feed_overlap": {
+    "usgs_all_day_and_significant_month": {
+      "possible": true,
+      "reason": "The feeds cover overlapping time and event domains; an event selected by USGS as significant can also be present in the all-day feed while it is within the last 24 hours.",
+      "same_provider": true,
+      "deduplication_currently_implemented": false,
+      "inventory_only_no_deduplication_decision": true
+    },
+    "usgs_vs_gdacs_earthquake": {
+      "possible": true,
+      "roles_different": true,
+      "deduplication_currently_implemented": false
+    }
+  },
+  "filtering": {
+    "provider_side": {
+      "usgs_earthquakes": [
+        "type == earthquake",
+        "bbox",
+        "limit"
+      ],
+      "usgs_seismic_events": [
+        "type != earthquake",
+        "bbox",
+        "limit"
+      ],
+      "gdacs": [
+        "bbox for non-tsunami event geometry",
+        "limit"
+      ],
+      "bmkg_tsunami": [
+        "explicit positive tsunami-potential text"
+      ]
+    },
+    "consumer_event_filter": "generic hazard-feed filters; no earthquake-specific magnitude/depth/intensity filter contract exists today",
+    "point_context_gap": "Dedicated USGS earthquake and non-earthquake adapters ignore latitude/longitude; the central best-effort event-geometry point filter is currently Tsunami-specific."
+  },
+  "schema_inventory": {
+    "hazard_event_parameters": "open object; earthquake parameters are not yet represented by a typed earthquake-specific schema",
+    "geometry": "generic object or null",
+    "quake_specific_semantics_object_present": false,
+    "diagnostic_quake_specific_summary_present": false,
+    "generic_diagnostic_fields": [
+      "event_types/hazard_types",
+      "severities",
+      "geometry_count",
+      "event_filter",
+      "source_diagnostics",
+      "spatial_filter when supplied"
+    ]
+  },
+  "mapping_gaps_for_p4_quake_20": [
+    {
+      "id": "significant_upstream_semantics",
+      "finding": "WeatherRouter consumes USGS significant_month but encodes no fixed significance/magnitude rule.",
+      "decision_needed": "Define only the semantics that can be supported without inventing a threshold."
+    },
+    {
+      "id": "magnitude_severity_display_band",
+      "finding": "Generic severity is currently derived from magnitude bands and explicitly labelled a WeatherRouter display band.",
+      "decision_needed": "Decide how to preserve magnitude without conflating it with intensity, damage or official hazard severity."
+    },
+    {
+      "id": "point_context_filtering",
+      "finding": "USGS earthquake adapters ignore point arguments; BBOX filtering exists provider-side, but no generic quake point geometry filter is applied centrally.",
+      "decision_needed": "Define intended Point semantics and truthful diagnostics/coverage behavior."
+    },
+    {
+      "id": "typed_earthquake_semantics",
+      "finding": "Magnitude, depth, felt, CDI, MMI, PAGER alert, significance and tsunami flag live in generic parameters.",
+      "decision_needed": "Assess whether additive typed earthquake semantics are useful; do not pre-decide in inventory."
+    },
+    {
+      "id": "routing_diagnostic_visibility",
+      "finding": "Routing diagnostics expose generic hazard summaries but not quake-specific magnitude/depth/intensity/significance fields.",
+      "decision_needed": "Define which fields should become diagnostic summaries, if any."
+    },
+    {
+      "id": "non_earthquake_topic_assignment",
+      "finding": "The non-earthquake seismic capability is correctly public-separated but its topic assignment includes both earthquake and seismic_activity.",
+      "decision_needed": "Review topic wording without merging the public contracts."
+    },
+    {
+      "id": "cross_feed_overlap",
+      "finding": "USGS all-day and significant-month can overlap; GDACS EQ can overlap specialized observations.",
+      "decision_needed": "Inventory overlap only; no deduplication or provider priority before semantics/design."
+    },
+    {
+      "id": "update_time_mapping",
+      "finding": "USGS earthquake updated timestamp is mapped to sent but is not separately exposed as a named update parameter.",
+      "decision_needed": "Review time semantics in P4-QUAKE-20."
+    }
+  ],
+  "invariants": [
+    "P4-QUAKE-10 is inventory only and changes no runtime behavior.",
+    "No new public capability is introduced.",
+    "USGS significant does not imply a WeatherRouter-defined fixed magnitude threshold.",
+    "WeatherRouter magnitude severity bands are display bands, not intensity, damage or official warning levels.",
+    "Earthquake is not automatically tsunami.",
+    "USGS tsunami_flag is metadata and not an official tsunami warning.",
+    "GDACS earthquake remains disaster awareness and is not an interchangeable primary observation.",
+    "USGS non-earthquake seismic remains separate from earthquake.",
+    "Endpoint reachability is not coverage proof.",
+    "Provider ID is not a scoring axis.",
+    "Profiles remain deny-only.",
+    "No cross-provider or cross-feed deduplication is introduced in P4-QUAKE-10."
+  ],
+  "next_phase": "P4-QUAKE-20",
+  "acceptance": {
+    "status": "done",
+    "inventory_commit": "5ff98f5cb03c7e9f4f3c64e932a58e3dd2167e18",
+    "ci_run_number": 3164,
+    "ci_status": "success",
+    "runtime_changed": false,
+    "dra_promotion": false,
+    "ha_real_test": false,
+    "new_public_capability": false,
+    "next_active_point": "P4-QUAKE-20"
+  }
+}

@@ -1,0 +1,147 @@
+{
+  "schema": "weather_router.public_private_evidence_index.v1",
+  "source_commit": "30cc77cbc81c9209dc24e4cc1f5c6f56cd7e1b4c",
+  "originals_included": false,
+  "verification_scope": "references_only_not_evidence_content",
+  "count": 23,
+  "documents": [
+    {
+      "path": "docs/CONSUMER_ROUTING_AUDIT_2026-10-01.md",
+      "bytes": 165611,
+      "sha256": "53c579d91091bf5cea19da9c2d5d2a9fb8dd0585613b41ebd4314ce9116cef04",
+      "source_visibility": "private_original_not_published"
+    },
+    {
+      "path": "docs/P2_CLOUD_70_ABSCHLUSS_2026-10-02.md",
+      "bytes": 3791,
+      "sha256": "45cc804cc5fd182249e9c4921440d0080e9feed831c04167b9eab7c480d161c0",
+      "source_visibility": "private_original_not_published"
+    },
+    {
+      "path": "docs/P2_SNOW_70_ABSCHLUSS_2026-10-03.md",
+      "bytes": 5137,
+      "sha256": "98f1e60a6fa6b0ba446c16d32d66ac045d4cc4d0bde0974da92015ab2e596e6f",
+      "source_visibility": "private_original_not_published"
+    },
+    {
+      "path": "docs/P2_TEMP_70_ABSCHLUSS_2026-10-03.md",
+      "bytes": 4536,
+      "sha256": "90d08e8be69b2f4b1f20b563b1200bdaa8e8eeadc4e9ea58a7c087b4ab6d24cf",
+      "source_visibility": "private_original_not_published"
+    },
+    {
+      "path": "docs/P2_UV_70_ABSCHLUSS_2026-10-03.md",
+      "bytes": 4204,
+      "sha256": "afd487ca80b38de9bcc3e628dd3aafa08a137092a168ed9a45184894c17ea1b3",
+      "source_visibility": "private_original_not_published"
+    },
+    {
+      "path": "docs/P2_VIS_70_ABSCHLUSS_2026-10-03.md",
+      "bytes": 6113,
+      "sha256": "b75096938ef3630bbee28f5572963dbc3a5bd503fdad4d9bf967e2101dd7a027",
+      "source_visibility": "private_original_not_published"
+    },
+    {
+      "path": "docs/P2_WIND_70_ABSCHLUSS_2026-10-02.md",
+      "bytes": 5357,
+      "sha256": "a43a439956f8bebf6c6908255dbca2d8dc94f253e49f1c3334b40eddce515c70",
+      "source_visibility": "private_original_not_published"
+    },
+    {
+      "path": "docs/P3_LIGHTNING_70_ABSCHLUSS_2026-10-04.md",
+      "bytes": 7260,
+      "sha256": "789021c1f3a44234462cfe9ac7f851c5b41bbc7cbfa8b564f53e49587dfc64a0",
+      "source_visibility": "private_original_not_published"
+    },
+    {
+      "path": "docs/P3_THUNDER_70_ABSCHLUSS_2026-10-04.md",
+      "bytes": 7049,
+      "sha256": "6412520e22f5bf692c14e7b196bd42ab7a7d0e545834aff008f0efa6e420b158",
+      "source_visibility": "private_original_not_published"
+    },
+    {
+      "path": "docs/P3_WARN_70_ABSCHLUSS_2026-10-04.md",
+      "bytes": 5921,
+      "sha256": "77aad99daa91670cafd8e94cf9c86a7ba4238be59cf875eedc7dfa11f55a3379",
+      "source_visibility": "private_original_not_published"
+    },
+    {
+      "path": "docs/P4_FLOOD_70_ABSCHLUSS_2026-10-05.md",
+      "bytes": 6585,
+      "sha256": "7e49b7405ce9e59a6411249faa9bba33d7a72c74e7a050ed96f7d0878bd7d18b",
+      "source_visibility": "private_original_not_published"
+    },
+    {
+      "path": "docs/P4_QUAKE_70_ABSCHLUSS_2026-10-06.md",
+      "bytes": 7658,
+      "sha256": "8da85b3563a3acf15ca4f207ce19484e82a508975b074d555c904fc382e586e4",
+      "source_visibility": "private_original_not_published"
+    },
+    {
+      "path": "docs/P4_TROPICAL_70_ABSCHLUSS_2026-10-06.md",
+      "bytes": 7065,
+      "sha256": "6ec1489dbf0f7ca76a69c771dc88576011598a9118a941fad704be02178407c4",
+      "source_visibility": "private_original_not_published"
+    },
+    {
+      "path": "docs/P4_TSUNAMI_70_ABSCHLUSS_2026-10-06.md",
+      "bytes": 8834,
+      "sha256": "22df8d73502ad8cb0b17b29a35a2e5e5aea2f829bc3639fc9890961abd7a2ed0",
+      "source_visibility": "private_original_not_published"
+    },
+    {
+      "path": "docs/P4_VOLCANO_70_ABSCHLUSS_2026-10-07.md",
+      "bytes": 2630,
+      "sha256": "2da67084d82321a26a4e5846a1489fb9b2ff79f637a4cb60a8a659228a688cbf",
+      "source_visibility": "private_original_not_published"
+    },
+    {
+      "path": "docs/P5_AVIATION_70_ABSCHLUSS_2026-10-08.md",
+      "bytes": 2841,
+      "sha256": "58eb05ea32acbefe6505bd1aa57a26d266b21afab0164f0a45b76af6c4951014",
+      "source_visibility": "private_original_not_published"
+    },
+    {
+      "path": "docs/P5_BIO_70_ABSCHLUSS_2026-10-09.md",
+      "bytes": 8348,
+      "sha256": "6ea649b8b4eaa6ab40b0eadbd6033d6dfc732332008478b6c08038b19f9043e7",
+      "source_visibility": "private_original_not_published"
+    },
+    {
+      "path": "docs/P5_CIVIL_70_ABSCHLUSS_2026-10-08.md",
+      "bytes": 3022,
+      "sha256": "bed8c473528362cd1d45a4e7db0b61b34dbd5f988ae0edc12b0efa96303cc42b",
+      "source_visibility": "private_original_not_published"
+    },
+    {
+      "path": "docs/P5_POLLEN_70_ABSCHLUSS_2026-10-07.md",
+      "bytes": 5740,
+      "sha256": "92fce2dfce19f63b97ad3b1e107c42232c4f6a75740aa9060edc7c1a79060e7c",
+      "source_visibility": "private_original_not_published"
+    },
+    {
+      "path": "docs/P5_SECURITY_70_ABSCHLUSS_2026-10-08.md",
+      "bytes": 4554,
+      "sha256": "5b7742dfeb40a0e7791360691343c63bce4e6d6fa352ae03f5cfe80888bd0498",
+      "source_visibility": "private_original_not_published"
+    },
+    {
+      "path": "docs/P5_SPACE_70_ABSCHLUSS_2026-10-07.md",
+      "bytes": 4067,
+      "sha256": "099eb001aeba9fe36861c854ad68aeedcb32f4b73994a0fb744b604e0e993249",
+      "source_visibility": "private_original_not_published"
+    },
+    {
+      "path": "docs/ROUTING_SCHLACHTPLAN.md",
+      "bytes": 380642,
+      "sha256": "db24e1fd6586297d1821d29617ab5ef81304643ca92ef7ea5494222d564e1dff",
+      "source_visibility": "private_original_not_published"
+    },
+    {
+      "path": "docs/THEMEN_UND_ROUTING_STRATEGIE.md",
+      "bytes": 20490,
+      "sha256": "4d3734a5b67cce9686de1cbdf0d917abe2ec157fe0542d2c853b2152f674aff8",
+      "source_visibility": "private_original_not_published"
+    }
+  ]
+}

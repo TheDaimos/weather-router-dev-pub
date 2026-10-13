@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://weather-router.local/contracts/diagnostics/routing_diagnostics_clear.response.schema.json",
+  "title": "WeatherRouter Routing Diagnostics Clear Response",
+  "type": "object",
+  "required": [
+    "cleared",
+    "remaining",
+    "schema"
+  ],
+  "properties": {
+    "cleared": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "remaining": {
+      "const": 0
+    },
+    "schema": {
+      "const": "weather_router.routing_diagnostics.index.v1"
+    }
+  },
+  "additionalProperties": false
+}

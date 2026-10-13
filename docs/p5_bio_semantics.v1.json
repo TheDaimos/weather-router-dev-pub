@@ -1,0 +1,118 @@
+{
+  "schema": "weather_router.p5_bio_semantics.v1",
+  "date": "2026-10-09",
+  "stage": "P5-BIO-20",
+  "status": "semantic_only",
+  "provider": {
+    "id": "gbif_biodiversity",
+    "display_name": "GBIF · Biologische Vorkommen",
+    "enabled_by_default": false,
+    "domain": "biological_hazards"
+  },
+  "contract": {
+    "public_count": 88,
+    "public_prefix": "biological_hazards.occurrence.",
+    "public_suffix": ".density",
+    "family": "biological_occurrence_density",
+    "strategy": "single",
+    "resource_type": "raster_tile",
+    "internal_prefix": "occurrence_density_",
+    "all_specialized": true,
+    "new_shared_intent": false
+  },
+  "physical_semantics": {
+    "quantity": "occurrence_density",
+    "unit": "Vorkommensnachweise pro Rasterzelle",
+    "data_origin": "biodiversity_observation",
+    "measurement_method": "occurrence_density_observation",
+    "observation_kind": "observation",
+    "source_class": "biodiversity_occurrence",
+    "population_density": false,
+    "population_size": false,
+    "current_presence": false,
+    "encounter_probability": false,
+    "hazard_probability": false,
+    "infection_probability": false,
+    "official_hazard_warning": false
+  },
+  "context_contract": {
+    "global": "allowed_map_layer_only",
+    "bbox": "allowed_as_map_viewport_not_server_side_bbox_filter",
+    "point": "allowed_as_map_layer_request_not_point_presence_or_proximity_analysis",
+    "nearby": "no_implicit_nearby_radius_or_point_in_geometry",
+    "query_specificity": "taxon_specific_public_id"
+  },
+  "coverage": {
+    "coverage_scope": "unknown",
+    "coverage_evidence": "unknown",
+    "routing_authority": "none",
+    "coordinate_space": "earth",
+    "endpoint_reachability_is_coverage": false,
+    "global_map_url_is_global_presence_proof": false,
+    "no_records_means_absence": false,
+    "successful_tile_url_is_tile_content_proof": false
+  },
+  "time": {
+    "from_year": 2000,
+    "request_time_mode": "latest",
+    "data_time": "optional_runtime",
+    "valid_time": "not_applicable",
+    "forecast_reference_time": "not_applicable",
+    "temporal_scope": "accumulated_published_occurrences_not_current",
+    "to_year": "runtime_calendar_year",
+    "observed_absence_is_forecast": false
+  },
+  "taxon_semantics": {
+    "taxonomy": "Catalogue of Life Extended Release",
+    "taxon_resolution_method": "GBIF Species Match API v2",
+    "preserve_requested_scientific_name": true,
+    "preserve_matched_scientific_name": true,
+    "preserve_taxon_key": true,
+    "preserve_match_confidence_if_present": true,
+    "overlapping_taxa_possible": true,
+    "additive_species_and_parent_group_counts": false,
+    "arbitrary_admin_taxon_is_public": false
+  },
+  "map_provenance": {
+    "provider_url_host": "api.gbif.org",
+    "tiles_are_raster_not_event_geometries": true,
+    "quality_filter": "hasGeospatialIssue=false",
+    "raster_projection": "EPSG:3857",
+    "legend_must_not_claim_risk": true,
+    "attribution_required": true,
+    "underlying_dataset_licences_must_be_respected": true,
+    "render_success_is_not_data_completeness_proof": true,
+    "recording_bias_warning_required": true
+  },
+  "isolation": {
+    "independent_public_taxa": true,
+    "no_cross_taxon_aggregation": true,
+    "no_weather_hazard_or_civil_warning_fallback": true,
+    "no_auto_disease_outbreak_inference": true,
+    "no_automatic_poisoning_or_animal_attack_warning": true,
+    "domain_opt_in_hard_gate": true,
+    "profile_deny_only": true
+  },
+  "failure_semantics": {
+    "taxon_matching_failure_is_not_zero_density": true,
+    "unreachable_gbif_is_not_species_absence": true,
+    "no_tile_pixels_is_not_zero_records": true,
+    "empty_raster_is_not_evidence_of_no_risk": true,
+    "provider_method_return_is_not_tile_download_confirmation": true
+  },
+  "next": "P5-BIO-30",
+  "invariants": [
+    "Occurrence density is not population density or abundance.",
+    "Published historical sightings do not prove current presence.",
+    "Occurrence density is not encounter, infection, or harm probability.",
+    "Point context does not imply a point-specific occurrence result.",
+    "BBOX context does not imply server-side clipping for GBIF raster tile templates.",
+    "Successful map layer resolution does not guarantee delivered tile pixels.",
+    "Empty raster cells and absent GBIF records are not species absence evidence.",
+    "Taxonomic species and parent groups may overlap and must not be summed.",
+    "GBIF observation is not an official warning or medical outbreak source.",
+    "Provider and domain opt-in gates cannot be bypassed.",
+    "Provider provenance, taxonomy metadata, and licences remain visible.",
+    "Endpoint reachability is not geographic coverage proof."
+  ]
+}

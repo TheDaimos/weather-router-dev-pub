@@ -1,0 +1,281 @@
+{
+  "schema": "weather_router.p4_quake_semantics.v1",
+  "date": "2026-10-06",
+  "status": "semantics_only",
+  "runtime_changed": false,
+  "public_capability_count_unchanged": 226,
+  "core_model": {
+    "earthquake_event": "Observed seismic event classified by the source as type=earthquake.",
+    "significant_event": "Earthquake selected by the upstream USGS significant-event logic; not a WeatherRouter magnitude class.",
+    "non_earthquake_seismic_event": "Observed seismic catalog event explicitly classified by USGS as type != earthquake.",
+    "disaster_awareness_earthquake": "GDACS earthquake awareness event; not an interchangeable primary earthquake observation.",
+    "tsunami_potential_indicator": "BMKG earthquake-linked tsunami-potential indicator; not a dedicated earthquake event and not an official tsunami warning."
+  },
+  "semantic_axes": {
+    "magnitude": {
+      "meaning": "Source-reported earthquake magnitude.",
+      "requires_type_context": true,
+      "fields": [
+        "magnitude",
+        "magnitude_type"
+      ],
+      "not_equal_to": [
+        "intensity",
+        "damage",
+        "impact",
+        "warning_level",
+        "significance"
+      ]
+    },
+    "depth": {
+      "meaning": "Hypocentral/event depth in kilometers as supplied by the seismic catalog.",
+      "field": "depth_km",
+      "not_severity": true
+    },
+    "intensity": {
+      "cdi": {
+        "meaning": "Community-reported felt intensity from USGS DYFI context.",
+        "field": "community_intensity_cdi",
+        "is_magnitude": false
+      },
+      "mmi": {
+        "meaning": "Instrumental/ShakeMap intensity context from USGS.",
+        "field": "instrumental_intensity_mmi",
+        "is_magnitude": false
+      },
+      "location_dependent": true,
+      "not_event_magnitude": true
+    },
+    "pager_alert": {
+      "meaning": "USGS PAGER earthquake impact alert derived from estimated fatalities/economic losses.",
+      "field": "pager_alert",
+      "not_magnitude": true,
+      "not_intensity": true,
+      "not_official_local_warning_level": true
+    },
+    "significance": {
+      "meaning": "USGS upstream event significance score/classification.",
+      "field": "significance",
+      "factors_include": [
+        "magnitude",
+        "DYFI response/intensity context",
+        "PAGER alert"
+      ],
+      "weather_router_recomputes": false,
+      "weather_router_fixed_threshold": false,
+      "not_equal_to": [
+        "magnitude",
+        "severity",
+        "intensity",
+        "damage"
+      ]
+    },
+    "tsunami_flag": {
+      "meaning": "USGS event metadata indicating tsunami association/flag from the source feed.",
+      "field": "tsunami_flag",
+      "official_tsunami_warning": false,
+      "promotes_earthquake_to_tsunami_warning": false
+    },
+    "status_and_time": {
+      "event_time_fields": [
+        "effective",
+        "onset"
+      ],
+      "update_time_current_mapping": "sent uses updated when present, else event time",
+      "separate_updated_field_currently": false,
+      "semantics": "event occurrence time and catalog update time are distinct concepts"
+    },
+    "geometry": {
+      "event_geometry": "epicenter/hypocenter horizontal point location",
+      "depth_is_geometry_z": false,
+      "depth_stored_separately": true,
+      "event_point_is_impact_area": false,
+      "event_point_is_shaking_footprint": false
+    }
+  },
+  "current_generic_severity": {
+    "basis": "weather_router_magnitude_display_band",
+    "purpose": "presentation compatibility",
+    "semantic_status": "non_canonical_earthquake_semantics",
+    "bands": [
+      {
+        "condition": "M >= 7.0",
+        "value": "extreme"
+      },
+      {
+        "condition": "6.0 <= M < 7.0",
+        "value": "severe"
+      },
+      {
+        "condition": "5.0 <= M < 6.0",
+        "value": "moderate"
+      },
+      {
+        "condition": "M < 5.0",
+        "value": "minor"
+      }
+    ],
+    "must_not_be_interpreted_as": [
+      "Modified Mercalli Intensity",
+      "felt intensity",
+      "damage level",
+      "PAGER impact alert",
+      "official warning level"
+    ],
+    "design_action_phase": "P4-QUAKE-30"
+  },
+  "significant_feed": {
+    "source_owner": "USGS",
+    "selection_semantics": "upstream_significant_event_selection",
+    "direct_weather_router_threshold": false,
+    "recomputation_in_weather_router": false,
+    "possible_overlap_with_all_day": true,
+    "overlap_reason": "A USGS-significant event can simultaneously be within the rolling all-day time window.",
+    "deduplication_decision_deferred_to": "P4-QUAKE-30_or_later"
+  },
+  "spatial_semantics": {
+    "global": {
+      "meaning": "Do not spatially filter the returned catalog events.",
+      "proves_complete_global_detection": false
+    },
+    "bbox": {
+      "meaning": "Filter by earthquake event point lying in the requested bounding box.",
+      "valid_event_relevance_filter": true,
+      "proves_network_coverage": false
+    },
+    "point": {
+      "exact_coordinate_match_semantically_useful": false,
+      "current_provider_filtering": false,
+      "nearby_requires_explicit_distance_or_radius": true,
+      "no_radius_means": "No semantically valid proximity selection can be inferred.",
+      "design_options_deferred": [
+        "reject/mark unsupported for earthquake event proximity",
+        "introduce an explicit radius/distance requirement",
+        "define another explicit point-nearby contract"
+      ]
+    },
+    "endpoint_reachability_is_coverage": false,
+    "event_geometry_is_detection_completeness": false
+  },
+  "source_roles": {
+    "usgs_earthquakes": {
+      "role": "primary seismic catalog observation",
+      "event_type_filter": "type == earthquake",
+      "dedicated_earthquake_contract": true
+    },
+    "usgs_seismic_events": {
+      "role": "non-earthquake seismic catalog observation",
+      "event_type_filter": "type != earthquake",
+      "dedicated_earthquake_contract": false,
+      "merge_with_earthquake": false
+    },
+    "gdacs": {
+      "role": "disaster_awareness_aggregator",
+      "primary_warning_authority": false,
+      "primary_seismic_catalog": false,
+      "interchangeable_with_usgs_earthquake": false
+    },
+    "bmkg_tsunami": {
+      "role": "tsunami_potential_event_indicator",
+      "dedicated_earthquake_contract": false,
+      "official_tsunami_warning": false,
+      "triggering_earthquake_epicenter_is_tsunami_impact_area": false
+    }
+  },
+  "topic_semantics": {
+    "usgs_non_earthquake_current_topics": [
+      "earthquake",
+      "seismic_activity"
+    ],
+    "public_contract_is_non_earthquake": true,
+    "rule": "Topic/navigation labels must not override the explicit type != earthquake public contract.",
+    "topic_cleanup_decision_deferred_to": "P4-QUAKE-30"
+  },
+  "schema_and_diagnostics_semantics": {
+    "typed_earthquake_object_currently_present": false,
+    "generic_parameters_currently_used": true,
+    "typed_candidate_fields_to_consider": [
+      "magnitude",
+      "magnitude_type",
+      "depth_km",
+      "felt_reports",
+      "community_intensity_cdi",
+      "instrumental_intensity_mmi",
+      "pager_alert",
+      "significance",
+      "tsunami_flag",
+      "source_status",
+      "updated"
+    ],
+    "quake_specific_routing_summary_currently_present": false,
+    "diagnostic_design_deferred_to": "P4-QUAKE-30"
+  },
+  "invariants": [
+    "Magnitude is not intensity.",
+    "Magnitude is not damage.",
+    "Magnitude is not PAGER impact alert.",
+    "Depth is not severity.",
+    "CDI/MMI are not earthquake magnitude.",
+    "PAGER alert is an impact estimate and not the earthquake magnitude.",
+    "USGS significance is an upstream multi-factor event classification and is not a WeatherRouter magnitude band.",
+    "WeatherRouter does not recompute USGS significance in P4-QUAKE.",
+    "USGS significant does not imply a WeatherRouter-defined fixed magnitude threshold.",
+    "WeatherRouter magnitude severity bands are presentation bands, not canonical earthquake severity semantics.",
+    "Earthquake is not automatically tsunami.",
+    "USGS tsunami_flag is not an official tsunami warning.",
+    "Earthquake point geometry is not a shaking or impact area.",
+    "A point request without an explicit radius does not define a valid nearby-earthquake distance.",
+    "Endpoint reachability is not coverage proof.",
+    "Event geometry is not proof of seismic-network detection completeness.",
+    "GDACS earthquake remains disaster awareness and is not interchangeable with primary seismic observation.",
+    "USGS non-earthquake seismic remains separate from earthquake.",
+    "BMKG tsunami potential remains separate from the dedicated earthquake contracts.",
+    "Provider ID is not a scoring axis.",
+    "Profiles remain deny-only.",
+    "No cross-provider or cross-feed deduplication is introduced in P4-QUAKE-20."
+  ],
+  "decisions_for_p4_quake_30": [
+    "Design whether an additive typed earthquake_semantics object is warranted and which source fields it contains.",
+    "Design a truthful Point-context contract: explicit radius/distance, unsupported Point proximity, or another explicit nearby-event requirement; never exact-coordinate equality by accident.",
+    "Decide how the legacy generic severity display band is retained for compatibility without presenting it as canonical earthquake intensity, damage or warning severity.",
+    "Preserve USGS significant as upstream selection semantics; do not reimplement or freeze an upstream threshold in WeatherRouter.",
+    "Define diagnostic visibility for magnitude, magnitude type, depth, CDI, MMI, PAGER alert, significance, tsunami flag and catalog update time.",
+    "Decide whether catalog update time should be exposed separately from sent.",
+    "Review the non-earthquake seismic topic assignment without merging its public contract into earthquake.",
+    "Define overlap/provenance behavior between all-day, significant-month and GDACS without provider priority or premature deduplication.",
+    "Keep BMKG tsunami-potential and GDACS disaster-awareness roles separate from dedicated earthquake observation."
+  ],
+  "authoritative_references": [
+    {
+      "source": "USGS GeoJSON Summary Format",
+      "url": "https://earthquake.usgs.gov/earthquakes/feed/v1.0/geojson.php",
+      "finding": "Summary features expose mag, time, updated, felt, cdi, mmi, alert, tsunami, sig, net, code and related event metadata."
+    },
+    {
+      "source": "USGS Significant Earthquakes",
+      "url": "https://earthquake.usgs.gov/earthquakes/browse/significant.php?year=2026",
+      "finding": "USGS significance uses magnitude plus DYFI/intensity and PAGER-related inputs rather than magnitude alone."
+    },
+    {
+      "source": "USGS ComCat Documentation",
+      "url": "https://earthquake.usgs.gov/data/comcat/",
+      "finding": "CDI is reported intensity context; depth is kilometers; alert is the PAGER earthquake impact alert level."
+    },
+    {
+      "source": "USGS PAGER Scientific Background",
+      "url": "https://earthquake.usgs.gov/data/pager/background.php",
+      "finding": "PAGER alert colors communicate estimated fatality/economic-loss impact and response scale, distinct from magnitude and shaking intensity."
+    }
+  ],
+  "acceptance": {
+    "status": "done",
+    "semantics_commit": "5034d0332376e8d6f43d5aa022fe0622128af164",
+    "ci_run_number": 3166,
+    "ci_status": "success",
+    "runtime_changed": false,
+    "dra_promotion": false,
+    "ha_real_test": false,
+    "new_public_capability": false,
+    "next_active_point": "P4-QUAKE-30"
+  }
+}

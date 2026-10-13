@@ -1,0 +1,186 @@
+{
+  "schema": "weather_router.p4_flood_intent_design.v1",
+  "date": "2026-10-05",
+  "status": "design_only",
+  "public_capability_count_before": 226,
+  "public_capability_count_after": 226,
+  "public_capabilities_added": 0,
+  "official_event_transports": {
+    "weather.warning.official": {
+      "strategy": "aggregate",
+      "candidates": [
+        "dwd/official_weather_warnings",
+        "noaa_nws/official_weather_alerts"
+      ],
+      "relationship": "complementary"
+    },
+    "natural_hazards.flood.warning": {
+      "candidates": [
+        "nina_flood/flood_information_germany"
+      ],
+      "relationship": "dedicated_germany_flood_view"
+    },
+    "civil_protection.warning.official": {
+      "relationship": "alternate_civil_protection_view"
+    }
+  },
+  "event_semantics": {
+    "field": "flood_semantics",
+    "shape": "array_of_objects",
+    "item_fields": [
+      "semantic_class",
+      "match_scope"
+    ],
+    "semantic_classes": [
+      "official_flood_alert_event",
+      "official_flash_flood_alert_event",
+      "official_surface_water_flood_alert_event",
+      "official_debris_flow_alert_event",
+      "official_levee_failure_alert_event",
+      "official_dam_failure_alert_event",
+      "official_glof_alert_event",
+      "official_ice_jam_flood_alert_event"
+    ],
+    "match_scopes": [
+      "explicit_event",
+      "contextual_text"
+    ],
+    "allow_multiple_classes_per_event": true,
+    "preserve_class_scope_pairing": true,
+    "independent_of_primary_hazard_type": true
+  },
+  "generic_flood_rule": {
+    "do_not_infer_from_specific_compound_only": true,
+    "examples_not_generic_by_substring_alone": [
+      "flash flood",
+      "surface water flood",
+      "ice jam flood"
+    ],
+    "generic_class_allowed_when_independent_generic_flood_evidence_exists": true
+  },
+  "provider_design": {
+    "dwd": {
+      "attach_flood_semantics_from_real_event_text": true,
+      "reuse_alert_stage": true,
+      "planned_revision": "wr-0.10.126-flood-semantics-1"
+    },
+    "noaa_nws": {
+      "attach_flood_semantics_from_real_event_text": true,
+      "reuse_alert_stage_normalizer": true
+    },
+    "nina_flood": {
+      "attach_flood_semantics_from_real_headline_only": true,
+      "do_not_use_synthetic_event_label_as_evidence": true,
+      "extend_title_classifier_for": [
+        "glacial_lake_outburst_flood",
+        "ice_jam_flood"
+      ],
+      "planned_revision": "wr-0.10.126-flood-semantics-1"
+    },
+    "glofas": {
+      "runtime_change": false,
+      "official_event_semantics": false
+    }
+  },
+  "nina_reachability_fix": {
+    "add_real_title_patterns": {
+      "glacial_lake_outburst_flood": [
+        "glacial lake outburst flood",
+        "glof",
+        "gletscherseeausbruch",
+        "gletschersee-ausbruch"
+      ],
+      "ice_jam_flood": [
+        "ice jam flood",
+        "ice jam",
+        "eisstau-hochwasser",
+        "eisstau"
+      ]
+    },
+    "no_synthetic_fallback_to_specific_subtype": true
+  },
+  "event_filter_additions": {
+    "flood_semantic_classes": [
+      "official_flood_alert_event",
+      "official_flash_flood_alert_event",
+      "official_surface_water_flood_alert_event",
+      "official_debris_flow_alert_event",
+      "official_levee_failure_alert_event",
+      "official_dam_failure_alert_event",
+      "official_glof_alert_event",
+      "official_ice_jam_flood_alert_event"
+    ],
+    "flood_match_scopes": [
+      "explicit_event",
+      "contextual_text"
+    ],
+    "compatible_public_capabilities": [
+      "weather.warning.official",
+      "natural_hazards.flood.warning",
+      "civil_protection.warning.official"
+    ],
+    "not_enabled_for_glofas_rasters": true,
+    "not_enabled_for_seismic_non_earthquake_events": true,
+    "does_not_require_primary_flood_hazard_type": true
+  },
+  "consumer_preservation": {
+    "event_fields": [
+      "flood_semantics",
+      "alert_stage"
+    ],
+    "resource_diagnostic_fields": [
+      "flood_semantic_classes",
+      "flood_match_scopes",
+      "alert_stages"
+    ]
+  },
+  "heavy_rain": {
+    "runtime_change": false,
+    "automatic_flood_semantics": false,
+    "reason": "heavy_rain remains weather warning/precursor semantics unless real flood evidence is also present"
+  },
+  "glofas": {
+    "public_contracts_changed": false,
+    "model_products_stay_separate": true,
+    "official_warning_inference": false
+  },
+  "excluded": [
+    "new_flood_public_capability",
+    "automatic_heavy_rain_to_flood_promotion",
+    "glofas_to_official_warning_promotion",
+    "flood_probability_to_observed_flood_promotion",
+    "rapid_mapping_to_official_warning_promotion",
+    "rapid_impact_to_observed_damage_promotion",
+    "provider_priority",
+    "cross_provider_deduplication",
+    "coverage_semantics_change"
+  ],
+  "invariants": [
+    "No new public capability.",
+    "Multiple real flood subtype semantics can coexist on one event.",
+    "Class-to-match-scope pairing is preserved.",
+    "Primary hazard_type remains a compatibility label, not complete flood semantics.",
+    "Generic flood is not inferred merely because a specific phrase contains the word flood.",
+    "Heavy rain is not automatically flood.",
+    "GloFAS model output is not official-warning semantics.",
+    "NINA synthetic event label is not flood evidence.",
+    "NINA GLOF/ice-jam support is added only through real matching title text.",
+    "Provider ID is not a scoring axis.",
+    "Profiles remain deny-only.",
+    "Coverage unknown remains unknown.",
+    "Endpoint reachability is not coverage proof."
+  ],
+  "implementation_order": [
+    "shared flood semantic matcher",
+    "NINA title-classifier reachability fix",
+    "DWD adapter",
+    "NOAA/NWS adapter",
+    "NINA flood adapter",
+    "consumer normalization",
+    "event filters and capability gating",
+    "resource diagnostics",
+    "Consumer V1 schemas",
+    "regression tests",
+    "version bump"
+  ]
+}

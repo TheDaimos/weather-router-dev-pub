@@ -1,0 +1,180 @@
+{
+  "schema": "weather_router.p2_uv_semantics.v1",
+  "date": "2026-10-03",
+  "scope": "P2-UV-20 semantics only; no intent implementation or scoring changes",
+  "semantic_families": {
+    "uv_index_all_sky_forecast_point": {
+      "resource_type": "value",
+      "semantic_quantity": "uv_index",
+      "numeric": true,
+      "canonical_unit_for_future_routing": "1",
+      "sky_condition": "all_sky_or_cloud_affected",
+      "temporal_meaning": "current_or_near_current_forecast",
+      "observation_kind": "forecast",
+      "data_origin": "model",
+      "candidates": [
+        "open_meteo/uv_index"
+      ],
+      "notes": [
+        "Represents UV index under modeled actual/all-sky conditions, not a clear-sky ceiling.",
+        "Open-Meteo may use the nearest hourly UV value when current UV is absent."
+      ]
+    },
+    "uv_index_clear_sky_forecast_point": {
+      "resource_type": "value",
+      "semantic_quantity": "uv_index",
+      "numeric": true,
+      "canonical_unit_for_future_routing": "1",
+      "sky_condition": "clear_sky",
+      "temporal_meaning": "current_or_near_current_forecast",
+      "observation_kind": "forecast",
+      "data_origin": "model",
+      "candidates": [
+        "open_meteo/uv_index_clear_sky",
+        "met_norway/uv_index"
+      ],
+      "notes": [
+        "Both candidates explicitly represent clear-sky ultraviolet index.",
+        "Shared routing is semantically allowed only if implementation normalizes dimensionless unit and preserves candidate valid-time semantics."
+      ]
+    },
+    "uv_index_all_sky_daily_max_forecast_point": {
+      "resource_type": "value",
+      "semantic_quantity": "uv_index",
+      "numeric": true,
+      "canonical_unit_for_future_routing": "1",
+      "sky_condition": "all_sky_or_cloud_affected",
+      "temporal_meaning": "maximum_for_local_day_today",
+      "observation_kind": "forecast",
+      "data_origin": "model",
+      "candidates": [
+        "open_meteo/uv_index_max_today"
+      ],
+      "notes": [
+        "A daily maximum is not interchangeable with a current or hourly UV value."
+      ]
+    },
+    "uv_index_clear_sky_daily_max_forecast_point": {
+      "resource_type": "value",
+      "semantic_quantity": "uv_index",
+      "numeric": true,
+      "canonical_unit_for_future_routing": "1",
+      "sky_condition": "clear_sky",
+      "temporal_meaning": "maximum_for_local_day_today",
+      "observation_kind": "forecast",
+      "data_origin": "model",
+      "candidates": [
+        "open_meteo/uv_index_clear_sky_max_today"
+      ],
+      "notes": [
+        "A clear-sky daily maximum is distinct from both all-sky maximum and current clear-sky UV."
+      ]
+    }
+  },
+  "candidate_classification": [
+    {
+      "provider": "open_meteo",
+      "capability": "uv_index",
+      "public_capabilities": [
+        "weather.point.uv_index"
+      ],
+      "semantic_class": "uv_index_all_sky_forecast_point",
+      "resource_type": "value",
+      "observation_kind": "forecast",
+      "data_origin": "model",
+      "provider_unit": null,
+      "canonical_unit_for_future_routing": "1",
+      "sky_condition": "all_sky_or_cloud_affected",
+      "temporal_meaning": "current_or_near_current_forecast",
+      "coverage_scope": "unknown",
+      "compatibility": "separate_all_sky_current"
+    },
+    {
+      "provider": "open_meteo",
+      "capability": "uv_index_clear_sky",
+      "public_capabilities": [
+        "weather.point.uv_index_clear_sky"
+      ],
+      "semantic_class": "uv_index_clear_sky_forecast_point",
+      "resource_type": "value",
+      "observation_kind": "forecast",
+      "data_origin": "model",
+      "provider_unit": null,
+      "canonical_unit_for_future_routing": "1",
+      "sky_condition": "clear_sky",
+      "temporal_meaning": "current_or_near_current_forecast",
+      "coverage_scope": "unknown",
+      "compatibility": "clear_sky_shared_candidate"
+    },
+    {
+      "provider": "met_norway",
+      "capability": "uv_index",
+      "public_capabilities": [
+        "weather.point.uv_index_clear_sky"
+      ],
+      "semantic_class": "uv_index_clear_sky_forecast_point",
+      "resource_type": "value",
+      "observation_kind": "forecast",
+      "data_origin": "model",
+      "provider_unit": null,
+      "canonical_unit_for_future_routing": "1",
+      "sky_condition": "clear_sky",
+      "temporal_meaning": "current_or_near_current_forecast",
+      "provider_field": "ultraviolet_index_clear_sky",
+      "coverage_scope": "unknown",
+      "compatibility": "clear_sky_shared_candidate"
+    },
+    {
+      "provider": "open_meteo",
+      "capability": "uv_index_max_today",
+      "public_capabilities": [
+        "weather.point.uv_index_max_today"
+      ],
+      "semantic_class": "uv_index_all_sky_daily_max_forecast_point",
+      "resource_type": "value",
+      "observation_kind": "forecast",
+      "data_origin": "model",
+      "provider_unit": null,
+      "canonical_unit_for_future_routing": "1",
+      "sky_condition": "all_sky_or_cloud_affected",
+      "temporal_meaning": "maximum_for_local_day_today",
+      "coverage_scope": "unknown",
+      "compatibility": "separate_daily_maximum"
+    },
+    {
+      "provider": "open_meteo",
+      "capability": "uv_index_clear_sky_max_today",
+      "public_capabilities": [
+        "weather.point.uv_index_clear_sky_max_today"
+      ],
+      "semantic_class": "uv_index_clear_sky_daily_max_forecast_point",
+      "resource_type": "value",
+      "observation_kind": "forecast",
+      "data_origin": "model",
+      "provider_unit": null,
+      "canonical_unit_for_future_routing": "1",
+      "sky_condition": "clear_sky",
+      "temporal_meaning": "maximum_for_local_day_today",
+      "coverage_scope": "unknown",
+      "compatibility": "separate_clear_sky_daily_maximum"
+    }
+  ],
+  "related_but_non_interchangeable": [
+    "space.solar.suvi.*",
+    "weather.point.cloud_cover",
+    "weather.point.cloud_cover_low",
+    "solar_radiation"
+  ],
+  "rules": {
+    "endpoint_reachability_is_not_coverage": true,
+    "unknown_coverage_stays_unknown": true,
+    "provider_id_is_not_scoring_axis": true,
+    "profiles_remain_deny_only": true,
+    "uv_index_is_dimensionless": true,
+    "canonical_uv_unit_is_one": true,
+    "clear_sky_is_not_all_sky": true,
+    "daily_maximum_is_not_current_value": true,
+    "solar_euv_imagery_is_not_terrestrial_uv_index": true,
+    "no_intent_decision_in_this_step": true
+  }
+}

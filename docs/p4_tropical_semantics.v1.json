@@ -1,0 +1,192 @@
+{
+  "schema": "weather_router.p4_tropical_semantics.v1",
+  "date": "2026-10-05",
+  "status": "semantics_only",
+  "scope": "P4-TROPICAL-20 semantics; no runtime or public-contract change",
+  "canonical_hazard_type": {
+    "id": "tropical_cyclone",
+    "meaning": "confirmed tropical cyclone system; generic parent for depression, tropical storm and hurricane/typhoon-strength tropical cyclones",
+    "potential_tropical_cyclone_is_included": false,
+    "post_tropical_cyclone_is_included": false
+  },
+  "lifecycle_semantics": {
+    "potential_tropical_cyclone": {
+      "meaning": "disturbance not yet a tropical cyclone but capable of producing tropical-storm or hurricane conditions and eligible for advisories",
+      "confirmed_tropical_cyclone": false
+    },
+    "tropical_depression": {
+      "meaning": "confirmed tropical cyclone in depression stage",
+      "confirmed_tropical_cyclone": true
+    },
+    "tropical_storm": {
+      "meaning": "confirmed tropical cyclone in tropical-storm stage",
+      "confirmed_tropical_cyclone": true
+    },
+    "hurricane_strength_tropical_cyclone": {
+      "meaning": "confirmed tropical cyclone at hurricane/typhoon strength according to the responsible authority",
+      "confirmed_tropical_cyclone": true
+    },
+    "subtropical_cyclone": {
+      "meaning": "subtropical cyclone; structurally distinct status that must remain source-reported",
+      "confirmed_tropical_cyclone": false
+    },
+    "post_tropical_cyclone": {
+      "meaning": "former tropical cyclone no longer possessing sufficient tropical characteristics",
+      "confirmed_tropical_cyclone": false
+    }
+  },
+  "regional_terminology": {
+    "separate_dimension_recommended": true,
+    "field": "regional_tropical_term",
+    "examples": [
+      "hurricane",
+      "typhoon",
+      "cyclone",
+      "severe_tropical_cyclone"
+    ],
+    "physical_family_split": false,
+    "rule": "regional naming is provenance/terminology, not by itself a different hazard family"
+  },
+  "intensity_semantics": {
+    "source_reported_classification_first": true,
+    "preserve_numeric_intensity": true,
+    "derive_global_class_from_wind_without_measurement_semantics": false,
+    "nhc_reference_thresholds_kt": {
+      "tropical_depression_max": 33,
+      "tropical_storm_min": 34,
+      "tropical_storm_max": 63,
+      "hurricane_min": 64,
+      "major_hurricane_min": 96
+    },
+    "rule": "wind averaging period and responsible authority must be preserved before cross-provider comparison"
+  },
+  "alert_stage": {
+    "separate_from_system_classification": true,
+    "separate_from_intensity": true,
+    "examples": [
+      "advisory",
+      "watch",
+      "warning"
+    ],
+    "potential_tropical_cyclone_can_have_alerts": true
+  },
+  "forecast_products": {
+    "track": {
+      "observed_damage_path": false,
+      "event_geometry": false
+    },
+    "cone": {
+      "hazard_area": false,
+      "observed_impact_area": false
+    },
+    "wind_radii": {
+      "guaranteed_wind_impact": false
+    },
+    "wind_speed_probability": {
+      "observed_wind": false
+    },
+    "design_question": "retain as event metadata or define explicit resource semantics"
+  },
+  "storm_surge": {
+    "distinct_hazard_type": "storm_surge",
+    "tropical_cyclone_implies_storm_surge": false,
+    "surge_resource_link_implies_separate_event": false,
+    "relationship": "possible associated hazard requiring its own source evidence"
+  },
+  "source_roles": {
+    "primary_tropical_cyclone_authority": {
+      "examples": [
+        "nhc_tropical_cyclones/active_tropical_cyclones"
+      ],
+      "interchangeable_with_other_roles": false
+    },
+    "general_official_weather_warning": {
+      "examples": [
+        "dwd/official_weather_warnings",
+        "noaa_nws/official_weather_alerts"
+      ],
+      "interchangeable_with_primary_system_feed": false
+    },
+    "disaster_awareness_aggregator": {
+      "examples": [
+        "gdacs/global_disaster_alerts_7d"
+      ],
+      "primary_warning_authority": false
+    },
+    "official_aviation_warning": {
+      "examples": [
+        "aviation_weather/international_sigmet_worldwide",
+        "aviation_weather/us_airsigmet_current",
+        "aviation_weather/us_gairmet_current"
+      ],
+      "general_public_warning": false
+    }
+  },
+  "coverage": {
+    "nhc_is_global": false,
+    "global_primary_coverage_requires_multiple_responsible_regional_sources_or_explicit_aggregator": true,
+    "endpoint_reachability_is_coverage": false,
+    "unknown_remains_unknown": true
+  },
+  "contract_relationships": {
+    "dedicated_vs_general_weather_warning": "complementary_not_interchangeable",
+    "dedicated_vs_gdacs": "same_hazard_possible_but_source_role_not_interchangeable",
+    "dedicated_vs_aviation": "same_hazard_possible_but_consumer_semantics_not_interchangeable"
+  },
+  "authoritative_references": [
+    {
+      "source": "NOAA/NHC Tropical Cyclone Climatology",
+      "url": "https://www.nhc.noaa.gov/climo/",
+      "finding": "NHC classifies tropical depressions, tropical storms, hurricanes and major hurricanes by sustained wind thresholds."
+    },
+    {
+      "source": "NOAA/NHC Glossary",
+      "url": "https://www.nhc.noaa.gov/aboutgloss.shtml",
+      "finding": "Potential/pre-/post-tropical and tropical cyclone terms have distinct lifecycle meanings; post-tropical is no longer tropical."
+    },
+    {
+      "source": "NOAA/NHC Products",
+      "url": "https://www.nhc.noaa.gov/aboutnhcprod.shtml",
+      "finding": "Potential tropical cyclone advisories can be issued before a disturbance becomes a tropical cyclone; forecast status can become post-tropical."
+    },
+    {
+      "source": "WMO Characteristics of Tropical Cyclones",
+      "url": "https://public.wmo.int/content/characteristics-of-tropical-cyclones",
+      "finding": "Hurricane, typhoon and cyclone terminology varies by basin for the same broad tropical-cyclone phenomenon."
+    },
+    {
+      "source": "WMO Tropical Cyclone Naming",
+      "url": "https://wmo.int/resources/wmo-fact-sheets/tropical-cyclone-naming",
+      "finding": "Tropical cyclone governance and naming are regional and involve multiple regional bodies."
+    }
+  ],
+  "invariants": [
+    "Potential Tropical Cyclone is not a confirmed tropical cyclone.",
+    "Post-Tropical Cyclone is not a current tropical cyclone.",
+    "Tropical Depression, Tropical Storm and hurricane-strength stages remain distinguishable.",
+    "Hurricane, typhoon and cyclone are regional terminology, not automatically separate hazard families.",
+    "Classification is not watch/warning stage.",
+    "Intensity is not watch/warning stage.",
+    "Track is not observed damage path.",
+    "Cone is not hazard area.",
+    "Wind probability is not observed wind.",
+    "Tropical cyclone is not automatically storm surge.",
+    "GDACS is not a primary tropical-cyclone warning authority.",
+    "Aviation SIGMET is not a general public warning.",
+    "NHC coverage is not global coverage.",
+    "Provider ID is not a scoring axis.",
+    "Profiles remain deny-only.",
+    "Coverage unknown remains unknown.",
+    "Endpoint reachability is not coverage proof."
+  ],
+  "decisions_for_p4_tropical_30": [
+    "Preserve source-reported lifecycle/classification additively instead of relying only on tropical_cyclone.",
+    "Represent potential and post-tropical states so they are not misreported as confirmed current tropical cyclones.",
+    "Preserve regional terminology separately from physical hazard family.",
+    "Keep alert stage independent from system classification and physical intensity.",
+    "Keep NHC track/cone/wind products distinct from observed event geometry.",
+    "Keep storm surge as a separate hazard requiring explicit source evidence.",
+    "Keep NHC, general weather warning, GDACS and aviation source roles distinct.",
+    "Design global coverage using provider-neutral regional authority semantics rather than provider ID priority."
+  ]
+}

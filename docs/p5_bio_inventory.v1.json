@@ -1,0 +1,775 @@
+{
+  "schema_version": 1,
+  "stage": "P5-BIO-10",
+  "date": "2026-10-09",
+  "source_of_truth": [
+    "custom_components/weather_router/providers/registry.json",
+    "custom_components/weather_router/providers/biological_taxa.json",
+    "custom_components/weather_router/consumer_capability_map.json",
+    "custom_components/weather_router/providers/gbif_biodiversity.py"
+  ],
+  "runtime": {
+    "weather_router": "0.10.141",
+    "loader": "0.10-loader-144",
+    "public_capabilities_total": 227
+  },
+  "provider": {
+    "id": "gbif_biodiversity",
+    "class": "GbifBiodiversityProvider",
+    "display_name": "GBIF · Biologische Vorkommen",
+    "domain": "biological_hazards",
+    "default_enabled": false
+  },
+  "public_contract": {
+    "count": 88,
+    "family": "biological_occurrence_density",
+    "strategy": "single",
+    "resource_type": "raster_tile",
+    "quantity": "occurrence_density",
+    "unit_source": "provider_capability",
+    "data_origin": "biodiversity_observation",
+    "measurement_method": "occurrence_density_observation",
+    "observation_kind": "observation",
+    "coverage_scope": "unknown",
+    "coverage_evidence": "unknown",
+    "routing_authority": "none",
+    "endpoint_reachability_is_coverage": false
+  },
+  "catalog": {
+    "schema_version": 1,
+    "from_year": 2000,
+    "count": 88,
+    "groups": {
+      "predator": 15,
+      "large_wildlife": 4,
+      "crocodilian": 7,
+      "marine": 7,
+      "marine_venomous": 6,
+      "venomous_snake": 13,
+      "snake": 1,
+      "venomous_arthropod": 6,
+      "poisonous_amphibian": 1,
+      "toxic_plant": 19,
+      "toxic_fungus": 5,
+      "vector": 4
+    }
+  },
+  "guardrails": [
+    "Vorkommensnachweise pro Rasterzelle sind weder Populationsdichte noch aktuelle Anwesenheit oder Gefahrenwahrscheinlichkeit.",
+    "Die verfügbare Map-API und der global erreichbare Endpunkt belegen keine räumliche Coverage.",
+    "Die dynamische Admin-Taxonsuche ist kein eigenständiger Public-Intent.",
+    "Art- und Gruppentaxa können sich überlappen und sind keine disjunkten Gefahrenereignisse."
+  ],
+  "taxa": [
+    {
+      "id": "felidae",
+      "name": "Katzenartige (Felidae)",
+      "scientific_name": "Felidae",
+      "group": "predator",
+      "capability_id": "occurrence_density_felidae",
+      "public_id": "biological_hazards.occurrence.felidae.density"
+    },
+    {
+      "id": "panthera",
+      "name": "Großkatzen · Panthera",
+      "scientific_name": "Panthera",
+      "group": "predator",
+      "capability_id": "occurrence_density_panthera",
+      "public_id": "biological_hazards.occurrence.panthera.density"
+    },
+    {
+      "id": "lion",
+      "name": "Löwe",
+      "scientific_name": "Panthera leo",
+      "group": "predator",
+      "capability_id": "occurrence_density_lion",
+      "public_id": "biological_hazards.occurrence.lion.density"
+    },
+    {
+      "id": "tiger",
+      "name": "Tiger",
+      "scientific_name": "Panthera tigris",
+      "group": "predator",
+      "capability_id": "occurrence_density_tiger",
+      "public_id": "biological_hazards.occurrence.tiger.density"
+    },
+    {
+      "id": "leopard",
+      "name": "Leopard",
+      "scientific_name": "Panthera pardus",
+      "group": "predator",
+      "capability_id": "occurrence_density_leopard",
+      "public_id": "biological_hazards.occurrence.leopard.density"
+    },
+    {
+      "id": "jaguar",
+      "name": "Jaguar",
+      "scientific_name": "Panthera onca",
+      "group": "predator",
+      "capability_id": "occurrence_density_jaguar",
+      "public_id": "biological_hazards.occurrence.jaguar.density"
+    },
+    {
+      "id": "puma",
+      "name": "Puma / Cougar",
+      "scientific_name": "Puma concolor",
+      "group": "predator",
+      "capability_id": "occurrence_density_puma",
+      "public_id": "biological_hazards.occurrence.puma.density"
+    },
+    {
+      "id": "snow_leopard",
+      "name": "Schneeleopard",
+      "scientific_name": "Panthera uncia",
+      "group": "predator",
+      "capability_id": "occurrence_density_snow_leopard",
+      "public_id": "biological_hazards.occurrence.snow_leopard.density"
+    },
+    {
+      "id": "cheetah",
+      "name": "Gepard",
+      "scientific_name": "Acinonyx jubatus",
+      "group": "predator",
+      "capability_id": "occurrence_density_cheetah",
+      "public_id": "biological_hazards.occurrence.cheetah.density"
+    },
+    {
+      "id": "ursidae",
+      "name": "Bären (Ursidae)",
+      "scientific_name": "Ursidae",
+      "group": "predator",
+      "capability_id": "occurrence_density_ursidae",
+      "public_id": "biological_hazards.occurrence.ursidae.density"
+    },
+    {
+      "id": "brown_bear",
+      "name": "Braunbär",
+      "scientific_name": "Ursus arctos",
+      "group": "predator",
+      "capability_id": "occurrence_density_brown_bear",
+      "public_id": "biological_hazards.occurrence.brown_bear.density"
+    },
+    {
+      "id": "polar_bear",
+      "name": "Eisbär",
+      "scientific_name": "Ursus maritimus",
+      "group": "predator",
+      "capability_id": "occurrence_density_polar_bear",
+      "public_id": "biological_hazards.occurrence.polar_bear.density"
+    },
+    {
+      "id": "wolf",
+      "name": "Wolf",
+      "scientific_name": "Canis lupus",
+      "group": "predator",
+      "capability_id": "occurrence_density_wolf",
+      "public_id": "biological_hazards.occurrence.wolf.density"
+    },
+    {
+      "id": "hyaenidae",
+      "name": "Hyänen (Hyaenidae)",
+      "scientific_name": "Hyaenidae",
+      "group": "predator",
+      "capability_id": "occurrence_density_hyaenidae",
+      "public_id": "biological_hazards.occurrence.hyaenidae.density"
+    },
+    {
+      "id": "african_wild_dog",
+      "name": "Afrikanischer Wildhund",
+      "scientific_name": "Lycaon pictus",
+      "group": "predator",
+      "capability_id": "occurrence_density_african_wild_dog",
+      "public_id": "biological_hazards.occurrence.african_wild_dog.density"
+    },
+    {
+      "id": "elephantidae",
+      "name": "Elefanten (Elephantidae)",
+      "scientific_name": "Elephantidae",
+      "group": "large_wildlife",
+      "capability_id": "occurrence_density_elephantidae",
+      "public_id": "biological_hazards.occurrence.elephantidae.density"
+    },
+    {
+      "id": "hippopotamus",
+      "name": "Flusspferd",
+      "scientific_name": "Hippopotamus amphibius",
+      "group": "large_wildlife",
+      "capability_id": "occurrence_density_hippopotamus",
+      "public_id": "biological_hazards.occurrence.hippopotamus.density"
+    },
+    {
+      "id": "african_buffalo",
+      "name": "Afrikanischer Büffel",
+      "scientific_name": "Syncerus caffer",
+      "group": "large_wildlife",
+      "capability_id": "occurrence_density_african_buffalo",
+      "public_id": "biological_hazards.occurrence.african_buffalo.density"
+    },
+    {
+      "id": "rhinocerotidae",
+      "name": "Nashörner (Rhinocerotidae)",
+      "scientific_name": "Rhinocerotidae",
+      "group": "large_wildlife",
+      "capability_id": "occurrence_density_rhinocerotidae",
+      "public_id": "biological_hazards.occurrence.rhinocerotidae.density"
+    },
+    {
+      "id": "crocodylia",
+      "name": "Krokodilartige (Crocodylia)",
+      "scientific_name": "Crocodylia",
+      "group": "crocodilian",
+      "capability_id": "occurrence_density_crocodylia",
+      "public_id": "biological_hazards.occurrence.crocodylia.density"
+    },
+    {
+      "id": "crocodylus",
+      "name": "Echte Krokodile (Crocodylus)",
+      "scientific_name": "Crocodylus",
+      "group": "crocodilian",
+      "capability_id": "occurrence_density_crocodylus",
+      "public_id": "biological_hazards.occurrence.crocodylus.density"
+    },
+    {
+      "id": "nile_crocodile",
+      "name": "Nilkrokodil",
+      "scientific_name": "Crocodylus niloticus",
+      "group": "crocodilian",
+      "capability_id": "occurrence_density_nile_crocodile",
+      "public_id": "biological_hazards.occurrence.nile_crocodile.density"
+    },
+    {
+      "id": "saltwater_crocodile",
+      "name": "Leistenkrokodil / Salzwasserkrokodil",
+      "scientific_name": "Crocodylus porosus",
+      "group": "crocodilian",
+      "capability_id": "occurrence_density_saltwater_crocodile",
+      "public_id": "biological_hazards.occurrence.saltwater_crocodile.density"
+    },
+    {
+      "id": "alligatoridae",
+      "name": "Alligatoren & Kaimane (Alligatoridae)",
+      "scientific_name": "Alligatoridae",
+      "group": "crocodilian",
+      "capability_id": "occurrence_density_alligatoridae",
+      "public_id": "biological_hazards.occurrence.alligatoridae.density"
+    },
+    {
+      "id": "american_alligator",
+      "name": "Mississippi-Alligator",
+      "scientific_name": "Alligator mississippiensis",
+      "group": "crocodilian",
+      "capability_id": "occurrence_density_american_alligator",
+      "public_id": "biological_hazards.occurrence.american_alligator.density"
+    },
+    {
+      "id": "caiman",
+      "name": "Kaimane (Caiman)",
+      "scientific_name": "Caiman",
+      "group": "crocodilian",
+      "capability_id": "occurrence_density_caiman",
+      "public_id": "biological_hazards.occurrence.caiman.density"
+    },
+    {
+      "id": "sharks",
+      "name": "Haie (Selachimorpha)",
+      "scientific_name": "Selachimorpha",
+      "group": "marine",
+      "capability_id": "occurrence_density_sharks",
+      "public_id": "biological_hazards.occurrence.sharks.density"
+    },
+    {
+      "id": "requiem_sharks",
+      "name": "Requiemhaie (Carcharhinidae)",
+      "scientific_name": "Carcharhinidae",
+      "group": "marine",
+      "capability_id": "occurrence_density_requiem_sharks",
+      "public_id": "biological_hazards.occurrence.requiem_sharks.density"
+    },
+    {
+      "id": "great_white_shark",
+      "name": "Weißer Hai",
+      "scientific_name": "Carcharodon carcharias",
+      "group": "marine",
+      "capability_id": "occurrence_density_great_white_shark",
+      "public_id": "biological_hazards.occurrence.great_white_shark.density"
+    },
+    {
+      "id": "tiger_shark",
+      "name": "Tigerhai",
+      "scientific_name": "Galeocerdo cuvier",
+      "group": "marine",
+      "capability_id": "occurrence_density_tiger_shark",
+      "public_id": "biological_hazards.occurrence.tiger_shark.density"
+    },
+    {
+      "id": "bull_shark",
+      "name": "Bullenhai",
+      "scientific_name": "Carcharhinus leucas",
+      "group": "marine",
+      "capability_id": "occurrence_density_bull_shark",
+      "public_id": "biological_hazards.occurrence.bull_shark.density"
+    },
+    {
+      "id": "hammerhead_sharks",
+      "name": "Hammerhaie (Sphyrnidae)",
+      "scientific_name": "Sphyrnidae",
+      "group": "marine",
+      "capability_id": "occurrence_density_hammerhead_sharks",
+      "public_id": "biological_hazards.occurrence.hammerhead_sharks.density"
+    },
+    {
+      "id": "stingrays",
+      "name": "Stechrochen (Dasyatidae)",
+      "scientific_name": "Dasyatidae",
+      "group": "marine",
+      "capability_id": "occurrence_density_stingrays",
+      "public_id": "biological_hazards.occurrence.stingrays.density"
+    },
+    {
+      "id": "box_jellyfish",
+      "name": "Würfelquallen (Cubozoa)",
+      "scientific_name": "Cubozoa",
+      "group": "marine_venomous",
+      "capability_id": "occurrence_density_box_jellyfish",
+      "public_id": "biological_hazards.occurrence.box_jellyfish.density"
+    },
+    {
+      "id": "chironex_fleckeri",
+      "name": "Seewespe",
+      "scientific_name": "Chironex fleckeri",
+      "group": "marine_venomous",
+      "capability_id": "occurrence_density_chironex_fleckeri",
+      "public_id": "biological_hazards.occurrence.chironex_fleckeri.density"
+    },
+    {
+      "id": "portuguese_man_o_war",
+      "name": "Portugiesische Galeere",
+      "scientific_name": "Physalia physalis",
+      "group": "marine_venomous",
+      "capability_id": "occurrence_density_portuguese_man_o_war",
+      "public_id": "biological_hazards.occurrence.portuguese_man_o_war.density"
+    },
+    {
+      "id": "cone_snails",
+      "name": "Kegelschnecken (Conidae)",
+      "scientific_name": "Conidae",
+      "group": "marine_venomous",
+      "capability_id": "occurrence_density_cone_snails",
+      "public_id": "biological_hazards.occurrence.cone_snails.density"
+    },
+    {
+      "id": "stonefish",
+      "name": "Steinfische (Synanceia)",
+      "scientific_name": "Synanceia",
+      "group": "marine_venomous",
+      "capability_id": "occurrence_density_stonefish",
+      "public_id": "biological_hazards.occurrence.stonefish.density"
+    },
+    {
+      "id": "blue_ringed_octopus",
+      "name": "Blaugeringelte Kraken (Hapalochlaena)",
+      "scientific_name": "Hapalochlaena",
+      "group": "marine_venomous",
+      "capability_id": "occurrence_density_blue_ringed_octopus",
+      "public_id": "biological_hazards.occurrence.blue_ringed_octopus.density"
+    },
+    {
+      "id": "sea_snakes",
+      "name": "Seeschlangen (Hydrophiinae)",
+      "scientific_name": "Hydrophiinae",
+      "group": "venomous_snake",
+      "capability_id": "occurrence_density_sea_snakes",
+      "public_id": "biological_hazards.occurrence.sea_snakes.density"
+    },
+    {
+      "id": "serpentes",
+      "name": "Schlangen (Serpentes)",
+      "scientific_name": "Serpentes",
+      "group": "snake",
+      "capability_id": "occurrence_density_serpentes",
+      "public_id": "biological_hazards.occurrence.serpentes.density"
+    },
+    {
+      "id": "elapidae",
+      "name": "Giftnattern (Elapidae)",
+      "scientific_name": "Elapidae",
+      "group": "venomous_snake",
+      "capability_id": "occurrence_density_elapidae",
+      "public_id": "biological_hazards.occurrence.elapidae.density"
+    },
+    {
+      "id": "viperidae",
+      "name": "Vipern (Viperidae)",
+      "scientific_name": "Viperidae",
+      "group": "venomous_snake",
+      "capability_id": "occurrence_density_viperidae",
+      "public_id": "biological_hazards.occurrence.viperidae.density"
+    },
+    {
+      "id": "pit_vipers",
+      "name": "Grubenottern (Crotalinae)",
+      "scientific_name": "Crotalinae",
+      "group": "venomous_snake",
+      "capability_id": "occurrence_density_pit_vipers",
+      "public_id": "biological_hazards.occurrence.pit_vipers.density"
+    },
+    {
+      "id": "cobras",
+      "name": "Kobras (Naja)",
+      "scientific_name": "Naja",
+      "group": "venomous_snake",
+      "capability_id": "occurrence_density_cobras",
+      "public_id": "biological_hazards.occurrence.cobras.density"
+    },
+    {
+      "id": "mambas",
+      "name": "Mambas (Dendroaspis)",
+      "scientific_name": "Dendroaspis",
+      "group": "venomous_snake",
+      "capability_id": "occurrence_density_mambas",
+      "public_id": "biological_hazards.occurrence.mambas.density"
+    },
+    {
+      "id": "taipans",
+      "name": "Taipane (Oxyuranus)",
+      "scientific_name": "Oxyuranus",
+      "group": "venomous_snake",
+      "capability_id": "occurrence_density_taipans",
+      "public_id": "biological_hazards.occurrence.taipans.density"
+    },
+    {
+      "id": "kraits",
+      "name": "Kraits (Bungarus)",
+      "scientific_name": "Bungarus",
+      "group": "venomous_snake",
+      "capability_id": "occurrence_density_kraits",
+      "public_id": "biological_hazards.occurrence.kraits.density"
+    },
+    {
+      "id": "coral_snakes",
+      "name": "Korallenschlangen (Micrurus)",
+      "scientific_name": "Micrurus",
+      "group": "venomous_snake",
+      "capability_id": "occurrence_density_coral_snakes",
+      "public_id": "biological_hazards.occurrence.coral_snakes.density"
+    },
+    {
+      "id": "puff_adders",
+      "name": "Puffottern (Bitis)",
+      "scientific_name": "Bitis",
+      "group": "venomous_snake",
+      "capability_id": "occurrence_density_puff_adders",
+      "public_id": "biological_hazards.occurrence.puff_adders.density"
+    },
+    {
+      "id": "lanceheads",
+      "name": "Lanzenottern (Bothrops)",
+      "scientific_name": "Bothrops",
+      "group": "venomous_snake",
+      "capability_id": "occurrence_density_lanceheads",
+      "public_id": "biological_hazards.occurrence.lanceheads.density"
+    },
+    {
+      "id": "rattlesnakes",
+      "name": "Klapperschlangen (Crotalus)",
+      "scientific_name": "Crotalus",
+      "group": "venomous_snake",
+      "capability_id": "occurrence_density_rattlesnakes",
+      "public_id": "biological_hazards.occurrence.rattlesnakes.density"
+    },
+    {
+      "id": "saw_scaled_vipers",
+      "name": "Sandrasselottern (Echis)",
+      "scientific_name": "Echis",
+      "group": "venomous_snake",
+      "capability_id": "occurrence_density_saw_scaled_vipers",
+      "public_id": "biological_hazards.occurrence.saw_scaled_vipers.density"
+    },
+    {
+      "id": "scorpions",
+      "name": "Skorpione (Scorpiones)",
+      "scientific_name": "Scorpiones",
+      "group": "venomous_arthropod",
+      "capability_id": "occurrence_density_scorpions",
+      "public_id": "biological_hazards.occurrence.scorpions.density"
+    },
+    {
+      "id": "buthidae",
+      "name": "Buthidae-Skorpione",
+      "scientific_name": "Buthidae",
+      "group": "venomous_arthropod",
+      "capability_id": "occurrence_density_buthidae",
+      "public_id": "biological_hazards.occurrence.buthidae.density"
+    },
+    {
+      "id": "black_widows",
+      "name": "Witwen (Latrodectus)",
+      "scientific_name": "Latrodectus",
+      "group": "venomous_arthropod",
+      "capability_id": "occurrence_density_black_widows",
+      "public_id": "biological_hazards.occurrence.black_widows.density"
+    },
+    {
+      "id": "recluse_spiders",
+      "name": "Einsiedlerspinnen (Loxosceles)",
+      "scientific_name": "Loxosceles",
+      "group": "venomous_arthropod",
+      "capability_id": "occurrence_density_recluse_spiders",
+      "public_id": "biological_hazards.occurrence.recluse_spiders.density"
+    },
+    {
+      "id": "wandering_spiders",
+      "name": "Wanderspinnen (Phoneutria)",
+      "scientific_name": "Phoneutria",
+      "group": "venomous_arthropod",
+      "capability_id": "occurrence_density_wandering_spiders",
+      "public_id": "biological_hazards.occurrence.wandering_spiders.density"
+    },
+    {
+      "id": "funnel_web_spiders",
+      "name": "Atrax-Trichternetzspinnen",
+      "scientific_name": "Atrax",
+      "group": "venomous_arthropod",
+      "capability_id": "occurrence_density_funnel_web_spiders",
+      "public_id": "biological_hazards.occurrence.funnel_web_spiders.density"
+    },
+    {
+      "id": "poison_dart_frogs",
+      "name": "Pfeilgiftfrösche (Dendrobatidae)",
+      "scientific_name": "Dendrobatidae",
+      "group": "poisonous_amphibian",
+      "capability_id": "occurrence_density_poison_dart_frogs",
+      "public_id": "biological_hazards.occurrence.poison_dart_frogs.density"
+    },
+    {
+      "id": "aconite",
+      "name": "Eisenhut (Aconitum)",
+      "scientific_name": "Aconitum",
+      "group": "toxic_plant",
+      "capability_id": "occurrence_density_aconite",
+      "public_id": "biological_hazards.occurrence.aconite.density"
+    },
+    {
+      "id": "deadly_nightshade",
+      "name": "Tollkirsche",
+      "scientific_name": "Atropa belladonna",
+      "group": "toxic_plant",
+      "capability_id": "occurrence_density_deadly_nightshade",
+      "public_id": "biological_hazards.occurrence.deadly_nightshade.density"
+    },
+    {
+      "id": "foxglove",
+      "name": "Fingerhut (Digitalis)",
+      "scientific_name": "Digitalis",
+      "group": "toxic_plant",
+      "capability_id": "occurrence_density_foxglove",
+      "public_id": "biological_hazards.occurrence.foxglove.density",
+      "match_rank": "GENUS",
+      "match_kingdom": "Plantae",
+      "match_authorship": "L."
+    },
+    {
+      "id": "castor_bean",
+      "name": "Wunderbaum / Rizinus",
+      "scientific_name": "Ricinus communis",
+      "group": "toxic_plant",
+      "capability_id": "occurrence_density_castor_bean",
+      "public_id": "biological_hazards.occurrence.castor_bean.density"
+    },
+    {
+      "id": "oleander",
+      "name": "Oleander",
+      "scientific_name": "Nerium oleander",
+      "group": "toxic_plant",
+      "capability_id": "occurrence_density_oleander",
+      "public_id": "biological_hazards.occurrence.oleander.density"
+    },
+    {
+      "id": "yew",
+      "name": "Eiben (Taxus)",
+      "scientific_name": "Taxus",
+      "group": "toxic_plant",
+      "capability_id": "occurrence_density_yew",
+      "public_id": "biological_hazards.occurrence.yew.density",
+      "match_rank": "GENUS",
+      "match_kingdom": "Plantae",
+      "match_authorship": "L."
+    },
+    {
+      "id": "poison_hemlock",
+      "name": "Gefleckter Schierling",
+      "scientific_name": "Conium maculatum",
+      "group": "toxic_plant",
+      "capability_id": "occurrence_density_poison_hemlock",
+      "public_id": "biological_hazards.occurrence.poison_hemlock.density"
+    },
+    {
+      "id": "datura",
+      "name": "Stechäpfel (Datura)",
+      "scientific_name": "Datura",
+      "group": "toxic_plant",
+      "capability_id": "occurrence_density_datura",
+      "public_id": "biological_hazards.occurrence.datura.density"
+    },
+    {
+      "id": "brugmansia",
+      "name": "Engelstrompeten (Brugmansia)",
+      "scientific_name": "Brugmansia",
+      "group": "toxic_plant",
+      "capability_id": "occurrence_density_brugmansia",
+      "public_id": "biological_hazards.occurrence.brugmansia.density"
+    },
+    {
+      "id": "toxicodendron",
+      "name": "Giftsumach / Poison Ivy (Toxicodendron)",
+      "scientific_name": "Toxicodendron",
+      "group": "toxic_plant",
+      "capability_id": "occurrence_density_toxicodendron",
+      "public_id": "biological_hazards.occurrence.toxicodendron.density"
+    },
+    {
+      "id": "giant_hogweed",
+      "name": "Riesen-Bärenklau",
+      "scientific_name": "Heracleum mantegazzianum",
+      "group": "toxic_plant",
+      "capability_id": "occurrence_density_giant_hogweed",
+      "public_id": "biological_hazards.occurrence.giant_hogweed.density"
+    },
+    {
+      "id": "gympie_gympie",
+      "name": "Gympie-Gympie",
+      "scientific_name": "Dendrocnide moroides",
+      "group": "toxic_plant",
+      "capability_id": "occurrence_density_gympie_gympie",
+      "public_id": "biological_hazards.occurrence.gympie_gympie.density"
+    },
+    {
+      "id": "manchineel",
+      "name": "Manchinelbaum",
+      "scientific_name": "Hippomane mancinella",
+      "group": "toxic_plant",
+      "capability_id": "occurrence_density_manchineel",
+      "public_id": "biological_hazards.occurrence.manchineel.density"
+    },
+    {
+      "id": "rosary_pea",
+      "name": "Paternostererbse",
+      "scientific_name": "Abrus precatorius",
+      "group": "toxic_plant",
+      "capability_id": "occurrence_density_rosary_pea",
+      "public_id": "biological_hazards.occurrence.rosary_pea.density"
+    },
+    {
+      "id": "suicide_tree",
+      "name": "Cerbera odollam",
+      "scientific_name": "Cerbera odollam",
+      "group": "toxic_plant",
+      "capability_id": "occurrence_density_suicide_tree",
+      "public_id": "biological_hazards.occurrence.suicide_tree.density"
+    },
+    {
+      "id": "strychnine_tree",
+      "name": "Brechnuss / Strychninbaum",
+      "scientific_name": "Strychnos nux-vomica",
+      "group": "toxic_plant",
+      "capability_id": "occurrence_density_strychnine_tree",
+      "public_id": "biological_hazards.occurrence.strychnine_tree.density"
+    },
+    {
+      "id": "water_hemlock",
+      "name": "Wasserschierling (Cicuta)",
+      "scientific_name": "Cicuta",
+      "group": "toxic_plant",
+      "capability_id": "occurrence_density_water_hemlock",
+      "public_id": "biological_hazards.occurrence.water_hemlock.density"
+    },
+    {
+      "id": "autumn_crocus",
+      "name": "Herbstzeitlose",
+      "scientific_name": "Colchicum autumnale",
+      "group": "toxic_plant",
+      "capability_id": "occurrence_density_autumn_crocus",
+      "public_id": "biological_hazards.occurrence.autumn_crocus.density"
+    },
+    {
+      "id": "golden_chain",
+      "name": "Goldregen",
+      "scientific_name": "Laburnum anagyroides",
+      "group": "toxic_plant",
+      "capability_id": "occurrence_density_golden_chain",
+      "public_id": "biological_hazards.occurrence.golden_chain.density"
+    },
+    {
+      "id": "death_cap",
+      "name": "Grüner Knollenblätterpilz",
+      "scientific_name": "Amanita phalloides",
+      "group": "toxic_fungus",
+      "capability_id": "occurrence_density_death_cap",
+      "public_id": "biological_hazards.occurrence.death_cap.density"
+    },
+    {
+      "id": "destroying_angel",
+      "name": "Kegelhütiger Knollenblätterpilz",
+      "scientific_name": "Amanita virosa",
+      "group": "toxic_fungus",
+      "capability_id": "occurrence_density_destroying_angel",
+      "public_id": "biological_hazards.occurrence.destroying_angel.density"
+    },
+    {
+      "id": "galerina_marginata",
+      "name": "Gifthäubling",
+      "scientific_name": "Galerina marginata",
+      "group": "toxic_fungus",
+      "capability_id": "occurrence_density_galerina_marginata",
+      "public_id": "biological_hazards.occurrence.galerina_marginata.density"
+    },
+    {
+      "id": "deadly_webcap",
+      "name": "Spitzgebuckelter Raukopf",
+      "scientific_name": "Cortinarius rubellus",
+      "group": "toxic_fungus",
+      "capability_id": "occurrence_density_deadly_webcap",
+      "public_id": "biological_hazards.occurrence.deadly_webcap.density"
+    },
+    {
+      "id": "false_morel",
+      "name": "Frühjahrs-Giftlorchel",
+      "scientific_name": "Gyromitra esculenta",
+      "group": "toxic_fungus",
+      "capability_id": "occurrence_density_false_morel",
+      "public_id": "biological_hazards.occurrence.false_morel.density"
+    },
+    {
+      "id": "ticks",
+      "name": "Schildzecken (Ixodidae)",
+      "scientific_name": "Ixodidae",
+      "group": "vector",
+      "capability_id": "occurrence_density_ticks",
+      "public_id": "biological_hazards.occurrence.ticks.density"
+    },
+    {
+      "id": "aedes_aegypti",
+      "name": "Gelbfiebermücke",
+      "scientific_name": "Aedes aegypti",
+      "group": "vector",
+      "capability_id": "occurrence_density_aedes_aegypti",
+      "public_id": "biological_hazards.occurrence.aedes_aegypti.density"
+    },
+    {
+      "id": "aedes_albopictus",
+      "name": "Asiatische Tigermücke",
+      "scientific_name": "Aedes albopictus",
+      "group": "vector",
+      "capability_id": "occurrence_density_aedes_albopictus",
+      "public_id": "biological_hazards.occurrence.aedes_albopictus.density"
+    },
+    {
+      "id": "anopheles",
+      "name": "Malariamücken (Anopheles)",
+      "scientific_name": "Anopheles",
+      "group": "vector",
+      "capability_id": "occurrence_density_anopheles",
+      "public_id": "biological_hazards.occurrence.anopheles.density"
+    }
+  ]
+}

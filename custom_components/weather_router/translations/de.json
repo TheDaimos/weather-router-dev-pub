@@ -1,0 +1,17 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "WeatherRouter einrichten",
+        "description": "Installiert den optionalen WeatherRouter-Dienst. Wetteranbieter und Consumer-Schnittstellen folgen in späteren Entwicklungsstufen."
+      }
+    }
+  },
+  "entity": {
+    "select": {
+      "reference_location": {
+        "name": "Bezugsstandort"
+      }
+    }
+  }
+}

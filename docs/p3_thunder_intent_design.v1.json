@@ -1,0 +1,106 @@
+{
+  "schema": "weather_router.p3_thunder_intent_design.v1",
+  "date": "2026-10-04",
+  "generated_for": "P3-THUNDER-30",
+  "decisions": {
+    "new_public_capabilities": [],
+    "preserved_public_capabilities": [
+      "weather.convection.thunderstorm_cells",
+      "weather.point.thunder_probability"
+    ],
+    "standard_core_candidate_counts": {
+      "weather.convection.thunderstorm_cells": 1,
+      "weather.point.thunder_probability": 2
+    },
+    "total_public_capabilities_after_design": 226,
+    "multi_candidate_public_capabilities": [
+      "weather.point.thunder_probability"
+    ]
+  },
+  "intents": {
+    "weather.convection.thunderstorm_cells": {
+      "strategy": "single",
+      "candidates": [
+        "dwd/thunderstorm_cells"
+      ],
+      "resource_type": "raster_tile",
+      "semantic_class": "convective_thunderstorm_cell_nowcast_raster",
+      "data_origin_policy": "nowcast",
+      "measurement_method_policy": "convective_cell_detection",
+      "observation_kind_policy": "nowcast",
+      "quantity_policy": "not_applicable",
+      "canonical_unit": null,
+      "temporal_policy": "provider_nowcast_frames",
+      "coverage": "candidate_hard_bbox",
+      "render_interchangeable": false,
+      "numeric_interchangeable": false
+    },
+    "weather.point.thunder_probability": {
+      "strategy": "single",
+      "candidates": [
+        "met_norway/thunder_probability",
+        "smhi/thunder_probability"
+      ],
+      "resource_type": "value",
+      "semantic_class": "thunderstorm_probability_next_1h_point_forecast",
+      "data_origin_policy": "model",
+      "measurement_method_policy": "candidate_specific_forecast_method",
+      "observation_kind_policy": "forecast",
+      "quantity_policy": "thunderstorm_probability",
+      "canonical_unit": "%",
+      "numeric_range_inclusive": [
+        0,
+        100
+      ],
+      "temporal_policy": "next_1_hour_thunder_probability",
+      "required_interval_seconds": 3600,
+      "coverage": "candidate_specific_unknown_allowed",
+      "render_interchangeable": true,
+      "numeric_interchangeable": true,
+      "interchangeability_guard": "candidate_must_prove_exact_3600_second_probability_interval"
+    }
+  },
+  "candidate_requirements": {
+    "met_norway/thunder_probability": {
+      "required_unit": "%",
+      "required_range_inclusive": [
+        0,
+        100
+      ],
+      "required_period_marker": "1h",
+      "missing_value": "candidate_unavailable",
+      "incompatible_period": "fail_closed"
+    },
+    "smhi/thunder_probability": {
+      "required_unit": "%",
+      "required_range_inclusive": [
+        0,
+        100
+      ],
+      "required_interval_seconds": 3600,
+      "interval_source": "provider_interval_start_and_forecast_time",
+      "missing_value": "candidate_unavailable",
+      "missing_interval": "fail_closed",
+      "incompatible_interval": "fail_closed"
+    }
+  },
+  "forbidden_fallbacks": [
+    "thunderstorm_cell_to_thunder_probability",
+    "thunder_probability_to_thunderstorm_cell",
+    "thunder_probability_to_official_warning",
+    "official_warning_to_thunder_probability",
+    "lightning_observation_to_thunder_probability",
+    "thunder_probability_to_lightning_observation",
+    "tornado_hail_downburst_supercell_to_generic_thunder_probability",
+    "met_norway_6h_or_12h_probability_to_next_1h_probability"
+  ],
+  "invariants": {
+    "provider_id_is_not_scoring_axis": true,
+    "profiles_remain_deny_only": true,
+    "unknown_coverage_stays_unknown_preflight": true,
+    "endpoint_reachability_is_not_coverage": true,
+    "no_provider_specific_consumer_logic": true,
+    "private_extensions_outside_standard_core_contract": true,
+    "no_new_public_capability": true
+  }
+}

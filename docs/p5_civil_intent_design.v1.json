@@ -1,0 +1,55 @@
+{
+  "schema": "weather_router.p5_civil_intent_design.v1",
+  "date": "2026-10-08",
+  "status": "done",
+  "target_runtime": {
+    "build_version": "0.10.140",
+    "loader_revision": "0.10-loader-143",
+    "public_capability_count": 227
+  },
+  "public_contract": {
+    "id": "civil_protection.warning.official",
+    "ui_number": 92,
+    "strategy": "aggregate",
+    "resource_type": "hazard_feed",
+    "candidate_count": 4
+  },
+  "context_contract": {
+    "global": "allowed",
+    "bbox": "allowed_event_geometry_filter",
+    "point": "public_intent_fail_closed_requirements_not_met",
+    "nearby": "not_implicit"
+  },
+  "point_guard": {
+    "level": "public_intent_before_aggregate_resolution",
+    "code": "requirements_not_met",
+    "retryable": false,
+    "provider_contact": false,
+    "aggregate_resolution_started": false
+  },
+  "preserved": {
+    "aggregate_provenance": true,
+    "degraded_partial_failure": true,
+    "successful_empty_source": true,
+    "cross_channel_deduplication": false,
+    "cross_domain_nina_flood": true
+  },
+  "runtime_changes": [
+    "Add explicit Civil aggregate public-ID guard.",
+    "Reject Point before aggregate provider resolution.",
+    "Preserve Global and BBOX behavior.",
+    "Preserve aggregation, provenance and degraded semantics."
+  ],
+  "invariants": [
+    "No new public civil capability.",
+    "Point must not silently become Global.",
+    "Point must fail before aggregate provider resolution.",
+    "Aggregation is not fallback.",
+    "Candidate order is not provider priority.",
+    "No cross-channel deduplication is introduced.",
+    "Source provenance remains preserved.",
+    "Successful empty source remains valid.",
+    "Endpoint reachability is not coverage proof."
+  ],
+  "next": "P5-CIVIL-40"
+}

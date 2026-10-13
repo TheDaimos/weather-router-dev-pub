@@ -1,0 +1,163 @@
+{
+  "schema": "weather_router.p3_windhaz_intent_design.v1",
+  "date": "2026-10-04",
+  "status": "design_only",
+  "public_capability_count_before": 226,
+  "public_capability_count_after": 226,
+  "public_capabilities_added": 0,
+  "public_transport": {
+    "id": "weather.warning.official",
+    "strategy": "aggregate",
+    "resource_type": "hazard_feed",
+    "candidates": [
+      "dwd/official_weather_warnings",
+      "noaa_nws/official_weather_alerts"
+    ]
+  },
+  "primary_hazard_type": {
+    "change": false,
+    "reorder_patterns": false,
+    "relevant_order": [
+      "downburst",
+      "severe_thunderstorm",
+      "windstorm"
+    ]
+  },
+  "additive_event_fields": {
+    "wind_hazard_semantic_class": {
+      "values": [
+        "official_wind_alert_event",
+        "official_downburst_alert_event"
+      ],
+      "independent_of_primary_hazard_type": true,
+      "specific_downburst_precedence": true
+    },
+    "wind_hazard_match_scope": {
+      "values": [
+        "explicit_event",
+        "contextual_text"
+      ],
+      "explicit_fields": [
+        "event",
+        "headline"
+      ],
+      "contextual_fields": [
+        "description",
+        "instruction"
+      ],
+      "explicit_precedence_within_class": true
+    },
+    "alert_stage": {
+      "reuse_existing_field": true,
+      "values": [
+        "warning",
+        "watch",
+        "outlook",
+        "statement",
+        "unspecified"
+      ]
+    }
+  },
+  "evidence": {
+    "downburst_specific": [
+      "downburst",
+      "microburst",
+      "macroburst",
+      "fallböe",
+      "fallboe"
+    ],
+    "broad_wind": [
+      "high wind",
+      "wind warning",
+      "wind advisory",
+      "damaging wind",
+      "destructive wind",
+      "severe wind",
+      "strong wind",
+      "wind gust",
+      "gale",
+      "storm warning",
+      "hurricane force wind",
+      "orkan",
+      "windbö",
+      "sturmbö",
+      "stürmische bö"
+    ],
+    "isolated_wind_is_sufficient": false,
+    "isolated_sturm_substring_is_sufficient": false
+  },
+  "provider_rules": {
+    "dwd": {
+      "real_wind_hazard_evidence_required": true,
+      "alert_stage": "warning"
+    },
+    "noaa_nws": {
+      "real_wind_hazard_evidence_required": true,
+      "alert_stage_normalizer": "normalize_alert_stage(event, headline)"
+    }
+  },
+  "event_filter_additions": {
+    "wind_hazard_semantic_classes": [
+      "official_wind_alert_event",
+      "official_downburst_alert_event"
+    ],
+    "wind_hazard_match_scopes": [
+      "explicit_event",
+      "contextual_text"
+    ],
+    "reuse_alert_stages": true,
+    "specialized_filter_does_not_require_primary_wind_hazard_type": true
+  },
+  "preservation": {
+    "consumer_normalization_fields": [
+      "wind_hazard_semantic_class",
+      "wind_hazard_match_scope",
+      "alert_stage"
+    ],
+    "resource_diagnostic_fields": [
+      "wind_hazard_semantic_classes",
+      "wind_hazard_match_scopes",
+      "alert_stages"
+    ]
+  },
+  "numeric_wind_contracts_unchanged": [
+    "weather.point.wind_speed",
+    "weather.point.wind_gusts",
+    "weather.point.wind_direction",
+    "weather.point.wind_summary",
+    "weather.nowcast.wind_speed",
+    "weather.nowcast.wind_gusts",
+    "weather.nowcast.wind_direction",
+    "weather.model.wind_10m.layer"
+  ],
+  "excluded": [
+    "observed_or_reported_wind_damage_event",
+    "confirmed_downburst_observation_event",
+    "downburst_radar_or_nowcast_signature",
+    "new_windhaz_public_capability",
+    "provider_priority",
+    "cross_provider_deduplication",
+    "coverage_semantics_change",
+    "primary_hazard_pattern_reordering",
+    "numeric_wind_threshold_warning_inference"
+  ],
+  "invariants": [
+    "No new wind-hazard public capability.",
+    "weather.warning.official remains aggregate with DWD and NOAA/NWS.",
+    "Primary hazard_type normalization remains unchanged.",
+    "Wind-hazard semantics are additive and independent of the primary hazard label.",
+    "Specific downburst semantics take precedence over broad wind semantics.",
+    "Generic strong wind is not automatically downburst.",
+    "Isolated generic word wind is insufficient evidence.",
+    "Isolated sturm substring is insufficient additive evidence.",
+    "Existing alert_stage is reused.",
+    "P2-WIND numeric contracts remain unchanged.",
+    "Official wind alert is not observed wind damage.",
+    "Official downburst alert is not confirmed downburst.",
+    "Provider ID is not a scoring axis.",
+    "Profiles remain deny-only.",
+    "Coverage unknown remains unknown.",
+    "Endpoint reachability is not coverage proof.",
+    "Private extensions remain outside the standard core contract."
+  ]
+}

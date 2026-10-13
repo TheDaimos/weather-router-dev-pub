@@ -1,0 +1,69 @@
+{
+  "schema": "weather_router.p5_space_inventory.v1",
+  "date": "2026-10-07",
+  "status": "inventory_only",
+  "scope": "standard_core_only",
+  "public_capability_count_total": 226,
+  "space_public_capability_count": 32,
+  "groups": {
+    "iss_live": 1,
+    "moon_astronomy_values": 14,
+    "moon_planetary_tiles": 1,
+    "solar_suvi_image_sequences": 6,
+    "sun_astronomy_values": 10
+  },
+  "providers": {
+    "noaa_swpc": {
+      "class": "NoaaSwpcProvider",
+      "default_enabled": true,
+      "domain": "space",
+      "public_capabilities": 6,
+      "resource_type": "image_sequence",
+      "aurora_ovation_status": "planned_not_routed"
+    },
+    "nasa_iss": {
+      "class": "NasaIssProvider",
+      "default_enabled": true,
+      "domain": "space",
+      "public_capabilities": 1,
+      "resource_type": "live_stream"
+    },
+    "nasa_moon": {
+      "class": "NasaMoonProvider",
+      "default_enabled": true,
+      "domain": "space",
+      "public_capabilities": 1,
+      "resource_type": "planetary_tile",
+      "coordinate_space": "moon"
+    },
+    "met_norway_astronomy": {
+      "class": "MetNorwayAstronomyProvider",
+      "default_enabled": false,
+      "domain": "space",
+      "public_capabilities": 24,
+      "resource_type": "value",
+      "resolver": "point"
+    }
+  },
+  "current_aurora_contract": {
+    "public_capability_present": false,
+    "ovation_provider_service_marker_present": true,
+    "ovation_status": "vorgemerkt",
+    "routed_candidate_present": false
+  },
+  "invariants": [
+    "Solar EUV imagery is not geomagnetic activity.",
+    "Solar EUV wavelength is not aurora probability.",
+    "Aurora oval is not point probability.",
+    "Kp index is not local aurora visibility.",
+    "Geomagnetic storm is not automatically visible aurora.",
+    "Astronomical visibility is not meteorological cloud freedom.",
+    "ISS live stream is not space-weather measurement data.",
+    "Moon planetary tiles are not Earth raster tiles.",
+    "Endpoint reachability is not coverage proof.",
+    "Provider ID is not a scoring axis.",
+    "Profiles remain deny-only."
+  ],
+  "decisions_deferred_to": "P5-SPACE-20",
+  "aurora_consumer_migration_phase": "P7-020"
+}

@@ -1,0 +1,282 @@
+{
+  "schema": "weather_router.consumer.hazard_event_types.v1",
+  "contract_version": 1,
+  "severities": [
+    {
+      "id": "unknown",
+      "name": "Unbekannt"
+    },
+    {
+      "id": "minor",
+      "name": "Gering"
+    },
+    {
+      "id": "moderate",
+      "name": "Mittel"
+    },
+    {
+      "id": "severe",
+      "name": "Schwer"
+    },
+    {
+      "id": "extreme",
+      "name": "Extrem"
+    }
+  ],
+  "hazard_types": {
+    "weather_warning": {
+      "name": "Allgemeine Wetterwarnung",
+      "group": "weather"
+    },
+    "severe_thunderstorm": {
+      "name": "Schweres Gewitter",
+      "group": "convective_hazards"
+    },
+    "tornado": {
+      "name": "Tornado / Windhose",
+      "group": "convective_hazards"
+    },
+    "waterspout": {
+      "name": "Wasserhose",
+      "group": "convective_hazards"
+    },
+    "hail": {
+      "name": "Hagel",
+      "group": "convective_hazards"
+    },
+    "heavy_rain": {
+      "name": "Starkregen / Dauerregen",
+      "group": "weather"
+    },
+    "windstorm": {
+      "name": "Sturm / Orkan / schwere Böen",
+      "group": "weather"
+    },
+    "lightning": {
+      "name": "Blitz / Blitzgefahr",
+      "group": "convective_hazards"
+    },
+    "snow_ice": {
+      "name": "Schnee / Eis / Glätte",
+      "group": "weather"
+    },
+    "heat": {
+      "name": "Hitze",
+      "group": "weather"
+    },
+    "cold": {
+      "name": "Kälte / Frost",
+      "group": "weather"
+    },
+    "fog": {
+      "name": "Nebel",
+      "group": "weather"
+    },
+    "storm_surge": {
+      "name": "Sturmflut",
+      "group": "hydrology"
+    },
+    "coastal_event": {
+      "name": "Küstenereignis / hoher Seegang",
+      "group": "hydrology"
+    },
+    "flash_flood": {
+      "name": "Sturzflut",
+      "group": "hydrology"
+    },
+    "flood": {
+      "name": "Hochwasser / Überschwemmung",
+      "group": "hydrology"
+    },
+    "tropical_cyclone": {
+      "name": "Tropischer Wirbelsturm",
+      "group": "weather"
+    },
+    "wildfire": {
+      "name": "Waldbrand",
+      "group": "natural_hazard"
+    },
+    "avalanche": {
+      "name": "Lawine",
+      "group": "natural_hazard"
+    },
+    "drought": {
+      "name": "Dürre",
+      "group": "natural_hazard"
+    },
+    "natural_hazard": {
+      "name": "Naturgefahr · nicht weiter klassifiziert",
+      "group": "natural_hazard"
+    },
+    "tsunami": {
+      "name": "Tsunami",
+      "group": "geophysical"
+    },
+    "tsunami_potential": {
+      "name": "Tsunamipotenzial",
+      "group": "geophysical"
+    },
+    "earthquake": {
+      "name": "Erdbeben",
+      "group": "geophysical"
+    },
+    "volcanic_activity": {
+      "name": "Vulkanische Aktivität",
+      "group": "geophysical"
+    },
+    "landslide": {
+      "name": "Erdrutsch / Felsrutsch",
+      "group": "geophysical"
+    },
+    "meteor": {
+      "name": "Meteorereignis",
+      "group": "geophysical"
+    },
+    "seismic_explosion": {
+      "name": "Seismisch als Explosion klassifiziert",
+      "group": "seismic"
+    },
+    "collapse": {
+      "name": "Einsturz / Rock Burst",
+      "group": "seismic"
+    },
+    "acoustic_event": {
+      "name": "Akustisches / sonisches Ereignis",
+      "group": "seismic"
+    },
+    "seismic_non_earthquake": {
+      "name": "Seismisches Nicht-Erdbeben-Ereignis",
+      "group": "seismic"
+    },
+    "public_safety": {
+      "name": "Öffentliche Sicherheitswarnung",
+      "group": "security"
+    },
+    "explosive_ordnance": {
+      "name": "Kampfmittel / Bombenfund",
+      "group": "civil_protection"
+    },
+    "fire": {
+      "name": "Brand / Rauchentwicklung",
+      "group": "civil_protection"
+    },
+    "infrastructure_outage": {
+      "name": "Infrastrukturausfall",
+      "group": "civil_protection"
+    },
+    "contamination": {
+      "name": "Verunreinigung / Kontamination",
+      "group": "civil_protection"
+    },
+    "cbrn": {
+      "name": "CBRN / Gefahrstoff",
+      "group": "civil_protection"
+    },
+    "evacuation": {
+      "name": "Evakuierung / Räumung",
+      "group": "civil_protection"
+    },
+    "civil_protection": {
+      "name": "Bevölkerungsschutz · nicht weiter klassifiziert",
+      "group": "civil_protection"
+    },
+    "volcanic_ash": {
+      "name": "Vulkanasche",
+      "group": "aviation"
+    },
+    "aviation_icing": {
+      "name": "Vereisung",
+      "group": "aviation"
+    },
+    "aviation_turbulence": {
+      "name": "Turbulenz",
+      "group": "aviation"
+    },
+    "mountain_wave": {
+      "name": "Gebirgswelle",
+      "group": "aviation"
+    },
+    "dust_storm": {
+      "name": "Staub- / Sandsturm",
+      "group": "aviation"
+    },
+    "aviation_ifr": {
+      "name": "IFR-Bedingungen",
+      "group": "aviation"
+    },
+    "aviation_warning": {
+      "name": "Luftfahrtwarnung · nicht weiter klassifiziert",
+      "group": "aviation"
+    },
+    "surface_water_flood": {
+      "name": "Oberflächenüberflutung / pluviales Hochwasser",
+      "group": "hydrology"
+    },
+    "debris_flow": {
+      "name": "Mure / Schlamm- und Geröllstrom",
+      "group": "hydrology"
+    },
+    "levee_failure": {
+      "name": "Deichbruch / Deichversagen",
+      "group": "hydrology"
+    },
+    "dam_failure": {
+      "name": "Dammbruch / Talsperrenversagen",
+      "group": "hydrology"
+    },
+    "glacial_lake_outburst_flood": {
+      "name": "Gletschersee-Ausbruch / GLOF",
+      "group": "hydrology"
+    },
+    "ice_jam_flood": {
+      "name": "Eisstau-Hochwasser",
+      "group": "hydrology"
+    },
+    "downburst": {
+      "name": "Downburst / schwere Fallböe",
+      "group": "convective_hazards"
+    },
+    "supercell": {
+      "name": "Superzelle",
+      "group": "convective_hazards"
+    }
+  },
+  "groups": {
+    "weather": {
+      "name": "Wetterwarnungen",
+      "domain": "weather"
+    },
+    "convective_hazards": {
+      "name": "Unwetter / Konvektive Gefahren",
+      "domain": "natural_hazards"
+    },
+    "hydrology": {
+      "name": "Hochwasser & Hydrologie",
+      "domain": "natural_hazards"
+    },
+    "natural_hazard": {
+      "name": "Weitere Naturgefahren",
+      "domain": "natural_hazards"
+    },
+    "geophysical": {
+      "name": "Geophysikalische Gefahren",
+      "domain": "natural_hazards"
+    },
+    "seismic": {
+      "name": "Seismische Sonderereignisse",
+      "domain": "natural_hazards"
+    },
+    "security": {
+      "name": "Öffentliche Sicherheit",
+      "domain": "security"
+    },
+    "civil_protection": {
+      "name": "Bevölkerungsschutz",
+      "domain": "civil_protection"
+    },
+    "aviation": {
+      "name": "Luftfahrtwarnungen",
+      "domain": "aviation"
+    }
+  }
+}

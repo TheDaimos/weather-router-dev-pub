@@ -1,0 +1,779 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "weather_router.consumer.capabilities.v1",
+  "title": "WeatherRouter Consumer Capabilities V1",
+  "type": "object",
+  "required": [
+    "schema",
+    "contract_version",
+    "capabilities",
+    "filter_options",
+    "applied_filter"
+  ],
+  "properties": {
+    "schema": {
+      "const": "weather_router.consumer.capabilities.v1"
+    },
+    "contract_version": {
+      "const": 1
+    },
+    "generated_at": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "capabilities": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "domain",
+          "name",
+          "enabled",
+          "available",
+          "resource_types",
+          "spatial_contexts",
+          "time_modes",
+          "family",
+          "phenomena",
+          "source_classes",
+          "resolution_strategy",
+          "availability_basis"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*(?:\\.[a-z0-9_]+)+$"
+          },
+          "domain": {
+            "enum": [
+              "weather",
+              "pollen",
+              "natural_hazards",
+              "civil_protection",
+              "security",
+              "aviation",
+              "space",
+              "biological_hazards"
+            ]
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "available": {
+            "type": "boolean"
+          },
+          "resource_types": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "enum": [
+                "value",
+                "raster_tile",
+                "hazard_feed",
+                "event_feed",
+                "image_sequence",
+                "live_stream",
+                "planetary_tile",
+                "data_file"
+              ]
+            }
+          },
+          "spatial_contexts": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "enum": [
+                "global",
+                "point",
+                "bbox"
+              ]
+            }
+          },
+          "time_modes": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "const": "latest"
+            }
+          },
+          "source_classes": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "string"
+            }
+          },
+          "description": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "resolution_strategy": {
+            "enum": [
+              "single",
+              "aggregate"
+            ]
+          },
+          "availability_basis": {
+            "type": "string"
+          },
+          "family": {
+            "type": "string",
+            "minLength": 1
+          },
+          "phenomena": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "enum": [
+                "temperature",
+                "dew_point",
+                "humidity",
+                "pressure",
+                "rain",
+                "precipitation",
+                "snow",
+                "wind",
+                "clouds",
+                "visibility",
+                "fog",
+                "thunderstorm",
+                "lightning",
+                "uv",
+                "weather_condition",
+                "pollen",
+                "wildlife",
+                "predator",
+                "crocodilian",
+                "marine",
+                "venomous",
+                "snake",
+                "toxic",
+                "toxic_plant",
+                "toxic_fungus",
+                "vector"
+              ]
+            }
+          },
+          "event_filter_options": {
+            "type": "object",
+            "required": [
+              "hazard_types",
+              "severities"
+            ],
+            "properties": {
+              "hazard_types": {
+                "type": "array",
+                "uniqueItems": true,
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "id",
+                    "name",
+                    "group"
+                  ],
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "name": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "group": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "additionalProperties": true
+                }
+              },
+              "severities": {
+                "type": "array",
+                "uniqueItems": true,
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "id",
+                    "name"
+                  ],
+                  "properties": {
+                    "id": {
+                      "enum": [
+                        "unknown",
+                        "minor",
+                        "moderate",
+                        "severe",
+                        "extreme"
+                      ]
+                    },
+                    "name": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "additionalProperties": true
+                }
+              },
+              "alert_stages": {
+                "type": "array",
+                "uniqueItems": true,
+                "items": {
+                  "enum": [
+                    "warning",
+                    "watch",
+                    "outlook",
+                    "statement",
+                    "unspecified"
+                  ]
+                }
+              },
+              "hazard_match_scopes": {
+                "type": "array",
+                "uniqueItems": true,
+                "items": {
+                  "enum": [
+                    "explicit_event",
+                    "contextual_text"
+                  ]
+                }
+              },
+              "tornado_semantic_classes": {
+                "type": "array",
+                "uniqueItems": true,
+                "items": {
+                  "enum": [
+                    "official_tornado_alert_event",
+                    "official_waterspout_alert_event"
+                  ]
+                }
+              },
+              "hail_match_scopes": {
+                "type": "array",
+                "uniqueItems": true,
+                "items": {
+                  "enum": [
+                    "explicit_event",
+                    "contextual_text"
+                  ]
+                }
+              },
+              "hail_semantic_classes": {
+                "type": "array",
+                "uniqueItems": true,
+                "items": {
+                  "enum": [
+                    "official_hail_alert_event"
+                  ]
+                }
+              },
+              "wind_hazard_match_scopes": {
+                "type": "array",
+                "uniqueItems": true,
+                "items": {
+                  "enum": [
+                    "explicit_event",
+                    "contextual_text"
+                  ]
+                }
+              },
+              "wind_hazard_semantic_classes": {
+                "type": "array",
+                "uniqueItems": true,
+                "items": {
+                  "enum": [
+                    "official_wind_alert_event",
+                    "official_downburst_alert_event"
+                  ]
+                }
+              },
+              "supercell_match_scopes": {
+                "type": "array",
+                "uniqueItems": true,
+                "items": {
+                  "enum": [
+                    "explicit_event",
+                    "contextual_text"
+                  ]
+                }
+              },
+              "supercell_semantic_classes": {
+                "type": "array",
+                "uniqueItems": true,
+                "items": {
+                  "enum": [
+                    "official_supercell_alert_event"
+                  ]
+                }
+              },
+              "flood_match_scopes": {
+                "type": "array",
+                "uniqueItems": true,
+                "items": {
+                  "enum": [
+                    "explicit_event",
+                    "contextual_text"
+                  ]
+                }
+              },
+              "flood_semantic_classes": {
+                "type": "array",
+                "uniqueItems": true,
+                "items": {
+                  "enum": [
+                    "official_flood_alert_event",
+                    "official_flash_flood_alert_event",
+                    "official_surface_water_flood_alert_event",
+                    "official_debris_flow_alert_event",
+                    "official_levee_failure_alert_event",
+                    "official_dam_failure_alert_event",
+                    "official_glof_alert_event",
+                    "official_ice_jam_flood_alert_event"
+                  ]
+                }
+              },
+              "tropical_system_classes": {
+                "type": "array",
+                "uniqueItems": true,
+                "items": {
+                  "enum": [
+                    "potential_tropical_cyclone",
+                    "tropical_depression",
+                    "tropical_storm",
+                    "hurricane_strength_tropical_cyclone",
+                    "subtropical_cyclone",
+                    "post_tropical_cyclone",
+                    "tropical_cyclone_unspecified"
+                  ]
+                }
+              },
+              "tsunami_semantic_classes": {
+                "type": "array",
+                "uniqueItems": true,
+                "items": {
+                  "enum": [
+                    "official_tsunami_warning_event",
+                    "tsunami_observation_event",
+                    "tsunami_potential_indicator_event",
+                    "disaster_awareness_tsunami_event"
+                  ]
+                }
+              },
+              "tsunami_alert_stages": {
+                "type": "array",
+                "uniqueItems": true,
+                "items": {
+                  "enum": [
+                    "warning",
+                    "advisory",
+                    "watch",
+                    "threat",
+                    "marine_warning",
+                    "land_inundation_warning",
+                    "information",
+                    "no_threat",
+                    "canceled"
+                  ]
+                }
+              }
+            },
+            "additionalProperties": true
+          },
+          "intent_contract": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string"
+              },
+              "resource_type": {
+                "type": "string"
+              },
+              "render_interchangeable": {
+                "type": "boolean"
+              },
+              "numeric_interchangeable": {
+                "type": "boolean"
+              },
+              "coverage": {
+                "type": "string"
+              },
+              "attribution": {
+                "type": "string"
+              },
+              "legend": {
+                "type": "string"
+              },
+              "timeline": {
+                "type": "string"
+              },
+              "time_mode": {
+                "type": "string"
+              },
+              "quantity_policy": {
+                "type": "string"
+              },
+              "unit_policy": {
+                "type": "string"
+              },
+              "semantic_fields": {
+                "type": "array",
+                "uniqueItems": true,
+                "items": {
+                  "type": "string"
+                }
+              },
+              "guarantees": {
+                "type": "array",
+                "uniqueItems": true,
+                "items": {
+                  "type": "string"
+                }
+              },
+              "non_guarantees": {
+                "type": "array",
+                "uniqueItems": true,
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "additionalProperties": true
+          },
+          "time_semantics": {
+            "type": "object",
+            "properties": {
+              "candidate_count": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "request_time_mode": {
+                "type": "array",
+                "uniqueItems": true,
+                "items": {
+                  "const": "latest"
+                }
+              },
+              "data_time": {
+                "type": "array",
+                "uniqueItems": true,
+                "items": {
+                  "enum": [
+                    "optional_runtime",
+                    "not_applicable"
+                  ]
+                }
+              },
+              "valid_time": {
+                "type": "array",
+                "uniqueItems": true,
+                "items": {
+                  "enum": [
+                    "optional_runtime",
+                    "not_applicable"
+                  ]
+                }
+              },
+              "forecast_reference_time": {
+                "type": "array",
+                "uniqueItems": true,
+                "items": {
+                  "enum": [
+                    "optional_runtime",
+                    "not_applicable"
+                  ]
+                }
+              },
+              "interval_start": {
+                "type": "array",
+                "uniqueItems": true,
+                "items": {
+                  "enum": [
+                    "optional_runtime",
+                    "not_applicable"
+                  ]
+                }
+              },
+              "interval_end": {
+                "type": "array",
+                "uniqueItems": true,
+                "items": {
+                  "enum": [
+                    "optional_runtime",
+                    "not_applicable"
+                  ]
+                }
+              },
+              "accumulation_period": {
+                "type": "array",
+                "uniqueItems": true,
+                "items": {
+                  "type": "string"
+                }
+              },
+              "frame_cadence": {
+                "type": "array",
+                "uniqueItems": true,
+                "items": {
+                  "enum": [
+                    "optional_runtime",
+                    "not_applicable"
+                  ]
+                }
+              },
+              "freshness_policy": {
+                "type": "array",
+                "uniqueItems": true,
+                "items": {
+                  "enum": [
+                    "consumer_max_age_optional",
+                    "not_applicable"
+                  ]
+                }
+              }
+            },
+            "additionalProperties": false
+          },
+          "coverage_semantics": {
+            "type": "object",
+            "properties": {
+              "candidate_count": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "endpoint_reachability_is_coverage": {
+                "const": false
+              },
+              "coverage_scope": {
+                "type": "array",
+                "uniqueItems": true,
+                "items": {
+                  "enum": [
+                    "global",
+                    "regional",
+                    "bbox",
+                    "dynamic",
+                    "unknown"
+                  ]
+                }
+              },
+              "coverage_evidence": {
+                "type": "array",
+                "uniqueItems": true,
+                "items": {
+                  "enum": [
+                    "machine_readable_runtime",
+                    "runtime_event_geometry",
+                    "static_provider_contract",
+                    "unknown"
+                  ]
+                }
+              },
+              "routing_authority": {
+                "type": "array",
+                "uniqueItems": true,
+                "items": {
+                  "enum": [
+                    "hard",
+                    "context_filter",
+                    "advisory",
+                    "none"
+                  ]
+                }
+              },
+              "coordinate_space": {
+                "type": "array",
+                "uniqueItems": true,
+                "items": {
+                  "enum": [
+                    "earth",
+                    "moon",
+                    "sun",
+                    "orbital"
+                  ]
+                }
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": true
+      }
+    },
+    "filter_options": {
+      "type": "object",
+      "required": [
+        "domains",
+        "families",
+        "phenomena",
+        "resource_types"
+      ],
+      "properties": {
+        "domains": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "weather",
+              "pollen",
+              "natural_hazards",
+              "civil_protection",
+              "security",
+              "aviation",
+              "space",
+              "biological_hazards"
+            ]
+          }
+        },
+        "families": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string"
+          }
+        },
+        "phenomena": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "object",
+            "required": [
+              "id",
+              "name"
+            ],
+            "properties": {
+              "id": {
+                "enum": [
+                  "temperature",
+                  "dew_point",
+                  "humidity",
+                  "pressure",
+                  "rain",
+                  "precipitation",
+                  "snow",
+                  "wind",
+                  "clouds",
+                  "visibility",
+                  "fog",
+                  "thunderstorm",
+                  "lightning",
+                  "uv",
+                  "weather_condition",
+                  "pollen",
+                  "wildlife",
+                  "predator",
+                  "crocodilian",
+                  "marine",
+                  "venomous",
+                  "snake",
+                  "toxic",
+                  "toxic_plant",
+                  "toxic_fungus",
+                  "vector"
+                ]
+              },
+              "name": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "additionalProperties": true
+          }
+        },
+        "resource_types": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "value",
+              "raster_tile",
+              "hazard_feed",
+              "event_feed",
+              "image_sequence",
+              "live_stream",
+              "planetary_tile",
+              "data_file"
+            ]
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "applied_filter": {
+      "type": "object",
+      "properties": {
+        "domains": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "families": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "phenomena": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "resource_types": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "available_only": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    },
+    "profile": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": [
+            "id",
+            "name",
+            "revision",
+            "applied"
+          ],
+          "properties": {
+            "id": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_-]{0,63}$"
+            },
+            "name": {
+              "type": "string",
+              "minLength": 1
+            },
+            "revision": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "applied": {
+              "const": true
+            }
+          },
+          "additionalProperties": true
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "additionalProperties": true
+}

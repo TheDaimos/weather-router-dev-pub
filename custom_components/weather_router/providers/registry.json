@@ -1,0 +1,325 @@
+{
+  "schema_version": 1,
+  "providers": [
+    {
+      "module": "open_meteo",
+      "class": "OpenMeteoProvider",
+      "domains": [
+        "weather"
+      ],
+      "default_enabled": true
+    },
+    {
+      "module": "open_meteo_pollen",
+      "class": "OpenMeteoPollenProvider",
+      "domains": [
+        "pollen"
+      ],
+      "default_enabled": false
+    },
+    {
+      "module": "rainviewer",
+      "class": "RainViewerProvider",
+      "domains": [
+        "weather"
+      ],
+      "default_enabled": true
+    },
+    {
+      "module": "dwd",
+      "class": "DwdProvider",
+      "domains": [
+        "weather",
+        "natural_hazards"
+      ],
+      "default_enabled": true,
+      "topics": [
+        "thunderstorm",
+        "tornado",
+        "hail",
+        "severe_wind"
+      ]
+    },
+    {
+      "module": "nasa_gibs",
+      "class": "NasaGibsProvider",
+      "domains": [
+        "weather"
+      ],
+      "default_enabled": true
+    },
+    {
+      "module": "eumetview",
+      "class": "EumetViewProvider",
+      "domains": [
+        "weather"
+      ],
+      "default_enabled": true
+    },
+    {
+      "module": "met_norway",
+      "class": "MetNorwayProvider",
+      "domains": [
+        "weather"
+      ],
+      "default_enabled": true
+    },
+    {
+      "module": "noaa_nws",
+      "class": "NoaaNwsProvider",
+      "domains": [
+        "weather",
+        "natural_hazards"
+      ],
+      "default_enabled": true,
+      "topics": [
+        "thunderstorm",
+        "tornado",
+        "hail",
+        "severe_wind"
+      ]
+    },
+    {
+      "module": "noaa_swpc",
+      "class": "NoaaSwpcProvider",
+      "domains": [
+        "space"
+      ],
+      "default_enabled": true
+    },
+    {
+      "module": "nasa_iss",
+      "class": "NasaIssProvider",
+      "domains": [
+        "space"
+      ],
+      "default_enabled": true
+    },
+    {
+      "module": "nasa_moon",
+      "class": "NasaMoonProvider",
+      "domains": [
+        "space"
+      ],
+      "default_enabled": true
+    },
+    {
+      "module": "met_norway_astronomy",
+      "class": "MetNorwayAstronomyProvider",
+      "domains": [
+        "space"
+      ],
+      "default_enabled": false
+    },
+    {
+      "module": "fmi",
+      "class": "FmiProvider",
+      "domains": [
+        "weather"
+      ],
+      "default_enabled": true
+    },
+    {
+      "module": "smhi",
+      "class": "SmhiProvider",
+      "domains": [
+        "weather"
+      ],
+      "default_enabled": true
+    },
+    {
+      "module": "eccc_geomet",
+      "class": "EcccGeometProvider",
+      "domains": [
+        "weather"
+      ],
+      "default_enabled": true
+    },
+    {
+      "module": "jma",
+      "class": "JmaProvider",
+      "domains": [
+        "weather",
+        "natural_hazards"
+      ],
+      "default_enabled": true
+    },
+    {
+      "module": "ecmwf_open_data",
+      "class": "EcmwfOpenDataProvider",
+      "domains": [
+        "weather"
+      ],
+      "default_enabled": true
+    },
+    {
+      "module": "nhc_tropical_cyclones",
+      "class": "NhcTropicalCycloneProvider",
+      "domains": [
+        "natural_hazards"
+      ],
+      "default_enabled": true
+    },
+    {
+      "module": "noaa_tsunami",
+      "class": "NoaaTsunamiProvider",
+      "domains": [
+        "natural_hazards"
+      ],
+      "default_enabled": true
+    },
+    {
+      "module": "bmkg_tsunami",
+      "class": "BmkgTsunamiProvider",
+      "domains": [
+        "natural_hazards"
+      ],
+      "default_enabled": true
+    },
+    {
+      "module": "bom_tsunami",
+      "class": "BomTsunamiProvider",
+      "domains": [
+        "natural_hazards"
+      ],
+      "default_enabled": true
+    },
+    {
+      "module": "usgs_earthquakes",
+      "class": "UsgsEarthquakeProvider",
+      "domains": [
+        "natural_hazards"
+      ],
+      "default_enabled": true
+    },
+    {
+      "module": "smithsonian_volcanoes",
+      "class": "SmithsonianVolcanoProvider",
+      "domains": [
+        "natural_hazards"
+      ],
+      "default_enabled": true
+    },
+    {
+      "module": "usgs_volcanoes",
+      "class": "UsgsVolcanoProvider",
+      "domains": [
+        "natural_hazards"
+      ],
+      "default_enabled": true
+    },
+    {
+      "module": "gdacs",
+      "class": "GdacsProvider",
+      "domains": [
+        "natural_hazards"
+      ],
+      "default_enabled": false
+    },
+    {
+      "module": "glofas",
+      "class": "GlofasProvider",
+      "domains": [
+        "natural_hazards"
+      ],
+      "default_enabled": false
+    },
+    {
+      "module": "usgs_seismic_events",
+      "class": "UsgsSeismicEventsProvider",
+      "domains": [
+        "natural_hazards"
+      ],
+      "default_enabled": false
+    },
+    {
+      "module": "bbk_mowas",
+      "class": "BbkMowasProvider",
+      "domains": [
+        "civil_protection"
+      ],
+      "default_enabled": false
+    },
+    {
+      "module": "bbk_police",
+      "class": "BbkPoliceProvider",
+      "domains": [
+        "security"
+      ],
+      "default_enabled": false
+    },
+    {
+      "module": "aviation_weather",
+      "class": "AviationWeatherProvider",
+      "domains": [
+        "aviation"
+      ],
+      "default_enabled": false
+    },
+    {
+      "module": "nina_supplementary",
+      "class": "NinaFloodProvider",
+      "domains": [
+        "natural_hazards",
+        "civil_protection"
+      ],
+      "default_enabled": false
+    },
+    {
+      "module": "nina_supplementary",
+      "class": "NinaKatwarnProvider",
+      "domains": [
+        "civil_protection"
+      ],
+      "default_enabled": false
+    },
+    {
+      "module": "nina_supplementary",
+      "class": "NinaBiwappProvider",
+      "domains": [
+        "civil_protection"
+      ],
+      "default_enabled": false
+    },
+    {
+      "module": "gbif_biodiversity",
+      "class": "GbifBiodiversityProvider",
+      "domains": [
+        "biological_hazards"
+      ],
+      "default_enabled": false
+    },
+    {
+      "module": "fmi_lightning",
+      "class": "FmiLightningProvider",
+      "domains": [
+        "weather"
+      ],
+      "default_enabled": false
+    },
+    {
+      "module": "eumetsat_mtg_li",
+      "class": "EumetsatMtgLiProvider",
+      "domains": [
+        "weather"
+      ],
+      "default_enabled": false
+    },
+    {
+      "module": "noaa_goes_glm",
+      "class": "NoaaGoesGlmProvider",
+      "domains": [
+        "weather"
+      ],
+      "default_enabled": false
+    },
+    {
+      "module": "eccc_lightning",
+      "class": "EcccLightningProvider",
+      "domains": [
+        "weather"
+      ],
+      "default_enabled": false
+    }
+  ]
+}

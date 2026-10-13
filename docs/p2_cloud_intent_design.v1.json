@@ -1,0 +1,150 @@
+{
+  "schema": "weather_router.p2_cloud_intent_design.v1",
+  "date": "2026-10-02",
+  "scope": "P2-CLOUD-30 design only; no runtime implementation",
+  "decisions": {
+    "shared_point_intents": [
+      {
+        "public_id": "weather.point.cloud_cover",
+        "reuse_existing_id": true,
+        "resource_type": "value",
+        "observation_kind": "forecast",
+        "semantic_quantity": "cloud_cover_fraction_total",
+        "canonical_unit": "%",
+        "numeric_interchangeable": true,
+        "coverage_policy": "candidate_specific_unknown_allowed",
+        "candidate_set": [
+          "open_meteo/cloud_cover",
+          "met_norway/cloud_cover",
+          "fmi/cloud_cover",
+          "smhi/cloud_cover"
+        ]
+      },
+      {
+        "public_id": "weather.point.cloud_cover_low",
+        "reuse_existing_id": true,
+        "resource_type": "value",
+        "observation_kind": "forecast",
+        "semantic_quantity": "cloud_cover_fraction_low",
+        "canonical_unit": "%",
+        "numeric_interchangeable": true,
+        "coverage_policy": "candidate_specific_unknown_allowed",
+        "candidate_set": [
+          "open_meteo/cloud_cover_low",
+          "met_norway/cloud_cover_low",
+          "smhi/cloud_cover_low"
+        ]
+      },
+      {
+        "public_id": "weather.point.cloud_cover_mid",
+        "reuse_existing_id": true,
+        "resource_type": "value",
+        "observation_kind": "forecast",
+        "semantic_quantity": "cloud_cover_fraction_mid",
+        "canonical_unit": "%",
+        "numeric_interchangeable": true,
+        "coverage_policy": "candidate_specific_unknown_allowed",
+        "candidate_set": [
+          "open_meteo/cloud_cover_mid",
+          "met_norway/cloud_cover_mid",
+          "smhi/cloud_cover_mid"
+        ]
+      },
+      {
+        "public_id": "weather.point.cloud_cover_high",
+        "reuse_existing_id": true,
+        "resource_type": "value",
+        "observation_kind": "forecast",
+        "semantic_quantity": "cloud_cover_fraction_high",
+        "canonical_unit": "%",
+        "numeric_interchangeable": true,
+        "coverage_policy": "candidate_specific_unknown_allowed",
+        "candidate_set": [
+          "open_meteo/cloud_cover_high",
+          "met_norway/cloud_cover_high",
+          "smhi/cloud_cover_high"
+        ]
+      }
+    ],
+    "new_specialized_public_capability": {
+      "public_id": "weather.observation.cloud_cover",
+      "candidate": "eccc_geomet/cloud_cover",
+      "resource_type": "value",
+      "observation_kind": "observation",
+      "semantic_quantity": "total_cloud_amount_observed",
+      "canonical_unit": null,
+      "unit_policy": "preserve_provider_runtime_uom",
+      "coverage_policy": "candidate_specific_unknown_allowed",
+      "reason": "ECCC SWOB cloud cover is a station observation and its static unit is not defined; it must not silently participate in the percent-based forecast intent."
+    },
+    "shared_visual_cloud_layer": {
+      "public_id": "weather.satellite.clouds",
+      "reuse_existing_id": true,
+      "kind": "visual_layer",
+      "resource_type": "raster_tile",
+      "observation_kind": "observation",
+      "data_origin": "satellite",
+      "semantic_product_class": "cloud_composite",
+      "numeric_interchangeable": false,
+      "render_interchangeable": true,
+      "coverage_policy": "required",
+      "attribution_policy": "required",
+      "timeline_policy": "candidate_specific",
+      "candidate_set": [
+        "dwd/satellite_clouds",
+        "eumetview/satellite_clouds"
+      ],
+      "implementation_note": "EUMETView needs machine-readable runtime coverage before it can safely participate when coverage_policy=required."
+    },
+    "specialized_satellite_products_preserved": [
+      "weather.satellite.true_color",
+      "weather.satellite.geocolor.goes_east",
+      "weather.satellite.geocolor.goes_west",
+      "weather.satellite.infrared.goes_east",
+      "weather.satellite.infrared.goes_west",
+      "weather.satellite.infrared.himawari_9",
+      "weather.satellite.visible_red.goes_east",
+      "weather.satellite.visible_red.goes_west",
+      "weather.satellite.visible_red.himawari_9",
+      "weather.satellite.air_mass.goes_east",
+      "weather.satellite.air_mass.goes_west",
+      "weather.satellite.air_mass.himawari_9"
+    ],
+    "no_cross_product_satellite_fallback": {
+      "enabled": true,
+      "reason": "True Color, GeoColor, Clean Infrared, Visible Red and Air Mass have distinct product semantics, daylight behavior and temporal characteristics. One product class must not silently substitute another."
+    },
+    "no_new_shared_nasa_product_class_intents": {
+      "create": false,
+      "reason": "Current regional variants are all provided by NASA GIBS. P2-CLOUD keeps them specialized rather than adding new abstractions without cross-provider need."
+    },
+    "phenomena_policy": {
+      "weather_satellite_clouds": [
+        "clouds"
+      ],
+      "specialized_nasa_public_ids": "preserve current metadata in P2-CLOUD; no blanket clouds tag for broad satellite products"
+    },
+    "unit_policy": {
+      "forecast_cloud_cover_output": "%",
+      "unit_conversion_required": false,
+      "eccc_observation": "preserve provider runtime UOM; no implicit percent conversion"
+    },
+    "scoring_policy": {
+      "provider_id_axis": false,
+      "point_intents": "existing provider-neutral candidate semantics only",
+      "satellite_layer": "coverage and hard requirements before availability/freshness; no provider-name preference"
+    }
+  },
+  "implementation_requirements": [
+    "Add explicit intent_contract metadata to weather.point.cloud_cover, weather.point.cloud_cover_low, weather.point.cloud_cover_mid and weather.point.cloud_cover_high.",
+    "Refine model candidate quantities to cloud_cover_fraction_total/low/mid/high.",
+    "Remove ECCC cloud_cover from weather.point.cloud_cover and expose it additively as weather.observation.cloud_cover.",
+    "Preserve the ECCC runtime provider UOM and do not normalize it to percent without verified equivalence.",
+    "Harden weather.satellite.clouds as a visual raster intent with DWD and EUMETView candidates.",
+    "Require machine-readable coverage for weather.satellite.clouds and add safe EUMETView runtime coverage if available.",
+    "Keep all existing NASA specialized satellite public ids unchanged.",
+    "Do not fall back across True Color, GeoColor, Clean Infrared, Visible Red and Air Mass product classes.",
+    "Preserve candidate-specific timeline, daylight limitations, attribution and provenance.",
+    "Do not introduce provider-priority scoring."
+  ]
+}

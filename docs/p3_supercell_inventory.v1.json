@@ -1,0 +1,162 @@
+{
+  "schema": "weather_router.p3_supercell_inventory.v1",
+  "date": "2026-10-05",
+  "status": "inventory_only",
+  "scope": "standard_core_only",
+  "summary": {
+    "dedicated_public_capabilities": 0,
+    "existing_public_warning_paths": 1,
+    "standard_core_warning_candidates": 2,
+    "stable_direct_hazard_types": 1,
+    "dedicated_observation_public_capabilities": 0,
+    "dedicated_supercell_probability_public_capabilities": 0,
+    "dedicated_radar_rotation_signature_public_capabilities": 0,
+    "dedicated_mesocyclone_public_capabilities": 0
+  },
+  "public_warning_path": {
+    "id": "weather.warning.official",
+    "family": "warning",
+    "strategy": "aggregate",
+    "resource_type": "hazard_feed",
+    "candidates": [
+      "dwd/official_weather_warnings",
+      "noaa_nws/official_weather_alerts"
+    ],
+    "carries_hazard_types": [
+      "supercell"
+    ]
+  },
+  "hazard_type": {
+    "id": "supercell",
+    "name": "Superzelle",
+    "group": "convective_hazards",
+    "current_keywords": [
+      "supercell",
+      "superzelle",
+      "mesocyclone",
+      "mesozyklone"
+    ]
+  },
+  "primary_normalization": {
+    "model": "single_label_first_match",
+    "relevant_order": [
+      "waterspout",
+      "tornado",
+      "supercell",
+      "downburst",
+      "severe_thunderstorm",
+      "hail"
+    ],
+    "input_fields": [
+      "event",
+      "headline",
+      "description",
+      "instruction"
+    ],
+    "findings": [
+      "Explicit tornado or waterspout text can win before supercell in the current primary normalizer.",
+      "Supercell text currently wins before downburst, severe_thunderstorm and hail.",
+      "The current normalizer also maps mesocyclone/mesozyklone text directly to primary hazard_type supercell.",
+      "Whether mesocyclone is sufficient evidence for supercell is a semantic question for P3-SUPERCELL-20, not an inventory decision."
+    ]
+  },
+  "warning_providers": [
+    {
+      "provider": "dwd",
+      "capability": "official_weather_warnings",
+      "default_enabled": true,
+      "domains": [
+        "weather",
+        "natural_hazards"
+      ],
+      "registry_topics": [
+        "thunderstorm",
+        "tornado",
+        "hail",
+        "severe_wind"
+      ],
+      "registry_topic_supercell": false,
+      "capability_explicit_supercell_text": false,
+      "dedicated_supercell_contract": false,
+      "current_semantic_path": "primary_hazard_type_from_generic_warning_text"
+    },
+    {
+      "provider": "noaa_nws",
+      "capability": "official_weather_alerts",
+      "default_enabled": true,
+      "domains": [
+        "weather",
+        "natural_hazards"
+      ],
+      "registry_topics": [
+        "thunderstorm",
+        "tornado",
+        "hail",
+        "severe_wind"
+      ],
+      "registry_topic_supercell": false,
+      "capability_explicit_supercell_text": false,
+      "dedicated_supercell_contract": false,
+      "current_semantic_path": "primary_hazard_type_from_generic_warning_text"
+    }
+  ],
+  "related_but_non_equivalent_contracts": {
+    "weather.convection.thunderstorm_cells": {
+      "resource_type": "raster_tile",
+      "observation_kind": "nowcast",
+      "measurement_method": "convective_cell_detection",
+      "candidates": [
+        "dwd/thunderstorm_cells"
+      ],
+      "explicit_non_guarantee": "tornado_hail_downburst_supercell_semantics",
+      "reason_not_supercell_contract": "A detected/nowcast convective cell is not a supercell classification."
+    },
+    "weather.point.thunder_probability": {
+      "resource_type": "value",
+      "observation_kind": "forecast",
+      "quantity": "thunderstorm_probability",
+      "unit": "%",
+      "candidates": [
+        "met_norway/thunder_probability",
+        "smhi/thunder_probability"
+      ],
+      "reason_not_supercell_contract": "Thunderstorm probability is not supercell probability or supercell observation."
+    }
+  },
+  "not_implemented_as_dedicated_supercell_classes": [
+    "observed_or_reported_supercell_event",
+    "radar_rotation_or_mesocyclone_signature",
+    "confirmed_supercell_event",
+    "supercell_probability_forecast",
+    "dedicated_supercell_warning_public_contract"
+  ],
+  "hard_boundaries": [
+    "A thunderstorm cell is not automatically a supercell.",
+    "Thunderstorm probability is not supercell probability.",
+    "Tornado is not automatically proof of a supercell.",
+    "Hail is not automatically proof of a supercell.",
+    "Downburst is not automatically proof of a supercell.",
+    "Lightning is not automatically proof of a supercell.",
+    "Radar rotation or mesocyclone evidence is not automatically a confirmed supercell.",
+    "Registry topic membership is not proof of an active supercell event.",
+    "Endpoint reachability is not coverage proof."
+  ],
+  "open_semantic_questions": [
+    "Define the exact official-supercell alert/event class, if one is justified.",
+    "Decide whether mesocyclone/mesozyklone text is sufficient for supercell semantics or must remain a separate rotation-signature class.",
+    "Separate explicit event/headline evidence from contextual description/instruction evidence.",
+    "Decide how supercell semantics coexist with tornado, hail, downburst and severe_thunderstorm when primary hazard_type remains single-label.",
+    "Decide whether alert_stage is reused for official supercell alert semantics.",
+    "Keep radar/rotation evidence separate from confirmed/observed supercell semantics.",
+    "Keep thunderstorm-cell nowcast and thunder-probability contracts outside supercell event semantics."
+  ],
+  "invariants": [
+    "Inventory contains standard core only.",
+    "Future/planned providers do not count as current coverage.",
+    "Provider ID is not a scoring axis.",
+    "Profiles remain deny-only.",
+    "P3-SUPERCELL-10 does not change runtime normalization ordering.",
+    "P3-SUPERCELL-10 makes no decision that mesocyclone is sufficient supercell evidence.",
+    "Thunderstorm-cell and thunder-probability contracts remain semantically unchanged."
+  ]
+}

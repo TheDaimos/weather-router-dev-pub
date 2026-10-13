@@ -1,0 +1,82 @@
+{
+  "schema": "weather_router.p2_visibility_intent_design.v1",
+  "date": "2026-10-03",
+  "scope": "P2-VIS-30 design only; no runtime implementation",
+  "decisions": {
+    "shared_visibility_forecast_intent": {
+      "public_id": "weather.point.visibility",
+      "reuse_existing_id": true,
+      "resource_type": "value",
+      "observation_kind": "forecast",
+      "data_origin_policy": "model",
+      "semantic_quantity": "visibility_distance",
+      "canonical_unit": "m",
+      "numeric_interchangeable": true,
+      "coverage_policy": "candidate_specific_unknown_allowed",
+      "candidate_set": [
+        "open_meteo/visibility",
+        "fmi/visibility",
+        "smhi/visibility"
+      ],
+      "unit_normalization": {
+        "open_meteo/visibility": "m_to_m",
+        "fmi/visibility": "m_to_m",
+        "smhi/visibility": "km_to_m"
+      },
+      "guarantees": [
+        "numeric_point_value",
+        "forecast_semantics",
+        "visibility_distance_quantity",
+        "canonical_unit_meter",
+        "candidate_semantics"
+      ],
+      "non_guarantees": [
+        "uniform_forecast_model",
+        "uniform_spatial_resolution",
+        "uniform_temporal_resolution",
+        "machine_readable_preflight_coverage"
+      ]
+    },
+    "new_specialized_visibility_observation": {
+      "public_id": "weather.observation.visibility",
+      "candidate": "eccc_geomet/visibility",
+      "resource_type": "value",
+      "observation_kind": "observation",
+      "data_origin": "station",
+      "measurement_method": "surface_station_observation",
+      "semantic_quantity": "visibility_distance",
+      "canonical_unit": "m",
+      "coverage_policy": "candidate_specific_unknown_allowed",
+      "reason": "ECCC SWOB visibility is a station observation and must not silently participate in the forecast intent."
+    },
+    "specialized_fog_fraction_preserved": {
+      "public_id": "weather.point.fog",
+      "candidate": "met_norway/fog",
+      "preserve": true,
+      "resource_type": "value",
+      "observation_kind": "forecast",
+      "semantic_quantity": "fog_fraction",
+      "canonical_unit": "%"
+    },
+    "non_fallback_paths": [
+      "cloud_cover_low",
+      "weather.point.weather_code",
+      "weather.point.weather_summary",
+      "weather.warning.official"
+    ],
+    "scoring_policy": {
+      "provider_id_axis": false,
+      "profiles": "deny_only",
+      "coverage_unknown": "preserve_unknown"
+    }
+  },
+  "implementation_requirements": [
+    "Harden weather.point.visibility as a three-candidate model-forecast intent.",
+    "Remove eccc_geomet/visibility from weather.point.visibility and expose it additively as weather.observation.visibility.",
+    "Normalize all shared forecast visibility output to meters, including SMHI km to m.",
+    "Keep weather.point.fog unchanged and specialized as fog_fraction percentage.",
+    "Do not use low cloud cover, weather condition products, or warnings as numeric fallbacks.",
+    "Do not introduce provider-priority scoring.",
+    "Do not infer hard coverage from provider descriptions or endpoint reachability."
+  ]
+}

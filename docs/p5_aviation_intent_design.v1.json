@@ -1,0 +1,58 @@
+{
+  "schema": "weather_router.p5_aviation_intent_design.v1",
+  "date": "2026-10-07",
+  "status": "done",
+  "target_runtime": {
+    "build_version": "0.10.138",
+    "loader_revision": "0.10-loader-141",
+    "public_capability_count": 227
+  },
+  "public_contracts_preserved": [
+    "aviation.airmet.us",
+    "aviation.gairmet.us",
+    "aviation.sigmet.international"
+  ],
+  "context_contract": {
+    "global": "allowed",
+    "bbox": "allowed_event_geometry_filter",
+    "point": "fail_closed_requirements_not_met",
+    "nearby": "not_implicit"
+  },
+  "point_fail_closed": {
+    "code": "requirements_not_met",
+    "retryable": false,
+    "provider_contact": false,
+    "rationale": "Aviation provider currently ignores latitude/longitude; Point must not silently become Global."
+  },
+  "bbox_semantics": {
+    "empty_result_is_success": true,
+    "empty_result_is_outside_coverage": false,
+    "coverage_scope": "dynamic",
+    "coverage_evidence": "runtime_event_geometry",
+    "routing_authority": "context_filter",
+    "coordinate_space": "earth",
+    "endpoint_reachability_is_coverage": false
+  },
+  "runtime_changes": [
+    "Add explicit Aviation public-ID set to Consumer V1.",
+    "Reject Aviation Point context before provider contact.",
+    "Preserve Global and BBOX behavior."
+  ],
+  "invariants": [
+    "No new public aviation capability.",
+    "SIGMET is not AIRMET.",
+    "AIRMET is not G-AIRMET.",
+    "Point must not silently become Global.",
+    "BBOX is an event geometry filter, not Nearby.",
+    "Empty BBOX result is a valid successful feed.",
+    "Altitude and validity fields remain preserved.",
+    "Aviation source role remains preserved.",
+    "Provider ID is not a scoring axis."
+  ],
+  "next": "P5-AVIATION-40",
+  "severity_contract": {
+    "generic_severity_created": false,
+    "provider_default": "unknown",
+    "rationale": "No comparable cross-product aviation severity scale is invented."
+  }
+}

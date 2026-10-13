@@ -1,0 +1,159 @@
+{
+  "schema": "weather_router.p3_hail_semantics.v1",
+  "date": "2026-10-04",
+  "status": "semantics_only",
+  "scope": "P3-HAIL-20 semantics; no runtime or public-contract change",
+  "broad_semantic_class": {
+    "official_hail_alert_event": {
+      "transport": "weather.warning.official",
+      "resource_type": "hazard_feed",
+      "data_origin": "warning_authority",
+      "measurement_method": "official_weather_warning_feed",
+      "observation_kind": "warning_event",
+      "status": "defined_for_design_not_yet_runtime_field"
+    }
+  },
+  "primary_hazard_type": {
+    "id": "hail",
+    "keywords": [
+      "hail",
+      "hagel"
+    ],
+    "meaning": "current single primary hazard label",
+    "does_not_guarantee": [
+      "observed_hail",
+      "hail_size",
+      "radar_hail_signature",
+      "hail_probability",
+      "common_provider_warning_threshold"
+    ]
+  },
+  "multi_hazard_problem": {
+    "current_model": "single_label_first_match",
+    "severe_thunderstorm_precedes_hail": true,
+    "consequence": "hail evidence can exist in an event whose primary hazard_type is severe_thunderstorm",
+    "semantic_decision": "primary hazard_type must not be treated as the complete set of event hazard semantics",
+    "runtime_change_in_p3_hail_20": false
+  },
+  "hail_evidence_scope": {
+    "explicit_event": {
+      "fields": [
+        "event",
+        "headline"
+      ],
+      "meaning": "hail is explicitly named in primary provider event labeling"
+    },
+    "contextual_text": {
+      "fields": [
+        "description",
+        "instruction"
+      ],
+      "meaning": "hail is mentioned only in contextual provider text"
+    },
+    "both_support_broad_official_hail_alert": true,
+    "neither_implies_observed_hail": true
+  },
+  "alert_stage_semantics": {
+    "allowed": [
+      "warning",
+      "watch",
+      "outlook",
+      "statement",
+      "unspecified"
+    ],
+    "reuse_existing_concept": true,
+    "missing_stage": "must_not_be_invented",
+    "runtime_hail_normalization_status": "not_yet_implemented"
+  },
+  "observed_hail": {
+    "semantic_class": "observed_or_reported_hail_event",
+    "status": "not_implemented",
+    "insufficient_alone": [
+      "hazard_type_hail",
+      "severe_thunderstorm_warning",
+      "hail_warning_text",
+      "severity",
+      "cap_certainty",
+      "warning_polygon",
+      "free_text",
+      "radar_hail_signature"
+    ]
+  },
+  "hail_size": {
+    "semantic_class": "hail_size_measurement_or_forecast",
+    "status": "not_implemented",
+    "severity_is_size": false,
+    "required_future_contract": [
+      "numeric_value",
+      "canonical_length_unit_mm",
+      "observation_or_forecast_kind",
+      "time_reference",
+      "spatial_reference",
+      "source_provenance"
+    ]
+  },
+  "radar_hail": {
+    "semantic_class": "radar_hail_signature",
+    "status": "not_implemented",
+    "observed_hail_equivalent": false,
+    "official_warning_equivalent": false,
+    "radar_reflectivity_alone_is_hail": false
+  },
+  "probability": {
+    "semantic_class": "hail_probability_forecast",
+    "status": "not_implemented",
+    "thunder_probability_is_hail_probability": false,
+    "required_future_contract": [
+      "numeric_value",
+      "canonical_percent_unit",
+      "defined_time_window",
+      "defined_spatial_support",
+      "model_or_outlook_origin"
+    ]
+  },
+  "provider_semantics": {
+    "dwd": {
+      "registry_topic_hail": true,
+      "capability_explicit_hail_description": true,
+      "dedicated_hail_capability": false,
+      "rule": "real official event content must support hail; registry/topic metadata alone is not an active hail event"
+    },
+    "noaa_nws": {
+      "registry_topic_hail": true,
+      "capability_explicit_hail_description": true,
+      "dedicated_hail_capability": false,
+      "rule": "event/headline versus description/instruction evidence should remain distinguishable"
+    }
+  },
+  "compatibility": {
+    "provider_neutral_broad_alert_class": "official_hail_alert_event",
+    "dwd_nws_broad_alert_compatible_when_real_event_contains_hail_evidence": true,
+    "same_warning_thresholds_not_proven": true,
+    "same_hail_size_semantics_not_proven": true,
+    "same_observed_semantics_not_proven": true,
+    "same_radar_semantics_not_proven": true
+  },
+  "invariants": [
+    "Official hail alert is not observed hail.",
+    "Severe thunderstorm is not automatically hail.",
+    "Hail evidence must not be considered absent solely because another primary hazard label matched first.",
+    "Radar hail signature is not observed hail.",
+    "Radar reflectivity alone is not hail proof.",
+    "Hail probability is not official warning.",
+    "Severity is not hail size.",
+    "Missing hail size is not invented.",
+    "Missing alert stage is not invented.",
+    "Provider ID is not a scoring axis.",
+    "Profiles remain deny-only.",
+    "P3-WARN coverage invariants remain unchanged.",
+    "Private extensions remain outside the standard core contract."
+  ],
+  "decisions_for_p3_hail_30": [
+    "Decide whether weather.warning.official remains the broad official hail transport without a new public ID.",
+    "Decide how official_hail_alert_event is represented additively.",
+    "Decide how explicit_event and contextual_text hail evidence are represented.",
+    "Decide whether existing alert_stage is reused for hail.",
+    "Preserve hail evidence even when primary hazard_type is severe_thunderstorm.",
+    "Keep observed hail, hail size, radar hail signature and probability outside the warning contract."
+  ]
+}

@@ -1,0 +1,116 @@
+{
+  "schema": "weather_router.p5_space_intent_design.v1",
+  "date": "2026-10-07",
+  "status": "design_only",
+  "public_capability_count_before": 226,
+  "public_capability_count_after": 227,
+  "preserve_existing_space_public_capabilities": 32,
+  "new_public_intents": {
+    "space.aurora.probability.grid": {
+      "family": "aurora",
+      "phenomena": [
+        "aurora"
+      ],
+      "strategy": "single",
+      "resource_types": [
+        "data_file"
+      ],
+      "intent_contract": {
+        "resource_type": "data_file",
+        "replace_existing_candidates": false,
+        "provider_priority": false,
+        "cross_provider_dedup": false
+      },
+      "candidates": [
+        "noaa_swpc/aurora_ovation_latest"
+      ]
+    }
+  },
+  "candidate_semantics": {
+    "noaa_swpc/aurora_ovation_latest": {
+      "source": {
+        "data_origin": "space_weather_model",
+        "measurement_method": "aurora_ovation_model"
+      },
+      "observation": {
+        "observation_kind": "forecast",
+        "source_class": "forecast"
+      },
+      "physical": {
+        "numeric": false,
+        "quantity": null,
+        "field_quantity": "aurora_probability",
+        "field_unit": "%"
+      },
+      "resource": {
+        "type": "data_file",
+        "format": "json",
+        "transport": "direct",
+        "endpoint": "https://services.swpc.noaa.gov/json/ovation_aurora_latest.json"
+      },
+      "time": {
+        "request_time_mode": "latest",
+        "data_time": "optional_runtime",
+        "valid_time": "optional_runtime",
+        "forecast_reference_time": "optional_runtime",
+        "interval_start": "not_applicable",
+        "interval_end": "not_applicable",
+        "accumulation_period": "not_applicable",
+        "frame_cadence": "not_applicable",
+        "freshness_policy": "consumer_max_age_optional",
+        "source_observation_time_field": "Observation Time",
+        "source_forecast_time_field": "Forecast Time",
+        "provider_should_supply_forecast_time": true
+      },
+      "coverage": {
+        "coverage_scope": "global",
+        "coverage_evidence": "machine_readable_runtime",
+        "routing_authority": "advisory",
+        "coordinate_space": "earth",
+        "endpoint_reachability_is_coverage": false
+      },
+      "allowed_contexts": [
+        "global"
+      ]
+    }
+  },
+  "astronomy_coverage_hardening": {
+    "provider": "met_norway_astronomy",
+    "candidate_count": 24,
+    "from": {
+      "coverage_scope": "unknown",
+      "coverage_evidence": "unknown",
+      "routing_authority": "none",
+      "coordinate_space": "earth"
+    },
+    "to": {
+      "coverage_scope": "global",
+      "coverage_evidence": "static_provider_contract",
+      "routing_authority": "advisory",
+      "coordinate_space": "earth",
+      "endpoint_reachability_is_coverage": false
+    },
+    "required_context": "point",
+    "global_request_without_coordinates": false
+  },
+  "explicitly_not_added": [
+    "generic space weather severity intent",
+    "Kp public capability",
+    "geomagnetic storm public capability",
+    "local aurora visibility probability",
+    "cloud or darkness fusion",
+    "provider priority"
+  ],
+  "invariants": [
+    "Public intent names remain provider-neutral.",
+    "OVATION model output is forecast, not direct aurora observation.",
+    "Aurora probability grid is not local visibility probability.",
+    "Grid context is not Point or Nearby semantics.",
+    "Worldwide Earth-point coverage does not make astronomy a coordinate-free Global request.",
+    "Endpoint reachability is not coverage proof.",
+    "Provider ID is not a scoring axis.",
+    "Profiles remain deny-only."
+  ],
+  "implementation_phase": "P5-SPACE-40",
+  "consumer_migration_phase": "P7-020"
+}

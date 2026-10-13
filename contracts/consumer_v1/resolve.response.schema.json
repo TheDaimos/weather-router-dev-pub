@@ -1,0 +1,851 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "weather_router.consumer.resolution.v1",
+  "title": "WeatherRouter Consumer Resolution V1",
+  "type": "object",
+  "required": [
+    "schema",
+    "contract_version",
+    "status",
+    "capability"
+  ],
+  "properties": {
+    "schema": {
+      "const": "weather_router.consumer.resolution.v1"
+    },
+    "contract_version": {
+      "const": 1
+    },
+    "status": {
+      "enum": [
+        "ready",
+        "unavailable"
+      ]
+    },
+    "capability": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]*(?:\\.[a-z0-9_]+)+$"
+    },
+    "resource": {
+      "type": "object",
+      "required": [
+        "type",
+        "payload"
+      ],
+      "properties": {
+        "type": {
+          "enum": [
+            "value",
+            "raster_tile",
+            "hazard_feed",
+            "event_feed",
+            "image_sequence",
+            "live_stream",
+            "planetary_tile",
+            "data_file"
+          ]
+        },
+        "payload": {
+          "type": "object",
+          "properties": {
+            "tsunami_semantic_classes": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "enum": [
+                  "official_tsunami_warning_event",
+                  "tsunami_observation_event",
+                  "tsunami_potential_indicator_event",
+                  "disaster_awareness_tsunami_event"
+                ]
+              }
+            },
+            "tsunami_alert_stages": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "enum": [
+                  "warning",
+                  "advisory",
+                  "watch",
+                  "threat",
+                  "marine_warning",
+                  "land_inundation_warning",
+                  "information",
+                  "no_threat",
+                  "canceled"
+                ]
+              }
+            },
+            "tsunami_wave_evidence": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "enum": [
+                  "expected",
+                  "observed",
+                  "mixed",
+                  "none"
+                ]
+              }
+            },
+            "spatial_filter": {
+              "type": [
+                "object",
+                "null"
+              ],
+              "additionalProperties": true
+            }
+          }
+        },
+        "semantics": {
+          "type": "object",
+          "properties": {
+            "data_origin": {
+              "type": "string"
+            },
+            "measurement_method": {
+              "type": "string"
+            },
+            "observation_kind": {
+              "type": "string"
+            },
+            "quantity": {
+              "type": "string"
+            },
+            "unit": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "time_semantics": {
+              "type": [
+                "object",
+                "null"
+              ],
+              "properties": {
+                "request_time_mode": {
+                  "const": "latest"
+                },
+                "data_time": {
+                  "enum": [
+                    "optional_runtime",
+                    "not_applicable"
+                  ]
+                },
+                "valid_time": {
+                  "enum": [
+                    "optional_runtime",
+                    "not_applicable"
+                  ]
+                },
+                "forecast_reference_time": {
+                  "enum": [
+                    "optional_runtime",
+                    "not_applicable"
+                  ]
+                },
+                "interval_start": {
+                  "enum": [
+                    "optional_runtime",
+                    "not_applicable"
+                  ]
+                },
+                "interval_end": {
+                  "enum": [
+                    "optional_runtime",
+                    "not_applicable"
+                  ]
+                },
+                "accumulation_period": {
+                  "type": "string"
+                },
+                "frame_cadence": {
+                  "enum": [
+                    "optional_runtime",
+                    "not_applicable"
+                  ]
+                },
+                "freshness_policy": {
+                  "enum": [
+                    "consumer_max_age_optional",
+                    "not_applicable"
+                  ]
+                }
+              },
+              "additionalProperties": false
+            },
+            "coverage_semantics": {
+              "type": [
+                "object",
+                "null"
+              ],
+              "properties": {
+                "coverage_scope": {
+                  "enum": [
+                    "global",
+                    "regional",
+                    "bbox",
+                    "dynamic",
+                    "unknown"
+                  ]
+                },
+                "coverage_evidence": {
+                  "enum": [
+                    "machine_readable_runtime",
+                    "runtime_event_geometry",
+                    "static_provider_contract",
+                    "unknown"
+                  ]
+                },
+                "routing_authority": {
+                  "enum": [
+                    "hard",
+                    "context_filter",
+                    "advisory",
+                    "none"
+                  ]
+                },
+                "coordinate_space": {
+                  "enum": [
+                    "earth",
+                    "moon",
+                    "sun",
+                    "orbital"
+                  ]
+                },
+                "endpoint_reachability_is_coverage": {
+                  "const": false
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": true
+    },
+    "provenance": {
+      "type": "object",
+      "required": [
+        "mode"
+      ],
+      "properties": {
+        "mode": {
+          "enum": [
+            "single",
+            "aggregate"
+          ]
+        },
+        "provider_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "provider_name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source_class": {
+          "type": "string",
+          "minLength": 1
+        },
+        "attribution": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "source_semantics": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "coverage": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "limitations": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "sources": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": [
+              "provider_id",
+              "provider_name",
+              "source_class",
+              "attribution"
+            ],
+            "properties": {
+              "provider_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "provider_name": {
+                "type": "string",
+                "minLength": 1
+              },
+              "source_class": {
+                "type": "string",
+                "minLength": 1
+              },
+              "attribution": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "source_semantics": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "coverage": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "limitations": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "additionalProperties": true
+          }
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "mode": {
+                "const": "single"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "provider_id",
+              "provider_name",
+              "source_class",
+              "attribution"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "mode": {
+                "const": "aggregate"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "sources"
+            ]
+          }
+        }
+      ],
+      "additionalProperties": true
+    },
+    "freshness": {
+      "type": "object",
+      "properties": {
+        "data_time": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "fetched_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "age_seconds": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "stale": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        }
+      },
+      "additionalProperties": true
+    },
+    "routing": {
+      "type": "object",
+      "required": [
+        "reason_code",
+        "fallback_available",
+        "degraded"
+      ],
+      "properties": {
+        "reason_code": {
+          "enum": [
+            "only_eligible_candidate",
+            "eligible_candidate",
+            "preferred_source_class",
+            "freshest_eligible",
+            "fallback_after_failure",
+            "fallback_after_rate_limit",
+            "aggregate_eligible_sources"
+          ]
+        },
+        "fallback_available": {
+          "type": "boolean"
+        },
+        "degraded": {
+          "type": "boolean"
+        },
+        "candidate_count": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "selected_index": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "selected_count": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "profile_excluded_candidates": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        }
+      },
+      "additionalProperties": true
+    },
+    "unavailable": {
+      "type": "object",
+      "required": [
+        "code",
+        "retryable",
+        "message"
+      ],
+      "properties": {
+        "code": {
+          "enum": [
+            "router_not_ready",
+            "router_disabled",
+            "domain_disabled",
+            "capability_not_supported",
+            "no_eligible_provider",
+            "outside_coverage",
+            "temporarily_unavailable",
+            "rate_limited",
+            "credentials_required",
+            "requirements_not_met",
+            "source_stale",
+            "profile_not_available",
+            "profile_filtered"
+          ]
+        },
+        "retryable": {
+          "type": "boolean"
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": true
+    },
+    "profile": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": [
+            "id",
+            "name",
+            "revision",
+            "applied"
+          ],
+          "properties": {
+            "id": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_-]{0,63}$"
+            },
+            "name": {
+              "type": "string",
+              "minLength": 1
+            },
+            "revision": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "applied": {
+              "const": true
+            }
+          },
+          "additionalProperties": true
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "intent_contract": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": true
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "ready"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "resource",
+          "provenance",
+          "routing"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "unavailable"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "unavailable"
+        ]
+      }
+    },
+    {
+      "if": {
+        "required": [
+          "resource"
+        ],
+        "properties": {
+          "resource": {
+            "required": [
+              "type"
+            ],
+            "properties": {
+              "type": {
+                "const": "value"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "resource": {
+            "properties": {
+              "payload": {
+                "$ref": "resources/value.schema.json"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "required": [
+          "resource"
+        ],
+        "properties": {
+          "resource": {
+            "required": [
+              "type"
+            ],
+            "properties": {
+              "type": {
+                "const": "raster_tile"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "resource": {
+            "properties": {
+              "payload": {
+                "$ref": "resources/raster_tile.schema.json"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "required": [
+          "resource"
+        ],
+        "properties": {
+          "resource": {
+            "required": [
+              "type"
+            ],
+            "properties": {
+              "type": {
+                "const": "hazard_feed"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "resource": {
+            "properties": {
+              "payload": {
+                "$ref": "resources/hazard_feed.schema.json"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "required": [
+          "resource"
+        ],
+        "properties": {
+          "resource": {
+            "required": [
+              "type"
+            ],
+            "properties": {
+              "type": {
+                "const": "event_feed"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "resource": {
+            "properties": {
+              "payload": {
+                "$ref": "resources/event_feed.schema.json"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "required": [
+          "resource"
+        ],
+        "properties": {
+          "resource": {
+            "required": [
+              "type"
+            ],
+            "properties": {
+              "type": {
+                "const": "image_sequence"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "resource": {
+            "properties": {
+              "payload": {
+                "$ref": "resources/image_sequence.schema.json"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "required": [
+          "resource"
+        ],
+        "properties": {
+          "resource": {
+            "required": [
+              "type"
+            ],
+            "properties": {
+              "type": {
+                "const": "live_stream"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "resource": {
+            "properties": {
+              "payload": {
+                "$ref": "resources/live_stream.schema.json"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "required": [
+          "resource"
+        ],
+        "properties": {
+          "resource": {
+            "required": [
+              "type"
+            ],
+            "properties": {
+              "type": {
+                "const": "planetary_tile"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "resource": {
+            "properties": {
+              "payload": {
+                "$ref": "resources/planetary_tile.schema.json"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "required": [
+          "resource"
+        ],
+        "properties": {
+          "resource": {
+            "required": [
+              "type"
+            ],
+            "properties": {
+              "type": {
+                "const": "data_file"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "resource": {
+            "properties": {
+              "payload": {
+                "$ref": "resources/data_file.schema.json"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "capability": {
+            "const": "weather.precipitation.layer"
+          },
+          "status": {
+            "const": "ready"
+          }
+        },
+        "required": [
+          "capability",
+          "status"
+        ]
+      },
+      "then": {
+        "required": [
+          "intent_contract",
+          "resource",
+          "provenance"
+        ],
+        "properties": {
+          "resource": {
+            "required": [
+              "type",
+              "semantics",
+              "payload"
+            ],
+            "properties": {
+              "type": {
+                "const": "raster_tile"
+              },
+              "semantics": {
+                "required": [
+                  "data_origin",
+                  "measurement_method",
+                  "observation_kind",
+                  "quantity",
+                  "unit"
+                ]
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "additionalProperties": true
+}

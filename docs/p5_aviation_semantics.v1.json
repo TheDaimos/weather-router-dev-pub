@@ -1,0 +1,49 @@
+{
+  "schema": "weather_router.p5_aviation_semantics.v1",
+  "date": "2026-10-07",
+  "status": "semantic_only",
+  "product_classes": {
+    "international_sigmet": {
+      "source_class": "official_warning"
+    },
+    "us_airmet_sigmet": {
+      "source_class": "official_advisory"
+    },
+    "us_gairmet": {
+      "source_class": "official_advisory"
+    }
+  },
+  "shared": {
+    "data_origin": "warning_authority",
+    "measurement_method": "aviation_advisory_feed",
+    "observation_kind": "warning_event",
+    "coverage_scope": "dynamic",
+    "coverage_evidence": "runtime_event_geometry",
+    "routing_authority": "context_filter",
+    "coordinate_space": "earth",
+    "endpoint_reachability_is_coverage": false
+  },
+  "semantics": {
+    "empty_feed_is_outside_coverage": false,
+    "empty_feed_is_provider_error": false,
+    "bbox_is_nearby": false,
+    "provider_priority": false,
+    "cross_product_fallback": false,
+    "generic_severity_created": false,
+    "altitude_band_must_be_preserved": true,
+    "validity_window_must_be_preserved": true
+  },
+  "invariants": [
+    "SIGMET is not AIRMET.",
+    "AIRMET is not G-AIRMET.",
+    "Aviation warning is not a general public warning.",
+    "Hazard type does not replace aviation source role.",
+    "Altitude bands must be preserved.",
+    "Validity times must be preserved.",
+    "Empty feed is not outside coverage.",
+    "Endpoint reachability is not coverage proof.",
+    "BBOX filtering is not Nearby semantics.",
+    "Provider ID is not a scoring axis."
+  ],
+  "next": "P5-AVIATION-30"
+}

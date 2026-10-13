@@ -1,0 +1,174 @@
+{
+  "schema": "weather_router.p3_warn_semantics.v1",
+  "date": "2026-10-04",
+  "scope": "P3-WARN-20 semantics only; no intent, aggregation, runtime or scoring changes",
+  "semantic_families": {
+    "official_weather_warning_event_feed": {
+      "resource_type": "hazard_feed",
+      "data_origin": "warning_authority",
+      "measurement_method": "official_weather_warning_feed",
+      "observation_kind": "warning_event",
+      "numeric": false,
+      "quantity": null,
+      "unit": null,
+      "compatibility": "same_warning_event_family_with_context_coverage_gap"
+    }
+  },
+  "candidate_classification": [
+    {
+      "provider": "dwd",
+      "capability": "official_weather_warnings",
+      "public_capability": "weather.warning.official",
+      "semantic_class": "official_weather_warning_event_feed",
+      "resource_type": "hazard_feed",
+      "data_origin": "warning_authority",
+      "measurement_method": "official_weather_warning_feed",
+      "observation_kind": "warning_event",
+      "severity_semantics": "dwd_level_mapped_to_minor_moderate_severe_extreme_unknown",
+      "hazard_type_semantics": "normalized_text_taxonomy",
+      "event_geometry": "absent_warncell_id_only",
+      "context_filtering": "not_applied",
+      "declared_static_coverage": "dynamic_runtime_event_geometry_context_filter",
+      "runtime_proven_coverage": "not_proven",
+      "compatibility": "event_semantics_compatible_context_coverage_not_equivalent"
+    },
+    {
+      "provider": "noaa_nws",
+      "capability": "official_weather_alerts",
+      "public_capability": "weather.warning.official",
+      "semantic_class": "official_weather_warning_event_feed",
+      "resource_type": "hazard_feed",
+      "data_origin": "warning_authority",
+      "measurement_method": "official_weather_warning_feed",
+      "observation_kind": "warning_event",
+      "severity_semantics": "cap_severity_normalized_to_minor_moderate_severe_extreme_unknown",
+      "hazard_type_semantics": "normalized_text_taxonomy",
+      "event_geometry": "geojson_when_published",
+      "context_filtering": "point_parameter_and_bbox_geometry_filter",
+      "declared_static_coverage": "dynamic_runtime_event_geometry_context_filter",
+      "runtime_proven_coverage": "proven",
+      "compatibility": "event_semantics_compatible_context_coverage_supported"
+    }
+  ],
+  "event_contract": {
+    "required_semantic_core": [
+      "provider_or_authority_provenance",
+      "event_id_within_provider_scope",
+      "hazard_type",
+      "event_or_headline",
+      "severity",
+      "available_validity_time",
+      "available_area_description"
+    ],
+    "optional_fields": [
+      "urgency",
+      "certainty",
+      "message_type",
+      "sent",
+      "geometry",
+      "instruction",
+      "description",
+      "response",
+      "affected_zones",
+      "provider_parameters"
+    ],
+    "missing_optional_fields": "remain_null_or_absent_not_invented"
+  },
+  "severity_rules": {
+    "canonical_values": [
+      "minor",
+      "moderate",
+      "severe",
+      "extreme",
+      "unknown"
+    ],
+    "dwd_level_mapping": {
+      "1": "minor",
+      "2": "moderate",
+      "3": "severe",
+      "4": "extreme",
+      "other": "unknown"
+    },
+    "thresholds_equivalent_across_authorities": false,
+    "missing_precision_must_not_be_invented": true
+  },
+  "hazard_type_rules": {
+    "normalized_taxonomy_is_shared": true,
+    "taxonomy_equivalence_does_not_prove_threshold_equivalence": true,
+    "p3_relevant": [
+      "severe_thunderstorm",
+      "windstorm",
+      "heavy_rain",
+      "hail",
+      "lightning",
+      "tornado",
+      "waterspout",
+      "downburst",
+      "supercell"
+    ],
+    "public_contract_is_broader_than_p3_warn": true
+  },
+  "aggregation_rules": {
+    "current_public_strategy": "aggregate",
+    "preserve_per_event_provenance": true,
+    "provider_priority_allowed": false,
+    "strongest_warning_wins_allowed": false,
+    "cross_provider_deduplication": "not_proven_not_allowed_without_identity_rule"
+  },
+  "coverage_rules": {
+    "noaa_nws": {
+      "scope": "dynamic",
+      "evidence": "runtime_event_geometry",
+      "routing_authority": "context_filter",
+      "status": "runtime_proven"
+    },
+    "dwd": {
+      "current_static_declaration": {
+        "scope": "dynamic",
+        "evidence": "runtime_event_geometry",
+        "routing_authority": "context_filter"
+      },
+      "runtime_evidence": {
+        "geometry": "null",
+        "geometry_status": "warncell_id_only",
+        "point_bbox_filtering": false
+      },
+      "semantic_status": "context_coverage_not_proven",
+      "rule": "must_not_claim_runtime_event_geometry_until_machine_readable_warncell_or_cap_geometry_exists"
+    },
+    "endpoint_reachability_is_coverage": false
+  },
+  "empty_feed_rules": {
+    "successful_empty_feed_is_valid_no_active_warning_state": true,
+    "empty_feed_is_not_automatically_temporarily_unavailable": true
+  },
+  "time_rules": {
+    "request_time_mode": "latest",
+    "event_validity_fields_are_runtime_optional": true,
+    "missing_time_fields_must_not_be_invented": true,
+    "request_time_does_not_replace_event_validity": true
+  },
+  "rules": {
+    "warning_is_not_probability": true,
+    "warning_is_not_thunderstorm_cell": true,
+    "warning_is_not_lightning_observation": true,
+    "hazard_feed_is_not_numeric_measurement": true,
+    "missing_cap_fields_are_not_invented": true,
+    "unproven_coverage_is_not_hard_coverage": true,
+    "endpoint_reachability_is_not_coverage": true,
+    "warncell_id_without_machine_mapping_is_not_runtime_event_geometry": true,
+    "successful_empty_feed_is_valid": true,
+    "cross_provider_dedup_requires_identity_rule": true,
+    "provider_id_is_not_scoring_axis": true,
+    "profiles_are_deny_only": true,
+    "private_extensions_outside_standard_core_contract": true
+  },
+  "decisions_for_p3_warn_30": [
+    "Decide whether weather.warning.official remains broad aggregate or gains an additive narrower thunder/storm warning intent.",
+    "Decide how DWD participates in context-specific routing while event geometry is WarnCellID-only.",
+    "Define guaranteed versus optional normalized event fields.",
+    "Define whether any deduplication is allowed and require a stable identity rule if so.",
+    "Express hazard filtering without provider-specific consumer logic.",
+    "Do not introduce provider priority or strongest-warning-wins scoring."
+  ]
+}
