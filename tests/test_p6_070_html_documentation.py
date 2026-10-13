@@ -27,7 +27,7 @@ class P6070HtmlDocumentation(unittest.TestCase):
         self.assertEqual(public, 227)
         self.assertIn(f"{providers} Core-Provider", self.page)
         self.assertIn(f"{public} Public-Capabilities", self.page)
-        self.assertIn("WR 0.10.146 DEV", self.page)
+        self.assertIn("WR 0.10.147 DEV", self.page)
         self.assertIn("Loader 149", self.page)
         self.assertNotIn("WR 0.10.77 DEV", self.page)
         self.assertIn("P6-070", self.page)
