@@ -6,7 +6,7 @@ import ast
 from pathlib import Path
 import types
 import unittest
-from typing import Any
+from typing import Any, Mapping
 
 ROOT = Path(__file__).resolve().parents[1]
 API = ROOT / "custom_components/weather_router/consumer_api.py"
@@ -16,7 +16,7 @@ def load_function(path, name):
     source = ast.parse(path.read_text(encoding="utf-8"))
     fn = next(x for x in source.body if isinstance(x, ast.FunctionDef) and x.name == name)
     module = ast.fix_missing_locations(ast.Module(body=[fn], type_ignores=[]))
-    namespace = {"Any": Any}
+    namespace = {"Any": Any, "Mapping": Mapping}
     exec(compile(module, str(path), "exec"), namespace)
     return namespace[name]
 
