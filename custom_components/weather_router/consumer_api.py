@@ -1402,7 +1402,6 @@ def _capability_catalog_row(
         for item in candidates
         if _candidate_enabled(state, item.provider, public_id)[0]
         and profile_allows_provider(profile, item.provider.id)
-        and profile_allows_candidate(profile, item.semantics)[0]
     ]
     resolvable = [item for item in eligible if _resource_implemented(item)]
 
