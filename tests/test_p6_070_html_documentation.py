@@ -1,0 +1,51 @@
+"""P6-070: public HTML help must match current shipped Consumer core contract."""
+from __future__ import annotations
+
+import json
+from pathlib import Path
+import re
+import unittest
+
+ROOT = Path(__file__).resolve().parents[1]
+HTML = ROOT / "custom_components/weather_router/frontend/weather-router-help.html"
+MAP = ROOT / "custom_components/weather_router/consumer_capability_map.json"
+REGISTRY = ROOT / "custom_components/weather_router/providers/registry.json"
+
+
+class P6070HtmlDocumentation(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.page = HTML.read_text(encoding="utf-8")
+        cls.mapping = json.loads(MAP.read_text(encoding="utf-8"))
+        cls.registry = json.loads(REGISTRY.read_text(encoding="utf-8"))
+
+    def test_core_numbers_and_current_build_are_consistent(self):
+        providers = len(self.mapping["providers"])
+        public = len(self.mapping["public_capabilities"])
+        self.assertEqual(providers, len(self.registry["providers"]))
+        self.assertEqual(providers, 38)
+        self.assertEqual(public, 227)
+        self.assertIn(f"{providers} Core-Provider", self.page)
+        self.assertIn(f"{public} Public-Capabilities", self.page)
+        self.assertIn("WR 0.10.146 DEV", self.page)
+        self.assertIn("Loader 149", self.page)
+        self.assertNotIn("WR 0.10.77 DEV", self.page)
+        self.assertIn("P6-070", self.page)
+        self.assertIn("P6-080", self.page)
+
+    def test_provider_table_and_html_structure(self):
+        area = self.page.split('id="provider"', 1)[1].split("</tbody>", 1)[0]
+        self.assertEqual(len(re.findall(r"<tr><td>", area)), len(self.registry["providers"]))
+        for tag in ("article", "section", "main"):
+            self.assertEqual(
+                len(re.findall(rf"<{tag}(?:\s|>)", self.page)),
+                len(re.findall(rf"</{tag}>", self.page)),
+            )
+
+    def test_do_not_publish_private_hardware_or_user_locations(self):
+        for forbidden in ("Kaltenkirchen", "Ismaning", "Berne", "api_key=", "access_token="):
+            self.assertNotIn(forbidden, self.page)
+
+
+if __name__ == "__main__":
+    unittest.main()
