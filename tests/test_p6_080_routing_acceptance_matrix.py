@@ -59,11 +59,12 @@ class P6080AcceptanceMatrix(unittest.TestCase):
         gates = {g["id"]: g["status"] for g in self.record["open_gates"]}
         self.assertEqual(gates.get("P6-080-HA-1"), "PASS")
         self.assertEqual(gates.get("P6-080-RELEASE"), "PASS")
-        self.assertEqual(gates.get("P6-080-CATALOG-VISUAL"), "OPEN")
+        self.assertEqual(gates.get("P6-080-CATALOG-VISUAL"), "PASS")
         self.assertEqual(gates.get("P6-080-WINNER-TRACE"), "OPEN")
         self.assertEqual(gates.get("P6-080-GESAMT"), "OPEN")
         self.assertIn("0.10.147", self.record["test_evidence"]["ha_runtime_proof"])
         self.assertIn("NOT installed", self.record["test_evidence"]["ha_runtime_proof"])
+        self.assertIn("66 ms", next(g["evidence"] for g in self.record["open_gates"] if g["id"] == "P6-080-CATALOG-VISUAL"))
         self.assertIn("remote provider", " ".join(self.record["limitations"]))
         self.assertIn("not live network", self.record["evidence_levels"]["static_catalog"])
         self.assertIn("Do not repeat", self.record["next_runtime_batch"]["already_passed"])
