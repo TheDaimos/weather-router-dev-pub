@@ -1,0 +1,123 @@
+{
+  "schema": "weather_router.p6_080.routing_acceptance_matrix.v1",
+  "date": "2026-10-13",
+  "phase": "P6-080",
+  "phase_status": "ACTIVE",
+  "core": {
+    "providers": 38,
+    "internal": 280,
+    "public": 227,
+    "edges": 286,
+    "multi_candidate_public": 23,
+    "single_candidate_public": 204
+  },
+  "domains": [
+    {
+      "id": "aviation",
+      "public_ids": 3,
+      "representative_ids": [
+        "aviation.sigmet.international"
+      ],
+      "historical_phase": "P5-AVIATION-60",
+      "evidence": "Prior subject-specific HA tests recorded as DONE in private routing plan; not re-executed during P6-080"
+    },
+    {
+      "id": "biological_hazards",
+      "public_ids": 88,
+      "representative_ids": [
+        "biological_hazards.occurrence.lion.density"
+      ],
+      "historical_phase": "P5-BIO-60",
+      "evidence": "Prior subject-specific HA tests recorded as DONE in private routing plan; not re-executed during P6-080"
+    },
+    {
+      "id": "civil_protection",
+      "public_ids": 1,
+      "representative_ids": [
+        "civil_protection.warning.official"
+      ],
+      "historical_phase": "P5-CIVIL-60",
+      "evidence": "Prior subject-specific HA tests recorded as DONE in private routing plan; not re-executed during P6-080"
+    },
+    {
+      "id": "natural_hazards",
+      "public_ids": 20,
+      "representative_ids": [
+        "natural_hazards.tsunami.warnings",
+        "natural_hazards.earthquake.events"
+      ],
+      "historical_phase": "P4",
+      "evidence": "Prior subject-specific HA tests recorded as DONE in private routing plan; not re-executed during P6-080"
+    },
+    {
+      "id": "pollen",
+      "public_ids": 6,
+      "representative_ids": [
+        "pollen.birch"
+      ],
+      "historical_phase": "P5-POLLEN-60",
+      "evidence": "Prior subject-specific HA tests recorded as DONE in private routing plan; not re-executed during P6-080"
+    },
+    {
+      "id": "security",
+      "public_ids": 1,
+      "representative_ids": [
+        "security.public_warning.official"
+      ],
+      "historical_phase": "P5-SECURITY-60",
+      "evidence": "Prior subject-specific HA tests recorded as DONE in private routing plan; not re-executed during P6-080"
+    },
+    {
+      "id": "space",
+      "public_ids": 33,
+      "representative_ids": [
+        "space.iss.live"
+      ],
+      "historical_phase": "P5-SPACE-60",
+      "evidence": "Prior subject-specific HA tests recorded as DONE in private routing plan; not re-executed during P6-080"
+    },
+    {
+      "id": "weather",
+      "public_ids": 75,
+      "representative_ids": [
+        "weather.precipitation.layer",
+        "weather.point.temperature"
+      ],
+      "historical_phase": "P0 / P3",
+      "evidence": "Prior subject-specific HA tests recorded as DONE in private routing plan; not re-executed during P6-080"
+    }
+  ],
+  "test_evidence": {
+    "prior": [
+      "P6-030 orphan graph",
+      "P6-040 deny-only profile policy",
+      "P6-050 trace instrumentation",
+      "P6-060 resource guard and six successful real catalog refreshes",
+      "P6-070 documentation synchronization"
+    ],
+    "new": [
+      "P6-080 effective availability candidate class restriction CI #62 completed/success",
+      "P6-080 visible catalog feedback CI #64 completed/success"
+    ],
+    "ha_runtime_proof": "NEW P6-080 changes NOT installed; final live comparison pending",
+    "privacy": "No raw logs, user locations or credentials in this document"
+  },
+  "open_gates": [
+    {
+      "id": "P6-080-HA-1",
+      "requirement": "Install a consistent release with backend catalog eligibility and visible catalog feedback; validate restrained model profile and global router deny without provider I/O",
+      "status": "OPEN"
+    },
+    {
+      "id": "P6-080-RELEASE",
+      "requirement": "Versioned loader and build identifiers must match; deploy source must be audited before DRA",
+      "status": "BLOCKED"
+    }
+  ],
+  "limitations": [
+    "Catalog availability is an eligibility statement, not proof of successful remote provider retrieval",
+    "Previous HA proofs were under their historical builds",
+    "No quantitative per-request resource measurements from earlier P6-060 logs",
+    "Browser unhandled_rejection cause remains unknown"
+  ]
+}
