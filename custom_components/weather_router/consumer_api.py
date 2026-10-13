@@ -971,6 +971,8 @@ def _candidates(
     providers: dict[str, Any],
     mapping: dict[str, Any],
     public_id: str,
+    *,
+    capability_maps: dict[str, dict[str, Any]] | None = None,
 ) -> list[Candidate]:
     """Return deterministic provider/capability candidates in registry order."""
     result: list[Candidate] = []
@@ -979,7 +981,11 @@ def _candidates(
         provider_map = mapped.get(provider.id)
         if not isinstance(provider_map, dict):
             continue
-        capability_map = _provider_capability_map(provider)
+        capability_map = (
+            capability_maps[provider.id]
+            if capability_maps is not None
+            else _provider_capability_map(provider)
+        )
         for internal_id, public_ids in provider_map.items():
             if public_id not in public_ids:
                 continue
@@ -3383,12 +3389,20 @@ async def websocket_consumer_capabilities(
         for public_id in _public_ids(mapping)
         if profile_allows_capability(profile, mapping, public_id)[0]
     ]
+    # One inventory per catalog request, not once per public capability.
+    # No persistent cache: changing provider/extension registries remain visible.
+    capability_maps = {
+        provider.id: _provider_capability_map(provider)
+        for provider in providers.values()
+    }
     all_rows = [
         _capability_catalog_row(
             state,
             mapping,
             hazard_catalog,
-            _candidates(providers, mapping, public_id),
+            _candidates(
+                providers, mapping, public_id, capability_maps=capability_maps,
+            ),
             public_id,
             profile,
         )
