@@ -823,6 +823,17 @@ class RoutingTraceBuilder:
             if item.get("attempted") and item.get("result") != "selected"
         )
 
+    def winner_reason(self, *, eligible_count: int, rate_limited: bool = False) -> str:
+        """Explain selection from actual failed attempts rather than candidate index."""
+        failures = self.recorded_fallback_count()
+        if failures and rate_limited:
+            return "fallback_after_rate_limit"
+        if failures:
+            return "fallback_after_failure"
+        if eligible_count == 1:
+            return "only_eligible_candidate"
+        return "eligible_candidate"
+
     def set_decision(
         self,
         *,
