@@ -1,0 +1,26 @@
+{
+  "schema": "weather_router.p6_030_phase_gate.v1",
+  "date": "2026-10-13",
+  "from": {
+    "P6-030": "ACTIVE",
+    "P6-040": "OPEN"
+  },
+  "proposed_to": {
+    "P6-030": "DONE",
+    "P6-040": "ACTIVE"
+  },
+  "later": {
+    "P6-050": "OPEN",
+    "P6-060": "OPEN",
+    "P6-070": "OPEN",
+    "P6-080": "OPEN",
+    "P7": "OPEN"
+  },
+  "private_plan_update": "PENDING_SEPARATE_VERIFICATION",
+  "existing_evidence_runs": [
+    3598,
+    3599,
+    3600
+  ],
+  "scope": "Public-safe CI evidence for P6-030; not a declaration of private plan completion"
+}

@@ -43,11 +43,11 @@
         <p class="claim">Daten, Gefahren und Wetter nach Fähigkeit statt nach einem einzigen Anbieter.</p>
         <p class="lead">WeatherRouter ist eine optionale Home-Assistant-Integration mit fähigkeitsbasiertem Routing. Punktdaten, Kartenebenen, Warnungen, Gefahrenfeeds, Satellitenmedien und Weltraumdaten können aus unterschiedlichen Quellen kommen, ohne Consumer an einzelne Provider zu koppeln.</p>
         <div class="badges">
-          <span class="badge">WR 0.10.77 DEV</span><span class="badge">Loader 80</span><span class="badge">API-Vertrag 1</span>
-          <span class="badge">38 Kern-Provider</span><span class="badge">8 Fachbereiche</span><span class="badge">221 Kern-Capabilities</span>
+          <span class="badge">WR 0.10.148 DEV</span><span class="badge">Loader 151</span><span class="badge">API-Vertrag 1</span>
+          <span class="badge">38 Kern-Provider</span><span class="badge">8 Fachbereiche</span><span class="badge">227 Public-Capabilities</span>
           <span class="badge good">DRA deploy/dev</span>
         </div>
-        <div class="notice"><strong>Development-Stand.</strong> WR 0.10.77 trennt lokale/private Provider-Erweiterungen vollständig vom Standardpaket. Der Kern enthält 38 Provider und 221 öffentliche Capabilities; die mit DRA installierte private Erweiterung ergänzt einen lokalen Provider, ohne neue Public-Capability-IDs einzuführen. Die offiziellen Lightning-Quellen FMI, EUMETSAT MTG-LI, NOAA GOES-GLM und ECCC bleiben opt-in. Nach Python- oder Extension-Updates ist ein Home-Assistant-Neustart erforderlich.</div>
+        <div class="notice"><strong>Development-Stand 13.10.2026.</strong> Der Standard-Core umfasst 38 Provider, 280 interne Fähigkeiten und 227 öffentliche Consumer-Capabilities. Die P6-060-Katalogprüfung unter WR 0.10.146 / Loader 149 verlief dreimal erfolgreich; P6-070 (Dokumentationsabgleich) ist aktiv, die Gesamt-Routingabnahme P6-080 steht noch aus. Lokale Erweiterungen bleiben getrennt vom Standard-Core. Nach Python- oder Erweiterungsaktualisierungen kann ein Home-Assistant-Neustart erforderlich sein.</div>
       </div>
     </div>
   </section>
@@ -93,7 +93,7 @@
     </article>
 
     <article class="card full" id="provider">
-      <h2>🛰️ Providerkatalog · 39 registriert</h2>
+      <h2>🛰️ Providerkatalog · 38 Core-Provider</h2>
       <div class="table-wrap"><table>
         <thead><tr><th>Provider</th><th>Fachbereich</th><th>Standard</th><th>Schwerpunkt</th></tr></thead>
         <tbody>
@@ -258,8 +258,8 @@ RainViewer        api.rainviewer.com:443 + dynamische Tile-Hosts</pre>
 
     <article class="card">
       <h2>🧾 Noch offen</h2>
-      <p>WR 0.10.71 benötigt die reale HA-Abnahme des neuen biologischen Fachbereichs, des GBIF-Providers und der 88 Vorkommensdichte-Layer. Die 0.10.70-Pollen-/Astronomie-/GloFAS-/UV-/Hydrologiepfade bleiben Teil der Regression.</p>
-      <p>GitHub Actions „Validate M2 structure“ ist derzeit kein belastbarer Code-Test, weil der Job vor seinen eigentlichen Steps scheitert.</p>
+      <p><strong>Routing-Status:</strong> P6-030 Orphan-Graph, P6-040 Profile, P6-050 Diagnose und P6-060 Ressourcenprüfung sind abgeschlossen. Die Dokumentation wird in P6-070 abgeglichen; P6-080 Gesamt-Routingabnahme und P7 Consumer-Migrationen sind noch nicht freigegeben.</p>
+      <p><strong>Offene Bedienungsverbesserung:</strong> Die Taste „Discovery/Katalog“ benötigt deutlich erkennbares Lade- und Erfolgsfeedback. Zwei unspezifische Browserfehler aus einer HA-Realabnahme sind nicht ausreichend diagnostizierbar; deren Ursache ist nicht geklärt. Keine ungemessenen Leistungswerte behaupten.</p>
     </article>
 
     <article class="card full">
@@ -268,7 +268,7 @@ RainViewer        api.rainviewer.com:443 + dynamische Tile-Hosts</pre>
     </article>
   </section>
 
-  <p class="footer">WeatherRouter · WR 0.10.77 DEV · Dokumentationsstand 28.09.2026</p>
+  <p class="footer">WeatherRouter · WR 0.10.148 DEV · Dokumentationsstand 13.10.2026</p>
 </main>
 </body>
 </html>
