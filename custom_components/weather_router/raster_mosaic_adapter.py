@@ -86,7 +86,15 @@ def make_mosaic_candidate(
         return None
     required = ("quantity", "unit", "measurement_method", "observation_kind")
     if any(not isinstance(semantics.get(k), str) or not semantics[k].strip()
-           for k in required):
+           for k in ("quantity", "measurement_method", "observation_kind")):
+        return None
+    # V1 permits an unknown numeric unit (e.g. reflectivity palettes).
+    # Keep it explicitly null rather than fabricating a measurement scale.
+    if "unit" not in semantics or (
+        semantics["unit"] is not None
+        and (not isinstance(semantics["unit"], str)
+             or not semantics["unit"].strip())
+    ):
         return None
     candidate = {
         "source_id": source_id,
