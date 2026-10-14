@@ -53,18 +53,20 @@ class P6080AcceptanceMatrix(unittest.TestCase):
                 self.assertIn(public, actual_public)
                 self.assertTrue(public.startswith(domain["id"] + "."))
 
-    def test_real_evidence_gates_and_no_premature_overall_claim(self):
-        self.assertEqual(self.record["phase_status"], "ACTIVE")
-        self.assertEqual(self.record["p7_status"], "OPEN - locked until formal P6-080 DONE")
+    def test_verified_final_evidence_gates_and_p7_release(self):
+        self.assertEqual(self.record["phase_status"], "DONE")
+        self.assertEqual(self.record["p7_status"], "P7-010 ACTIVE")
         gates = {g["id"]: g["status"] for g in self.record["open_gates"]}
         self.assertEqual(gates.get("P6-080-HA-1"), "PASS")
         self.assertEqual(gates.get("P6-080-RELEASE"), "PASS")
         self.assertEqual(gates.get("P6-080-CATALOG-VISUAL"), "PASS")
         self.assertEqual(gates.get("P6-080-WINNER-TRACE"), "PASS")
-        self.assertEqual(gates.get("P6-080-GESAMT"), "OPEN")
+        self.assertEqual(gates.get("P6-080-GESAMT"), "PASS")
         self.assertIn("0.10.148", self.record["test_evidence"]["ha_runtime_proof"])
         self.assertIn("P6-080/3 winner diagnostic REAL PASS", self.record["test_evidence"]["ha_runtime_proof"])
-        self.assertEqual(self.record["formal_acceptance"]["stage"], "PENDING_FINAL_CI")
+        self.assertEqual(self.record["formal_acceptance"]["stage"], "FORMAL_ACCEPTED")
+        self.assertEqual(self.record["formal_acceptance"]["next_step"], "P7-010 ACTIVE")
+        self.assertEqual(set(gates.values()), {"PASS"})
         self.assertIn("66 ms", next(g["evidence"] for g in self.record["open_gates"] if g["id"] == "P6-080-CATALOG-VISUAL"))
         self.assertIn("remote provider", " ".join(self.record["limitations"]))
         self.assertIn("not live network", self.record["evidence_levels"]["static_catalog"])
