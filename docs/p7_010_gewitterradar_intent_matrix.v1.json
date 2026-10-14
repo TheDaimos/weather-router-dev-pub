@@ -631,8 +631,8 @@
     },
     {
       "id": "P7-010-STATIC",
-      "status": "OPEN",
-      "evidence": "Automatisierte Quervertragsprüfung erst nach erfolgreicher CI"
+      "status": "PASS",
+      "evidence": "WeatherRouter public CI #104 and #105 SUCCESS; Gewitterradar (isolated V4.11.74 baseline) frontend browser CI #5719 SUCCESS and integration runtime CI #5741 SUCCESS at commit 920cd3d591891c5e81201264d3ae7382851a6848; no runtime migration yet."
     },
     {
       "id": "P7-010-CONSUMER-ADAPTER",
@@ -651,5 +651,19 @@
     "No cross-resource fallbacks between event_feed, hazard_feed, raster_tile, value, data_file.",
     "No capability number is inferred from this catalog; numbers must be obtained from the actual ordered UI catalog for manual tests.",
     "The Gewitterradar development branch was behind its deploy/dev baseline; do not deploy code from that older branch."
-  ]
+  ],
+  "static_acceptance": {
+    "status": "PASS",
+    "verified_at": "2026-10-14",
+    "weather_router_ci_runs": [
+      38555417173,
+      38555421128
+    ],
+    "gewitterradar_ci_runs": [
+      38556082070,
+      38556082093
+    ],
+    "gewitterradar_audit_commit": "920cd3d591891c5e81201264d3ae7382851a6848",
+    "deployment_note": "Gewitterradar deploy/dev advanced to V4.11.75 in parallel; 4.11.74 audit remains historical exact snapshot; next implementation must build on fresh V4.11.75, not deploy stale version."
+  }
 }
