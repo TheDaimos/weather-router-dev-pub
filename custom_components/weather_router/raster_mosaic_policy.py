@@ -118,6 +118,44 @@ def _semantics(candidate: Mapping[str, Any]) -> dict[str, str] | None:
     return {k: info[k] for k in keys}
 
 
+def _usable_frames(candidate: Mapping[str, Any], now_dt: datetime,
+                   max_age_seconds: int) -> list[dict[str, Any]]:
+    """Fresh, time-labelled tile frames only; never infer time from retrieval."""
+    raw = candidate.get("frames")
+    if raw is None:
+        raw = [{"data_time": candidate.get("data_time"),
+                "tile_url": candidate.get("tile_url")}]
+    if not isinstance(raw, list) or len(raw) > 24:
+        return []
+    accepted: dict[datetime, dict[str, Any]] = {}
+    for frame in raw:
+        if not isinstance(frame, Mapping):
+            continue
+        timestamp = _time(frame.get("data_time"))
+        tile_url = frame.get("tile_url")
+        if (timestamp is None or not isinstance(tile_url, str)
+                or not tile_url.startswith("https://")):
+            continue
+        age = (now_dt - timestamp).total_seconds()
+        if 0 <= age <= max_age_seconds:
+            accepted[timestamp] = {"time": timestamp, "tile_url": tile_url}
+    return sorted(accepted.values(), key=lambda f: f["time"], reverse=True)
+
+
+def _align_frame(item: dict[str, Any], anchor: datetime,
+                 tolerance_seconds: int) -> None:
+    """Choose nearest fresh frame if coherent; otherwise keep newest."""
+    frames = item["frames"]
+    coherent = [f for f in frames
+                if abs((f["time"] - anchor).total_seconds()) <= tolerance_seconds]
+    frame = (min(coherent, key=lambda f:
+                 (abs((f["time"] - anchor).total_seconds()),
+                  -f["time"].timestamp()))
+             if coherent else frames[0])
+    item["time"] = frame["time"]
+    item["tile_url"] = frame["tile_url"]
+
+
 def plan_raster_mosaic(
     candidates: list[Mapping[str, Any]], *,
     viewport: Mapping[str, float],
@@ -169,22 +207,17 @@ def plan_raster_mosaic(
         if not reason and (candidate.get("resource_type") != "raster_tile"
                            or sem is None or not isinstance(candidate.get("legend"), Mapping)
                            or not isinstance(candidate.get("attribution"), str)
-                           or not candidate["attribution"].strip()
-                           or not isinstance(candidate.get("tile_url"), str)
-                           or not candidate["tile_url"].startswith("https://")):
+                           or not candidate["attribution"].strip()):
             reason = "missing_or_incompatible_raster_metadata"
         if not reason and not isinstance(coverage, Mapping):
             reason = "invalid_coverage"
         fraction = viewport_overlap(box, coverage) if not reason else 0.0
         if not reason and fraction <= 0.0:
             reason = "outside_coverage"
-        timestamp = _time(candidate.get("data_time"))
-        if not reason and timestamp is None:
-            reason = "unknown_data_time"
-        if not reason:
-            age = (now_dt - timestamp).total_seconds()
-            if age < 0 or age > max_data_age_seconds:
-                reason = "outside_freshness_window"
+        frames = _usable_frames(candidate, now_dt, max_data_age_seconds)
+        if not reason and not frames:
+            reason = "no_fresh_verified_frame"
+        timestamp = frames[0]["time"] if frames else None
         if reason:
             rejected.append({"source_id": source_id, "reason": reason})
             continue
@@ -195,6 +228,7 @@ def plan_raster_mosaic(
                  else (999, 999, 999))
         allowed.append({
             "candidate": candidate, "semantics": sem, "time": timestamp,
+            "tile_url": frames[0]["tile_url"], "frames": frames,
             "fraction": fraction, "focus": _point_inside(focus, coverage),
             "score": score,
         })
@@ -208,7 +242,10 @@ def plan_raster_mosaic(
     if allowed:
         foundation = allowed[0]
         anchor = target_dt or foundation["time"]
+        _align_frame(foundation, anchor, max_time_delta_seconds)
         others = allowed[1:]
+        for other in others:
+            _align_frame(other, anchor, max_time_delta_seconds)
         others.sort(
             key=lambda a: (
                 not a["focus"],
@@ -227,7 +264,7 @@ def plan_raster_mosaic(
         rejected.append({"source_id": item["candidate"]["source_id"],
                          "reason": "layer_budget"})
     reference = target_dt if target_dt is not None else (
-        max((item["time"] for item in selected), default=None))
+        selected[0]["time"] if selected else None)
     layers: list[dict[str, Any]] = []
     for index, item in enumerate(selected):
         candidate = item["candidate"]
@@ -240,7 +277,7 @@ def plan_raster_mosaic(
             "source_id": candidate["source_id"],
             "resource_type": "raster_tile",
             "coverage": area,
-            "tile_url": candidate["tile_url"],
+            "tile_url": item["tile_url"],
             "semantics": item["semantics"],
             "times": {
                 "valid_at": _iso(timestamp),
