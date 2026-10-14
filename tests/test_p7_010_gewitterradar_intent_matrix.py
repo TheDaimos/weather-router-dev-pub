@@ -131,6 +131,9 @@ class P7010GewitterradarIntentMatrix(unittest.TestCase):
         self.assertEqual(self.matrix["static_acceptance"]["status"], "PASS")
         self.assertEqual(len(self.matrix["static_acceptance"]["weather_router_ci_runs"]), 2)
         self.assertEqual(len(self.matrix["static_acceptance"]["gewitterradar_ci_runs"]), 2)
+        self.assertEqual(gates["P7-010-VIEWPORT-COVERAGE"], "OPEN")
+        self.assertFalse(self.matrix["viewport_coverage"]["fix_deployed"])
+        self.assertEqual(self.matrix["viewport_coverage"]["status"], "DESIGN_AND_REGRESSION_ONLY")
         self.assertEqual(gates["P7-010-CONSUMER-ADAPTER"], "OPEN")
         self.assertEqual(gates["P7-010-HA"], "OPEN")
 
