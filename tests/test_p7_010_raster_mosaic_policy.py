@@ -65,6 +65,8 @@ class MosaicPlanningTests(unittest.TestCase):
         self.assertEqual([v["source_id"] for v in result["layers"]],
                          ["WorldWide", "GermanRegional"])
         self.assertEqual(result["layers"][1]["coverage"]["west"], 5)
+        self.assertEqual(result["layers"][1]["coverage_scope"], "bbox")
+        self.assertIs(result["layers"][1]["coverage_verified"], True)
 
     def test_local_focus_wins_overlay_limit_not_country_name(self):
         regional = source("local_focus", CARIBBEAN)
