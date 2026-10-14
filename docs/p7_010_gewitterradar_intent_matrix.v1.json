@@ -1,0 +1,655 @@
+{
+  "schema": "weather_router.p7_010.gewitterradar_intent_matrix.v1",
+  "date": "2026-10-14",
+  "phase": "P7-010",
+  "phase_status": "ACTIVE",
+  "migration_approved": false,
+  "weather_router": {
+    "repository": "TheDaimos/weather-router-dev",
+    "branch": "feature/global-hazard-feeds",
+    "consumer_api_contract": 1,
+    "source_capability_map_sha": "1c38373d382609e5a32aa5386bf4c05ab54369c3",
+    "public_capabilities": 227
+  },
+  "consumer": {
+    "repository": "TheDaimos/gewitterradar",
+    "baseline_branch": "deploy/dev",
+    "baseline_commit": "2a3e4136e983b4ab701616e0508784b14bb40bcf",
+    "version": "4.11.74 DEV",
+    "module_manifest_sha": "effbfec3ef5bcbe92c87a1d401b1fb4b1e576576",
+    "module_count": 33,
+    "module_groups": {
+      "Kern": 7,
+      "Vollbild": 1,
+      "Oberfläche": 6,
+      "Instrumente": 5,
+      "Diagnose": 3,
+      "Datenquellen & Verbindungen": 2,
+      "Standort & Radien": 1,
+      "Karte": 2,
+      "Weather-Engine": 5,
+      "Verlauf": 1
+    },
+    "weather_module_count": 5,
+    "current_explicit_capabilities": [
+      "weather.precipitation.layer",
+      "weather.lightning.observed.events",
+      "weather.lightning.observed.density",
+      "weather.warning.official"
+    ],
+    "actual_resolve_implemented": [
+      "weather.precipitation.layer"
+    ],
+    "frontend_renderer_capabilities": [
+      "weather.precipitation.layer"
+    ]
+  },
+  "policy": {
+    "consumer_provider_selection": false,
+    "consumer_scoring": false,
+    "consumer_auto_coverage_decision": false,
+    "profile_optional": true,
+    "profile_can_only_restrict": true,
+    "router_optional": true,
+    "default_time_mode": "latest",
+    "resource_type_must_match": true,
+    "attribution_required": true,
+    "context_from_user_or_viewport": true,
+    "no_new_public_id_just_for_consumer": true,
+    "local_data_independent": true
+  },
+  "statuses": {
+    "implemented": "Bereits aktiv an Consumer-API und Renderer angeschlossen",
+    "prepared_only": "Capability im Consumer-Code vorbereitet; keine aktive Produktmigration belegt",
+    "migration_pending": "Öffentlicher Vertrag vorhanden; Consumeranbindung/Rendering noch nicht abgenommen",
+    "expert_only": "Nur ausdrücklich auswählbare spezialisierte Funktion nach separater Eignungsprüfung",
+    "deferred_adapter": "Ressourcentyp wird vom bisherigen Anzeigepfad nicht unmittelbar gerendert"
+  },
+  "intents": [
+    {
+      "id": "precipitation_map",
+      "label": "Niederschlag als Kartenebene",
+      "capability": "weather.precipitation.layer",
+      "resource": "raster_tile",
+      "context": "bbox",
+      "status": "implemented",
+      "category": "map",
+      "reason": "Bereits an Consumer V1 angebunden; Radar-/Satelliten-/Modellsemantik und Legende bleiben als Herkunft sichtbar"
+    },
+    {
+      "id": "official_thunder_warnings",
+      "label": "Amtliche Gewitterwarnungen",
+      "capability": "weather.warning.official",
+      "resource": "hazard_feed",
+      "context": "bbox",
+      "status": "prepared_only",
+      "category": "hazards",
+      "reason": "Getrennter amtlicher Warnungsfeed, nie aus Blitzdichte oder Wahrscheinlichkeit ableiten",
+      "event_filter": {
+        "hazard_types": [
+          "severe_thunderstorm",
+          "lightning"
+        ]
+      }
+    },
+    {
+      "id": "official_hail_warnings",
+      "label": "Amtliche Hagelwarnungen",
+      "capability": "weather.warning.official",
+      "resource": "hazard_feed",
+      "context": "bbox",
+      "status": "migration_pending",
+      "category": "hazards",
+      "reason": "Bestehender Warning-Intent; keine erfundene Hagel-Public-ID",
+      "event_filter": {
+        "hazard_types": [
+          "hail"
+        ]
+      }
+    },
+    {
+      "id": "official_tornado_warnings",
+      "label": "Amtliche Tornado- und Wasserhosenwarnungen",
+      "capability": "weather.warning.official",
+      "resource": "hazard_feed",
+      "context": "bbox",
+      "status": "migration_pending",
+      "category": "hazards",
+      "reason": "Tornado und Wasserhose als Warnereignisse, nicht als abgeleitete Blitzwahrscheinlichkeit",
+      "event_filter": {
+        "hazard_types": [
+          "tornado",
+          "waterspout"
+        ]
+      }
+    },
+    {
+      "id": "official_downburst_warnings",
+      "label": "Amtliche Fallböen- und Sturmwarnungen",
+      "capability": "weather.warning.official",
+      "resource": "hazard_feed",
+      "context": "bbox",
+      "status": "migration_pending",
+      "category": "hazards",
+      "reason": "Warnungen sind keine Punktwindmesswerte",
+      "event_filter": {
+        "hazard_types": [
+          "downburst",
+          "windstorm"
+        ]
+      }
+    },
+    {
+      "id": "official_heavy_rain_warnings",
+      "label": "Amtliche Starkregenwarnungen",
+      "capability": "weather.warning.official",
+      "resource": "hazard_feed",
+      "context": "bbox",
+      "status": "migration_pending",
+      "category": "hazards",
+      "reason": "Warnungsquelle ist getrennt von Niederschlagsraster und Nowcast",
+      "event_filter": {
+        "hazard_types": [
+          "heavy_rain",
+          "flash_flood"
+        ]
+      }
+    },
+    {
+      "id": "official_supercell_warnings",
+      "label": "Amtliche Superzellenwarnungen",
+      "capability": "weather.warning.official",
+      "resource": "hazard_feed",
+      "context": "bbox",
+      "status": "migration_pending",
+      "category": "hazards",
+      "reason": "Nur tatsächlich normalisierte amtliche Warnereignisse",
+      "event_filter": {
+        "hazard_types": [
+          "supercell"
+        ]
+      }
+    },
+    {
+      "id": "thunderstorm_cells",
+      "label": "Gewitterzellen-Nowcast-Kartenebene",
+      "capability": "weather.convection.thunderstorm_cells",
+      "resource": "raster_tile",
+      "context": "bbox",
+      "status": "migration_pending",
+      "category": "map",
+      "reason": "Zellenraster ist weder Gewitterwahrscheinlichkeit noch Blitzereignis"
+    },
+    {
+      "id": "thunder_probability",
+      "label": "Gewitterwahrscheinlichkeit der nächsten Stunde",
+      "capability": "weather.point.thunder_probability",
+      "resource": "value",
+      "context": "point",
+      "status": "migration_pending",
+      "category": "point",
+      "reason": "0–100 Prozent über exakt 1 Stunde; keine Ableitung aus aktuellen Blitzen"
+    },
+    {
+      "id": "observed_lightning_events",
+      "label": "Zusätzliche beobachtete Blitzereignisse",
+      "capability": "weather.lightning.observed.events",
+      "resource": "event_feed",
+      "context": "bbox",
+      "status": "prepared_only",
+      "category": "events",
+      "reason": "Optionale zusätzliche amtliche Beobachtung; lokale Blitzdaten bleiben getrennt und funktionsfähig"
+    },
+    {
+      "id": "observed_lightning_density",
+      "label": "Beobachtete Blitzdichte (10-Minuten-Raster)",
+      "capability": "weather.lightning.observed.density",
+      "resource": "raster_tile",
+      "context": "bbox",
+      "status": "prepared_only",
+      "category": "map",
+      "reason": "Blitzdichte darf nicht automatisch als einzelne Einschläge oder elektrische Stromstärke interpretiert werden"
+    },
+    {
+      "id": "lightning_distance",
+      "label": "Entfernung zum nächsten beobachteten Blitz",
+      "capability": "weather.lightning.observed.nearest_distance",
+      "resource": "value",
+      "context": "point",
+      "status": "expert_only",
+      "category": "point",
+      "reason": "Begrenzt auf die in der Capability dokumentierte Erfassungs- und Zeitsemantik"
+    },
+    {
+      "id": "lightning_azimuth",
+      "label": "Richtung zum nächsten beobachteten Blitz",
+      "capability": "weather.lightning.observed.nearest_azimuth",
+      "resource": "value",
+      "context": "point",
+      "status": "expert_only",
+      "category": "point",
+      "reason": "Azimut ist nicht identisch mit Zugrichtung der Gewitterzelle"
+    },
+    {
+      "id": "other_lightning_density",
+      "label": "Weitere Blitzdichte",
+      "capability": "weather.lightning.density",
+      "resource": "raster_tile",
+      "context": "bbox",
+      "status": "expert_only",
+      "category": "map",
+      "reason": "Keine automatische Austauschbarkeit mit anders normierten Blitzdichte-Capabilities"
+    },
+    {
+      "id": "satellite_lightning_raster",
+      "label": "Optische Satellitenblitze als Raster",
+      "capability": "weather.lightning.satellite.mtg_li.accumulated_flashes",
+      "resource": "raster_tile",
+      "context": "bbox",
+      "status": "expert_only",
+      "category": "map",
+      "reason": "Optische Total-Lightning-Beobachtung statt bestätigtem Bodenblitz"
+    },
+    {
+      "id": "satellite_lightning_files_east",
+      "label": "Satellitenblitze als Datei (Ost)",
+      "capability": "weather.lightning.satellite.glm_east.lcfa",
+      "resource": "data_file",
+      "context": "global",
+      "status": "deferred_adapter",
+      "category": "files",
+      "reason": "Dateiformat benötigt gesonderten Adapter; keine Raster- oder Ereignisfeed-Gleichsetzung"
+    },
+    {
+      "id": "satellite_lightning_files_west",
+      "label": "Satellitenblitze als Datei (West)",
+      "capability": "weather.lightning.satellite.glm_west.lcfa",
+      "resource": "data_file",
+      "context": "global",
+      "status": "deferred_adapter",
+      "category": "files",
+      "reason": "Dateiformat benötigt gesonderten Adapter; Region nicht aus Endpoint-Erreichbarkeit ableiten"
+    },
+    {
+      "id": "precipitation_point",
+      "label": "Niederschlagswert am Punkt",
+      "capability": "weather.point.precipitation",
+      "resource": "value",
+      "context": "point",
+      "status": "migration_pending",
+      "category": "point",
+      "reason": "Punktwert ist nicht für einen flächigen Kartenlayer verwendbar"
+    },
+    {
+      "id": "precipitation_hourly",
+      "label": "Niederschlagssumme der Stunde",
+      "capability": "weather.point.precipitation_1h",
+      "resource": "value",
+      "context": "point",
+      "status": "migration_pending",
+      "category": "point",
+      "reason": "1-h-Akkumulation strikt von Niederschlagsrate trennen"
+    },
+    {
+      "id": "precipitation_probability",
+      "label": "Niederschlagswahrscheinlichkeit",
+      "capability": "weather.point.precipitation_probability",
+      "resource": "value",
+      "context": "point",
+      "status": "migration_pending",
+      "category": "point",
+      "reason": "Wahrscheinlichkeit ist keine Regenmenge"
+    },
+    {
+      "id": "precipitation_nowcast",
+      "label": "Kurzfristige Niederschlagsrate",
+      "capability": "weather.nowcast.precipitation_rate",
+      "resource": "value",
+      "context": "point",
+      "status": "expert_only",
+      "category": "point",
+      "reason": "Nowcast am Punkt, keine automatische Austauschbarkeit mit Rasterlayer"
+    },
+    {
+      "id": "clouds_map",
+      "label": "Wolkenkarte",
+      "capability": "weather.satellite.clouds",
+      "resource": "raster_tile",
+      "context": "bbox",
+      "status": "migration_pending",
+      "category": "map",
+      "reason": "Gemeinsamer visueller Wolkenlayer mit eigenständiger Coverage und Attribution"
+    },
+    {
+      "id": "clouds_point",
+      "label": "Bewölkung am Punkt",
+      "capability": "weather.point.cloud_cover",
+      "resource": "value",
+      "context": "point",
+      "status": "migration_pending",
+      "category": "point",
+      "reason": "Prozentuale Forecast-Gesamtbewölkung"
+    },
+    {
+      "id": "clouds_low",
+      "label": "Tiefe Wolken",
+      "capability": "weather.point.cloud_cover_low",
+      "resource": "value",
+      "context": "point",
+      "status": "expert_only",
+      "category": "point",
+      "reason": "Getrennt von mittlerer und hoher Bewölkung"
+    },
+    {
+      "id": "clouds_mid",
+      "label": "Mittlere Wolken",
+      "capability": "weather.point.cloud_cover_mid",
+      "resource": "value",
+      "context": "point",
+      "status": "expert_only",
+      "category": "point",
+      "reason": "Getrennt von tiefer und hoher Bewölkung"
+    },
+    {
+      "id": "clouds_high",
+      "label": "Hohe Wolken",
+      "capability": "weather.point.cloud_cover_high",
+      "resource": "value",
+      "context": "point",
+      "status": "expert_only",
+      "category": "point",
+      "reason": "Getrennt von tiefer und mittlerer Bewölkung"
+    },
+    {
+      "id": "temperature_point",
+      "label": "Lufttemperatur am Punkt",
+      "capability": "weather.point.temperature",
+      "resource": "value",
+      "context": "point",
+      "status": "migration_pending",
+      "category": "point",
+      "reason": "Providerneutraler Forecast-Punktwert"
+    },
+    {
+      "id": "temperature_map_model",
+      "label": "Temperatur-Modellkarte",
+      "capability": "weather.model.temperature_2m.layer",
+      "resource": "raster_tile",
+      "context": "bbox",
+      "status": "expert_only",
+      "category": "map",
+      "reason": "Spezialisiertes Modellprodukt, keine universelle Temperaturkarte"
+    },
+    {
+      "id": "wind_speed",
+      "label": "Windgeschwindigkeit am Punkt",
+      "capability": "weather.point.wind_speed",
+      "resource": "value",
+      "context": "point",
+      "status": "migration_pending",
+      "category": "point",
+      "reason": "Windwert nicht mit amtlicher Sturmwarnung gleichsetzen"
+    },
+    {
+      "id": "wind_gusts",
+      "label": "Windböen am Punkt",
+      "capability": "weather.point.wind_gusts",
+      "resource": "value",
+      "context": "point",
+      "status": "migration_pending",
+      "category": "point",
+      "reason": "Böenspitzen separat von Mittelwindgeschwindigkeit"
+    },
+    {
+      "id": "wind_direction",
+      "label": "Windrichtung am Punkt",
+      "capability": "weather.point.wind_direction",
+      "resource": "value",
+      "context": "point",
+      "status": "migration_pending",
+      "category": "point",
+      "reason": "Windrichtung getrennt von Blitzazimut und Gewitterzugrichtung"
+    },
+    {
+      "id": "wind_model_map",
+      "label": "Wind-Modellkarte",
+      "capability": "weather.model.wind_10m.layer",
+      "resource": "raster_tile",
+      "context": "bbox",
+      "status": "expert_only",
+      "category": "map",
+      "reason": "Modellkartenprodukt; keine automatische Übertragung auf alle Wind-Candidates"
+    },
+    {
+      "id": "humidity_point",
+      "label": "Relative Feuchte",
+      "capability": "weather.point.relative_humidity",
+      "resource": "value",
+      "context": "point",
+      "status": "migration_pending",
+      "category": "point",
+      "reason": "Punktwert für Wetterlage"
+    },
+    {
+      "id": "pressure_point",
+      "label": "Luftdruck",
+      "capability": "weather.point.air_pressure",
+      "resource": "value",
+      "context": "point",
+      "status": "migration_pending",
+      "category": "point",
+      "reason": "Punktwert; kein Flächenraster"
+    },
+    {
+      "id": "visibility_point",
+      "label": "Sichtweite",
+      "capability": "weather.point.visibility",
+      "resource": "value",
+      "context": "point",
+      "status": "migration_pending",
+      "category": "point",
+      "reason": "Eigener Sichtweitenvertrag, nicht mit Nebelmetadaten vermengen"
+    },
+    {
+      "id": "fog_point",
+      "label": "Nebel",
+      "capability": "weather.point.fog",
+      "resource": "value",
+      "context": "point",
+      "status": "migration_pending",
+      "category": "point",
+      "reason": "Semantik und Ressourcentyp vor Anzeige prüfen"
+    },
+    {
+      "id": "snowfall_point",
+      "label": "Schneefall",
+      "capability": "weather.point.snowfall",
+      "resource": "value",
+      "context": "point",
+      "status": "expert_only",
+      "category": "point",
+      "reason": "Kein automatischer Schnee-Rasterlayer"
+    },
+    {
+      "id": "uv_index",
+      "label": "UV-Index",
+      "capability": "weather.point.uv_index",
+      "resource": "value",
+      "context": "point",
+      "status": "expert_only",
+      "category": "point",
+      "reason": "UV-Punktwert statt flächigem UV-Raster"
+    },
+    {
+      "id": "weather_condition",
+      "label": "Wetterzustand als Kurzbeschreibung",
+      "capability": "weather.point.weather_summary",
+      "resource": "value",
+      "context": "point",
+      "status": "migration_pending",
+      "category": "point",
+      "reason": "Textualisierte Punktlage, keine amtliche Warnung"
+    },
+    {
+      "id": "satellite_true_color",
+      "label": "Satellitenansicht Echtfarben",
+      "capability": "weather.satellite.true_color",
+      "resource": "raster_tile",
+      "context": "bbox",
+      "status": "expert_only",
+      "category": "map",
+      "reason": "Spezialisiertes Bildprodukt; kein generischer Wolkenersatz"
+    },
+    {
+      "id": "satellite_infrared_east",
+      "label": "Satellitenansicht Infrarot (Ost)",
+      "capability": "weather.satellite.infrared.goes_east",
+      "resource": "raster_tile",
+      "context": "bbox",
+      "status": "expert_only",
+      "category": "map",
+      "reason": "Bildprodukt mit eigener Tageszeit-/Coverage-Semantik"
+    },
+    {
+      "id": "flood_warning",
+      "label": "Hochwasserwarnungen",
+      "capability": "natural_hazards.flood.warning",
+      "resource": "hazard_feed",
+      "context": "bbox",
+      "status": "expert_only",
+      "category": "hazards",
+      "reason": "Separater Naturgefahrenfeed, nicht als Gewitterwahrscheinlichkeit interpretieren"
+    },
+    {
+      "id": "flash_flood_warning",
+      "label": "Amtliche Sturzflutwarnungen",
+      "capability": "weather.warning.official",
+      "resource": "hazard_feed",
+      "context": "bbox",
+      "status": "expert_only",
+      "category": "hazards",
+      "reason": "Amtliche Wetterwarnung mit eigenem Ereignistyp",
+      "event_filter": {
+        "hazard_types": [
+          "flash_flood"
+        ]
+      }
+    },
+    {
+      "id": "tropical_systems",
+      "label": "Tropische Wirbelstürme",
+      "capability": "natural_hazards.tropical_cyclone.events",
+      "resource": "hazard_feed",
+      "context": "bbox",
+      "status": "expert_only",
+      "category": "hazards",
+      "reason": "Eigener Naturgefahren-Feed, nicht mit lokalen Zellenrasterdaten mischen"
+    },
+    {
+      "id": "civil_emergency_warnings",
+      "label": "Bevölkerungsschutzwarnungen",
+      "capability": "civil_protection.warning.official",
+      "resource": "hazard_feed",
+      "context": "bbox",
+      "status": "expert_only",
+      "category": "hazards",
+      "reason": "Nur bewusst freigeschalteter eigener Fachbereich"
+    }
+  ],
+  "local_only": [
+    {
+      "id": "tracking_and_radius",
+      "label": "Standorte, Tracker, Erfassungs-/Beobachtungsradius",
+      "disposition": "local_state",
+      "reason": "Keine WeatherRouter-Quelle für eigene Standort- und Trackerlogik"
+    },
+    {
+      "id": "local_lightning_markers",
+      "label": "Lokale Blitzaufnahme, Marker, Treffer und Cluster",
+      "disposition": "local_integration",
+      "reason": "Getrennte eigene Ereignisse; keine stille Überschreibung durch öffentliche Quellen"
+    },
+    {
+      "id": "compass_and_medallion",
+      "label": "Kompass, Medaillon, Aura, Kalibrierung",
+      "disposition": "local_ui",
+      "reason": "Optik und Instrumente sind keine WeatherRouter-Intents"
+    },
+    {
+      "id": "map_navigation",
+      "label": "Kartenbewegung, Vollbild, Fenster, Zoom",
+      "disposition": "local_ui",
+      "reason": "Clientinteraktion ohne Wettersensoranfrage"
+    },
+    {
+      "id": "visualization_profiles",
+      "label": "Präzise/Ausgewogen/Weich/Auto, Transparenz",
+      "disposition": "local_ui",
+      "reason": "Visualisierung verändert weder Messwert noch Routing"
+    },
+    {
+      "id": "timeline_controls",
+      "label": "Zeitachse und Kachel-Vorladen",
+      "disposition": "local_rendering",
+      "reason": "Nutzt vorhandene Raster-Timeline, kein eigener externer Intent"
+    },
+    {
+      "id": "history_chart",
+      "label": "Historien-/Verlaufskurve",
+      "disposition": "local_storage",
+      "reason": "Historie wird nicht als aktueller latest-Punktwert vom Router erfunden"
+    },
+    {
+      "id": "project_hub_and_help",
+      "label": "Project Hub, Sprache, Hilfe, Produktinformationen",
+      "disposition": "local_ui",
+      "reason": "Kein externer Wetterdatenbedarf"
+    },
+    {
+      "id": "diagnostic_console",
+      "label": "Diagnose, Versionsanzeige, Fehlerstatus, Exporte",
+      "disposition": "local_diagnostics",
+      "reason": "Datenquelleninformationen beobachten, nicht selbst zu Providern routen"
+    },
+    {
+      "id": "module_lifecycle",
+      "label": "Module, Aktualisierung, Konfiguration, HA-Einbindung",
+      "disposition": "local_system",
+      "reason": "Infrastruktur, keine Public WeatherRouter Capability"
+    }
+  ],
+  "gates": [
+    {
+      "id": "P7-010-INVENTORY",
+      "status": "PASS",
+      "evidence": "33 Gewitterradar-Frontend-Module im deploy/dev-Manifest 4.11.74 gezählt; Consumer V1 und Router Core-Capability-Map geprüft"
+    },
+    {
+      "id": "P7-010-MATRIX",
+      "status": "PASS",
+      "evidence": "Providerneutrale Funktion-zu-Public-Capability-Zuordnung; lokale Funktionsgruppen separat bewertet"
+    },
+    {
+      "id": "P7-010-STATIC",
+      "status": "OPEN",
+      "evidence": "Automatisierte Quervertragsprüfung erst nach erfolgreicher CI"
+    },
+    {
+      "id": "P7-010-CONSUMER-ADAPTER",
+      "status": "OPEN",
+      "evidence": "Noch keine Migration der vorbereiteten Warning-/Lightning-Funktionen oder weiterer Anzeigen"
+    },
+    {
+      "id": "P7-010-HA",
+      "status": "OPEN",
+      "evidence": "Kein P7-010-Laufzeittest freigegeben oder durchgeführt"
+    }
+  ],
+  "limits": [
+    "All public capabilities exist in the WR catalog but not all are supported by the current Gewitterradar renderer.",
+    "The default Gewitterradar profile excludes newly added lightning families; no silent opt-in.",
+    "No cross-resource fallbacks between event_feed, hazard_feed, raster_tile, value, data_file.",
+    "No capability number is inferred from this catalog; numbers must be obtained from the actual ordered UI catalog for manual tests.",
+    "The Gewitterradar development branch was behind its deploy/dev baseline; do not deploy code from that older branch."
+  ]
+}
