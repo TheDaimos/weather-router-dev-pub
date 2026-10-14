@@ -100,7 +100,8 @@
         "attribution",
         "legend",
         "coverage_verified",
-        "coverage_scope"
+        "coverage_scope",
+        "render"
       ],
       "properties": {
         "source_id": {
@@ -204,6 +205,41 @@
             "global",
             "bbox"
           ]
+        },
+        "render": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "tile_size",
+            "min_zoom",
+            "max_zoom",
+            "opacity"
+          ],
+          "properties": {
+            "tile_size": {
+              "type": "integer",
+              "enum": [
+                128,
+                256,
+                512
+              ]
+            },
+            "min_zoom": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 24
+            },
+            "max_zoom": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 24
+            },
+            "opacity": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            }
+          }
         }
       }
     }
