@@ -40,6 +40,9 @@ jobs:
       - name: Oeffentlichen Dateibestand pruefen
         run: python tests/wr_public_distribution_guard.py
 
+      - name: P7-010 Raster-Mosaik-Vertrag (oeffentliche Nachholpruefung)
+        run: python -m unittest discover -s tests -p 'test_p7_010_raster_mosaic_*.py' -v
+
       - name: Python-Tests
         run: python -m unittest discover -s tests -p 'test_*.py' -v
 
