@@ -1,0 +1,167 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "WeatherRouter raster mosaic request V2 proposal; not registered",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "type",
+    "contract_version",
+    "capability",
+    "context",
+    "time",
+    "limits"
+  ],
+  "properties": {
+    "type": {
+      "const": "weather_router/consumer/resolve_mosaic"
+    },
+    "contract_version": {
+      "const": 2
+    },
+    "capability": {
+      "const": "weather.precipitation.layer"
+    },
+    "profile_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "context": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "west",
+        "south",
+        "east",
+        "north"
+      ],
+      "properties": {
+        "type": {
+          "const": "bbox"
+        },
+        "west": {
+          "type": "number",
+          "minimum": -180,
+          "maximum": 180
+        },
+        "east": {
+          "type": "number",
+          "minimum": -180,
+          "maximum": 180
+        },
+        "south": {
+          "type": "number",
+          "minimum": -90,
+          "maximum": 90
+        },
+        "north": {
+          "type": "number",
+          "minimum": -90,
+          "maximum": 90
+        },
+        "focus": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "latitude",
+            "longitude"
+          ],
+          "properties": {
+            "latitude": {
+              "type": "number",
+              "minimum": -90,
+              "maximum": 90
+            },
+            "longitude": {
+              "type": "number",
+              "minimum": -180,
+              "maximum": 180
+            }
+          }
+        }
+      }
+    },
+    "time": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "mode",
+        "max_data_age_seconds"
+      ],
+      "properties": {
+        "mode": {
+          "enum": [
+            "latest_coherent",
+            "at_time"
+          ]
+        },
+        "max_data_age_seconds": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 86400
+        },
+        "max_time_delta_seconds": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 86400
+        },
+        "target_time": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "mode": {
+                "const": "at_time"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "target_time"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "mode": {
+                "const": "latest_coherent"
+              }
+            }
+          },
+          "then": {
+            "not": {
+              "required": [
+                "target_time"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "limits": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "max_layers",
+        "max_tile_requests"
+      ],
+      "properties": {
+        "max_layers": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 12
+        },
+        "max_tile_requests": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 256
+        }
+      }
+    }
+  }
+}
