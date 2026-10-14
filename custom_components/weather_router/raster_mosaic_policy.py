@@ -283,7 +283,8 @@ def plan_raster_mosaic(
             "semantics": item["semantics"],
             "times": {
                 "valid_at": _iso(timestamp),
-                "observed_at": _iso(timestamp),
+                # A layer validity frame is not proof of an observation time.
+                "observed_at": None,
                 "retrieved_at": (candidate["retrieved_at"]
                                  if isinstance(candidate.get("retrieved_at"), str)
                                  and _time(candidate["retrieved_at"]) is not None
