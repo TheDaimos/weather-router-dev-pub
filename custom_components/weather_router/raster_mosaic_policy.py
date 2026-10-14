@@ -277,6 +277,8 @@ def plan_raster_mosaic(
             "source_id": candidate["source_id"],
             "resource_type": "raster_tile",
             "coverage": area,
+            "coverage_verified": True,  # verified envelope, NOT a complete pixel mask
+            "coverage_scope": coverage["scope"],
             "tile_url": item["tile_url"],
             "semantics": item["semantics"],
             "times": {
