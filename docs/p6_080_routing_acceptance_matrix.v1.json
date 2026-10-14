@@ -2,7 +2,7 @@
   "schema": "weather_router.p6_080.routing_acceptance_matrix.v1",
   "date": "2026-10-13",
   "phase": "P6-080",
-  "phase_status": "ACTIVE",
+  "phase_status": "DONE",
   "core": {
     "providers": 38,
     "internal": 280,
@@ -137,8 +137,8 @@
     {
       "id": "P6-080-GESAMT",
       "requirement": "Classify eight domain proofs, verify remaining evidence, complete routing-wide sign-off before enabling P7",
-      "status": "OPEN",
-      "evidence": "Historical domain subtests + P6-030 to P6-070 DONE; P6-080 currently ACTIVE"
+      "status": "PASS",
+      "evidence": "8 domains and P6-010..070 verified; P6-080/1..3 PASS; CI #98 and #99 success"
     }
   ],
   "limitations": [
@@ -162,11 +162,11 @@
     "already_passed": "Do not repeat P6-080/1, P6-080/2, or P6-080/3.",
     "source_fix": "winner reason corrected; P6-080/3 real trace PASS"
   },
-  "p7_status": "OPEN - locked until formal P6-080 DONE",
+  "p7_status": "P7-010 ACTIVE",
   "formal_acceptance": {
-    "stage": "PENDING_FINAL_CI",
-    "phase_decision": "P6-080 ACTIVE until final evidence-matrix CI and signed routing audit",
-    "next_step": "P7-010 - blocked until formal release",
+    "stage": "FORMAL_ACCEPTED",
+    "phase_decision": "P6-080 DONE",
+    "next_step": "P7-010 ACTIVE",
     "scope": "Routing Core consumer API V1; eight domains, 227 public IDs and historical representative provider paths; not 227 live provider network requests"
   }
 }
