@@ -98,7 +98,9 @@
         "semantics",
         "times",
         "attribution",
-        "legend"
+        "legend",
+        "coverage_verified",
+        "coverage_scope"
       ],
       "properties": {
         "source_id": {
@@ -188,6 +190,16 @@
         "mask": {
           "type": "object",
           "description": "Optional validated geometric clipping mask; source and shape must be explicitly documented"
+        },
+        "coverage_verified": {
+          "const": true,
+          "description": "Verified machine-readable geographic envelope; not proof of every pixel"
+        },
+        "coverage_scope": {
+          "enum": [
+            "global",
+            "bbox"
+          ]
         }
       }
     }
