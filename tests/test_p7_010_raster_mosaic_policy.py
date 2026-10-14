@@ -127,6 +127,45 @@ class MosaicPlanningTests(unittest.TestCase):
         result = plan(source("world", WORLD), not_aligned, aligned, max_layers=2)
         self.assertEqual(result["layers"][1]["source_id"], "aligned")
 
+    def test_multi_frame_source_uses_best_fresh_matching_image(self):
+        regional = source("radar", CARIBBEAN)
+        regional.pop("data_time")
+        regional.pop("tile_url")
+        regional["frames"] = [
+            {"data_time": "2026-10-14T15:06:00Z",
+             "tile_url": "https://example.invalid/later.png"},
+            {"data_time": "2026-10-14T15:01:00Z",
+             "tile_url": "https://example.invalid/aligned.png"},
+            {"data_time": "2026-10-14T14:10:00Z",
+             "tile_url": "https://example.invalid/stale.png"},
+        ]
+        result = plan(source("world", WORLD), regional)
+        self.assertEqual(result["layers"][1]["tile_url"],
+                         "https://example.invalid/aligned.png")
+        self.assertEqual(result["layers"][1]["times"]["reference_delta_seconds"], 60)
+
+    def test_multi_frame_falls_back_to_latest_still_fresh(self):
+        regional = source("radar", CARIBBEAN)
+        regional["frames"] = [
+            {"data_time": "2026-10-14T15:06:00Z",
+             "tile_url": "https://example.invalid/later.png"},
+            {"data_time": "2026-10-14T14:50:00Z",
+             "tile_url": "https://example.invalid/older.png"},
+        ]
+        result = plan(source("world", WORLD), regional)
+        self.assertEqual(result["layers"][1]["tile_url"],
+                         "https://example.invalid/later.png")
+        self.assertEqual(result["layers"][1]["quality_note"], "zeitlich_abweichend")
+
+    def test_frame_limit_and_stale_only_are_rejected(self):
+        excessive = source("too_many", CARIBBEAN)
+        excessive["frames"] = [{"data_time": TIMESTAMP,
+                                 "tile_url": "https://example.invalid/a.png"}] * 25
+        old = source("old", CARIBBEAN)
+        old["frames"] = [{"data_time": "2026-10-14T12:00:00Z",
+                           "tile_url": "https://example.invalid/b.png"}]
+        self.assertEqual(plan(excessive, old)["layers"], [])
+
     def test_antimeridian_and_full_world(self):
         crossing = {"west": 170, "south": -20, "east": -170, "north": 20}
         coverage = {"scope": "bbox", "bbox":
