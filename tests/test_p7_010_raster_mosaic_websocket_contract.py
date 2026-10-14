@@ -140,13 +140,19 @@ class WebsocketHarnessTests(unittest.IsolatedAsyncioTestCase):
         def normalize(raw):
             return (dict(raw), raw.get("frame_time"))
 
+        async def deterministic_mosaic(query, *, sources):
+            # The synthetic October test timestamp must not be compared
+            # against the runner's real clock on a later execution day.
+            return await service.resolve_mosaic_snapshot(
+                query, sources=sources, server_now="2026-10-14T15:08:00Z")
+
         environment = {
             "asyncio": asyncio,
             "validate_raster_mosaic_request": validator.validate_raster_mosaic_request,
             "MosaicContractError": validator.MosaicContractError,
             "viewport_overlap": policy.viewport_overlap,
             "normalize_coverage": lambda raw: raw,
-            "resolve_mosaic_snapshot": service.resolve_mosaic_snapshot,
+            "resolve_mosaic_snapshot": deterministic_mosaic,
             "profile_allows_capability": lambda *args: (True, None),
             "profile_allows_provider": lambda *args: True,
             "profile_allows_candidate": lambda *args: (True, None),
