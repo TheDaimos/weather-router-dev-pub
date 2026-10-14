@@ -161,3 +161,48 @@ Entwicklungsstand, kein per DRA ausgerolltes Gewitterradar-Mosaik.
 P7-010-VIEWPORT-COVERAGE, CONSUMER-ADAPTER und HA bleiben bis
 produktiver Anbindung, echten Wetterabrufen und gebündelter
 Geräteabnahme offen.
+
+## Ergänzung: Isolierte Consumer-Kette bis zur Leaflet-Kartenebene
+
+**Stand 14.10.2026, weiterhin ohne DRA-/HA-Freigabe.**
+
+Im getrennten Gewitterradar-Entwicklungszweig
+`feature/p7-010-world-bbox-2026-10-14` stehen inzwischen reine
+V2-Bausteine für:
+
+- `raster-mosaic-consumer.js`: begrenzte V2-Consumer-Anfrage mit
+  Bounding-Box und tatsächlichem Kartenfokus, V2-Antwortprüfung und
+  **nicht destruktivem V1-Rückfall**, falls WeatherRouter V2 nicht
+  erreichbar ist oder keine Quelle bereitsteht;
+- `raster-mosaic-grid-layer.js`: isolierte Leaflet-`GridLayer` mit
+  gemeinsamer Abrufbegrenzung und Canvas-Kacheln;
+- `raster-mosaic-tile-loader.js`: URL-basierter, begrenzt paralleler
+  Bildabruf mit Zeitgrenze und Abbruchsignal, regionaler Ausfall
+  darf das verfügbare großräumige Bild nicht entfernen;
+- `raster-tile-url.js`: korrekte XYZ- und
+  `{bbox-epsg-3857}`-WMS-Ersetzung, auch bei wiederholten Weltkacheln
+  und am Antimeridian;
+- `raster-tile-clip.js` und `raster-compositor.js`:
+  maschinenbestätigte geografische Zuschnitte, quelleneigene
+  Kachelgröße, Zoombegrenzung und Deckkraft.
+
+**Schnelle separate CI**, zusätzlich zur vollständigen vorhandenen
+Gewitterradar-Frontend-Prüfung: [P7-010 Lauf 38633971874](https://github.com/TheDaimos/gewitterradar/actions/runs/38633971874),
+**8 von 8 isolierten Prüfskripten SUCCESS**, aktueller dokumentierter
+Commit `347b74059df19e7cb3420c6e80c57f1783f202f8`.
+Die unter GitHub Actions vorhandene
+`.github/workflows/p7-010-raster-isolated.yml` prüft künftig
+alle P7-Module unabhängig von der zeitintensiven Browsergesamtprüfung.
+
+**WeatherRouter public CI:** [Lauf 38632573180](https://github.com/TheDaimos/weather-router-dev-pub/actions/runs/38632573180),
+Python 3.12 + 3.13 **SUCCESS**, je 1.225 Python-Gesamttests
+(einschließlich 61 expliziten P7-Rastertests), M2-Struktur,
+JavaScript-Syntax, Git-Export sowie öffentliche Integrationspaket-
+und SHA256-Prüfung mit 117 Dateien.
+
+**Nicht abgenommen:** Es existiert noch keine produktive
+Gewitterradar-Modulanbindung, kein realer V2-WebSocket-Abruf im Home
+Assistant, keine tatsächliche WMS-/Bildserver-Rasterdarstellung auf
+Android/Desktop/iPad und keine DRA-Auslieferung. Die vorhandene
+Quelllücken- und Leistungsdiagnose ist deshalb weder grün noch
+ersetzt sie eine Realabnahme. V1 bleibt unverändert verwendbar.
