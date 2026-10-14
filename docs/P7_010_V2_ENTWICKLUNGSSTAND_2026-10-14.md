@@ -122,3 +122,42 @@ Das Register wird ausschließlich im privaten Repository gepflegt.
 Eine erfolgreiche CI prüft Code und synthetische Abläufe. Sie ersetzt
 **nicht** die private Home-Assistant-/DRA-Produktabnahme und bedeutet keine
 Veröffentlichungsfreigabe für andere private Inhalte.
+
+## Ergänzung: Quellengetreue Rasterparameter und echte Provider-Abdeckung
+
+Am 14.10.2026 wurden V2-Schema, reiner Adapter und Auswahllogik um
+quellenspezifische Darstellungsparameter erweitert:
+`render.tile_size` (128/256/512 Pixel), `render.min_zoom`,
+`render.max_zoom` und `render.opacity`. Die Parameter werden aus
+den bereits öffentlich normalisierten V1-Quelldaten übernommen und
+auf gültige Werte geprüft. Gewitterradars isolierter
+`src/p7-010/raster-compositor.js` kann dadurch native Quellkacheln
+in die richtige Zielkachelgröße umrechnen, lokale Zoomgrenzen beachten
+und Deckkraft je Quelle unabhängig einsetzen. Die Werte werden
+**nicht** in eine gemeinsame meteorologische Messskala umgerechnet.
+
+Die öffentliche GitHub-Prüfung [38631643647](https://github.com/TheDaimos/weather-router-dev-pub/actions/runs/38631643647)
+lief auf Commit `e59ee9c526dfb07ab185175f60b23e349330ff28`
+erfolgreich mit Python 3.12 und 3.13. Die tatsächliche
+Anbieter-Bestandsprüfung [38632252752](https://github.com/TheDaimos/weather-router-dev-pub/actions/runs/38632252752)
+bestätigt ebenfalls die öffentlichen Tests für die aktuelle
+`weather.precipitation.layer`-Capability-Zuordnung.
+
+**Aktueller realer Adapterbestand:** Bei der fünf internen
+Niederschlags-Rasterzuordnungen bietet RainViewer
+`async_get_map_layer`, derzeit aber **keine**
+`async_get_coverage`-Methode. Sein lesbarer Hinweis auf internationale
+Radarabdeckung ersetzt keine verifizierte geographische Maschinen-Coverage.
+Daher wird RainViewer vom experimentellen V2-WebSocket-Endpunkt noch
+nicht als bestätigte Mehrquellenebene verwendet.
+DWD und NASA GIBS stellen eine solche Methode bereit; das garantiert
+trotzdem weder die Erreichbarkeit der WMS-Server noch lückenlose
+gültige Rasterpixel auf der Weltkarte. Eine mögliche RainViewer-V2-
+Anbindung muss erst eine fachlich belastbare maschinenlesbare
+Räumlichkeitsgrundlage nachweisen.
+
+**Unveränderte Produktgrenze:** Das ist ein geprüfter öffentlicher
+Entwicklungsstand, kein per DRA ausgerolltes Gewitterradar-Mosaik.
+P7-010-VIEWPORT-COVERAGE, CONSUMER-ADAPTER und HA bleiben bis
+produktiver Anbindung, echten Wetterabrufen und gebündelter
+Geräteabnahme offen.
