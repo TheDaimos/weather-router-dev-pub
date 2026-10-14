@@ -635,6 +635,11 @@
       "evidence": "WeatherRouter public CI #104 and #105 SUCCESS; Gewitterradar (isolated V4.11.74 baseline) frontend browser CI #5719 SUCCESS and integration runtime CI #5741 SUCCESS at commit 920cd3d591891c5e81201264d3ae7382851a6848; no runtime migration yet."
     },
     {
+      "id": "P7-010-VIEWPORT-COVERAGE",
+      "status": "OPEN",
+      "evidence": "Germany sliver (<1% viewport) is eligible under bbox_intersects; semantic-only candidate selection and single-layer replacement can hide broad precipitation sources. P7-010 spatial/focus routing and multi-source raster-mosaic are not yet integrated. Reproduction and experimental-only ranking CI #112/#113 SUCCESS; no HA runtime fix."
+    },
+    {
       "id": "P7-010-CONSUMER-ADAPTER",
       "status": "OPEN",
       "evidence": "Noch keine Migration der vorbereiteten Warning-/Lightning-Funktionen oder weiterer Anzeigen"
@@ -665,5 +670,18 @@
     ],
     "gewitterradar_audit_commit": "920cd3d591891c5e81201264d3ae7382851a6848",
     "deployment_note": "Gewitterradar deploy/dev advanced to V4.11.75 in parallel; 4.11.74 audit remains historical exact snapshot; next implementation must build on fresh V4.11.75, not deploy stale version."
+  },
+  "viewport_coverage": {
+    "status": "DESIGN_AND_REGRESSION_ONLY",
+    "document": "docs/P7_010_VIEWPORT_COVERAGE_UND_RASTER_MOSAIK_2026-10-14.md",
+    "problem": "Edge-only DWD intersection can replace a much more relevant broad raster; at >=360-degree viewport width, GR normalizes both bounds separately and may alias the full world to a degenerate bbox",
+    "evidence": "Static WR coverage_diagnostics and GR _weatherRadarViewport / _weatherRadarApplyReady, synthetic reproduction in tests/test_p7_010_viewport_sliver.py; CI #112/#113 successful",
+    "fix_deployed": false,
+    "planned_solution": "focus-aware viewport suitability as safe intermediate policy, then explicit multi-source visually composited raster contract with per-provider provenance, coverage and temporal/legend protections",
+    "no_repeat_tests": [
+      "P6-080/1",
+      "P6-080/2",
+      "P6-080/3"
+    ]
   }
 }
