@@ -96,12 +96,32 @@ def make_mosaic_candidate(
              or not semantics["unit"].strip())
     ):
         return None
+    # Preserve the existing V1 display contract. A regional overlay may have
+    # different native tiles, zoom validity and default opacity.
+    tile_size = payload.get("tile_size", 256)
+    min_zoom = payload.get("min_zoom", 0)
+    max_zoom = payload.get("max_zoom", 18)
+    opacity = payload.get("default_opacity", 1)
+    if (type(tile_size) is not int or tile_size not in (128, 256, 512)
+            or any(isinstance(x, bool) or not isinstance(x, (int, float))
+                   or not isfinite(x) for x in (min_zoom, max_zoom, opacity))
+            or not 0 <= min_zoom <= max_zoom <= 24
+            or not 0 <= opacity <= 1):
+        return None
+    render = {
+        "tile_size": tile_size,
+        "min_zoom": float(min_zoom),
+        "max_zoom": float(max_zoom),
+        "opacity": float(opacity),
+    }
+
     candidate = {
         "source_id": source_id,
         "eligible": True,
         "verified_coverage": True,
         "coverage": coverage,
         "resource_type": "raster_tile",
+        "render": render,
         "tile_url": tile_url,
         "data_time": data_time,
         "retrieved_at": retrieved_at,
