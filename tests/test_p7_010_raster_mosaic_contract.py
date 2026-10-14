@@ -43,6 +43,9 @@ class MosaicSchemaTests(unittest.TestCase):
     def test_each_source_keeps_coverage_and_time_and_semantics(self):
         layer = self.schema["$defs"]["layer"]
         self.assertTrue({"coverage", "times", "semantics", "legend", "attribution"}.issubset(layer["required"]))
+        self.assertIn("coverage_verified", layer["required"])
+        self.assertIn("coverage_scope", layer["required"])
+        self.assertEqual(layer["properties"]["coverage_verified"]["const"], True)
         self.assertTrue({"quantity", "unit", "measurement_method", "observation_kind"}.issubset(
             layer["properties"]["semantics"]["required"]))
         self.assertTrue({"valid_at", "retrieved_at"}.issubset(layer["properties"]["times"]["required"]))
