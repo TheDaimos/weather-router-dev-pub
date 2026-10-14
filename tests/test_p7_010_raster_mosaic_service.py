@@ -109,6 +109,47 @@ class RasterMosaicServiceTests(unittest.TestCase):
         self.assertEqual(len(got["layers"]), 1)
         self.assertTrue(any("Kontaktbegrenzung" in x for x in got["limitations"]))
 
+    def test_minimum_tile_budget_limits_simultaneous_layers(self):
+        req = request(4)
+        req["limits"]["max_tile_requests"] = 1
+        got = resolve([source("world", WORLD),
+                       source("regional_1", REGION_CUBA),
+                       source("regional_2", REGION_DE)], req)
+        self.assertEqual(len(got["layers"]), 1)
+        self.assertEqual(got["layers"][0]["source_id"], "world")
+        self.assertTrue(any("Kachelbudget eingeschraenkt" in line
+                            for line in got["limitations"]))
+
+    def test_never_exceeds_three_simultaneous_contacts(self):
+        active = 0
+        maximum = 0
+        calls = 0
+
+        def make_fetch(name):
+            async def fetch():
+                nonlocal active, maximum, calls
+                active += 1
+                calls += 1
+                maximum = max(maximum, active)
+                await asyncio.sleep(.005)
+                active -= 1
+                return {"tile_url": "https://example.invalid/{z}/{x}/{y}.png",
+                        "frame_time": TIME, "attribution": name,
+                        "legend": {"title": name}}
+            return fetch
+
+        sources = []
+        for index in range(15):
+            item = source(f"source_{index}", WORLD if index == 0 else REGION_CUBA)
+            item["async_fetch"] = make_fetch(item["source_id"])
+            sources.append(item)
+        result = resolve(sources, request(4))
+        self.assertLessEqual(maximum, service.MAX_PARALLEL_CONTACTS)
+        self.assertLessEqual(calls, service.MAX_CANDIDATE_CONTACTS)
+        self.assertLessEqual(len(result["layers"]), 4)
+        self.assertTrue(any("Kontaktbegrenzung" in line
+                            for line in result["limitations"]))
+
     def test_time_coherent_frame_chosen(self):
         frames = [{"time": "2026-10-14T15:07:00Z",
                    "tile_url": "https://example.invalid/latest.png"},
