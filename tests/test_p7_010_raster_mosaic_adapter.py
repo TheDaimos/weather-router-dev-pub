@@ -82,6 +82,27 @@ class AdapterTests(unittest.TestCase):
         bad["tile_url"] = "https://example.invalid/tiles#private"
         self.assertIsNone(candidate(payload=bad))
 
+    def test_native_tile_render_parameters_survive(self):
+        raw = {**PUBLIC_RESOURCE, "tile_size": 512, "min_zoom": 3,
+               "max_zoom": 14, "default_opacity": 0.65}
+        result = candidate(payload=raw)
+        self.assertEqual(result["render"], {
+            "tile_size": 512, "min_zoom": 3.0,
+            "max_zoom": 14.0, "opacity": 0.65,
+        })
+
+    def test_invalid_native_tile_parameters_fail_closed(self):
+        for override in (
+            {"tile_size": 4096},
+            {"tile_size": True},
+            {"min_zoom": 17, "max_zoom": 13},
+            {"default_opacity": -0.1},
+            {"default_opacity": 1.2},
+            {"max_zoom": float("nan")},
+        ):
+            with self.subTest(override=override):
+                self.assertIsNone(candidate(payload={**PUBLIC_RESOURCE, **override}))
+
     def test_multiple_frames_retained_separately(self):
         payload = {**PUBLIC_RESOURCE, "timeline": {
             "frames": [
