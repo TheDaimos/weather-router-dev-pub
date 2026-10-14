@@ -18,7 +18,6 @@ from .raster_mosaic_policy import plan_raster_mosaic, viewport_overlap
 
 MAX_CANDIDATE_CONTACTS = 12
 MAX_PARALLEL_CONTACTS = 3
-MAX_FRAME_REQUESTS = 24
 
 
 def _utc_now() -> str:
@@ -67,10 +66,10 @@ async def resolve_mosaic_snapshot(
     viewport = {name: query["context"][name]
                 for name in ("west", "south", "east", "north")}
     limits = query["limits"]
-    contact_budget = min(
-        MAX_CANDIDATE_CONTACTS,
-        max(limits["max_layers"], limits["max_layers"] * 3),
-    )
+    # Every simultaneously rendered layer costs at least one tile request.
+    # Reject plans already larger than the consumer's complete request budget.
+    active_layer_budget = min(limits["max_layers"], limits["max_tile_requests"])
+    contact_budget = min(MAX_CANDIDATE_CONTACTS, active_layer_budget * 3)
     eligible: list[Mapping[str, Any]] = []
     for source in sources:
         if (not isinstance(source, Mapping) or source.get("eligible") is not True
@@ -119,12 +118,15 @@ async def resolve_mosaic_snapshot(
         now=now,
         max_data_age_seconds=temporal["max_data_age_seconds"],
         max_time_delta_seconds=temporal.get("max_time_delta_seconds", 180),
-        max_layers=limits["max_layers"],
+        max_layers=active_layer_budget,
         reference_time=(temporal.get("target_time")
                         if temporal["mode"] == "at_time" else None),
     )
     answer["limitations"].append(
         "Kachelbudget muss durch spaeteren aktiven Renderer erzwungen werden")
+    if active_layer_budget < limits["max_layers"]:
+        answer["limitations"].append(
+            "Quellenzahl durch angefordertes Kachelbudget eingeschraenkt")
     if omitted_for_budget:
         answer["limitations"].append(
             f"{omitted_for_budget} weitere Quellen wegen Kontaktbegrenzung nicht abgefragt")
