@@ -108,11 +108,17 @@ def _point_inside(point: Mapping[str, Any] | None, coverage: Mapping[str, Any]) 
     return any(w <= lon <= e for w, e in _segments(box))
 
 
-def _semantics(candidate: Mapping[str, Any]) -> dict[str, str] | None:
+def _semantics(candidate: Mapping[str, Any]) -> dict[str, str | None] | None:
     info = candidate.get("semantics")
     keys = ("quantity", "unit", "measurement_method", "observation_kind")
     if not isinstance(info, Mapping) or any(
-        not isinstance(info.get(k), str) or not info[k].strip() for k in keys
+        not isinstance(info.get(k), str) or not info[k].strip()
+        for k in ("quantity", "measurement_method", "observation_kind")
+    ):
+        return None
+    if "unit" not in info or (
+        info["unit"] is not None
+        and (not isinstance(info["unit"], str) or not info["unit"].strip())
     ):
         return None
     return {k: info[k] for k in keys}
