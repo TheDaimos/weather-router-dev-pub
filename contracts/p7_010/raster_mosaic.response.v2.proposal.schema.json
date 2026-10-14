@@ -131,7 +131,11 @@
               "type": "string"
             },
             "unit": {
-              "type": "string"
+              "type": [
+                "string",
+                "null"
+              ],
+              "description": "Unknown/undefined numerical units must remain null, not fabricated."
             },
             "measurement_method": {
               "type": "string"
