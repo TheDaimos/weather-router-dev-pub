@@ -282,6 +282,10 @@ def plan_raster_mosaic(
         layers.append({
             "source_id": candidate["source_id"],
             "resource_type": "raster_tile",
+            "render": dict(candidate.get("render") or {
+                "tile_size": 256, "min_zoom": 0.0,
+                "max_zoom": 18.0, "opacity": 1.0,
+            }),
             "coverage": area,
             "coverage_verified": True,  # verified envelope, NOT a complete pixel mask
             "coverage_scope": coverage["scope"],
