@@ -4400,8 +4400,13 @@ async def websocket_consumer_resolve(
 
 
 def async_register(hass: HomeAssistant) -> None:
-    """Register the implemented read-only Consumer API V1."""
+    """Register Consumer API V1 unchanged, plus explicit opt-in V2 raster preview."""
     websocket_api.async_register_command(hass, websocket_consumer_discovery)
     websocket_api.async_register_command(hass, websocket_consumer_capabilities)
     websocket_api.async_register_command(hass, websocket_routing_diagnostic_fault_arm)
     websocket_api.async_register_command(hass, websocket_consumer_resolve)
+
+    # P7-010: separate versioned endpoint. No change to V1 dispatch, results,
+    # source ordering or public discovery. Public DEV only until HA acceptance.
+    from .consumer_raster_mosaic_api import websocket_consumer_resolve_mosaic
+    websocket_api.async_register_command(hass, websocket_consumer_resolve_mosaic)
