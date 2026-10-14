@@ -1,0 +1,195 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "WeatherRouter raster mosaic proposal v2 (P7-010, not a live endpoint)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract_version",
+    "capability",
+    "status",
+    "viewport",
+    "layers"
+  ],
+  "properties": {
+    "contract_version": {
+      "const": 2
+    },
+    "capability": {
+      "const": "weather.precipitation.layer"
+    },
+    "status": {
+      "enum": [
+        "ready",
+        "partial",
+        "unavailable"
+      ]
+    },
+    "viewport": {
+      "$ref": "#/$defs/bbox"
+    },
+    "reference_time": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "layers": {
+      "type": "array",
+      "maxItems": 12,
+      "items": {
+        "$ref": "#/$defs/layer"
+      }
+    },
+    "uncovered_regions": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/bbox"
+      }
+    },
+    "limitations": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "$defs": {
+    "bbox": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "west",
+        "south",
+        "east",
+        "north"
+      ],
+      "properties": {
+        "west": {
+          "type": "number",
+          "minimum": -180,
+          "maximum": 180
+        },
+        "east": {
+          "type": "number",
+          "minimum": -180,
+          "maximum": 180
+        },
+        "south": {
+          "type": "number",
+          "minimum": -90,
+          "maximum": 90
+        },
+        "north": {
+          "type": "number",
+          "minimum": -90,
+          "maximum": 90
+        }
+      }
+    },
+    "layer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_id",
+        "resource_type",
+        "coverage",
+        "tile_url",
+        "semantics",
+        "times",
+        "attribution",
+        "legend"
+      ],
+      "properties": {
+        "source_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "resource_type": {
+          "const": "raster_tile"
+        },
+        "coverage": {
+          "$ref": "#/$defs/bbox"
+        },
+        "tile_url": {
+          "type": "string",
+          "minLength": 1
+        },
+        "semantics": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "quantity",
+            "unit",
+            "measurement_method",
+            "observation_kind"
+          ],
+          "properties": {
+            "quantity": {
+              "type": "string"
+            },
+            "unit": {
+              "type": "string"
+            },
+            "measurement_method": {
+              "type": "string"
+            },
+            "observation_kind": {
+              "type": "string"
+            }
+          }
+        },
+        "times": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "valid_at",
+            "retrieved_at"
+          ],
+          "properties": {
+            "valid_at": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "format": "date-time"
+            },
+            "observed_at": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "format": "date-time"
+            },
+            "retrieved_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "reference_delta_seconds": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "minimum": 0
+            }
+          }
+        },
+        "attribution": {
+          "type": "string",
+          "minLength": 1
+        },
+        "legend": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "quality_note": {
+          "type": "string"
+        },
+        "mask": {
+          "type": "object",
+          "description": "Optional validated geometric clipping mask; source and shape must be explicitly documented"
+        }
+      }
+    }
+  }
+}
