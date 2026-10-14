@@ -127,7 +127,10 @@ class P7010GewitterradarIntentMatrix(unittest.TestCase):
         gates = {x["id"]: x["status"] for x in self.matrix["gates"]}
         self.assertEqual(gates["P7-010-INVENTORY"], "PASS")
         self.assertEqual(gates["P7-010-MATRIX"], "PASS")
-        self.assertEqual(gates["P7-010-STATIC"], "OPEN")
+        self.assertEqual(gates["P7-010-STATIC"], "PASS")
+        self.assertEqual(self.matrix["static_acceptance"]["status"], "PASS")
+        self.assertEqual(len(self.matrix["static_acceptance"]["weather_router_ci_runs"]), 2)
+        self.assertEqual(len(self.matrix["static_acceptance"]["gewitterradar_ci_runs"]), 2)
         self.assertEqual(gates["P7-010-CONSUMER-ADAPTER"], "OPEN")
         self.assertEqual(gates["P7-010-HA"], "OPEN")
 
