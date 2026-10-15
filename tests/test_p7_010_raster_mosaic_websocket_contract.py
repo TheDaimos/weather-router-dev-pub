@@ -225,6 +225,37 @@ class WebsocketHarnessTests(unittest.IsolatedAsyncioTestCase):
         self.assertTrue(any("Coverage-Kontaktbudget" in entry
                             for entry in result["limitations"]))
 
+    async def test_disabled_top_ranked_source_never_consumes_coverage_budget(self):
+        disabled = FakeProvider("disabled_best", {"scope": "global"}, enabled=False)
+        top = FakeCandidate(disabled)
+        top.score = (0, 0, 0)
+        world = FakeCandidate(self.world)
+        world.score = (1, 0, 0)
+        self.rows[:] = [top, world]
+        await self.handler(None, self.connection, request())
+        self.assertEqual(disabled.calls, 0)
+        self.assertGreater(self.world.calls, 0)
+        self.assertEqual(self.connection.errors, [])
+        self.assertEqual(self.connection.results[0][1]["layers"][0]["source_id"],
+                         "wide_world/radar_layer")
+
+    async def test_coverage_preflight_never_exceeds_hard_contact_limit(self):
+        providers = []
+        for index in range(20):
+            provider = FakeProvider(f"candidate_{index}", {"scope": "global"})
+            candidate = FakeCandidate(provider)
+            candidate.score = (index, 0, 0)
+            providers.append(candidate)
+        self.rows[:] = providers
+        await self.handler(None, self.connection, request())
+        self.assertEqual(self.connection.errors, [])
+        contacted = sum(candidate.provider.calls > 0 for candidate in providers)
+        self.assertEqual(contacted, 12)
+        self.assertTrue(all(candidate.provider.calls == 0
+                            for candidate in providers[12:]))
+        self.assertTrue(any("Coverage-Kontaktbudget" in item
+                            for item in self.connection.results[0][1]["limitations"]))
+
     async def test_invalid_version_rejected_before_network(self):
         wrong = request()
         wrong["contract_version"] = 1
