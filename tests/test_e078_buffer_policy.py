@@ -41,7 +41,6 @@ class PolicyTests(unittest.TestCase):
         self.registry.register("example", self.ok)
         self.facade.write(self.ctx, b"x", provider_authorized=True)
         self.registry.unregister("example")
-        self.facade.policy_changed()
         self.registry.register("example", self.ok)
         self.assertIsNone(self.facade.read(self.ctx, provider_authorized=True))
 
