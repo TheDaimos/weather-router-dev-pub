@@ -33,11 +33,11 @@ _SAFE_INTERNAL = re.compile(r"^[a-z][a-z0-9_]*$")
 _SAFE_PUBLIC = re.compile(r"^[a-z][a-z0-9_]*(?:\.[a-z0-9_]+)+$")
 
 
-@dataclass(frozen=True, slots=True)
 class _DedicatedBufferPolicyManifest(Exception):
     """Not a provider extension; parsed by the opt-in E-078 loader."""
 
 
+@dataclass(frozen=True, slots=True)
 class ExtensionSpec:
     extension_id: str
     root: Path
