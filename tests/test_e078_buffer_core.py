@@ -43,6 +43,15 @@ class BufferTests(unittest.TestCase):
         self.assertIsNone(self.buf.read("a", policy=self.allow, authorized=False))
         self.assertIsNone(self.buf.read("a", policy=buffer.BufferPolicy(), authorized=True))
 
+    def test_tightened_retention_is_enforced_on_read(self):
+        self.buf.set_enabled(True)
+        self.assertTrue(self.buf.write("a", b"one",
+                                       policy=self.allow, authorized=True))
+        self.time += 5
+        stricter = buffer.BufferPolicy(True, True, False, 3)
+        self.assertIsNone(self.buf.read("a", policy=stricter, authorized=True))
+        self.assertEqual(self.buf.stats()["bytes"], 0)
+
     def test_prefetch_denied_separately(self):
         self.buf.set_enabled(True)
         self.assertFalse(self.buf.write("a", b"one", policy=self.allow,
