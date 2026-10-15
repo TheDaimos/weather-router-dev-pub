@@ -274,6 +274,20 @@ class WebsocketHarnessTests(unittest.IsolatedAsyncioTestCase):
             ["wide_world/radar_layer", "regional_radar/radar_layer"],
         )
 
+    async def test_duplicates_alone_do_not_claim_contact_budget_exhausted(self):
+        duplicates = []
+        for index in range(15):
+            candidate = FakeCandidate(self.world)
+            candidate.score = (index, 0, 0)
+            duplicates.append(candidate)
+        self.rows[:] = duplicates
+        await self.handler(None, self.connection, request())
+        self.assertEqual(self.connection.errors, [])
+        self.assertEqual(self.world.calls, 2)
+        limitations = self.connection.results[0][1]["limitations"]
+        self.assertFalse(any("Coverage-Kontaktbudget" in item
+                             for item in limitations))
+
     async def test_invalid_version_rejected_before_network(self):
         wrong = request()
         wrong["contract_version"] = 1
