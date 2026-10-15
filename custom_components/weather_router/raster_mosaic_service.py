@@ -41,6 +41,7 @@ async def resolve_mosaic_snapshot(
     sources: Sequence[Mapping[str, Any]],
     server_now: str | None = None,
     fetch_timeout_seconds: float = 5.0,
+    contact_semaphore: asyncio.Semaphore | None = None,
 ) -> dict[str, Any]:
     """Resolve trusted provider descriptors to a non-operational V2 plan.
 
@@ -91,7 +92,13 @@ async def resolve_mosaic_snapshot(
     eligible.sort(key=lambda row: _contact_priority(row, viewport))
     limited = eligible[:contact_budget]
     omitted_for_budget = max(0, len(eligible) - len(limited))
-    semaphore = asyncio.Semaphore(MAX_PARALLEL_CONTACTS)
+    # The live WS gateway supplies ONE shared gate for coverage and raster
+    # contacts across concurrent consumers. Standalone synthetic calls retain
+    # a bounded private gate and cannot accidentally share event-loop state.
+    semaphore = (contact_semaphore if contact_semaphore is not None
+                 else asyncio.Semaphore(MAX_PARALLEL_CONTACTS))
+    if not isinstance(semaphore, asyncio.Semaphore):
+        raise TypeError("Invalid shared provider contact semaphore")
 
     async def _fetch(source: Mapping[str, Any]) -> dict[str, Any] | None:
         try:
