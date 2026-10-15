@@ -25,6 +25,14 @@ class BufferContext:
 class BufferPolicyRegistry:
     def __init__(self) -> None:
         self._policies: dict[str, Callable[[BufferContext], BufferPolicy]] = {}
+        self._invalidators: list[Callable[[], None]] = []
+
+    def subscribe_invalidation(self, callback: Callable[[], None]) -> None:
+        self._invalidators.append(callback)
+
+    def _invalidate(self) -> None:
+        for callback in self._invalidators:
+            callback()
 
     def register(self, extension_id: str,
                  function: Callable[[BufferContext], BufferPolicy]) -> None:
@@ -33,9 +41,12 @@ class BufferPolicyRegistry:
                 or not callable(function) or extension_id in self._policies):
             raise ValueError("invalid or duplicate policy registration")
         self._policies[extension_id] = function
+        self._invalidate()
 
     def unregister(self, extension_id: str) -> None:
-        self._policies.pop(extension_id, None)
+        if extension_id in self._policies:
+            self._policies.pop(extension_id)
+            self._invalidate()
 
     def decide(self, context: BufferContext) -> BufferPolicy:
         if (not isinstance(context, BufferContext)
@@ -60,6 +71,7 @@ class PolicyControlledBuffer:
                  registry: BufferPolicyRegistry) -> None:
         self._buffer = buffer
         self._registry = registry
+        registry.subscribe_invalidation(buffer.clear)
 
     def _key(self, context: BufferContext) -> tuple[str, str, str, str]:
         # Cache entries are scoped to consumer and spatial/time identifier.
