@@ -133,7 +133,23 @@ async def websocket_consumer_resolve_mosaic(
     for row in ranked:
         key = (row.provider.id, row.capability.id)
         unique.setdefault(key, row)
-    preflight = list(unique.values())[:MAX_COVERAGE_CONTACTS]
+    # Select in score-preserving rounds across distinct providers. A provider
+    # exposing many capabilities cannot consume every discovery slot before
+    # another authorized provider receives its first chance. No additional
+    # contact is made, and no unverified geographic extent is inferred.
+    remaining = list(unique.values())
+    preflight = []
+    while remaining and len(preflight) < MAX_COVERAGE_CONTACTS:
+        seen_providers = set()
+        next_round = []
+        for row in remaining:
+            if (row.provider.id not in seen_providers
+                    and len(preflight) < MAX_COVERAGE_CONTACTS):
+                preflight.append(row)
+                seen_providers.add(row.provider.id)
+            else:
+                next_round.append(row)
+        remaining = next_round
     semaphore = asyncio.Semaphore(MAX_COVERAGE_CONCURRENT)
 
     async def _source(row: Any) -> dict[str, Any] | None:
