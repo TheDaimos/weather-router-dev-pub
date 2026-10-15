@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from math import isfinite
 from pathlib import Path
 from typing import Any
@@ -31,6 +31,7 @@ from .const import (
 )
 from .consumer_api import async_register as async_register_consumer_api
 from .consumer_profiles import validate_consumer_profiles
+from .buffer_core import IsolatedBuffer
 from .extensions import async_notify_routing_changed, async_setup_extensions, async_unload_extensions
 from .websocket_api import async_register as async_register_websocket_api
 from .routing_diagnostics import async_register as async_register_routing_diagnostics_api
@@ -108,6 +109,7 @@ class WeatherRouterRuntimeData:
 
     hass: HomeAssistant
     entry: ConfigEntry[WeatherRouterRuntimeData]
+    buffer_runtime: IsolatedBuffer = field(default_factory=IsolatedBuffer)
 
     def get(self, key: str) -> Any:
         """Return a setting from Config Entry options."""
@@ -122,6 +124,8 @@ class WeatherRouterRuntimeData:
         except ValueError as err:
             raise ServiceValidationError(str(err)) from err
         self.hass.config_entries.async_update_entry(self.entry, options=options)
+        if key == CONF_BUFFER_ENABLED:
+            self.buffer_runtime.set_enabled(value)
 
     def consumer_profiles(self) -> dict[str, dict[str, Any]]:
         """Return a defensive copy of persisted Consumer API profiles."""
@@ -239,6 +243,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: WeatherRouterConfigEntry
         hass.config_entries.async_update_entry(entry, options=options)
 
     entry.runtime_data = WeatherRouterRuntimeData(hass=hass, entry=entry)
+    entry.runtime_data.buffer_runtime.set_enabled(options[CONF_BUFFER_ENABLED])
     await async_setup_extensions(hass, entry)
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     await _async_register_lab_panel(hass)
@@ -249,6 +254,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: WeatherRouterConfigEntr
     """Unload WeatherRouter cleanly, including its development Lab panel."""
     unloaded = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
     if unloaded:
+        entry.runtime_data.buffer_runtime.set_enabled(False)
         await async_unload_extensions(hass, entry)
         frontend.async_remove_panel(hass, LAB_URL_PATH, warn_if_unknown=False)
     return unloaded
