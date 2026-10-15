@@ -302,6 +302,30 @@ class WebsocketHarnessTests(unittest.IsolatedAsyncioTestCase):
                           for layer in self.connection.results[0][1]["layers"]],
                          ["wide_world/radar_layer"])
 
+    async def test_many_capabilities_of_one_provider_leave_room_for_world(self):
+        # A dozen distinct capabilities from one provider must not exclude
+        # a separate authorized global provider from the coverage preflight.
+        many = FakeProvider("many_capabilities", {
+            "scope": "bbox",
+            "bbox": {"west": 5, "south": 46, "east": 16, "north": 56},
+        })
+        rows = []
+        for index in range(12):
+            candidate = FakeCandidate(many)
+            candidate.capability = types.SimpleNamespace(
+                id=f"raster_{index}", render_mode="raster_tile")
+            candidate.score = (0, index, 0)
+            rows.append(candidate)
+        world = FakeCandidate(self.world)
+        world.score = (1, 0, 0)
+        self.rows[:] = rows + [world]
+        await self.handler(None, self.connection, request())
+        self.assertEqual(self.connection.errors, [])
+        self.assertEqual(self.world.calls, 2)
+        self.assertLessEqual(many.calls, 22)
+        self.assertEqual(self.connection.results[0][1]["layers"][0]["source_id"],
+                         "wide_world/radar_layer")
+
     async def test_invalid_version_rejected_before_network(self):
         wrong = request()
         wrong["contract_version"] = 1
