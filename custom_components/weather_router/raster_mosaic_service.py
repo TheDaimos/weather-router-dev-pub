@@ -68,7 +68,9 @@ async def resolve_mosaic_snapshot(
     limits = query["limits"]
     # Every simultaneously rendered layer costs at least one tile request.
     # Reject plans already larger than the consumer's complete request budget.
-    active_layer_budget = min(limits["max_layers"], limits["max_tile_requests"])
+    # Until the active Gewitterradar GridLayer can safely compose more,
+    # never return a mosaic with more than four active layers.
+    active_layer_budget = min(limits["max_layers"], limits["max_tile_requests"], 4)
     contact_budget = min(MAX_CANDIDATE_CONTACTS, active_layer_budget * 3)
     eligible: list[Mapping[str, Any]] = []
     for source in sources:
@@ -127,6 +129,10 @@ async def resolve_mosaic_snapshot(
     if active_layer_budget < limits["max_layers"]:
         answer["limitations"].append(
             "Quellenzahl durch angefordertes Kachelbudget eingeschraenkt")
+    if limits["max_layers"] > 4:
+        answer["limitations"].append(
+            "Gewitterradar-Rasterdarstellung vorerst auf vier Quellen begrenzt"
+        )
     if omitted_for_budget:
         answer["limitations"].append(
             f"{omitted_for_budget} weitere Quellen wegen Kontaktbegrenzung nicht abgefragt")
