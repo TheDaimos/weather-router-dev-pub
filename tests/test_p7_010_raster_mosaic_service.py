@@ -99,15 +99,18 @@ class RasterMosaicServiceTests(unittest.TestCase):
                       fetch_timeout_seconds=.001)
         self.assertEqual([x["source_id"] for x in got["layers"]], ["world"])
 
-    def test_provider_contacts_limited_independently_of_candidates(self):
+    def test_provider_contacts_limited_independently_of_render_layers(self):
         calls = []
         sources = [source("global", calls=calls)] + [
-            source(f"region_{n}", REGION_CUBA, calls=calls) for n in range(10)
+            source(f"region_{n}", REGION_CUBA, calls=calls) for n in range(15)
         ]
         got = resolve(sources, request(1))
-        self.assertLessEqual(len(calls), 3)
+        # One composited layer must not limit discovery to three providers.
+        self.assertEqual(len(calls), service.MAX_CANDIDATE_CONTACTS)
         self.assertEqual(len(got["layers"]), 1)
         self.assertTrue(any("Kontaktbegrenzung" in x for x in got["limitations"]))
+        self.assertTrue(any("Ressourcenbegrenzung" in item
+                            for item in got["limitations"]))
 
     def test_minimum_tile_budget_limits_simultaneous_layers(self):
         req = request(4)
