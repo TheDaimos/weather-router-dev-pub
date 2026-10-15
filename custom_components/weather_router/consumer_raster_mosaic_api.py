@@ -182,7 +182,7 @@ async def websocket_consumer_resolve_mosaic(
             connection.send_error(msg["id"], "mosaic_temporarily_unavailable",
                                   "Die mehrteilige Rasterauflösung ist derzeit nicht verfügbar.")
             return
-        if len(authorized) > len(preflight):
+        if len(unique) > len(preflight):
             result["limitations"].append(
                 "Weitere berechtigte Quellen wurden durch das Coverage-Kontaktbudget nicht geprüft.")
         if len(sources) < len(preflight):
