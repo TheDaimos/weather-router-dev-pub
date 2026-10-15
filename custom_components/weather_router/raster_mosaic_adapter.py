@@ -86,42 +86,33 @@ def make_mosaic_candidate(
         return None
     required = ("quantity", "unit", "measurement_method", "observation_kind")
     if any(not isinstance(semantics.get(k), str) or not semantics[k].strip()
-           for k in ("quantity", "measurement_method", "observation_kind")):
+           for k in required):
         return None
-    # V1 permits an unknown numeric unit (e.g. reflectivity palettes).
-    # Keep it explicitly null rather than fabricating a measurement scale.
-    if "unit" not in semantics or (
-        semantics["unit"] is not None
-        and (not isinstance(semantics["unit"], str)
-             or not semantics["unit"].strip())
-    ):
-        return None
-    # Preserve the existing V1 display contract. A regional overlay may have
-    # different native tiles, zoom validity and default opacity.
+    # The active Gewitterradar V2 consumer requires an explicit render contract.
+    # Keep its values tied to the already normalized V1 raster descriptor.
     tile_size = payload.get("tile_size", 256)
-    min_zoom = payload.get("min_zoom", 0)
-    max_zoom = payload.get("max_zoom", 18)
-    opacity = payload.get("default_opacity", 1)
-    if (type(tile_size) is not int or tile_size not in (128, 256, 512)
-            or any(isinstance(x, bool) or not isinstance(x, (int, float))
-                   or not isfinite(x) for x in (min_zoom, max_zoom, opacity))
-            or not 0 <= min_zoom <= max_zoom <= 24
+    minimum = payload.get("min_zoom", 0)
+    maximum = payload.get("max_zoom", 18)
+    opacity = payload.get("default_opacity", 0.7)
+    if type(tile_size) is not int or tile_size not in (128, 256, 512):
+        return None
+    if (any(isinstance(n, bool) or not isinstance(n, (int, float))
+            or not isfinite(n) for n in (minimum, maximum, opacity))
+            or not 0 <= minimum <= maximum <= 24
             or not 0 <= opacity <= 1):
         return None
     render = {
         "tile_size": tile_size,
-        "min_zoom": float(min_zoom),
-        "max_zoom": float(max_zoom),
+        "min_zoom": float(minimum),
+        "max_zoom": float(maximum),
         "opacity": float(opacity),
     }
-
     candidate = {
         "source_id": source_id,
         "eligible": True,
         "verified_coverage": True,
         "coverage": coverage,
         "resource_type": "raster_tile",
-        "render": render,
         "tile_url": tile_url,
         "data_time": data_time,
         "retrieved_at": retrieved_at,
@@ -129,6 +120,7 @@ def make_mosaic_candidate(
         "legend": dict(legend),
         "semantics": {k: semantics[k] for k in required},
         "routing_score": list(routing_score),
+        "render": render,
     }
     timeline = payload.get("timeline")
     if isinstance(timeline, Mapping) and isinstance(timeline.get("frames"), list):
