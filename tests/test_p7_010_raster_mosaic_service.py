@@ -206,6 +206,53 @@ class RasterMosaicServiceTests(unittest.TestCase):
         self.assertTrue(any("Kontaktbegrenzung" in line
                             for line in result["limitations"]))
 
+    def test_share_provider_gate_across_concurrent_consumers(self):
+        # Two independent mosaics must never double the maximum live
+        # provider concurrency. Uses no network, HA or private provider data.
+        async def exercise():
+            gate = asyncio.Semaphore(service.MAX_PARALLEL_CONTACTS)
+            active = 0
+            peak = 0
+            calls = 0
+
+            def make(name):
+                async def fetch():
+                    nonlocal active, peak, calls
+                    active += 1
+                    calls += 1
+                    peak = max(peak, active)
+                    try:
+                        await asyncio.sleep(.008)
+                    finally:
+                        active -= 1
+                    return {"tile_url": "https://example.invalid/{z}/{x}/{y}.png",
+                            "frame_time": TIME, "attribution": name,
+                            "legend": {"title": name}}
+                row = source(name, WORLD)
+                row["async_fetch"] = fetch
+                return row
+
+            async def consumer(prefix):
+                inventory = [make(f"{prefix}_{index}") for index in range(9)]
+                return await service.resolve_mosaic_snapshot(
+                    request(9), sources=inventory,
+                    server_now="2026-10-14T15:08:00Z",
+                    contact_semaphore=gate)
+
+            first, second = await asyncio.gather(
+                consumer("consumer_a"), consumer("consumer_b"))
+            self.assertEqual(calls, 18)
+            self.assertEqual(len(first["layers"]), 9)
+            self.assertEqual(len(second["layers"]), 9)
+            self.assertLessEqual(peak, service.MAX_PARALLEL_CONTACTS)
+            self.assertEqual(active, 0)
+
+        asyncio.run(exercise())
+
+    def test_reject_invalid_shared_contact_gate(self):
+        with self.assertRaises(TypeError):
+            resolve([source("world")], contact_semaphore=object())
+
     def test_time_coherent_frame_chosen(self):
         frames = [{"time": "2026-10-14T15:07:00Z",
                    "tile_url": "https://example.invalid/latest.png"},
