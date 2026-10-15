@@ -66,11 +66,13 @@ async def resolve_mosaic_snapshot(
     viewport = {name: query["context"][name]
                 for name in ("west", "south", "east", "north")}
     limits = query["limits"]
-    # Every simultaneously rendered layer costs at least one tile request.
-    # Reject plans already larger than the consumer's complete request budget.
-    # Until the active Gewitterradar GridLayer can safely compose more,
-    # never return a mosaic with more than four active layers.
-    active_layer_budget = min(limits["max_layers"], limits["max_tile_requests"], 4)
+    # V2 layer descriptors are whole-viewport planning metadata, NOT
+    # tile-fetch operations. A 12-source mosaic may cost just one source
+    # per tile when the envelopes do not overlap.
+    # The later consumer renderer MUST enforce its own independent
+    # max_tile_requests total and per-tile visual overlap limits.
+    # Provider contacts use their separate concurrency/contact caps below.
+    active_layer_budget = min(limits["max_layers"], 12)
     # Provider contacts and composited layers are separate resource budgets.
     # A low layer limit must not silently reduce discovery of geographically
     # suitable sources; the hard request contact and concurrency caps remain.
@@ -129,13 +131,10 @@ async def resolve_mosaic_snapshot(
     )
     answer["limitations"].append(
         "Kachelbudget muss durch spaeteren aktiven Renderer erzwungen werden")
-    if active_layer_budget < limits["max_layers"]:
+    if limits["max_tile_requests"] < len(answer["layers"]):
         answer["limitations"].append(
-            "Quellenzahl durch angefordertes Kachelbudget eingeschraenkt")
-    if limits["max_layers"] > 4:
-        answer["limitations"].append(
-            "Gewitterradar-Rasterdarstellung vorerst auf vier Quellen begrenzt"
-        )
+            "Kachelanfragebudget ist getrennt vom Quellenbudget und muss "
+            "im spaeteren Consumer-Renderer erzwungen werden")
     if omitted_for_budget:
         answer["limitations"].append(
             f"{omitted_for_budget} weitere Quellen wegen Kontaktbegrenzung nicht abgefragt")

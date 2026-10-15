@@ -112,15 +112,68 @@ class RasterMosaicServiceTests(unittest.TestCase):
         self.assertTrue(any("Ressourcenbegrenzung" in item
                             for item in got["limitations"]))
 
-    def test_minimum_tile_budget_limits_simultaneous_layers(self):
+    def test_twenty_five_candidates_do_not_force_provider_contacts(self):
+        calls = []
+        # All 25 remain in the trusted inventory; only the explicit contact
+        # budget may trigger provider work, independently of max_layers.
+        sources = [source("world", WORLD, calls=calls)] + [
+            source(f"candidate_{n}", REGION_CUBA, calls=calls)
+            for n in range(24)
+        ]
+        got = resolve(sources, request(1))
+        self.assertEqual(len(sources), 25)
+        self.assertEqual(len(calls), service.MAX_CANDIDATE_CONTACTS)
+        self.assertEqual(len(set(calls)), len(calls))
+        self.assertEqual(len(got["layers"]), 1)
+        self.assertTrue(any("Kontaktbegrenzung" in note
+                            for note in got["limitations"]))
+
+    def test_outside_coverage_candidates_do_not_consume_contacts(self):
+        calls = []
+        outside = {"scope": "bbox", "bbox": {
+            "west": 100, "south": -40, "east": 120, "north": -20}}
+        sources = [
+            source(f"outside_{n}", outside, calls=calls)
+            for n in range(21)
+        ] + [source("world", WORLD, calls=calls)]
+        got = resolve(sources, request(1))
+        self.assertEqual(calls, ["world"])
+        self.assertEqual([row["source_id"] for row in got["layers"]], ["world"])
+
+    def test_twelve_spatial_sources_in_one_mosaic(self):
+        calls = []
+        # One broad foundation plus eleven local envelopes, all eligible.
+        sources = [source("world", WORLD, calls=calls)] + [
+            source(f"regional_{n}", REGION_CUBA, calls=calls)
+            for n in range(11)
+        ]
+        got = resolve(sources, request(12))
+        self.assertEqual(len(calls), 12)
+        self.assertEqual(len(got["layers"]), 12)
+        self.assertEqual(got["layers"][0]["source_id"], "world")
+        self.assertEqual(got["status"], "partial")
+        self.assertFalse(any("vorerst auf vier" in item
+                             for item in got["limitations"]))
+
+    def test_twelve_descriptors_independent_of_tile_request_budget(self):
+        req = request(12)
+        req["limits"]["max_tile_requests"] = 3
+        got = resolve([source("world", WORLD)] + [
+            source(f"regional_{n}", REGION_CUBA) for n in range(11)
+        ], req)
+        self.assertEqual(len(got["layers"]), 12)
+        self.assertTrue(any("Kachelanfragebudget ist getrennt" in item
+                            for item in got["limitations"]))
+
+    def test_one_tile_request_does_not_suppress_mosaic_descriptors(self):
         req = request(4)
         req["limits"]["max_tile_requests"] = 1
         got = resolve([source("world", WORLD),
                        source("regional_1", REGION_CUBA),
                        source("regional_2", REGION_DE)], req)
-        self.assertEqual(len(got["layers"]), 1)
+        self.assertEqual(len(got["layers"]), 3)
         self.assertEqual(got["layers"][0]["source_id"], "world")
-        self.assertTrue(any("Kachelbudget eingeschraenkt" in line
+        self.assertTrue(any("Kachelanfragebudget ist getrennt" in line
                             for line in got["limitations"]))
 
     def test_never_exceeds_three_simultaneous_contacts(self):
