@@ -47,7 +47,7 @@ class IsolatedBuffer:
                 or type(max_bytes) is not int or not 1 <= max_bytes <= MAX_BYTES):
             raise ValueError("invalid resource cap")
         self._enabled = False
-        self._entries: OrderedDict[Hashable, tuple[bytes, float]] = OrderedDict()
+        self._entries: OrderedDict[Hashable, tuple[bytes, float, float]] = OrderedDict()
         self._max_entries = max_entries
         self._max_bytes = max_bytes
         self._clock = clock
@@ -76,7 +76,7 @@ class IsolatedBuffer:
 
     def _purge(self) -> None:
         now = self._clock()
-        for key, (_, deadline) in list(self._entries.items()):
+        for key, (_, _created_at, deadline) in list(self._entries.items()):
             if deadline <= now:
                 self._remove(key)
 
@@ -98,7 +98,8 @@ class IsolatedBuffer:
                (len(self._entries) >= self._max_entries
                 or self._bytes + len(data) > self._max_bytes)):
             self._remove(next(iter(self._entries)))
-        self._entries[key] = (data, self._clock() + rule.ttl_seconds)
+        now = self._clock()
+        self._entries[key] = (data, now, now + rule.ttl_seconds)
         self._bytes += len(data)
         return True
 
@@ -115,6 +116,11 @@ class IsolatedBuffer:
         self._purge()
         item = self._entries.get(key)
         if item is None:
+            return None
+        # A tighter effective policy must take effect immediately, even when
+        # this item was written with a previously longer permissible TTL.
+        if rule.ttl_seconds <= 0 or item[1] + rule.ttl_seconds <= self._clock():
+            self._remove(key)
             return None
         self._entries.move_to_end(key)
         self._hits += 1
