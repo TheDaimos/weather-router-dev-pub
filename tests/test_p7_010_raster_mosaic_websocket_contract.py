@@ -288,6 +288,20 @@ class WebsocketHarnessTests(unittest.IsolatedAsyncioTestCase):
         self.assertFalse(any("Coverage-Kontaktbudget" in item
                              for item in limitations))
 
+    async def test_outside_coverage_does_not_fetch_raster(self):
+        outside = FakeProvider("outside", {
+            "scope": "bbox",
+            "bbox": {"west": 110, "south": -35, "east": 155, "north": -10},
+        })
+        self.rows[:] = [FakeCandidate(outside), FakeCandidate(self.world)]
+        await self.handler(None, self.connection, request())
+        self.assertEqual(self.connection.errors, [])
+        self.assertEqual(outside.calls, 1)
+        self.assertEqual(self.world.calls, 2)
+        self.assertEqual([layer["source_id"]
+                          for layer in self.connection.results[0][1]["layers"]],
+                         ["wide_world/radar_layer"])
+
     async def test_invalid_version_rejected_before_network(self):
         wrong = request()
         wrong["contract_version"] = 1
