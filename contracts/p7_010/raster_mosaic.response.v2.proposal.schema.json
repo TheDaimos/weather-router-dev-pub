@@ -132,11 +132,7 @@
               "type": "string"
             },
             "unit": {
-              "type": [
-                "string",
-                "null"
-              ],
-              "description": "Unknown/undefined numerical units must remain null, not fabricated."
+              "type": "string"
             },
             "measurement_method": {
               "type": "string"
@@ -217,7 +213,6 @@
           ],
           "properties": {
             "tile_size": {
-              "type": "integer",
               "enum": [
                 128,
                 256,
