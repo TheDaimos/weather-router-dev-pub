@@ -71,7 +71,10 @@ async def resolve_mosaic_snapshot(
     # Until the active Gewitterradar GridLayer can safely compose more,
     # never return a mosaic with more than four active layers.
     active_layer_budget = min(limits["max_layers"], limits["max_tile_requests"], 4)
-    contact_budget = min(MAX_CANDIDATE_CONTACTS, active_layer_budget * 3)
+    # Provider contacts and composited layers are separate resource budgets.
+    # A low layer limit must not silently reduce discovery of geographically
+    # suitable sources; the hard request contact and concurrency caps remain.
+    contact_budget = MAX_CANDIDATE_CONTACTS
     eligible: list[Mapping[str, Any]] = []
     for source in sources:
         if (not isinstance(source, Mapping) or source.get("eligible") is not True
