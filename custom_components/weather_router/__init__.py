@@ -21,6 +21,7 @@ from .const import (
     CONF_CONSUMER_PROFILES,
     CONF_REFERENCE_LOCATION,
     CONF_ROUTER_ENABLED,
+    CONF_BUFFER_ENABLED,
     DEFAULT_OPTIONS,
     DOMAIN,
     INTEGRATION_VERSION,
@@ -51,6 +52,8 @@ def _validate_options(options: dict[str, Any]) -> None:
 
     if not isinstance(options[CONF_ROUTER_ENABLED], bool):
         raise ValueError("router_enabled must be boolean")
+    if not isinstance(options[CONF_BUFFER_ENABLED], bool):
+        raise ValueError("buffer_enabled must be boolean")
 
     domains = options[CONF_ENABLED_DOMAINS]
     if (
