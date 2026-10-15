@@ -148,6 +148,7 @@ class WebsocketHarnessTests(unittest.IsolatedAsyncioTestCase):
 
         environment = {
             "asyncio": asyncio,
+            "_LIVE_REQUEST_SLOTS": asyncio.Semaphore(2),
             "validate_raster_mosaic_request": validator.validate_raster_mosaic_request,
             "MosaicContractError": validator.MosaicContractError,
             "viewport_overlap": policy.viewport_overlap,
