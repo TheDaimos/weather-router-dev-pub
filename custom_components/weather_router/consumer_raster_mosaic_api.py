@@ -123,7 +123,10 @@ async def websocket_consumer_resolve_mosaic(
 
     # Explicit bounded metadata preflight, before any raster provider contact.
     # Machine coverage is never guessed from a provider's name or country.
-    preflight = authorized[:MAX_COVERAGE_CONTACTS]
+    # Preserve Core's provider-neutral candidate score, rather than allowing
+    # incidental catalog order to determine which candidates get preflight.
+    # Python's stable sort retains catalog order only for equal scores.
+    preflight = sorted(authorized, key=lambda row: tuple(row.score))[:MAX_COVERAGE_CONTACTS]
     semaphore = asyncio.Semaphore(MAX_COVERAGE_CONCURRENT)
 
     async def _source(row: Any) -> dict[str, Any] | None:

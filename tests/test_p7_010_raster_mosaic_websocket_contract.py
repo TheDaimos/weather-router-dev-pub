@@ -201,6 +201,30 @@ class WebsocketHarnessTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(self.connection.results[0][1]["layers"][0]["source_id"],
                          "wide_world/radar_layer")
 
+    async def test_coverage_budget_uses_core_score_not_catalog_order(self):
+        # Twelve lower-ranked candidates precede a better world source.
+        # The top-ranked source must still receive a coverage preflight.
+        rows = []
+        for index in range(12):
+            provider = FakeProvider(f"low_{index}", {
+                "scope": "bbox",
+                "bbox": {"west": 5, "south": 46, "east": 16, "north": 56},
+            })
+            candidate = FakeCandidate(provider)
+            candidate.score = (9, 9, index)
+            rows.append(candidate)
+        best = FakeCandidate(self.world)
+        best.score = (0, 0, 0)
+        rows.append(best)
+        self.rows[:] = rows
+        await self.handler(None, self.connection, request())
+        self.assertEqual(self.connection.errors, [])
+        self.assertGreater(self.world.calls, 0)
+        result = self.connection.results[0][1]
+        self.assertEqual(result["layers"][0]["source_id"], "wide_world/radar_layer")
+        self.assertTrue(any("Coverage-Kontaktbudget" in entry
+                            for entry in result["limitations"]))
+
     async def test_invalid_version_rejected_before_network(self):
         wrong = request()
         wrong["contract_version"] = 1
