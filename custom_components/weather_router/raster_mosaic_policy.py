@@ -108,11 +108,17 @@ def _point_inside(point: Mapping[str, Any] | None, coverage: Mapping[str, Any]) 
     return any(w <= lon <= e for w, e in _segments(box))
 
 
-def _semantics(candidate: Mapping[str, Any]) -> dict[str, str] | None:
+def _semantics(candidate: Mapping[str, Any]) -> dict[str, str | None] | None:
     info = candidate.get("semantics")
     keys = ("quantity", "unit", "measurement_method", "observation_kind")
     if not isinstance(info, Mapping) or any(
-        not isinstance(info.get(k), str) or not info[k].strip() for k in keys
+        not isinstance(info.get(k), str) or not info[k].strip()
+        for k in ("quantity", "measurement_method", "observation_kind")
+    ):
+        return None
+    if "unit" not in info or (
+        info["unit"] is not None
+        and (not isinstance(info["unit"], str) or not info["unit"].strip())
     ):
         return None
     return {k: info[k] for k in keys}
@@ -276,18 +282,19 @@ def plan_raster_mosaic(
         layers.append({
             "source_id": candidate["source_id"],
             "resource_type": "raster_tile",
+            "render": dict(candidate.get("render") or {
+                "tile_size": 256, "min_zoom": 0.0,
+                "max_zoom": 18.0, "opacity": 1.0,
+            }),
             "coverage": area,
             "coverage_verified": True,  # verified envelope, NOT a complete pixel mask
             "coverage_scope": coverage["scope"],
             "tile_url": item["tile_url"],
-            "render": dict(candidate.get("render") or {
-                "tile_size": 256, "min_zoom": 0.0,
-                "max_zoom": 18.0, "opacity": 0.7,
-            }),
             "semantics": item["semantics"],
             "times": {
                 "valid_at": _iso(timestamp),
-                "observed_at": _iso(timestamp),
+                # A layer validity frame is not proof of an observation time.
+                "observed_at": None,
                 "retrieved_at": (candidate["retrieved_at"]
                                  if isinstance(candidate.get("retrieved_at"), str)
                                  and _time(candidate["retrieved_at"]) is not None
