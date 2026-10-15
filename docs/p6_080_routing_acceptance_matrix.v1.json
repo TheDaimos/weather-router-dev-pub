@@ -1,0 +1,172 @@
+{
+  "schema": "weather_router.p6_080.routing_acceptance_matrix.v1",
+  "date": "2026-10-13",
+  "phase": "P6-080",
+  "phase_status": "DONE",
+  "core": {
+    "providers": 38,
+    "internal": 280,
+    "public": 227,
+    "edges": 286,
+    "multi_candidate_public": 23,
+    "single_candidate_public": 204
+  },
+  "domains": [
+    {
+      "id": "aviation",
+      "public_ids": 3,
+      "representative_ids": [
+        "aviation.sigmet.international"
+      ],
+      "historical_phase": "P5-AVIATION-60",
+      "evidence": "Prior subject-specific HA tests recorded as DONE in private routing plan; not re-executed during P6-080"
+    },
+    {
+      "id": "biological_hazards",
+      "public_ids": 88,
+      "representative_ids": [
+        "biological_hazards.occurrence.lion.density"
+      ],
+      "historical_phase": "P5-BIO-60",
+      "evidence": "Prior subject-specific HA tests recorded as DONE in private routing plan; not re-executed during P6-080"
+    },
+    {
+      "id": "civil_protection",
+      "public_ids": 1,
+      "representative_ids": [
+        "civil_protection.warning.official"
+      ],
+      "historical_phase": "P5-CIVIL-60",
+      "evidence": "Prior subject-specific HA tests recorded as DONE in private routing plan; not re-executed during P6-080"
+    },
+    {
+      "id": "natural_hazards",
+      "public_ids": 20,
+      "representative_ids": [
+        "natural_hazards.tsunami.warnings",
+        "natural_hazards.earthquake.events"
+      ],
+      "historical_phase": "P4",
+      "evidence": "Prior subject-specific HA tests recorded as DONE in private routing plan; not re-executed during P6-080"
+    },
+    {
+      "id": "pollen",
+      "public_ids": 6,
+      "representative_ids": [
+        "pollen.birch"
+      ],
+      "historical_phase": "P5-POLLEN-60",
+      "evidence": "Prior subject-specific HA tests recorded as DONE in private routing plan; not re-executed during P6-080"
+    },
+    {
+      "id": "security",
+      "public_ids": 1,
+      "representative_ids": [
+        "security.public_warning.official"
+      ],
+      "historical_phase": "P5-SECURITY-60",
+      "evidence": "Prior subject-specific HA tests recorded as DONE in private routing plan; not re-executed during P6-080"
+    },
+    {
+      "id": "space",
+      "public_ids": 33,
+      "representative_ids": [
+        "space.iss.live"
+      ],
+      "historical_phase": "P5-SPACE-60",
+      "evidence": "Prior subject-specific HA tests recorded as DONE in private routing plan; not re-executed during P6-080"
+    },
+    {
+      "id": "weather",
+      "public_ids": 75,
+      "representative_ids": [
+        "weather.precipitation.layer",
+        "weather.point.temperature"
+      ],
+      "historical_phase": "P0 / P3",
+      "evidence": "Prior subject-specific HA tests recorded as DONE in private routing plan; not re-executed during P6-080"
+    }
+  ],
+  "test_evidence": {
+    "prior": [
+      "P6-030 orphan graph",
+      "P6-040 deny-only profile policy",
+      "P6-050 trace instrumentation",
+      "P6-060 resource guard and six successful real catalog refreshes",
+      "P6-070 documentation synchronization"
+    ],
+    "new": [
+      "P6-080 catalog effective candidate eligibility: public CI #62 completed/success",
+      "P6-080 catalog visible feedback: public CI #64 completed/success (not a visual HA acceptance)",
+      "P6-080 consistent 0.10.147 DEV / Loader 150 release: public CI #76 completed/success",
+      "P6-080 profile no-model rejection: private HA REAL PASS, six of six candidates filtered, zero provider contacts",
+      "P6-080 first-candidate winner_reason diagnostic correction: public CI #84 completed/success (not deployed)",
+      "P6-080/2 visual result acceptance: screenshot + user confirmation, visible green 227/227 success in 66 ms; loading interim not human-observable at this speed",
+      "P6-080/3 shared release candidate: public CI #93 and #94 completed/success; five tested blobs on deploy/dev 9bb9d97062d0; HA installation pending",
+      "P6-080/3 winner reason confirmed REAL PASS in private HA under WR 0.10.148 / Loader 151; 0 false fallback and no errors"
+    ],
+    "ha_runtime_proof": "WR 0.10.148 DEV / Loader 151 installed and confirmed by private HA trace. P6-080/1 no-model profile PASS, P6-080/2 catalog result visual PASS, P6-080/3 winner diagnostic REAL PASS. Overall routing phase not formally released until final CI and written sign-off.",
+    "privacy": "No raw logs, user locations or credentials in this document",
+    "evidence_boundary": "Prior P0-P6 domain paths accepted at their historical runtime versions. Catalog eligibility is not 227 live provider fetches. Do not copy raw HA diagnostics to source/CI repositories."
+  },
+  "open_gates": [
+    {
+      "id": "P6-080-HA-1",
+      "requirement": "Deny-only model-profile resolve with all six candidates filtered, zero provider contacts",
+      "status": "PASS",
+      "evidence": "Private HA acceptance 2026-10-13; WeatherRouter 0.10.147 DEV / Loader 150"
+    },
+    {
+      "id": "P6-080-RELEASE",
+      "requirement": "Consistent version and loader on audited DRA source; runtime receipt verified",
+      "status": "PASS",
+      "evidence": "Public CI #93/#94 SUCCESS; deploy/dev 9bb9d97062d0c9f52693564b9e368e2c4c2766b0; WR 0.10.148 DEV / Loader 151 confirmed in private HA real trace"
+    },
+    {
+      "id": "P6-080-CATALOG-VISUAL",
+      "requirement": "Confirm visibly usable catalog result in installed HA UI; loading/error states protected by static regression, without forcing an artificial delay for fast responses",
+      "status": "PASS",
+      "evidence": "User screenshot and explicit feedback 2026-10-14: clearly visible green result 227/227, 66 ms, 00:36:50; instantaneous completion, interim loading text not perceptible in 66 ms; CI #64 covers loading/error states"
+    },
+    {
+      "id": "P6-080-WINNER-TRACE",
+      "requirement": "Single runtime confirmation of corrected first-winner reason with fallback_count=0 after bundled deployment",
+      "status": "PASS",
+      "evidence": "Private HA real acceptance 2026-10-14, WR 0.10.148 DEV / Loader 151, first candidate selected, fallback_count=0, reason_code=eligible_candidate, one provider contacted, zero errors"
+    },
+    {
+      "id": "P6-080-GESAMT",
+      "requirement": "Classify eight domain proofs, verify remaining evidence, complete routing-wide sign-off before enabling P7",
+      "status": "PASS",
+      "evidence": "8 domains and P6-010..070 verified; P6-080/1..3 PASS; CI #98 and #99 success"
+    }
+  ],
+  "limitations": [
+    "Catalog availability is an eligibility statement, not proof of successful remote provider retrieval",
+    "Previous HA proofs were under their historical builds",
+    "No quantitative per-request resource measurements from earlier P6-060 logs",
+    "Browser unhandled_rejection cause remains unknown"
+  ],
+  "as_of": "2026-10-14",
+  "evidence_levels": {
+    "static_catalog": "All 227 public IDs / 286 edges / 38 core providers inventoried and regression-tested; this is not live network availability.",
+    "historical_real_tests": "P0-P5 topic-specific HA acceptances retained with their original runtime and scope; not repeated here.",
+    "p6_060": "Six manual successful catalog loads, each 227/227; qualitative Proxmox observation, no isolated performance benchmark.",
+    "p6_080": "Three required HA tests PASS: profile model denial, catalog visible result, corrected first-candidate winner reason; 227 catalog entries are not 227 provider network tests.",
+    "separate_non_blocking_diagnostic": "Two historic opaque browser unhandled_rejection entries; causal relation to catalog/routing not demonstrated."
+  },
+  "historical_snapshot_note": "docs/p6_070_documentation_inventory.v1.json describes the P6-070-era snapshot; its earlier ACTIVE/OPEN values do not supersede this matrix.",
+  "next_runtime_batch": {
+    "deployment": "WR 0.10.148 DEV / Loader 151 deployed via DRA and HA real trace confirmed; no P6-080 follow-up DRA update necessary",
+    "real_tests": [],
+    "already_passed": "Do not repeat P6-080/1, P6-080/2, or P6-080/3.",
+    "source_fix": "winner reason corrected; P6-080/3 real trace PASS"
+  },
+  "p7_status": "P7-010 ACTIVE",
+  "formal_acceptance": {
+    "stage": "FORMAL_ACCEPTED",
+    "phase_decision": "P6-080 DONE",
+    "next_step": "P7-010 ACTIVE",
+    "scope": "Routing Core consumer API V1; eight domains, 227 public IDs and historical representative provider paths; not 227 live provider network requests"
+  }
+}

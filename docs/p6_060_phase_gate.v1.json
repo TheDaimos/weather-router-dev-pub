@@ -1,0 +1,39 @@
+{
+  "schema": "weather_router.p6_060_phase_gate.v1",
+  "date": "2026-10-13",
+  "phase": "P6-060",
+  "source_version": "0.10.146",
+  "loader_revision": "0.10-loader-149",
+  "catalog_ha_observation": {
+    "manually_triggered_requests": 3,
+    "successful_catalog_responses": 3,
+    "capability_count": 227,
+    "available_count": 227,
+    "router_ready": true,
+    "perceived_system_disruption": false,
+    "timing_measurements_available": false,
+    "cpu_ram_measurements_available": false
+  },
+  "source_ci": {
+    "code_test_run": 38,
+    "run_id": 38432994844,
+    "conclusion": "success"
+  },
+  "diagnostic_followups": {
+    "unclassified_browser_rejections": 2,
+    "catalog_causality": "not_established",
+    "catalog_button_feedback": "too_subtle"
+  },
+  "proposed_transition": {
+    "P6_060": "DONE",
+    "P6_070": "ACTIVE",
+    "P6_080": "OPEN",
+    "P7": "OPEN"
+  },
+  "limitations": [
+    "No measured loading durations or CPU/RAM curves",
+    "Browser rejection causes are not determined",
+    "UI feedback improvement is a follow-up, not claimed as corrected"
+  ],
+  "scope": "Public-safe summary of privately retained HA catalog verification; no private log copied."
+}

@@ -1,0 +1,50 @@
+{
+  "schema": "weather_router.p6_070_phase_gate.v1",
+  "date": "2026-10-13",
+  "documentation_scope": [
+    "routing_strategy",
+    "consumer_api",
+    "consumer_profiles",
+    "routing_decisions",
+    "roadmap",
+    "core_provider_capability_overview",
+    "diagnostics",
+    "html_help",
+    "audit_json",
+    "documentation_index"
+  ],
+  "core": {
+    "providers": 38,
+    "internal": 280,
+    "public": 227,
+    "edges": 286,
+    "aggregate_intents": 3
+  },
+  "private_sources_reviewed": {
+    "docs/THEMEN_UND_ROUTING_STRATEGIE.md": "11148d1552b16e6a151d3db32fa3f484fe5737d1",
+    "docs/CONSUMER_API_V1.md": "86a80093e45c3d7cb6b9444005793ae5e7919e88",
+    "docs/CONSUMER_PROFILES_V1.md": "721fbce884588213848dcf4ab58e2481114935dd",
+    "docs/ENTSCHEIDUNGEN.md": "1edfbeee8e0ecb98bf98fd584deb522f78169dbf",
+    "docs/ROADMAP.md": "3103f6a1651ca397ee80a879a9490d8d917a9316",
+    "docs/DIAGNOSTICS.md": "855be6f0fa8cc169faa632f40c50a1c7fd0a5e73",
+    "docs/DOCUMENTATION.md": "828b0f26f7102b517d581b432a87e59155c2327e",
+    "docs/P6_070_CORE_PROVIDER_CAPABILITY_UEBERSICHT_2026-10-13.md": "6b10dca48f729cf806402d98c6dfa86b7bbe7387"
+  },
+  "public_html_blob": "6a25237f9d1034568cba7cf4a006048a7bc426c3",
+  "public_html_ci": {
+    "run": 55,
+    "conclusion": "success"
+  },
+  "caveats": [
+    "Private documentation SHA list is not a CI validation of private content",
+    "HTML help in feature/public source is not yet confirmed installed through DRA",
+    "Catalogue button progress feedback and two opaque browser rejection events remain unresolved",
+    "HA resource audit included no measured CPU/RAM or request durations"
+  ],
+  "proposed_transition": {
+    "P6-070": "DONE",
+    "P6-080": "ACTIVE",
+    "P7": "OPEN"
+  },
+  "privacy": "Public manifest contains source hashes and aggregate counts only; no location values, credentials, or raw exports."
+}

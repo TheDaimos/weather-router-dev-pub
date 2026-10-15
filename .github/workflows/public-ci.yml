@@ -40,6 +40,9 @@ jobs:
       - name: Oeffentlichen Dateibestand pruefen
         run: python tests/wr_public_distribution_guard.py
 
+      - name: P7-010 Raster-Mosaik-Vertrag (oeffentliche Nachholpruefung)
+        run: python -m unittest discover -s tests -p 'test_p7_010_raster_mosaic_*.py' -v
+
       - name: Python-Tests
         run: python -m unittest discover -s tests -p 'test_*.py' -v
 
@@ -54,3 +57,34 @@ jobs:
 
       - name: Git-Export-Oberflaeche pruefen
         run: node tests/test_git_export_frontend.cjs
+
+      - name: Oeffentliches Integrationspaket erstellen und verifizieren
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          zip -q -r -9 dist/WeatherRouter_Public_DEV_CI.zip custom_components/weather_router
+          (cd dist && sha256sum WeatherRouter_Public_DEV_CI.zip > WeatherRouter_Public_DEV_CI.zip.sha256)
+          (cd dist && sha256sum -c WeatherRouter_Public_DEV_CI.zip.sha256)
+          unzip -t -q dist/WeatherRouter_Public_DEV_CI.zip
+          python - <<'PY'
+          from pathlib import Path
+          from zipfile import ZipFile
+          root = Path("custom_components/weather_router")
+          expected = {p.as_posix() for p in root.rglob("*") if p.is_file()}
+          with ZipFile("dist/WeatherRouter_Public_DEV_CI.zip") as archive:
+              members = {n for n in archive.namelist() if not n.endswith("/")}
+          if members != expected:
+              raise SystemExit(f"Integrationspaket weicht von oeffentlichen Quellen ab: fehlend={len(expected-members)}, zusaetzlich={len(members-expected)}")
+          print(f"Oeffentliches Integrationspaket OK: {len(members)} Dateien")
+          PY
+
+      - name: Oeffentliche Integrationspaket-Pruefartefakte
+        uses: actions/upload-artifact@v4
+        with:
+          name: WeatherRouter-Public-DEV-CI
+          path: |
+            dist/WeatherRouter_Public_DEV_CI.zip
+            dist/WeatherRouter_Public_DEV_CI.zip.sha256
+          if-no-files-found: error
+          retention-days: 7
