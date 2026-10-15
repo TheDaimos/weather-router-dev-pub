@@ -30,6 +30,8 @@ from .spatial_coverage import normalize_coverage
 MAX_COVERAGE_CONTACTS = 12
 MAX_COVERAGE_CONCURRENT = 3
 COVERAGE_TIMEOUT_SECONDS = 3.0
+# Two simultaneous full V2 requests at most, even during rapid map movements.
+_LIVE_REQUEST_SLOTS = asyncio.Semaphore(2)
 
 
 @websocket_api.websocket_command(
@@ -155,18 +157,30 @@ async def websocket_consumer_resolve_mosaic(
         except Exception:  # noqa: BLE001 - one missing coverage must not collapse all
             return None
 
-    scanned = await asyncio.gather(*(_source(row) for row in preflight))
-    sources = [row for row in scanned if row is not None]
-    try:
-        result = await resolve_mosaic_snapshot(query, sources=sources)
-    except Exception:  # noqa: BLE001 - fail closed without provider details
-        connection.send_error(msg["id"], "mosaic_temporarily_unavailable",
-                              "Die mehrteilige Rasterauflösung ist derzeit nicht verfügbar.")
+    if _LIVE_REQUEST_SLOTS.locked():
+        connection.send_error(
+            msg["id"], "mosaic_busy",
+            "Eine begrenzte Zahl von Mosaikanfragen wird bereits verarbeitet."
+        )
         return
-    if len(authorized) > len(preflight):
-        result["limitations"].append(
-            "Weitere berechtigte Quellen wurden durch das Coverage-Kontaktbudget nicht geprüft.")
-    if len(sources) < len(preflight):
-        result["limitations"].append(
-            "Einige regionale Coverage-Anfragen waren nicht nutzbar.")
-    connection.send_result(msg["id"], result)
+    async with _LIVE_REQUEST_SLOTS:
+        scanned = await asyncio.gather(*(_source(row) for row in preflight))
+        sources = [row for row in scanned if row is not None]
+        try:
+            result = await resolve_mosaic_snapshot(query, sources=sources)
+        except Exception:  # noqa: BLE001 - fail closed without provider details
+            connection.send_error(msg["id"], "mosaic_temporarily_unavailable",
+                                  "Die mehrteilige Rasterauflösung ist derzeit nicht verfügbar.")
+            return
+        if len(authorized) > len(preflight):
+            result["limitations"].append(
+                "Weitere berechtigte Quellen wurden durch das Coverage-Kontaktbudget nicht geprüft.")
+        if len(sources) < len(preflight):
+            result["limitations"].append(
+                "Einige regionale Coverage-Anfragen waren nicht nutzbar.")
+        connection.send_result(msg["id"], result)
+
+
+def async_register(hass: HomeAssistant) -> None:
+    """Register additive opt-in Consumer V2, preserving all V1 routes."""
+    websocket_api.async_register_command(hass, websocket_consumer_resolve_mosaic)
