@@ -126,7 +126,14 @@ async def websocket_consumer_resolve_mosaic(
     # Preserve Core's provider-neutral candidate score, rather than allowing
     # incidental catalog order to determine which candidates get preflight.
     # Python's stable sort retains catalog order only for equal scores.
-    preflight = sorted(authorized, key=lambda row: tuple(row.score))[:MAX_COVERAGE_CONTACTS]
+    ranked = sorted(authorized, key=lambda row: tuple(row.score))
+    # Duplicate catalog entries must not spend several coverage calls on the
+    # same provider capability. Keep the best-ranked authorized descriptor.
+    unique = {}
+    for row in ranked:
+        key = (row.provider.id, row.capability.id)
+        unique.setdefault(key, row)
+    preflight = list(unique.values())[:MAX_COVERAGE_CONTACTS]
     semaphore = asyncio.Semaphore(MAX_COVERAGE_CONCURRENT)
 
     async def _source(row: Any) -> dict[str, Any] | None:
