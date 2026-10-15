@@ -326,6 +326,44 @@ class WebsocketHarnessTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(self.connection.results[0][1]["layers"][0]["source_id"],
                          "wide_world/radar_layer")
 
+    async def test_coverage_concurrency_stays_bounded(self):
+        active = 0
+        maximum = 0
+
+        class MeasuredProvider(FakeProvider):
+            async def async_get_coverage(self, hass, capability):
+                nonlocal active, maximum
+                active += 1
+                maximum = max(maximum, active)
+                try:
+                    await asyncio.sleep(0.005)
+                    return await super().async_get_coverage(hass, capability)
+                finally:
+                    active -= 1
+
+        rows = []
+        for index in range(12):
+            provider = MeasuredProvider(f"measured_{index}", {"scope": "global"})
+            candidate = FakeCandidate(provider)
+            candidate.score = (index, 0, 0)
+            rows.append(candidate)
+        self.rows[:] = rows
+        await self.handler(None, self.connection, request())
+        self.assertEqual(self.connection.errors, [])
+        self.assertLessEqual(maximum, 3)
+        self.assertEqual(sum(row.provider.calls > 0 for row in rows), 12)
+
+    async def test_unavailable_coverage_does_not_fetch_raster(self):
+        broken = FakeProvider("broken_coverage", {"scope": "global"}, crash=True)
+        self.rows[:] = [FakeCandidate(broken), FakeCandidate(self.world)]
+        await self.handler(None, self.connection, request())
+        self.assertEqual(self.connection.errors, [])
+        self.assertEqual(broken.calls, 1)
+        self.assertEqual(self.world.calls, 2)
+        self.assertEqual([layer["source_id"]
+                          for layer in self.connection.results[0][1]["layers"]],
+                         ["wide_world/radar_layer"])
+
     async def test_invalid_version_rejected_before_network(self):
         wrong = request()
         wrong["contract_version"] = 1
