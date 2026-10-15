@@ -36,6 +36,17 @@ class PreparationSwitchContractTests(unittest.TestCase):
         self.assertIn('callService("switch",', source)
         self.assertIn("BUFFER_PREP_ENTITY", source)
 
+    def test_legacy_provider_manifest_dataclass_preserved(self):
+        source = (INTEGRATION / "extensions.py").read_text(encoding="utf-8")
+        tree = ast.parse(source)
+        spec = next(node for node in tree.body
+                    if isinstance(node, ast.ClassDef) and node.name == "ExtensionSpec")
+        self.assertEqual(len(spec.decorator_list), 1)
+        decorator = spec.decorator_list[0]
+        self.assertIsInstance(decorator, ast.Call)
+        self.assertEqual(getattr(decorator.func, "id", None), "dataclass")
+        self.assertIn("_DedicatedBufferPolicyManifest", source)
+
     def test_no_implicit_consumer_data_path_activation(self):
         for filename in ("consumer_api.py", "consumer_raster_mosaic_api.py"):
             path = INTEGRATION / filename
