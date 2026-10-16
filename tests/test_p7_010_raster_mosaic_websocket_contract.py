@@ -35,7 +35,7 @@ def real_handler_with_stubs(namespace: dict):
     function.decorator_list = []
     function.body = [
         ast.Pass() if isinstance(node, ast.ImportFrom)
-                      and node.module == "consumer_api" and node.level == 1
+                      and node.module in ("consumer_api", "consumer_api_monitor") and node.level == 1
         else node
         for node in function.body
     ]
@@ -151,6 +151,7 @@ class WebsocketHarnessTests(unittest.IsolatedAsyncioTestCase):
             "_LIVE_REQUEST_SLOTS": asyncio.Semaphore(2),
             # The handler AST is tested separately from its module globals.
             "_shared_coverage_slots": lambda: asyncio.Semaphore(3),
+            "monitored_connection": lambda hass, connection, msg, version: connection,
             "validate_raster_mosaic_request": validator.validate_raster_mosaic_request,
             "MosaicContractError": validator.MosaicContractError,
             "viewport_overlap": policy.viewport_overlap,
