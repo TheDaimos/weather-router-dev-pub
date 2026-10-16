@@ -81,6 +81,7 @@ class WeatherRouterLab extends HTMLElement {
     this._requests = structuredClone(DEFAULT_REQUESTS);
     this._results = null;
     this._monitorSnapshot = null;
+    this._monitorSelected = null;
     this._monitorTimer = null;
     this._loading = false;
     this._basemapProvider = "openfreemap";
@@ -407,6 +408,7 @@ class WeatherRouterLab extends HTMLElement {
                 <label>Bis UTC <input id="api-monitor-until" type="datetime-local" /></label>
               </div>
               <label>Suche <input id="api-monitor-search" placeholder="Befehl, Kennung, Fehler ..." /></label>
+              <label>Exportumfang <select id="api-monitor-export-scope"><option value="filtered">Alle gefilterten Einträge</option><option value="selected">Nur ausgewählten Eintrag</option></select></label>
               <div class="actions">
                 <button id="api-monitor-refresh" type="button">Aktualisieren</button>
                 <button id="api-monitor-copy" type="button">Kopieren</button>
@@ -607,6 +609,7 @@ class WeatherRouterLab extends HTMLElement {
           entry.consumer + " · " + entry.capability + " · " + entry.result +
           " · " + entry.duration_ms + " ms";
         b.addEventListener("click", () => {
+          this._monitorSelected = entry;
           this.shadowRoot.getElementById("api-monitor-details").textContent = JSON.stringify(entry, null, 2);
         });
         list.appendChild(b);
@@ -617,12 +620,24 @@ class WeatherRouterLab extends HTMLElement {
     }
   }
 
+  _monitorExportSnapshot() {
+    if (!this._monitorSnapshot) return null;
+    const scope = this.shadowRoot.getElementById("api-monitor-export-scope").value;
+    if (scope !== "selected") return this._monitorSnapshot;
+    if (!this._monitorSelected) {
+      this.shadowRoot.getElementById("api-monitor-state").textContent = "Bitte zuerst eine Anfrage auswählen.";
+      return null;
+    }
+    return {...this._monitorSnapshot, record_count:1, entries:[this._monitorSelected]};
+  }
+
   async _monitorCopy() {
     if (!this._monitorSnapshot) await this._monitorRefresh();
     if (!this._monitorSnapshot) return;
+    if (!this._monitorExportSnapshot()) return;
     try {
-      await navigator.clipboard.writeText(JSON.stringify(this._monitorSnapshot, null, 2));
-      this.shadowRoot.getElementById("api-monitor-state").textContent = "Gefilterter JSON-Export in die Zwischenablage kopiert.";
+      await navigator.clipboard.writeText(JSON.stringify(this._monitorExportSnapshot(), null, 2));
+      this.shadowRoot.getElementById("api-monitor-state").textContent = "Gewählter JSON-Export in die Zwischenablage kopiert.";
     } catch(error) {
       this.shadowRoot.getElementById("api-monitor-state").textContent = "Zwischenablage nicht verfügbar: " + String(error);
     }
@@ -631,7 +646,9 @@ class WeatherRouterLab extends HTMLElement {
   async _monitorJson() {
     await this._monitorRefresh();
     if (!this._monitorSnapshot) return;
-    const blob = new Blob([JSON.stringify(this._monitorSnapshot, null, 2)], {type:"application/json"});
+    const snapshot = this._monitorExportSnapshot();
+    if (!snapshot) return;
+    const blob = new Blob([JSON.stringify(snapshot, null, 2)], {type:"application/json"});
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -644,7 +661,9 @@ class WeatherRouterLab extends HTMLElement {
     await this._monitorRefresh();
     if (!this._monitorSnapshot || !this._hass) return;
     try {
-      const result = await this._hass.callWS({type:"weather_router/log_git_export",target:"archive",snapshot:this._monitorSnapshot});
+      const snapshot = this._monitorExportSnapshot();
+      if (!snapshot) return;
+      const result = await this._hass.callWS({type:"weather_router/log_git_export",target:"archive",snapshot});
       this.shadowRoot.getElementById("api-monitor-state").textContent = "Export2Git erfolgreich: " + (result.path || result.url || "Archiv");
     } catch(error) {
       this.shadowRoot.getElementById("api-monitor-state").textContent = "Export2Git fehlgeschlagen: " + String(error.message || error);
