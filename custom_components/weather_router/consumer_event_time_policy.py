@@ -170,9 +170,11 @@ def filter_event_payload(payload: Mapping[str, Any], *, time: Mapping[str, Any],
             if closed:
                 reject("closed_without_verified_end")
                 continue
+            # A newly refreshed *feed* is not evidence that this particular
+            # open-ended event remains active. Require its own source timestamp.
             recent_update = next((v for field in ("last_updated_at", "published_at")
                                   if (v := _instant(event.get(field))) is not None),
-                                 updated)
+                                 None)
             age = (current - recent_update).total_seconds() if recent_update else None
             if not (time["include_ongoing"] and state in _ACTIVE
                     and age is not None
