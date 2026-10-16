@@ -129,12 +129,15 @@ class TestApiMonitor(unittest.TestCase):
                          "window": {"start": "2026-10-01T00:00:00Z",
                                     "end": "2026-10-16T12:00:00Z"},
                          "include_ongoing": True,
-                         "max_feed_update_age_seconds": 3600}})
+                         "max_feed_update_age_seconds": 3600,
+                         "page": 2, "page_size": 50}})
         policy_data = {
             "class": "official_warning", "feed_status": "stale",
             "feed_age_seconds": 8000,
             "feed_updated_at": "2026-10-16T09:46:40Z",
             "max_feed_update_age_seconds": 3600,
+            "page": 2, "page_size": 50, "max_pages": 5,
+            "has_more": True, "rejection_counts_scope": "scanned_prefix",
             "rejected_counts": {"ended_before_window": 3},
             "window": {"start": "2026-10-01T00:00:00Z",
                        "end": "2026-10-16T12:00:00Z"},
@@ -153,6 +156,9 @@ class TestApiMonitor(unittest.TestCase):
         self.assertEqual(row["event_time_policy"]["feed_status"], "stale")
         self.assertEqual(row["event_time_policy"]["rejected_counts"]["ended_before_window"], 3)
         self.assertEqual(row["request"]["time"]["mode"], "events_intersecting_window")
+        self.assertEqual(row["request"]["time"]["page"], 2)
+        self.assertEqual(row["event_time_policy"]["page_size"], 50)
+        self.assertTrue(row["event_time_policy"]["has_more"])
         self.assertLessEqual(len(__import__("json").dumps(row).encode()), 8192)
 
     def test_stop_removes_data(self):
