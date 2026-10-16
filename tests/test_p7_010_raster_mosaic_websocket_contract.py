@@ -149,6 +149,8 @@ class WebsocketHarnessTests(unittest.IsolatedAsyncioTestCase):
         environment = {
             "asyncio": asyncio,
             "_LIVE_REQUEST_SLOTS": asyncio.Semaphore(2),
+            # The handler AST is tested separately from its module globals.
+            "_shared_coverage_slots": lambda: asyncio.Semaphore(3),
             "validate_raster_mosaic_request": validator.validate_raster_mosaic_request,
             "MosaicContractError": validator.MosaicContractError,
             "viewport_overlap": policy.viewport_overlap,
