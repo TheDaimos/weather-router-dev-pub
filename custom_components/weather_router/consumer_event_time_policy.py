@@ -15,6 +15,8 @@ from .time_normalization import iso_instant, utc_iso
 
 UTC = timezone.utc
 _MAX_RESULTS = 200
+_MAX_PAGES = 5
+_MAX_SCANNED_EVENTS = 1000
 _CLOSED = frozenset({"ended", "resolved", "expired", "cancelled", "canceled",
                      "cleared", "withdrawn", "inactive", "closed"})
 _ACTIVE = frozenset({"active", "ongoing", "in_progress", "erupting",
@@ -62,7 +64,7 @@ def validate_event_time(raw: Any, *, public_id: str, resource_types: set[str],
     if not isinstance(raw, dict) or raw.get("mode") != "events_intersecting_window":
         raise ValueError("invalid_event_time_mode")
     if set(raw) - {"mode", "window", "include_ongoing",
-                   "max_feed_update_age_seconds"}:
+                   "max_feed_update_age_seconds", "page", "page_size"}:
         raise ValueError("unknown_event_time_fields")
     if resource_types != {"hazard_feed"} and resource_types != {"event_feed"}:
         raise ValueError("event_window_requires_single_feed_resource")
@@ -83,6 +85,12 @@ def validate_event_time(raw: Any, *, public_id: str, resource_types: set[str],
         raise ValueError("future_event_window")
     if type(raw.get("include_ongoing", False)) is not bool:
         raise ValueError("invalid_include_ongoing")
+    page = raw.get("page", 1)
+    page_size = raw.get("page_size", _MAX_RESULTS)
+    if type(page) is not int or not 1 <= page <= _MAX_PAGES:
+        raise ValueError("event_page_out_of_bounds")
+    if type(page_size) is not int or not 1 <= page_size <= _MAX_RESULTS:
+        raise ValueError("event_page_size_out_of_bounds")
     feed_budget = raw.get("max_feed_update_age_seconds", limits["feed_seconds"])
     if type(feed_budget) is not int or not 60 <= feed_budget <= limits["feed_seconds"] * 4:
         raise ValueError("invalid_feed_update_age")
@@ -94,6 +102,9 @@ def validate_event_time(raw: Any, *, public_id: str, resource_types: set[str],
         "class": cls,
         "max_window_days": limits["days"],
         "max_results": _MAX_RESULTS,
+        "page": page,
+        "page_size": page_size,
+        "max_pages": _MAX_PAGES,
         "max_ongoing_update_age_seconds": limits["ongoing_seconds"],
     }
 
@@ -120,6 +131,14 @@ def filter_event_payload(payload: Mapping[str, Any], *, time: Mapping[str, Any],
                    "future" if source_age < -300 else
                    "stale" if source_age > time["max_feed_update_age_seconds"] else
                    "fresh")
+    page = time.get("page", 1)
+    page_size = time.get("page_size", _MAX_RESULTS)
+    if type(page) is not int or not 1 <= page <= _MAX_PAGES:
+        raise ValueError("invalid_validated_page")
+    if type(page_size) is not int or not 1 <= page_size <= _MAX_RESULTS:
+        raise ValueError("invalid_validated_page_size")
+    page_end = page * page_size
+    page_start = page_end - page_size
     accepted: list[dict[str, Any]] = []
     rejected: dict[str, int] = {}
     input_events = payload.get("events", [])
@@ -129,7 +148,7 @@ def filter_event_payload(payload: Mapping[str, Any], *, time: Mapping[str, Any],
     def reject(reason: str) -> None:
         rejected[reason] = rejected.get(reason, 0) + 1
 
-    for event in input_events[:1000]:
+    for event in input_events[:_MAX_SCANNED_EVENTS]:
         if not isinstance(event, dict):
             reject("invalid_event")
             continue
@@ -213,22 +232,30 @@ def filter_event_payload(payload: Mapping[str, Any], *, time: Mapping[str, Any],
             else "ongoing" if ongoing else "scheduled" if scheduled
             else "ended" if ends and ends <= current else "time_bounded")
         accepted.append(entry)
-        if len(accepted) >= _MAX_RESULTS:
+        # One look-ahead confirms the next page without fetching more feeds.
+        if len(accepted) > page_end:
             break
 
+    page_events = accepted[page_start:page_end]
+    more = len(accepted) > page_end or len(input_events) > _MAX_SCANNED_EVENTS
     filtered = dict(payload)
-    filtered["events"] = accepted
-    filtered["event_count"] = len(accepted)
+    filtered["events"] = page_events
+    filtered["event_count"] = len(page_events)
     filtered["event_time_policy"] = {
         "class": time["class"],
         "window": dict(time["window"]),
         "include_ongoing": time["include_ongoing"],
         "max_results": _MAX_RESULTS,
+        "page": page,
+        "page_size": page_size,
+        "max_pages": _MAX_PAGES,
+        "has_more": more,
         "feed_status": feed_status,
         "feed_updated_at": utc_iso(updated) if updated else None,
         "feed_age_seconds": round(source_age, 1) if source_age is not None else None,
         "max_feed_update_age_seconds": time["max_feed_update_age_seconds"],
         "rejected_counts": rejected,
-        "truncated": len(input_events) > 1000 or len(accepted) >= _MAX_RESULTS,
+        "truncated": more,
+        "rejection_counts_scope": "scanned_prefix",
     }
     return filtered
