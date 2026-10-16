@@ -5,7 +5,7 @@ No provider selection, network access, image processing or implicit credentials.
 """
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timezone
 from math import isfinite
 from typing import Any, Mapping
 
@@ -51,7 +51,7 @@ def _utc(value: Any, field: str) -> str:
         raise MosaicContractError(f"invalid {field}") from err
     if parsed.tzinfo is None or parsed.utcoffset() is None:
         raise MosaicContractError(f"{field} must contain a timezone")
-    return parsed.isoformat()
+    return parsed.astimezone(timezone.utc).isoformat().replace("+00:00", "Z")
 
 
 def validate_raster_mosaic_request(raw: Any) -> dict[str, Any]:
@@ -86,7 +86,7 @@ def validate_raster_mosaic_request(raw: Any) -> dict[str, Any]:
         }
     temporal = _mapping(value["time"], "time")
     _keys(temporal, {"mode", "max_data_age_seconds", "max_time_delta_seconds",
-                     "target_time"}, {"mode", "max_data_age_seconds"}, "time")
+                     "target_time", "max_background_age_seconds"}, {"mode", "max_data_age_seconds"}, "time")
     mode = temporal["mode"]
     if mode not in {"latest_coherent", "at_time"}:
         raise MosaicContractError("unsupported temporal mode")
@@ -95,6 +95,12 @@ def validate_raster_mosaic_request(raw: Any) -> dict[str, Any]:
         "max_data_age_seconds": _bounded_int(temporal["max_data_age_seconds"],
                                                1, 86400, "max_data_age_seconds"),
     }
+    if "max_background_age_seconds" in temporal:
+        background = _bounded_int(temporal["max_background_age_seconds"],
+                                  1, 86400, "max_background_age_seconds")
+        if background < time["max_data_age_seconds"]:
+            raise MosaicContractError("background age must not be below live age")
+        time["max_background_age_seconds"] = background
     if "max_time_delta_seconds" in temporal:
         time["max_time_delta_seconds"] = _bounded_int(
             temporal["max_time_delta_seconds"], 0, 86400, "max_time_delta_seconds")
