@@ -46,6 +46,38 @@ class ProviderUtcPathTests(unittest.TestCase):
         self.assertEqual(func(1792152000000, epoch_unit="milliseconds"),
                          "2026-10-16T12:00:00Z")
 
+    def test_dwd_wms_epoch_seconds_reach_normalized_v2_raster(self):
+        # DWD.async_get_map_layer emits int(timestamp()) for frame_time and
+        # timeline[].time. These must be explicitly converted to UTC and not
+        # dropped as unknown-unit epochs by the central Consumer V1 sanitizer.
+        normalizer = extracted(ROOT / "consumer_api.py", "_normalize_raster")
+        normalizer.__globals__.update(
+            _iso_time=extracted(ROOT / "consumer_api.py", "_iso_time"),
+            _safe_public_url=lambda value: value if isinstance(value, str)
+                and value.startswith("https://example.invalid/") else None,
+        )
+        raw = {
+            "provider": "dwd",
+            "tile_url": "https://example.invalid/dwd/current",
+            "frame_time": 1792152000,
+            "attribution": "Synthetic DWD source",
+            "legend": {"title": "Rain radar"},
+            "timeline": {"frames": [
+                {"time": 1792152000,
+                 "tile_url": "https://example.invalid/dwd/current"},
+                {"time": 1792151700,
+                 "tile_url": "https://example.invalid/dwd/previous"},
+            ]},
+        }
+        resource, data_time = normalizer(raw)
+        self.assertEqual(data_time, "2026-10-16T12:00:00Z")
+        self.assertEqual(
+            [frame["time"] for frame in resource["timeline"]["frames"]],
+            ["2026-10-16T12:00:00Z", "2026-10-16T11:55:00Z"])
+        unknown, undated = normalizer({**raw, "provider": "unknown"})
+        self.assertIsNone(undated)
+        self.assertEqual(unknown["timeline"]["frames"], [])
+
     def test_dwd_wms_avoids_naive_utc_guess(self):
         func = extracted(ROOT / "providers/dwd.py", "_parse_instant")
         self.assertIsNone(func("2026-10-16T12:00:00"))
