@@ -153,6 +153,11 @@ class OpenMeteoPollenProvider:
             response.raise_for_status()
             payload = await response.json()
 
+        from ..time_normalization import provider_local_instant
+        zone = payload.get("timezone")
+        normalized_current = (
+            provider_local_instant(payload.get("current", {}).get("time"), iana_zone=zone)
+            if isinstance(zone, str) else None)
         current = payload.get("current", {})
         current_units = payload.get("current_units", {})
         hourly = payload.get("hourly", {})
@@ -188,7 +193,9 @@ class OpenMeteoPollenProvider:
             "latitude": payload.get("latitude", latitude),
             "longitude": payload.get("longitude", longitude),
             "timezone": payload.get("timezone"),
-            "data_time": current.get("time"),
+            "data_time": normalized_current,
+            "source_local_time": current.get("time"),
+            "time_zone_origin": "provider_iana" if normalized_current else "unknown_time_zone",
             "coverage_status": "inside_coverage",
             "values": values,
             "attribution": "Open-Meteo · CAMS European Air Quality Forecast",
