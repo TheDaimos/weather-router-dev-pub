@@ -1449,7 +1449,7 @@ def _capability_catalog_row(
     # responses. This is optional metadata, not a second event router.
     if len(row.get("resource_types") or []) == 1:
         resource = row["resource_types"][0]
-        from .consumer_event_time_policy import time_class, _CLASSES, _MAX_RESULTS
+        from .consumer_event_time_policy import time_class, _CLASSES, _MAX_RESULTS, _MAX_PAGES
         declared = time_class(public_id, resource)
         if declared is not None:
             limits = _CLASSES[declared]
@@ -1462,6 +1462,8 @@ def _capability_catalog_row(
                 "max_feed_update_age_seconds": limits["feed_seconds"] * 4,
                 "max_ongoing_update_age_seconds": limits["ongoing_seconds"],
                 "max_results": _MAX_RESULTS,
+                "default_page_size": _MAX_RESULTS,
+                "max_pages": _MAX_PAGES,
                 "include_ongoing_supported": limits["ongoing_seconds"] > 0,
             }
     return row
