@@ -57,6 +57,36 @@ def plan(*sources, max_layers=4, **kwargs):
 
 
 class MosaicPlanningTests(unittest.TestCase):
+    def test_opt_in_older_global_estimate_and_fresh_dwd_remain_distinct(self):
+        nasa = source("global_imer_g", WORLD, "2026-10-14T08:30:00Z",
+                      method="satellite_precipitation_estimate")
+        nasa["semantics"]["observation_kind"] = "estimate"
+        dwd = source("regional_radar", GERMANY, "2026-10-14T15:06:00Z")
+        options = dict(viewport=VIEW, now=NOW, max_data_age_seconds=900,
+                       max_time_delta_seconds=180, max_layers=4,
+                       focus={"latitude": 21, "longitude": -76})
+        strict = policy.plan_raster_mosaic([nasa, dwd], **options)
+        self.assertEqual([x["source_id"] for x in strict["layers"]],
+                         ["regional_radar"])
+        expanded = policy.plan_raster_mosaic(
+            [nasa, dwd], max_background_age_seconds=43200, **options)
+        self.assertEqual([x["source_id"] for x in expanded["layers"]],
+                         ["global_imer_g", "regional_radar"])
+        self.assertEqual(expanded["layers"][0]["freshness_class"], "older_background")
+        self.assertEqual(expanded["layers"][0]["quality_note"], "older_satellite_background")
+        self.assertEqual(expanded["layers"][1]["freshness_class"], "current")
+        self.assertEqual(expanded["reference_time"], "2026-10-14T15:06:00Z")
+        self.assertGreater(expanded["layers"][0]["times"]["age_seconds"], 20000)
+        self.assertGreater(expanded["layers"][0]["times"]["reference_delta_seconds"], 20000)
+        self.assertEqual(expanded["layers"][1]["times"]["reference_delta_seconds"], 0)
+        self.assertTrue(any("Satellitenschaetzung" in x for x in expanded["limitations"]))
+
+    def test_older_local_radar_cannot_use_background_exception(self):
+        regional = source("stale_regional", GERMANY, "2026-10-14T08:30:00Z")
+        opts = dict(viewport=VIEW, now=NOW, max_data_age_seconds=900,
+                    max_background_age_seconds=43200, max_time_delta_seconds=180)
+        self.assertEqual(policy.plan_raster_mosaic([regional], **opts)["layers"], [])
+
     def test_germany_edge_never_displaces_world(self):
         fraction = policy.viewport_overlap(VIEW, GERMANY)
         self.assertGreater(fraction, 0)
