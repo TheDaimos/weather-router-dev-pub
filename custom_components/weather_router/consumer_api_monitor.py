@@ -10,7 +10,7 @@ from time import monotonic
 from typing import Any
 from uuid import uuid4
 
-_SECRET_WORDS = ("token", "password", "secret", "authorization", "cookie", "credential", "apikey", "api_key", "private_key")
+_SECRET_WORDS = ("token", "password", "secret", "authorization", "cookie", "credential", "apikey", "api_key", "access_key", "private_key", "session_key")
 _COORDINATE_WORDS = ("latitude", "longitude", "lat", "lon", "bbox", "bounds", "viewport", "west", "east", "north", "south", "coordinates", "location")
 _ALLOWED_RESULTS = frozenset({"success", "no_data", "rejected", "error", "timeout"})
 _MAX_RECORDS = 250
@@ -27,7 +27,7 @@ def _safe(value: Any, *, locations: bool = False, depth: int = 0) -> Any:
         safe = {}
         for key, item in list(value.items())[:80]:
             label = str(key)[:96]
-            lower = label.lower()
+            lower = label.lower().replace("-", "_")
             if any(word in lower for word in _SECRET_WORDS):
                 safe[label] = "[redacted]"
             elif not locations and any(word == lower or lower.endswith("_" + word) for word in _COORDINATE_WORDS):
