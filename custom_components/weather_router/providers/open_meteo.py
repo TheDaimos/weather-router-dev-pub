@@ -205,7 +205,7 @@ class OpenMeteoProvider:
                 _delta, index = min(candidates)
                 return series[index]
             except (TypeError, ValueError):
-                return series[0] if series else None
+                return None
 
         values: dict[str, Any] = {}
         for capability_id in requested:
