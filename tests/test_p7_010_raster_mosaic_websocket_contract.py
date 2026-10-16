@@ -371,6 +371,26 @@ class WebsocketHarnessTests(unittest.IsolatedAsyncioTestCase):
                           for layer in self.connection.results[0][1]["layers"]],
                          ["wide_world/radar_layer"])
 
+    async def test_whole_handler_deadline_covers_catalogue_resolution(self):
+        cancelled = False
+
+        async def slow_mapping(hass):
+            nonlocal cancelled
+            try:
+                await asyncio.sleep(0.1)
+                return {"public_capabilities": {}}
+            except asyncio.CancelledError:
+                cancelled = True
+                raise
+
+        self.handler.__globals__["_async_mapping"] = slow_mapping
+        self.handler.__globals__["MOSAIC_PROVIDER_DEADLINE_SECONDS"] = 0.01
+        await self.handler(None, self.connection, request())
+        self.assertEqual(self.connection.results, [])
+        self.assertEqual(self.connection.errors[0][1], "mosaic_timeout")
+        self.assertTrue(cancelled)
+        self.assertEqual(self.world.calls, 0)
+
     async def test_invalid_version_rejected_before_network(self):
         wrong = request()
         wrong["contract_version"] = 1
