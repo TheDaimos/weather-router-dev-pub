@@ -3690,6 +3690,8 @@ async def websocket_consumer_resolve(
     msg: dict[str, Any],
 ) -> None:
     """Resolve one public capability and record an admin-only decision trace."""
+    from .consumer_api_monitor import monitored_connection
+    connection = monitored_connection(hass, connection, msg, "V1")
     public_id = str(msg.get("capability") or "")
     trace = begin_routing_trace(
         hass,
