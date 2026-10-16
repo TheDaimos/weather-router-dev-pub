@@ -56,6 +56,8 @@ _LIVE_REQUEST_SLOTS = asyncio.Semaphore(2)
         vol.Required("time"): dict,
         vol.Required("limits"): dict,
         vol.Optional("profile_id"): str,
+        vol.Optional("consumer_id"): str,
+        vol.Optional("correlation_id"): str,
     }
 )
 @websocket_api.async_response
