@@ -74,6 +74,25 @@ class TestApiMonitor(unittest.TestCase):
         self.assertEqual(row["response"]["url"], "[sensitive-text-omitted]")
         self.assertEqual(row["response"]["rate"], "[non-finite-number]")
 
+    def test_oversize_keeps_routing_decision(self):
+        m = monitor.ConsumerApiMonitor()
+        m.configure(enabled=True)
+        token = m.begin(api_version="V1", command="resolve",
+                        message={"capability": "weather.precipitation.layer",
+                                 "context": {"payload": "x" * 50000}})
+        m.finish(token, result="success",
+                 response={"status": "success", "data": "x" * 50000},
+                 routing={"decision": {"selected_provider": "nasa_gibs",
+                                        "reason_code": "best_coverage",
+                                        "status": "selected"},
+                          "candidates": [{"provider_id": "dwd", "result": "rejected"}] * 500})
+        row = m.query()["entries"][0]
+        self.assertTrue(row.get("truncated"))
+        self.assertEqual(row["routing"]["decision"]["selected_provider"], "nasa_gibs")
+        self.assertIn("nasa_gibs", row["providers"])
+        self.assertEqual(row["result"], "success")
+        self.assertLessEqual(len(__import__("json").dumps(row).encode()), 8192)
+
     def test_stop_removes_data(self):
         m=monitor.ConsumerApiMonitor()
         m.configure(enabled=True)
