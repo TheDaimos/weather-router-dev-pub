@@ -183,16 +183,16 @@ class OpenMeteoProvider:
         daily = payload.get("daily", {})
         daily_units = payload.get("daily_units", {})
 
-        def nearest_hourly(field: str) -> Any:
+        def nearest_hourly(field: str) -> tuple[Any, str | None]:
             times = hourly.get("time")
             series = hourly.get(field)
             if not isinstance(times, list) or not isinstance(series, list) or not times or not series:
-                return None
+                return None, None
             target_text = current.get("time")
             try:
                 target_text_utc = local_utc(target_text)
                 if target_text_utc is None:
-                    return None
+                    return None, None
                 target = datetime.fromisoformat(target_text_utc.replace("Z", "+00:00"))
                 candidates = []
                 for index, value in enumerate(times[:len(series)]):
@@ -201,15 +201,18 @@ class OpenMeteoProvider:
                         stamped = datetime.fromisoformat(utc_value.replace("Z", "+00:00"))
                         candidates.append((abs((stamped - target).total_seconds()), index))
                 if not candidates:
-                    return None
+                    return None, None
                 _delta, index = min(candidates)
-                return series[index]
+                return series[index], local_utc(times[index])
             except (TypeError, ValueError):
-                return None
+                return None, None
 
         values: dict[str, Any] = {}
+        all_values_share_current_time = True
+        current_utc = local_utc(current.get("time"))
         for capability_id in requested:
             if capability_id in _DAILY_API_FIELDS:
+                all_values_share_current_time = False
                 field = _DAILY_API_FIELDS[capability_id]
                 series = daily.get(field)
                 value = series[0] if isinstance(series, list) and series else None
@@ -234,8 +237,10 @@ class OpenMeteoProvider:
             value = current.get(field)
             unit = units.get(field)
             source_field = "current"
+            valid_at = current_utc
             if value is None and field in uv_fields:
-                value = nearest_hourly(field)
+                all_values_share_current_time = False
+                value, valid_at = nearest_hourly(field)
                 unit = hourly_units.get(field, unit)
                 source_field = "hourly_nearest"
             values[capability_id] = {
@@ -243,6 +248,7 @@ class OpenMeteoProvider:
                 "unit": unit or _CAPABILITY_MAP[capability_id].unit,
                 "field": field,
                 "time_source": source_field,
+                "valid_at": valid_at,
             }
 
         return {
@@ -252,9 +258,9 @@ class OpenMeteoProvider:
             "latitude": payload.get("latitude", latitude),
             "longitude": payload.get("longitude", longitude),
             "timezone": payload.get("timezone"),
-            "data_time": local_utc(current.get("time")),
+            "data_time": current_utc if all_values_share_current_time else None,
             "source_local_time": current.get("time"),
-            "time_zone_origin": "provider_iana" if local_utc(current.get("time")) else "unknown_time_zone",
+            "time_zone_origin": "provider_iana" if current_utc else "unknown_time_zone",
             "interval": current.get("interval"),
             "values": values,
             "attribution": "Weather data by Open-Meteo.com",
