@@ -116,6 +116,45 @@ class TestApiMonitor(unittest.TestCase):
                          "no_fresh_verified_frame")
         self.assertLessEqual(len(__import__("json").dumps(row).encode()),8192)
 
+    def test_event_window_compaction_keeps_separate_feed_age_and_reasons(self):
+        m = monitor.ConsumerApiMonitor()
+        m.configure(enabled=True)
+        ticket = m.begin(
+            api_version="V1", command="weather_router/consumer/resolve",
+            message={"consumer_id": "gewitterradar",
+                     "correlation_id": "event-window-123",
+                     "capability": "weather.warning.official",
+                     "time": {
+                         "mode": "events_intersecting_window",
+                         "window": {"start": "2026-10-01T00:00:00Z",
+                                    "end": "2026-10-16T12:00:00Z"},
+                         "include_ongoing": True,
+                         "max_feed_update_age_seconds": 3600}})
+        policy_data = {
+            "class": "official_warning", "feed_status": "stale",
+            "feed_age_seconds": 8000,
+            "feed_updated_at": "2026-10-16T09:46:40Z",
+            "max_feed_update_age_seconds": 3600,
+            "rejected_counts": {"ended_before_window": 3},
+            "window": {"start": "2026-10-01T00:00:00Z",
+                       "end": "2026-10-16T12:00:00Z"},
+        }
+        m.finish(ticket, result="success", response={
+            "status": "ready",
+            **{f"large_{i}": "x" * 300 for i in range(45)},
+            "resource": {
+                "type": "hazard_feed", "payload": {
+                    "event_time_policy": policy_data,
+                    "events": [{"description": "x" * 5000} for _ in range(30)],
+                }}},
+            routing={"candidates": [{"provider_id": "dwd",
+                                     "result": "selected"}] * 100})
+        row = m.query(correlation_id="event-window-123")["entries"][0]
+        self.assertEqual(row["event_time_policy"]["feed_status"], "stale")
+        self.assertEqual(row["event_time_policy"]["rejected_counts"]["ended_before_window"], 3)
+        self.assertEqual(row["request"]["time"]["mode"], "events_intersecting_window")
+        self.assertLessEqual(len(__import__("json").dumps(row).encode()), 8192)
+
     def test_stop_removes_data(self):
         m=monitor.ConsumerApiMonitor()
         m.configure(enabled=True)

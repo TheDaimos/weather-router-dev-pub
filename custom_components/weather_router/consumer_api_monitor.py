@@ -143,6 +143,21 @@ class ConsumerApiMonitor:
         token["providers"] = [str(p)[:128] for p in (providers or [])[:12]]
         token["routing"] = _safe(routing, locations=self.allow_locations)
         token["response"] = _safe(response, locations=self.allow_locations)
+        # Event relevance is independent of measurement age. Preserve a bounded
+        # source/update/status summary even if the event payload is truncated.
+        resp = response if isinstance(response, dict) else {}
+        resource = resp.get("resource")
+        payload = resource.get("payload") if isinstance(resource, dict) else None
+        event_policy = payload.get("event_time_policy") if isinstance(payload, dict) else None
+        if isinstance(event_policy, dict):
+            token["event_time_policy"] = _safe({
+                key: event_policy.get(key) for key in (
+                    "class", "window", "include_ongoing", "feed_status",
+                    "feed_updated_at", "feed_age_seconds",
+                    "max_feed_update_age_seconds", "rejected_counts",
+                    "truncated", "max_results")
+                if key in event_policy
+            }, locations=False)
         # Reduce noisy data in stages; retain the essential diagnostic decision.
         def encoded_size() -> int:
             return len(json.dumps(token, ensure_ascii=False, allow_nan=False,
@@ -183,10 +198,18 @@ class ConsumerApiMonitor:
                 ("status", "code", "reason_code", "selected_provider",
                  "source_id", "contract_version", "capability")
                 if key in response_data})
+            old_request = token["request"] if isinstance(token.get("request"), dict) else {}
+            time_request = old_request.get("time")
             token["request"] = {
                 "type": token["command"], "capability": token["capability"],
                 "consumer_id": token["consumer"], "correlation_id": token["correlation_id"],
             }
+            if isinstance(time_request, dict) and time_request.get("mode") == "events_intersecting_window":
+                token["request"]["time"] = _safe({
+                    k: time_request.get(k) for k in ("mode", "window",
+                        "include_ongoing", "max_feed_update_age_seconds")
+                    if k in time_request
+                }, locations=False)
             token["truncated"] = True
             size = encoded_size()
         if size > _MAX_ENTRY_BYTES:
