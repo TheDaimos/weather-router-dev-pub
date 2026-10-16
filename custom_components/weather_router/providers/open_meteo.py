@@ -169,6 +169,13 @@ class OpenMeteoProvider:
             response.raise_for_status()
             payload = await response.json()
 
+        from ..time_normalization import (
+            provider_local_instant, calendar_day_interval,
+        )
+        reported_zone = payload.get("timezone")
+        def local_utc(value):
+            return (provider_local_instant(value, iana_zone=reported_zone)
+                    if isinstance(reported_zone, str) else None)
         current = payload.get("current", {})
         units = payload.get("current_units", {})
         hourly = payload.get("hourly", {})
@@ -183,11 +190,18 @@ class OpenMeteoProvider:
                 return None
             target_text = current.get("time")
             try:
-                target = datetime.fromisoformat(str(target_text))
-                candidates = [
-                    (abs((datetime.fromisoformat(str(value)) - target).total_seconds()), index)
-                    for index, value in enumerate(times[:len(series)])
-                ]
+                target_text_utc = local_utc(target_text)
+                if target_text_utc is None:
+                    return None
+                target = datetime.fromisoformat(target_text_utc.replace("Z", "+00:00"))
+                candidates = []
+                for index, value in enumerate(times[:len(series)]):
+                    utc_value = local_utc(value)
+                    if utc_value:
+                        stamped = datetime.fromisoformat(utc_value.replace("Z", "+00:00"))
+                        candidates.append((abs((stamped - target).total_seconds()), index))
+                if not candidates:
+                    return None
                 _delta, index = min(candidates)
                 return series[index]
             except (TypeError, ValueError):
@@ -211,6 +225,8 @@ class OpenMeteoProvider:
                     "field": field,
                     "time_source": "daily_today",
                     "local_day": local_day,
+                    "interval_start": (calendar_day_interval(local_day, iana_zone=reported_zone) or (None, None))[0] if isinstance(reported_zone, str) else None,
+                    "interval_end": (calendar_day_interval(local_day, iana_zone=reported_zone) or (None, None))[1] if isinstance(reported_zone, str) else None,
                 }
                 continue
 
@@ -236,7 +252,9 @@ class OpenMeteoProvider:
             "latitude": payload.get("latitude", latitude),
             "longitude": payload.get("longitude", longitude),
             "timezone": payload.get("timezone"),
-            "data_time": current.get("time"),
+            "data_time": local_utc(current.get("time")),
+            "source_local_time": current.get("time"),
+            "time_zone_origin": "provider_iana" if local_utc(current.get("time")) else "unknown_time_zone",
             "interval": current.get("interval"),
             "values": values,
             "attribution": "Weather data by Open-Meteo.com",
