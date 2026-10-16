@@ -163,20 +163,38 @@ class OpenMeteoPollenProvider:
         hourly = payload.get("hourly", {})
         hourly_units = payload.get("hourly_units", {})
 
-        def nearest_hourly(field: str) -> Any:
-            values = hourly.get(field)
-            if not isinstance(values, list) or not values:
-                return None
-            return values[0]
+        def nearest_hourly(field: str) -> tuple[Any, str | None]:
+            series = hourly.get(field)
+            stamps = hourly.get("time")
+            if not isinstance(series, list) or not isinstance(stamps, list):
+                return None, None
+            if normalized_current is None:
+                return None, None
+            from datetime import datetime
+            target = datetime.fromisoformat(normalized_current.replace("Z", "+00:00"))
+            choices = []
+            for index, raw in enumerate(stamps[:len(series)]):
+                stamp = (provider_local_instant(raw, iana_zone=zone)
+                         if isinstance(zone, str) else None)
+                if stamp is not None:
+                    aware = datetime.fromisoformat(stamp.replace("Z", "+00:00"))
+                    choices.append((abs((aware - target).total_seconds()), index, stamp))
+            if not choices:
+                return None, None
+            _delta, index, stamp = min(choices)
+            return series[index], stamp
 
         values: dict[str, Any] = {}
+        used_hourly_fallback = False
         for capability_id in requested:
             field = _FIELDS[capability_id]
             value = current.get(field)
             unit = current_units.get(field)
             source = "current"
+            valid_at = normalized_current
             if value is None:
-                value = nearest_hourly(field)
+                used_hourly_fallback = True
+                value, valid_at = nearest_hourly(field)
                 unit = hourly_units.get(field, unit)
                 source = "hourly_nearest"
             values[capability_id] = {
@@ -184,6 +202,7 @@ class OpenMeteoPollenProvider:
                 "unit": unit or "Grains/m³",
                 "field": field,
                 "time_source": source,
+                "valid_at": valid_at,
             }
 
         return {
@@ -193,7 +212,7 @@ class OpenMeteoPollenProvider:
             "latitude": payload.get("latitude", latitude),
             "longitude": payload.get("longitude", longitude),
             "timezone": payload.get("timezone"),
-            "data_time": normalized_current,
+            "data_time": normalized_current if not used_hourly_fallback else None,
             "source_local_time": current.get("time"),
             "time_zone_origin": "provider_iana" if normalized_current else "unknown_time_zone",
             "coverage_status": "inside_coverage",
