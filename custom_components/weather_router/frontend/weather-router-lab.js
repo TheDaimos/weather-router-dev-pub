@@ -375,6 +375,37 @@ class WeatherRouterLab extends HTMLElement {
             </div>
           </details>
 
+          <details class="card lab-menu" data-lab-menu-key="api-monitor">
+            <summary>API-Monitor · Consumer V1 / V2</summary>
+            <div class="lab-menu-content">
+              <div id="api-monitor-state" class="muted" role="status">Aufzeichnung AUS · noch nicht geladen</div>
+              <div class="actions">
+                <button id="api-monitor-start" type="button">Aufzeichnung starten</button>
+                <button id="api-monitor-stop" type="button">Stopp + löschen</button>
+              </div>
+              <p class="muted" style="font-size:11px">Nur Administratoren. Aufzeichnung standardmäßig AUS, im Speicher begrenzt und nach Neustart AUS. Koordinaten und Zugangsdaten werden nicht aufgezeichnet.</p>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+                <label>API <select id="api-monitor-version"><option value="all">Alle</option><option value="V1">V1</option><option value="V2">V2</option></select></label>
+                <label>Ergebnis <select id="api-monitor-result"><option value="all">Alle</option><option value="success">Erfolg</option><option value="no_data">Keine Daten</option><option value="rejected">Abgewiesen</option><option value="error">Fehler</option><option value="timeout">Zeitüberschreitung</option></select></label>
+                <label>Consumer <input id="api-monitor-consumer" placeholder="alle" /></label>
+                <label>Provider <input id="api-monitor-provider" placeholder="alle" /></label>
+                <label>Capability <input id="api-monitor-capability" placeholder="alle" /></label>
+                <label>Korrelation <input id="api-monitor-correlation" placeholder="alle" /></label>
+                <label>Min. Dauer (ms) <input id="api-monitor-min" type="number" min="0" step="1" /></label>
+                <label>Max. Dauer (ms) <input id="api-monitor-max" type="number" min="0" step="1" /></label>
+              </div>
+              <label>Suche <input id="api-monitor-search" placeholder="Befehl, Kennung, Fehler ..." /></label>
+              <div class="actions">
+                <button id="api-monitor-refresh" type="button">Aktualisieren</button>
+                <button id="api-monitor-copy" type="button">Kopieren</button>
+                <button id="api-monitor-json" type="button">JSON</button>
+                <button id="api-monitor-git" type="button">Export2Git</button>
+              </div>
+              <div id="api-monitor-list" class="muted">Keine aufgezeichneten Anfragen.</div>
+              <pre id="api-monitor-details" aria-label="API-Monitor Anfragedetails">Einträge auswählen, um technische Einzelheiten zu sehen.</pre>
+            </div>
+          </details>
+
           <details class="card lab-menu" data-lab-menu-key="raw-diagnostics">
             <summary>Diagnose-Rohdaten</summary>
             <div class="lab-menu-content">
@@ -431,6 +462,16 @@ class WeatherRouterLab extends HTMLElement {
       });
     }
 
+    this.shadowRoot.getElementById("api-monitor-start").addEventListener("click", () => this._monitorConfigure(true));
+    this.shadowRoot.getElementById("api-monitor-stop").addEventListener("click", () => this._monitorConfigure(false));
+    this.shadowRoot.getElementById("api-monitor-refresh").addEventListener("click", () => this._monitorRefresh());
+    this.shadowRoot.getElementById("api-monitor-copy").addEventListener("click", () => this._monitorCopy());
+    this.shadowRoot.getElementById("api-monitor-json").addEventListener("click", () => this._monitorJson());
+    this.shadowRoot.getElementById("api-monitor-git").addEventListener("click", () => this._monitorGit());
+    for (const id of ["api-monitor-version","api-monitor-result","api-monitor-consumer","api-monitor-provider","api-monitor-capability","api-monitor-correlation","api-monitor-min","api-monitor-max","api-monitor-search"]) {
+      this.shadowRoot.getElementById(id).addEventListener("change", () => this._monitorRefresh());
+    }
+    this.shadowRoot.querySelector('[data-lab-menu-key="api-monitor"]').addEventListener("toggle", () => this._monitorRefresh());
     this.shadowRoot.getElementById("reference").addEventListener("change", e => this._setReference(e.target.value));
     this.shadowRoot.getElementById("diagnostic-test-location").addEventListener("change", e => {
       this._diagnosticTestLocation = e.target.value;
@@ -458,6 +499,90 @@ class WeatherRouterLab extends HTMLElement {
     });
     this.shadowRoot.getElementById("run").addEventListener("click", () => this._runDiagnostics());
     this._renderRequests();
+  }
+
+  _monitorFilters() {
+    const get = id => this.shadowRoot.getElementById("api-monitor-" + id)?.value?.trim() || "";
+    const result = {};
+    for (const [control, key] of [["version","api_version"],["result","result"],["consumer","consumer"],["provider","provider"],["capability","capability"],["correlation","correlation_id"],["search","search"]]) {
+      const value = get(control);
+      if (value && value !== "all") result[key] = value;
+    }
+    if (get("min")) result.min_duration_ms = Number(get("min"));
+    if (get("max")) result.max_duration_ms = Number(get("max"));
+    return result;
+  }
+
+  async _monitorConfigure(enabled) {
+    if (!this._hass) return;
+    try {
+      await this._hass.callWS({type:"weather_router/api_monitor/configure", enabled, clear:!enabled});
+      await this._monitorRefresh();
+    } catch(error) {
+      this.shadowRoot.getElementById("api-monitor-state").textContent = "Monitor-Steuerung fehlgeschlagen: " + String(error.message || error);
+    }
+  }
+
+  async _monitorRefresh() {
+    if (!this._hass || !this.shadowRoot.querySelector('[data-lab-menu-key="api-monitor"]')?.open) return;
+    try {
+      const snapshot = await this._hass.callWS({type:"weather_router/api_monitor/query", ...this._monitorFilters()});
+      this._monitorSnapshot = snapshot;
+      this.shadowRoot.getElementById("api-monitor-state").textContent =
+        (snapshot.recording ? "● Aufzeichnung AKTIV" : "○ Aufzeichnung AUS") +
+        " · " + snapshot.record_count + " Einträge · " + snapshot.buffer_bytes + " Bytes";
+      const list = this.shadowRoot.getElementById("api-monitor-list");
+      list.replaceChildren();
+      for (const entry of [...snapshot.entries].reverse()) {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.style.cssText = "display:block;width:100%;text-align:left;margin:4px 0;white-space:normal;overflow-wrap:anywhere";
+        b.textContent = entry.started_at + " · " + entry.api_version + " · " +
+          entry.consumer + " · " + entry.capability + " · " + entry.result +
+          " · " + entry.duration_ms + " ms";
+        b.addEventListener("click", () => {
+          this.shadowRoot.getElementById("api-monitor-details").textContent = JSON.stringify(entry, null, 2);
+        });
+        list.appendChild(b);
+      }
+      if (!snapshot.entries.length) list.textContent = "Keine passenden Einträge.";
+    } catch(error) {
+      this.shadowRoot.getElementById("api-monitor-state").textContent = "API-Monitor nicht erreichbar: " + String(error.message || error);
+    }
+  }
+
+  async _monitorCopy() {
+    if (!this._monitorSnapshot) await this._monitorRefresh();
+    if (!this._monitorSnapshot) return;
+    try {
+      await navigator.clipboard.writeText(JSON.stringify(this._monitorSnapshot, null, 2));
+      this.shadowRoot.getElementById("api-monitor-state").textContent = "Gefilterter JSON-Export in die Zwischenablage kopiert.";
+    } catch(error) {
+      this.shadowRoot.getElementById("api-monitor-state").textContent = "Zwischenablage nicht verfügbar: " + String(error);
+    }
+  }
+
+  async _monitorJson() {
+    await this._monitorRefresh();
+    if (!this._monitorSnapshot) return;
+    const blob = new Blob([JSON.stringify(this._monitorSnapshot, null, 2)], {type:"application/json"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "weather-router-api-monitor-" + new Date().toISOString().replace(/[:.]/g,"-") + ".json";
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+
+  async _monitorGit() {
+    await this._monitorRefresh();
+    if (!this._monitorSnapshot || !this._hass) return;
+    try {
+      const result = await this._hass.callWS({type:"weather_router/log_git_export",target:"archive",snapshot:this._monitorSnapshot});
+      this.shadowRoot.getElementById("api-monitor-state").textContent = "Export2Git erfolgreich: " + (result.path || result.url || "Archiv");
+    } catch(error) {
+      this.shadowRoot.getElementById("api-monitor-state").textContent = "Export2Git fehlgeschlagen: " + String(error.message || error);
+    }
   }
 
   _providerInfoClose() {
