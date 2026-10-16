@@ -279,7 +279,7 @@ class SmithsonianVolcanoProvider:
             _RSS_URL,
             headers={
                 "Accept": "application/rss+xml,application/xml,text/xml,*/*",
-                "User-Agent": "WeatherRouter/0.10 (+https://github.com/TheDaimos/weather-router-dev)",
+                "User-Agent": "WeatherRouter/0.10 (+https://github.com/TheDaimos/weather-router-dev-pub)",
             },
             timeout=20,
         ) as response:
