@@ -2091,6 +2091,7 @@ async def websocket_log_git_export(hass: HomeAssistant, connection: websocket_ap
             "weather_router.provider_diagnostics.v1",
             "weather_router.all_provider_diagnostics.v1",
             ROUTING_DIAGNOSTIC_SCHEMA,
+            "weather_router.api_monitor.v1",
         }
         if schema not in supported_schemas:
             raise WeatherRouterLogExportError("unsupported WeatherRouter diagnostic schema")
@@ -2107,6 +2108,12 @@ async def websocket_log_git_export(hass: HomeAssistant, connection: websocket_ap
             providers = snapshot.get("providers")
             if providers is not None and not isinstance(providers, list):
                 raise WeatherRouterLogExportError("invalid aggregate provider diagnostics")
+        elif schema == "weather_router.api_monitor.v1":
+            entries = snapshot.get("entries")
+            if not isinstance(entries, list) or len(entries) > 250:
+                raise WeatherRouterLogExportError("invalid API monitor entries")
+            if any(not isinstance(item, dict) for item in entries):
+                raise WeatherRouterLogExportError("invalid API monitor entry")
         elif schema == ROUTING_DIAGNOSTIC_SCHEMA:
             candidates = snapshot.get("candidates")
             if not isinstance(candidates, list) or len(candidates) > 200:
