@@ -57,7 +57,7 @@ def _utc(value: Any, field: str) -> str:
 def validate_raster_mosaic_request(raw: Any) -> dict[str, Any]:
     """Normalize one explicit V2 proposal without relaxing existing V1 rules."""
     value = _mapping(raw, "request")
-    _keys(value, {"type", "contract_version", "capability", "profile_id",
+    _keys(value, {"type", "contract_version", "capability", "profile_id", "consumer_id", "correlation_id",
                   "context", "time", "limits"},
           {"type", "contract_version", "capability", "context", "time", "limits"},
           "request")
@@ -122,4 +122,10 @@ def validate_raster_mosaic_request(raw: Any) -> dict[str, Any]:
         if not isinstance(profile_id, str) or not profile_id.strip():
             raise MosaicContractError("invalid profile_id")
         result["profile_id"] = profile_id
+    for meta_field, max_length in (("consumer_id", 96), ("correlation_id", 128)):
+        if meta_field in value:
+            meta_value = value[meta_field]
+            if not isinstance(meta_value, str) or not meta_value or len(meta_value) > max_length:
+                raise MosaicContractError("invalid " + meta_field)
+            result[meta_field] = meta_value
     return result
