@@ -38,7 +38,7 @@ from .routing_diagnostics import async_register as async_register_routing_diagno
 
 LAB_URL_PATH = "weather-router-lab"
 LAB_STATIC_URL = "/weather_router_static"
-LAB_FRONTEND_REV = "2026-10-16-api-monitor-v2-149"
+LAB_FRONTEND_REV = "2026-10-16-api-monitor-v2-150"
 
 
 def _validate_options(options: dict[str, Any]) -> None:
