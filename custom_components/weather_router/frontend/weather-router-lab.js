@@ -80,6 +80,8 @@ class WeatherRouterLab extends HTMLElement {
     this._providers = [];
     this._requests = structuredClone(DEFAULT_REQUESTS);
     this._results = null;
+    this._monitorSnapshot = null;
+    this._monitorTimer = null;
     this._loading = false;
     this._basemapProvider = "openfreemap";
     this._basemapStyle = "dark";
@@ -108,10 +110,15 @@ class WeatherRouterLab extends HTMLElement {
 
   connectedCallback() {
     document.addEventListener("visibilitychange", this._mediaVisibilityHandler);
+    if (!this._monitorTimer) this._monitorTimer = setInterval(() => {
+      if (!document.hidden && this.shadowRoot.querySelector('[data-lab-menu-key="api-monitor"]')?.open) this._monitorRefresh();
+    }, 2500);
     queueMicrotask(() => this._ensureMap());
   }
 
   disconnectedCallback() {
+    if (this._monitorTimer) clearInterval(this._monitorTimer);
+    this._monitorTimer = null;
     document.removeEventListener("visibilitychange", this._mediaVisibilityHandler);
     this._stopAllMediaPlayback("disconnect");
     if (this._map) this._map.remove();
