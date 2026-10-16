@@ -143,14 +143,53 @@ class ConsumerApiMonitor:
         token["providers"] = [str(p)[:128] for p in (providers or [])[:12]]
         token["routing"] = _safe(routing, locations=self.allow_locations)
         token["response"] = _safe(response, locations=self.allow_locations)
-        raw = json.dumps(token, ensure_ascii=False, allow_nan=False, default=str)
-        size = len(raw.encode("utf-8"))
+        # Reduce noisy data in stages; retain the essential diagnostic decision.
+        def encoded_size() -> int:
+            return len(json.dumps(token, ensure_ascii=False, allow_nan=False,
+                                  default=str).encode("utf-8"))
+
+        size = encoded_size()
         if size > _MAX_ENTRY_BYTES:
-            token["response"] = "[size-limited]"
-            token["routing"] = "[size-limited]"
-            token["request"] = "[size-limited]"
-            raw = json.dumps(token, ensure_ascii=False)
-            size = len(raw.encode("utf-8"))
+            response_data = response if isinstance(response, dict) else {}
+            routing_data = routing if isinstance(routing, dict) else {}
+            decision = routing_data.get("decision")
+            if not isinstance(decision, dict):
+                decision = {}
+            selected = decision.get("selected_provider")
+            if isinstance(selected, str) and selected and selected not in token["providers"]:
+                token["providers"].insert(0, selected[:128])
+            candidate_summary = []
+            for candidate in (routing_data.get("candidates") or [])[:8]:
+                if not isinstance(candidate, dict):
+                    continue
+                candidate_summary.append(_safe({
+                    key: candidate.get(key) for key in
+                    ("provider_id", "provider", "status", "result", "reason_code", "selected")
+                    if key in candidate
+                }, locations=False))
+            token["routing"] = {
+                "decision": _safe({key: decision.get(key) for key in
+                    ("status", "code", "selected_provider", "selected_capability",
+                     "reason_code", "fallback_count") if key in decision}),
+                "candidates": candidate_summary,
+                "limitations": _safe((routing_data.get("limitations") or [])[:6]),
+                "contacts_selected": routing_data.get("contacts_selected"),
+            }
+            token["response"] = _safe({key: response_data.get(key) for key in
+                ("status", "code", "reason_code", "selected_provider",
+                 "source_id", "contract_version", "capability")
+                if key in response_data})
+            token["request"] = {
+                "type": token["command"], "capability": token["capability"],
+                "consumer_id": token["consumer"], "correlation_id": token["correlation_id"],
+            }
+            token["truncated"] = True
+            size = encoded_size()
+        if size > _MAX_ENTRY_BYTES:
+            token["routing"]["candidates"] = []
+            token["routing"]["limitations"] = []
+            token["response"] = {"status": token["result"]}
+            size = encoded_size()
         if size > _MAX_ENTRY_BYTES:
             return
         self._rows.append((monotonic(), token, size))
