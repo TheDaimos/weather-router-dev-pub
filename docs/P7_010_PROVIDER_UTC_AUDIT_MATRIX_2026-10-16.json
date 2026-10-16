@@ -464,12 +464,12 @@
     {
       "provider": "dwd",
       "capability": "radar_precipitation",
-      "raw_field": "WMS Time dimension",
-      "raw_format": "ISO RFC3339 or explicit WMS interval",
-      "numeric_unit": "not_applicable",
-      "source_timezone": "explicit offset required",
+      "raw_field": "WMS time dimension (ISO offset) -> frames[].time and frame_time (Unix seconds)",
+      "raw_format": "ISO RFC3339/WMS interval parsed to UTC datetime then epoch seconds in DWD raster response",
+      "numeric_unit": "seconds (DWD raster frame_time and timeline[].time; explicit provider contract)",
+      "source_timezone": "WMS timestamp requires explicit offset; converted to UTC",
       "time_role": "valid_at",
-      "utc_conversion": "_parse_instant strict",
+      "utc_conversion": "_parse_instant strict + datetime.timestamp() seconds; central Consumer _iso_time(epoch_unit='seconds')",
       "interval_semantics": {
         "start": "not_applicable",
         "end": "not_applicable",
@@ -482,18 +482,18 @@
         "forecast_reference_time": "optional_runtime"
       },
       "consumer_field": "time contract; inspect provider runtime",
-      "evidence": "dwd.py",
+      "evidence": "providers/dwd.py: _parse_instant, async_get_map_layer; consumer_api.py: _normalize_raster",
       "test_status": "STATIC_CODE_REVIEW__RUNTIME_UNTESTED"
     },
     {
       "provider": "dwd",
       "capability": "radar_precipitation_quality_checked",
-      "raw_field": "WMS Time dimension",
-      "raw_format": "ISO RFC3339 or explicit WMS interval",
-      "numeric_unit": "not_applicable",
-      "source_timezone": "explicit offset required",
+      "raw_field": "WMS time dimension (ISO offset) -> frames[].time and frame_time (Unix seconds)",
+      "raw_format": "ISO RFC3339/WMS interval parsed to UTC datetime then epoch seconds in DWD raster response",
+      "numeric_unit": "seconds (DWD raster frame_time and timeline[].time; explicit provider contract)",
+      "source_timezone": "WMS timestamp requires explicit offset; converted to UTC",
       "time_role": "valid_at",
-      "utc_conversion": "_parse_instant strict",
+      "utc_conversion": "_parse_instant strict + datetime.timestamp() seconds; central Consumer _iso_time(epoch_unit='seconds')",
       "interval_semantics": {
         "start": "not_applicable",
         "end": "not_applicable",
@@ -506,18 +506,18 @@
         "forecast_reference_time": "not_applicable"
       },
       "consumer_field": "time contract; inspect provider runtime",
-      "evidence": "dwd.py",
+      "evidence": "providers/dwd.py: _parse_instant, async_get_map_layer; consumer_api.py: _normalize_raster",
       "test_status": "STATIC_CODE_REVIEW__RUNTIME_UNTESTED"
     },
     {
       "provider": "dwd",
       "capability": "satellite_clouds",
-      "raw_field": "WMS Time dimension",
-      "raw_format": "ISO RFC3339 or explicit WMS interval",
-      "numeric_unit": "not_applicable",
-      "source_timezone": "explicit offset required",
+      "raw_field": "WMS time dimension (ISO offset) -> frames[].time and frame_time (Unix seconds)",
+      "raw_format": "ISO RFC3339/WMS interval parsed to UTC datetime then epoch seconds in DWD raster response",
+      "numeric_unit": "seconds (DWD raster frame_time and timeline[].time; explicit provider contract)",
+      "source_timezone": "WMS timestamp requires explicit offset; converted to UTC",
       "time_role": "valid_at",
-      "utc_conversion": "_parse_instant strict",
+      "utc_conversion": "_parse_instant strict + datetime.timestamp() seconds; central Consumer _iso_time(epoch_unit='seconds')",
       "interval_semantics": {
         "start": "not_applicable",
         "end": "not_applicable",
@@ -530,18 +530,18 @@
         "forecast_reference_time": "not_applicable"
       },
       "consumer_field": "time contract; inspect provider runtime",
-      "evidence": "dwd.py",
+      "evidence": "providers/dwd.py: _parse_instant, async_get_map_layer; consumer_api.py: _normalize_raster",
       "test_status": "STATIC_CODE_REVIEW__RUNTIME_UNTESTED"
     },
     {
       "provider": "dwd",
       "capability": "lightning_density",
-      "raw_field": "WMS Time dimension",
-      "raw_format": "ISO RFC3339 or explicit WMS interval",
-      "numeric_unit": "not_applicable",
-      "source_timezone": "explicit offset required",
+      "raw_field": "WMS time dimension (ISO offset) -> frames[].time and frame_time (Unix seconds)",
+      "raw_format": "ISO RFC3339/WMS interval parsed to UTC datetime then epoch seconds in DWD raster response",
+      "numeric_unit": "seconds (DWD raster frame_time and timeline[].time; explicit provider contract)",
+      "source_timezone": "WMS timestamp requires explicit offset; converted to UTC",
       "time_role": "valid_at",
-      "utc_conversion": "_parse_instant strict",
+      "utc_conversion": "_parse_instant strict + datetime.timestamp() seconds; central Consumer _iso_time(epoch_unit='seconds')",
       "interval_semantics": {
         "start": "not_applicable",
         "end": "not_applicable",
@@ -554,18 +554,18 @@
         "forecast_reference_time": "not_applicable"
       },
       "consumer_field": "time contract; inspect provider runtime",
-      "evidence": "dwd.py",
+      "evidence": "providers/dwd.py: _parse_instant, async_get_map_layer; consumer_api.py: _normalize_raster",
       "test_status": "STATIC_CODE_REVIEW__RUNTIME_UNTESTED"
     },
     {
       "provider": "dwd",
       "capability": "thunderstorm_cells",
-      "raw_field": "WMS Time dimension",
-      "raw_format": "ISO RFC3339 or explicit WMS interval",
-      "numeric_unit": "not_applicable",
-      "source_timezone": "explicit offset required",
+      "raw_field": "WMS time dimension (ISO offset) -> frames[].time and frame_time (Unix seconds)",
+      "raw_format": "ISO RFC3339/WMS interval parsed to UTC datetime then epoch seconds in DWD raster response",
+      "numeric_unit": "seconds (DWD raster frame_time and timeline[].time; explicit provider contract)",
+      "source_timezone": "WMS timestamp requires explicit offset; converted to UTC",
       "time_role": "valid_at",
-      "utc_conversion": "_parse_instant strict",
+      "utc_conversion": "_parse_instant strict + datetime.timestamp() seconds; central Consumer _iso_time(epoch_unit='seconds')",
       "interval_semantics": {
         "start": "not_applicable",
         "end": "not_applicable",
@@ -578,18 +578,18 @@
         "forecast_reference_time": "optional_runtime"
       },
       "consumer_field": "time contract; inspect provider runtime",
-      "evidence": "dwd.py",
+      "evidence": "providers/dwd.py: _parse_instant, async_get_map_layer; consumer_api.py: _normalize_raster",
       "test_status": "STATIC_CODE_REVIEW__RUNTIME_UNTESTED"
     },
     {
       "provider": "dwd",
       "capability": "icon_eu_precipitation_1h",
-      "raw_field": "WMS Time dimension",
-      "raw_format": "ISO RFC3339 or explicit WMS interval",
-      "numeric_unit": "not_applicable",
-      "source_timezone": "explicit offset required",
+      "raw_field": "WMS time dimension (ISO offset) -> frames[].time and frame_time (Unix seconds)",
+      "raw_format": "ISO RFC3339/WMS interval parsed to UTC datetime then epoch seconds in DWD raster response",
+      "numeric_unit": "seconds (DWD raster frame_time and timeline[].time; explicit provider contract)",
+      "source_timezone": "WMS timestamp requires explicit offset; converted to UTC",
       "time_role": "valid_at",
-      "utc_conversion": "_parse_instant strict",
+      "utc_conversion": "_parse_instant strict + datetime.timestamp() seconds; central Consumer _iso_time(epoch_unit='seconds')",
       "interval_semantics": {
         "start": "optional_runtime",
         "end": "optional_runtime",
@@ -602,18 +602,18 @@
         "forecast_reference_time": "optional_runtime"
       },
       "consumer_field": "time contract; inspect provider runtime",
-      "evidence": "dwd.py",
+      "evidence": "providers/dwd.py: _parse_instant, async_get_map_layer; consumer_api.py: _normalize_raster",
       "test_status": "STATIC_CODE_REVIEW__RUNTIME_UNTESTED"
     },
     {
       "provider": "dwd",
       "capability": "icon_temperature_2m",
-      "raw_field": "WMS Time dimension",
-      "raw_format": "ISO RFC3339 or explicit WMS interval",
-      "numeric_unit": "not_applicable",
-      "source_timezone": "explicit offset required",
+      "raw_field": "WMS time dimension (ISO offset) -> frames[].time and frame_time (Unix seconds)",
+      "raw_format": "ISO RFC3339/WMS interval parsed to UTC datetime then epoch seconds in DWD raster response",
+      "numeric_unit": "seconds (DWD raster frame_time and timeline[].time; explicit provider contract)",
+      "source_timezone": "WMS timestamp requires explicit offset; converted to UTC",
       "time_role": "valid_at",
-      "utc_conversion": "_parse_instant strict",
+      "utc_conversion": "_parse_instant strict + datetime.timestamp() seconds; central Consumer _iso_time(epoch_unit='seconds')",
       "interval_semantics": {
         "start": "not_applicable",
         "end": "not_applicable",
@@ -626,18 +626,18 @@
         "forecast_reference_time": "optional_runtime"
       },
       "consumer_field": "time contract; inspect provider runtime",
-      "evidence": "dwd.py",
+      "evidence": "providers/dwd.py: _parse_instant, async_get_map_layer; consumer_api.py: _normalize_raster",
       "test_status": "STATIC_CODE_REVIEW__RUNTIME_UNTESTED"
     },
     {
       "provider": "dwd",
       "capability": "icon_wind_10m",
-      "raw_field": "WMS Time dimension",
-      "raw_format": "ISO RFC3339 or explicit WMS interval",
-      "numeric_unit": "not_applicable",
-      "source_timezone": "explicit offset required",
+      "raw_field": "WMS time dimension (ISO offset) -> frames[].time and frame_time (Unix seconds)",
+      "raw_format": "ISO RFC3339/WMS interval parsed to UTC datetime then epoch seconds in DWD raster response",
+      "numeric_unit": "seconds (DWD raster frame_time and timeline[].time; explicit provider contract)",
+      "source_timezone": "WMS timestamp requires explicit offset; converted to UTC",
       "time_role": "valid_at",
-      "utc_conversion": "_parse_instant strict",
+      "utc_conversion": "_parse_instant strict + datetime.timestamp() seconds; central Consumer _iso_time(epoch_unit='seconds')",
       "interval_semantics": {
         "start": "not_applicable",
         "end": "not_applicable",
@@ -650,18 +650,18 @@
         "forecast_reference_time": "optional_runtime"
       },
       "consumer_field": "time contract; inspect provider runtime",
-      "evidence": "dwd.py",
+      "evidence": "providers/dwd.py: _parse_instant, async_get_map_layer; consumer_api.py: _normalize_raster",
       "test_status": "STATIC_CODE_REVIEW__RUNTIME_UNTESTED"
     },
     {
       "provider": "dwd",
       "capability": "official_weather_warnings",
-      "raw_field": "WMS Time dimension",
-      "raw_format": "ISO RFC3339 or explicit WMS interval",
-      "numeric_unit": "not_applicable",
-      "source_timezone": "explicit offset required",
+      "raw_field": "WMS time dimension (ISO offset) -> frames[].time and frame_time (Unix seconds)",
+      "raw_format": "ISO RFC3339/WMS interval parsed to UTC datetime then epoch seconds in DWD raster response",
+      "numeric_unit": "seconds (DWD raster frame_time and timeline[].time; explicit provider contract)",
+      "source_timezone": "WMS timestamp requires explicit offset; converted to UTC",
       "time_role": "valid_at",
-      "utc_conversion": "_parse_instant strict",
+      "utc_conversion": "_parse_instant strict + datetime.timestamp() seconds; central Consumer _iso_time(epoch_unit='seconds')",
       "interval_semantics": {
         "start": "optional_runtime",
         "end": "optional_runtime",
@@ -674,7 +674,7 @@
         "forecast_reference_time": "not_applicable"
       },
       "consumer_field": "time contract; inspect provider runtime",
-      "evidence": "dwd.py",
+      "evidence": "providers/dwd.py: _parse_instant, async_get_map_layer; consumer_api.py: _normalize_raster",
       "test_status": "STATIC_CODE_REVIEW__RUNTIME_UNTESTED"
     },
     {
