@@ -108,14 +108,18 @@ async def resolve_mosaic_snapshot(
 
     shared_slots = _shared_contact_slots()
 
+    fetch_rejections: list[dict[str, str]] = []
+
     async def _fetch(source: Mapping[str, Any]) -> dict[str, Any] | None:
         try:
             async with shared_slots:
                 payload = await asyncio.wait_for(
                     source["async_fetch"](), timeout=fetch_timeout_seconds)
             if not isinstance(payload, Mapping):
+                fetch_rejections.append({"source_id": str(source["source_id"])[:120],
+                                         "reason": "invalid_provider_payload"})
                 return None
-            return make_mosaic_candidate(
+            candidate = make_mosaic_candidate(
                 source_id=source["source_id"],
                 eligible=True,
                 machine_coverage=source["machine_coverage"],
@@ -126,7 +130,13 @@ async def resolve_mosaic_snapshot(
                 retrieved_at=now,
                 routing_score=tuple(source.get("routing_score") or (999, 999, 999)),
             )
-        except (Exception):  # noqa: BLE001 - one failing provider must not collapse a mosaic
+            if candidate is None:
+                fetch_rejections.append({"source_id": str(source["source_id"])[:120],
+                                         "reason": "raster_candidate_invalid"})
+            return candidate
+        except Exception:  # noqa: BLE001 - isolated provider failure
+            fetch_rejections.append({"source_id": str(source["source_id"])[:120],
+                                     "reason": "provider_contact_failed"})
             return None
 
     # Gather bounded provider calls. No background jobs survive this call.
@@ -139,11 +149,15 @@ async def resolve_mosaic_snapshot(
         focus=query["context"].get("focus"),
         now=now,
         max_data_age_seconds=temporal["max_data_age_seconds"],
+        max_background_age_seconds=temporal.get("max_background_age_seconds"),
         max_time_delta_seconds=temporal.get("max_time_delta_seconds", 180),
         max_layers=active_layer_budget,
         reference_time=(temporal.get("target_time")
                         if temporal["mode"] == "at_time" else None),
     )
+    answer["_internal_source_rejections"] = (
+        answer.pop("_internal_source_rejections", []) + fetch_rejections
+    )[:12]
     answer["limitations"].append(
         "Kachelbudget muss durch spaeteren aktiven Renderer erzwungen werden")
     if limits["max_tile_requests"] < len(answer["layers"]):
