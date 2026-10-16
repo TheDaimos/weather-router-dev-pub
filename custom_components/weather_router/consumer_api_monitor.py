@@ -154,3 +154,65 @@ class ConsumerApiMonitor:
             "entries": records[-self.max_records:],
             "buffer_bytes": self._bytes,
         }
+
+# The proxy observes boundary responses only; provider requests remain untouched.
+_MONITOR_DATA_KEY = "weather_router_api_monitor"
+
+
+def get_monitor(hass: Any) -> ConsumerApiMonitor:
+    """Resolve recorder once per HA instance, not per consumer."""
+    monitor = hass.data.get(_MONITOR_DATA_KEY)
+    if monitor is None:
+        monitor = ConsumerApiMonitor()
+        hass.data[_MONITOR_DATA_KEY] = monitor
+    return monitor
+
+
+class MonitoredConnection:
+    """Forward WebSocket traffic while recording only explicitly opted-in metadata."""
+
+    def __init__(self, connection: Any, monitor: ConsumerApiMonitor,
+                 msg: dict[str, Any], version: str) -> None:
+        self._connection = connection
+        self._monitor = monitor
+        self._msg_id = msg["id"]
+        user = getattr(connection, "user", None)
+        self._ticket = monitor.begin(
+            api_version=version,
+            command=str(msg.get("type", "")),
+            message=msg,
+            user_id=getattr(user, "id", None),
+        )
+
+    def __getattr__(self, name: str) -> Any:
+        return getattr(self._connection, name)
+
+    def send_result(self, msg_id: int, result: Any) -> Any:
+        if msg_id == self._msg_id and self._ticket is not None:
+            status = "success"
+            if isinstance(result, dict):
+                raw = str(result.get("status", "")).lower()
+                if raw in ("unavailable", "no_data", "no_coverage"):
+                    status = "no_data"
+                elif raw in ("error", "rejected"):
+                    status = "error"
+            self._monitor.finish(self._ticket, result=status, response=result)
+            self._ticket = None
+        return self._connection.send_result(msg_id, result)
+
+    def send_error(self, msg_id: int, code: str, message: str) -> Any:
+        if msg_id == self._msg_id and self._ticket is not None:
+            status = "timeout" if "timeout" in code else "error"
+            self._monitor.finish(self._ticket, result=status,
+                                 error_code=code, response={"message": str(message)[:160]})
+            self._ticket = None
+        return self._connection.send_error(msg_id, code, message)
+
+
+def monitored_connection(hass: Any, connection: Any, msg: dict[str, Any],
+                         version: str) -> Any:
+    """Return raw connection with zero per-message allocations while disabled."""
+    monitor = get_monitor(hass)
+    if not monitor.enabled:
+        return connection
+    return MonitoredConnection(connection, monitor, msg, version)
