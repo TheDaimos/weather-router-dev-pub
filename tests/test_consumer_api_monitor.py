@@ -42,6 +42,38 @@ class TestApiMonitor(unittest.TestCase):
         self.assertEqual(m.query(capability="w1")["record_count"],0)
         self.assertEqual(m.query(result="no_data")["record_count"],2)
 
+    def test_proxy_preserves_responses(self):
+        class Dummy:
+            user = type("U", (), {"id": "admin-1"})()
+            def __init__(self):
+                self.output = None
+            def send_result(self, req, result):
+                self.output = ("result", req, result)
+            def send_error(self, req, code, detail):
+                self.output = ("error", req, code)
+        m = monitor.ConsumerApiMonitor()
+        m.configure(enabled=True)
+        target = Dummy()
+        proxy = monitor.MonitoredConnection(target, m,
+                                            {"id": 5, "consumer_id": "aurora_borealis",
+                                             "capability": "weather.radar.precipitation", "type": "resolve"},
+                                            "V1")
+        proxy.send_result(5, {"status": "ready", "provider_id": "source-a"})
+        self.assertEqual(target.output[0], "result")
+        self.assertEqual(m.query(consumer="aurora_borealis")["record_count"], 1)
+        proxy.send_result(5, {"status": "ready"})
+        self.assertEqual(m.query()["record_count"], 1)
+
+    def test_redact_signed_url_and_nonfinite(self):
+        m = monitor.ConsumerApiMonitor()
+        m.configure(enabled=True)
+        ticket=m.begin(api_version="V2",command="resolve_mosaic",message={})
+        m.finish(ticket,result="success",response={"url":"https://example.test/?token=SECRET",
+                                                  "rate":float("nan")})
+        row=m.query()["entries"][0]
+        self.assertEqual(row["response"]["url"], "[sensitive-text-omitted]")
+        self.assertEqual(row["response"]["rate"], "[non-finite-number]")
+
     def test_stop_removes_data(self):
         m=monitor.ConsumerApiMonitor()
         m.configure(enabled=True)
