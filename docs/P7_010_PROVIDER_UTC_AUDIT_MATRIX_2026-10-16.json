@@ -3,7 +3,7 @@
   "date": "2026-10-16",
   "providers": 38,
   "capabilities": 280,
-  "disclaimer": "Static exhaustive capability inventory, NOT individual provider runtime PASS. Unknown fields remain explicitly unverified; no provider-specific timestamps are invented.",
+  "disclaimer": "Exhaustive 38-provider/280-capability static inventory and code audit; only targeted parser regressions are CI-verified. Provider-wide HA network or per-capability real payload verification remains outstanding. No unknown source format is certified.",
   "entries": [
     {
       "provider": "open_meteo",
@@ -464,12 +464,12 @@
     {
       "provider": "dwd",
       "capability": "radar_precipitation",
-      "raw_field": "WMS time dimension",
-      "raw_format": "ISO/WMS interval",
-      "numeric_unit": "not_applicable_or_unverified",
-      "source_timezone": "explicit Z or source-declared",
-      "time_role": "valid_at image",
-      "utc_conversion": "WMS parser",
+      "raw_field": "WMS Time dimension",
+      "raw_format": "ISO RFC3339 or explicit WMS interval",
+      "numeric_unit": "not_applicable",
+      "source_timezone": "explicit offset required",
+      "time_role": "valid_at",
+      "utc_conversion": "_parse_instant strict",
       "interval_semantics": {
         "start": "not_applicable",
         "end": "not_applicable",
@@ -488,12 +488,12 @@
     {
       "provider": "dwd",
       "capability": "radar_precipitation_quality_checked",
-      "raw_field": "WMS time dimension",
-      "raw_format": "ISO/WMS interval",
-      "numeric_unit": "not_applicable_or_unverified",
-      "source_timezone": "explicit Z or source-declared",
-      "time_role": "valid_at image",
-      "utc_conversion": "WMS parser",
+      "raw_field": "WMS Time dimension",
+      "raw_format": "ISO RFC3339 or explicit WMS interval",
+      "numeric_unit": "not_applicable",
+      "source_timezone": "explicit offset required",
+      "time_role": "valid_at",
+      "utc_conversion": "_parse_instant strict",
       "interval_semantics": {
         "start": "not_applicable",
         "end": "not_applicable",
@@ -512,12 +512,12 @@
     {
       "provider": "dwd",
       "capability": "satellite_clouds",
-      "raw_field": "WMS time dimension",
-      "raw_format": "ISO/WMS interval",
-      "numeric_unit": "not_applicable_or_unverified",
-      "source_timezone": "explicit Z or source-declared",
-      "time_role": "valid_at image",
-      "utc_conversion": "WMS parser",
+      "raw_field": "WMS Time dimension",
+      "raw_format": "ISO RFC3339 or explicit WMS interval",
+      "numeric_unit": "not_applicable",
+      "source_timezone": "explicit offset required",
+      "time_role": "valid_at",
+      "utc_conversion": "_parse_instant strict",
       "interval_semantics": {
         "start": "not_applicable",
         "end": "not_applicable",
@@ -536,12 +536,12 @@
     {
       "provider": "dwd",
       "capability": "lightning_density",
-      "raw_field": "WMS time dimension",
-      "raw_format": "ISO/WMS interval",
-      "numeric_unit": "not_applicable_or_unverified",
-      "source_timezone": "explicit Z or source-declared",
-      "time_role": "valid_at image",
-      "utc_conversion": "WMS parser",
+      "raw_field": "WMS Time dimension",
+      "raw_format": "ISO RFC3339 or explicit WMS interval",
+      "numeric_unit": "not_applicable",
+      "source_timezone": "explicit offset required",
+      "time_role": "valid_at",
+      "utc_conversion": "_parse_instant strict",
       "interval_semantics": {
         "start": "not_applicable",
         "end": "not_applicable",
@@ -560,12 +560,12 @@
     {
       "provider": "dwd",
       "capability": "thunderstorm_cells",
-      "raw_field": "WMS time dimension",
-      "raw_format": "ISO/WMS interval",
-      "numeric_unit": "not_applicable_or_unverified",
-      "source_timezone": "explicit Z or source-declared",
-      "time_role": "valid_at image",
-      "utc_conversion": "WMS parser",
+      "raw_field": "WMS Time dimension",
+      "raw_format": "ISO RFC3339 or explicit WMS interval",
+      "numeric_unit": "not_applicable",
+      "source_timezone": "explicit offset required",
+      "time_role": "valid_at",
+      "utc_conversion": "_parse_instant strict",
       "interval_semantics": {
         "start": "not_applicable",
         "end": "not_applicable",
@@ -584,12 +584,12 @@
     {
       "provider": "dwd",
       "capability": "icon_eu_precipitation_1h",
-      "raw_field": "WMS time dimension",
-      "raw_format": "ISO/WMS interval",
-      "numeric_unit": "not_applicable_or_unverified",
-      "source_timezone": "explicit Z or source-declared",
-      "time_role": "valid_at image",
-      "utc_conversion": "WMS parser",
+      "raw_field": "WMS Time dimension",
+      "raw_format": "ISO RFC3339 or explicit WMS interval",
+      "numeric_unit": "not_applicable",
+      "source_timezone": "explicit offset required",
+      "time_role": "valid_at",
+      "utc_conversion": "_parse_instant strict",
       "interval_semantics": {
         "start": "optional_runtime",
         "end": "optional_runtime",
@@ -608,12 +608,12 @@
     {
       "provider": "dwd",
       "capability": "icon_temperature_2m",
-      "raw_field": "WMS time dimension",
-      "raw_format": "ISO/WMS interval",
-      "numeric_unit": "not_applicable_or_unverified",
-      "source_timezone": "explicit Z or source-declared",
-      "time_role": "valid_at image",
-      "utc_conversion": "WMS parser",
+      "raw_field": "WMS Time dimension",
+      "raw_format": "ISO RFC3339 or explicit WMS interval",
+      "numeric_unit": "not_applicable",
+      "source_timezone": "explicit offset required",
+      "time_role": "valid_at",
+      "utc_conversion": "_parse_instant strict",
       "interval_semantics": {
         "start": "not_applicable",
         "end": "not_applicable",
@@ -632,12 +632,12 @@
     {
       "provider": "dwd",
       "capability": "icon_wind_10m",
-      "raw_field": "WMS time dimension",
-      "raw_format": "ISO/WMS interval",
-      "numeric_unit": "not_applicable_or_unverified",
-      "source_timezone": "explicit Z or source-declared",
-      "time_role": "valid_at image",
-      "utc_conversion": "WMS parser",
+      "raw_field": "WMS Time dimension",
+      "raw_format": "ISO RFC3339 or explicit WMS interval",
+      "numeric_unit": "not_applicable",
+      "source_timezone": "explicit offset required",
+      "time_role": "valid_at",
+      "utc_conversion": "_parse_instant strict",
       "interval_semantics": {
         "start": "not_applicable",
         "end": "not_applicable",
@@ -656,12 +656,12 @@
     {
       "provider": "dwd",
       "capability": "official_weather_warnings",
-      "raw_field": "WMS time dimension",
-      "raw_format": "ISO/WMS interval",
-      "numeric_unit": "not_applicable_or_unverified",
-      "source_timezone": "explicit Z or source-declared",
-      "time_role": "valid_at image",
-      "utc_conversion": "WMS parser",
+      "raw_field": "WMS Time dimension",
+      "raw_format": "ISO RFC3339 or explicit WMS interval",
+      "numeric_unit": "not_applicable",
+      "source_timezone": "explicit offset required",
+      "time_role": "valid_at",
+      "utc_conversion": "_parse_instant strict",
       "interval_semantics": {
         "start": "optional_runtime",
         "end": "optional_runtime",
@@ -3224,12 +3224,12 @@
     {
       "provider": "smithsonian_volcanoes",
       "capability": "weekly_volcanic_activity",
-      "raw_field": "not individually verified",
-      "raw_format": "not individually verified",
-      "numeric_unit": "not_applicable_or_unverified",
-      "source_timezone": "not individually verified",
-      "time_role": "see declared_time_roles; requires runtime mapping",
-      "utc_conversion": "not individually verified",
+      "raw_field": "RSS pubDate",
+      "raw_format": "RFC2822",
+      "numeric_unit": "not_applicable",
+      "source_timezone": "explicit RSS offset",
+      "time_role": "published_at",
+      "utc_conversion": "rss_instant",
       "interval_semantics": {
         "start": "optional_runtime",
         "end": "optional_runtime",
@@ -3242,18 +3242,18 @@
         "forecast_reference_time": "not_applicable"
       },
       "consumer_field": "time contract; inspect provider runtime",
-      "evidence": "static consumer_capability_map.json only",
-      "test_status": "RUNTIME_SOURCE_FORMAT_UNVERIFIED"
+      "evidence": "smithsonian_volcanoes.py",
+      "test_status": "STATIC_CODE_REVIEW__RUNTIME_UNTESTED"
     },
     {
       "provider": "usgs_volcanoes",
       "capability": "elevated_us_volcanoes",
-      "raw_field": "features[].properties.time",
+      "raw_field": "HANS status epoch field",
       "raw_format": "Unix epoch",
-      "numeric_unit": "milliseconds",
+      "numeric_unit": "seconds",
       "source_timezone": "UTC epoch",
-      "time_role": "event_at",
-      "utc_conversion": "provider /1000",
+      "time_role": "event/status time",
+      "utc_conversion": "_iso_from_seconds",
       "interval_semantics": {
         "start": "optional_runtime",
         "end": "optional_runtime",
@@ -4304,12 +4304,12 @@
     {
       "provider": "open_meteo_pollen",
       "capability": "alder_pollen",
-      "raw_field": "not individually verified",
-      "raw_format": "not individually verified",
-      "numeric_unit": "not_applicable_or_unverified",
-      "source_timezone": "not individually verified",
-      "time_role": "see declared_time_roles; requires runtime mapping",
-      "utc_conversion": "not individually verified",
+      "raw_field": "current.time",
+      "raw_format": "ISO local wall time",
+      "numeric_unit": "not_applicable",
+      "source_timezone": "payload.timezone (IANA)",
+      "time_role": "data_time (CAMS forecast)",
+      "utc_conversion": "provider_local_instant",
       "interval_semantics": {
         "start": "not_applicable",
         "end": "not_applicable",
@@ -4322,18 +4322,18 @@
         "forecast_reference_time": "optional_runtime"
       },
       "consumer_field": "time contract; inspect provider runtime",
-      "evidence": "static consumer_capability_map.json only",
-      "test_status": "RUNTIME_SOURCE_FORMAT_UNVERIFIED"
+      "evidence": "open_meteo_pollen.py",
+      "test_status": "STATIC_CODE_REVIEW__RUNTIME_UNTESTED"
     },
     {
       "provider": "open_meteo_pollen",
       "capability": "birch_pollen",
-      "raw_field": "not individually verified",
-      "raw_format": "not individually verified",
-      "numeric_unit": "not_applicable_or_unverified",
-      "source_timezone": "not individually verified",
-      "time_role": "see declared_time_roles; requires runtime mapping",
-      "utc_conversion": "not individually verified",
+      "raw_field": "current.time",
+      "raw_format": "ISO local wall time",
+      "numeric_unit": "not_applicable",
+      "source_timezone": "payload.timezone (IANA)",
+      "time_role": "data_time (CAMS forecast)",
+      "utc_conversion": "provider_local_instant",
       "interval_semantics": {
         "start": "not_applicable",
         "end": "not_applicable",
@@ -4346,18 +4346,18 @@
         "forecast_reference_time": "optional_runtime"
       },
       "consumer_field": "time contract; inspect provider runtime",
-      "evidence": "static consumer_capability_map.json only",
-      "test_status": "RUNTIME_SOURCE_FORMAT_UNVERIFIED"
+      "evidence": "open_meteo_pollen.py",
+      "test_status": "STATIC_CODE_REVIEW__RUNTIME_UNTESTED"
     },
     {
       "provider": "open_meteo_pollen",
       "capability": "grass_pollen",
-      "raw_field": "not individually verified",
-      "raw_format": "not individually verified",
-      "numeric_unit": "not_applicable_or_unverified",
-      "source_timezone": "not individually verified",
-      "time_role": "see declared_time_roles; requires runtime mapping",
-      "utc_conversion": "not individually verified",
+      "raw_field": "current.time",
+      "raw_format": "ISO local wall time",
+      "numeric_unit": "not_applicable",
+      "source_timezone": "payload.timezone (IANA)",
+      "time_role": "data_time (CAMS forecast)",
+      "utc_conversion": "provider_local_instant",
       "interval_semantics": {
         "start": "not_applicable",
         "end": "not_applicable",
@@ -4370,18 +4370,18 @@
         "forecast_reference_time": "optional_runtime"
       },
       "consumer_field": "time contract; inspect provider runtime",
-      "evidence": "static consumer_capability_map.json only",
-      "test_status": "RUNTIME_SOURCE_FORMAT_UNVERIFIED"
+      "evidence": "open_meteo_pollen.py",
+      "test_status": "STATIC_CODE_REVIEW__RUNTIME_UNTESTED"
     },
     {
       "provider": "open_meteo_pollen",
       "capability": "mugwort_pollen",
-      "raw_field": "not individually verified",
-      "raw_format": "not individually verified",
-      "numeric_unit": "not_applicable_or_unverified",
-      "source_timezone": "not individually verified",
-      "time_role": "see declared_time_roles; requires runtime mapping",
-      "utc_conversion": "not individually verified",
+      "raw_field": "current.time",
+      "raw_format": "ISO local wall time",
+      "numeric_unit": "not_applicable",
+      "source_timezone": "payload.timezone (IANA)",
+      "time_role": "data_time (CAMS forecast)",
+      "utc_conversion": "provider_local_instant",
       "interval_semantics": {
         "start": "not_applicable",
         "end": "not_applicable",
@@ -4394,18 +4394,18 @@
         "forecast_reference_time": "optional_runtime"
       },
       "consumer_field": "time contract; inspect provider runtime",
-      "evidence": "static consumer_capability_map.json only",
-      "test_status": "RUNTIME_SOURCE_FORMAT_UNVERIFIED"
+      "evidence": "open_meteo_pollen.py",
+      "test_status": "STATIC_CODE_REVIEW__RUNTIME_UNTESTED"
     },
     {
       "provider": "open_meteo_pollen",
       "capability": "olive_pollen",
-      "raw_field": "not individually verified",
-      "raw_format": "not individually verified",
-      "numeric_unit": "not_applicable_or_unverified",
-      "source_timezone": "not individually verified",
-      "time_role": "see declared_time_roles; requires runtime mapping",
-      "utc_conversion": "not individually verified",
+      "raw_field": "current.time",
+      "raw_format": "ISO local wall time",
+      "numeric_unit": "not_applicable",
+      "source_timezone": "payload.timezone (IANA)",
+      "time_role": "data_time (CAMS forecast)",
+      "utc_conversion": "provider_local_instant",
       "interval_semantics": {
         "start": "not_applicable",
         "end": "not_applicable",
@@ -4418,18 +4418,18 @@
         "forecast_reference_time": "optional_runtime"
       },
       "consumer_field": "time contract; inspect provider runtime",
-      "evidence": "static consumer_capability_map.json only",
-      "test_status": "RUNTIME_SOURCE_FORMAT_UNVERIFIED"
+      "evidence": "open_meteo_pollen.py",
+      "test_status": "STATIC_CODE_REVIEW__RUNTIME_UNTESTED"
     },
     {
       "provider": "open_meteo_pollen",
       "capability": "ragweed_pollen",
-      "raw_field": "not individually verified",
-      "raw_format": "not individually verified",
-      "numeric_unit": "not_applicable_or_unverified",
-      "source_timezone": "not individually verified",
-      "time_role": "see declared_time_roles; requires runtime mapping",
-      "utc_conversion": "not individually verified",
+      "raw_field": "current.time",
+      "raw_format": "ISO local wall time",
+      "numeric_unit": "not_applicable",
+      "source_timezone": "payload.timezone (IANA)",
+      "time_role": "data_time (CAMS forecast)",
+      "utc_conversion": "provider_local_instant",
       "interval_semantics": {
         "start": "not_applicable",
         "end": "not_applicable",
@@ -4442,8 +4442,8 @@
         "forecast_reference_time": "optional_runtime"
       },
       "consumer_field": "time contract; inspect provider runtime",
-      "evidence": "static consumer_capability_map.json only",
-      "test_status": "RUNTIME_SOURCE_FORMAT_UNVERIFIED"
+      "evidence": "open_meteo_pollen.py",
+      "test_status": "STATIC_CODE_REVIEW__RUNTIME_UNTESTED"
     },
     {
       "provider": "gbif_biodiversity",
@@ -6560,12 +6560,12 @@
     {
       "provider": "fmi_lightning",
       "capability": "lightning_strikes_observed",
-      "raw_field": "WFS epoch",
-      "raw_format": "numeric epoch",
-      "numeric_unit": "not yet independently verified",
+      "raw_field": "WFS gmlcov positions[2]",
+      "raw_format": "Unix epoch in WFS position tuple",
+      "numeric_unit": "seconds",
       "source_timezone": "UTC epoch",
       "time_role": "observed_at",
-      "utc_conversion": "provider fromtimestamp",
+      "utc_conversion": "datetime.fromtimestamp(epoch, UTC)",
       "interval_semantics": {
         "start": "optional_runtime",
         "end": "optional_runtime",
@@ -6584,12 +6584,12 @@
     {
       "provider": "fmi_lightning",
       "capability": "lightning_nearest_distance",
-      "raw_field": "WFS epoch",
-      "raw_format": "numeric epoch",
-      "numeric_unit": "not yet independently verified",
+      "raw_field": "WFS gmlcov positions[2]",
+      "raw_format": "Unix epoch in WFS position tuple",
+      "numeric_unit": "seconds",
       "source_timezone": "UTC epoch",
       "time_role": "observed_at",
-      "utc_conversion": "provider fromtimestamp",
+      "utc_conversion": "datetime.fromtimestamp(epoch, UTC)",
       "interval_semantics": {
         "start": "not_applicable",
         "end": "not_applicable",
@@ -6608,12 +6608,12 @@
     {
       "provider": "fmi_lightning",
       "capability": "lightning_nearest_azimuth",
-      "raw_field": "WFS epoch",
-      "raw_format": "numeric epoch",
-      "numeric_unit": "not yet independently verified",
+      "raw_field": "WFS gmlcov positions[2]",
+      "raw_format": "Unix epoch in WFS position tuple",
+      "numeric_unit": "seconds",
       "source_timezone": "UTC epoch",
       "time_role": "observed_at",
-      "utc_conversion": "provider fromtimestamp",
+      "utc_conversion": "datetime.fromtimestamp(epoch, UTC)",
       "interval_semantics": {
         "start": "not_applicable",
         "end": "not_applicable",
@@ -6725,5 +6725,7 @@
       "evidence": "static consumer_capability_map.json only",
       "test_status": "RUNTIME_SOURCE_FORMAT_UNVERIFIED"
     }
-  ]
+  ],
+  "static_reviewed": 69,
+  "runtime_verified_count": 0
 }
