@@ -270,6 +270,13 @@ class WeatherRouterLab extends HTMLElement {
         .media-sequence-meta { display:flex; justify-content:space-between; gap:8px; margin-top:4px; font-size:10px; opacity:.62; }
         .media-provider-head { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:10px; padding-top:8px; border-top:1px solid color-mix(in srgb,var(--divider-color,#444) 72%,transparent); }
         .media-provider-head:first-child { margin-top:0; padding-top:0; border-top:0; }
+        .monitor-filters { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;align-items:end; }
+        .monitor-filters label { display:flex;flex-direction:column;justify-content:end;gap:5px;min-width:0;font-size:12px; }
+        .monitor-filters input,.monitor-filters select { width:100%;min-width:0;min-height:38px;padding:7px;box-sizing:border-box; }
+        .monitor-metal { flex:1;min-height:44px;border:1px solid #997a35;border-radius:10px;font-weight:750;color:#191919;background:linear-gradient(165deg,#fff5bd 0%,#e6c66b 28%,#a98137 55%,#f2d98c 80%,#896527 100%);box-shadow:inset 0 2px 1px #fff9cc, inset 0 -3px 3px #735522,0 4px 9px #0005;text-shadow:0 1px #fff7b4;transition:transform .12s,filter .12s,box-shadow .12s; }
+        .monitor-metal:active { transform:translateY(2px);box-shadow:inset 0 3px 6px #0007;filter:brightness(.88); }
+        .monitor-metal.stop { border-color:#8a4147;color:#fff;background:linear-gradient(165deg,#ffa9a7,#bb4648 40%,#781c28 70%,#c55459);text-shadow:0 1px #431118;box-shadow:inset 0 1px #ffc8c8,inset 0 -3px #63151f,0 4px 9px #0005; }
+        .monitor-metal:disabled { opacity:.5;cursor:wait;filter:grayscale(.4); }
         .request-row { display:grid; grid-template-columns:1fr 1.3fr auto; gap:6px; align-items:end; margin-bottom:8px; }
         .request-row button { width:38px; }
         .actions { display:flex; gap:8px; margin-top:10px; }
@@ -388,11 +395,11 @@ class WeatherRouterLab extends HTMLElement {
             <div class="lab-menu-content">
               <div id="api-monitor-state" class="muted" role="status">Aufzeichnung AUS · noch nicht geladen</div>
               <div class="actions">
-                <button id="api-monitor-start" type="button">Aufzeichnung starten</button>
-                <button id="api-monitor-stop" type="button">Stopp + löschen</button>
+                <button id="api-monitor-start" class="monitor-metal" type="button">Aufzeichnung starten</button>
+                <button id="api-monitor-stop" class="monitor-metal stop" type="button">Stopp + löschen</button>
               </div>
               <p class="muted" style="font-size:11px">Nur Administratoren. Aufzeichnung standardmäßig AUS, im Speicher begrenzt und nach Neustart AUS. Koordinaten und Zugangsdaten werden nicht aufgezeichnet.</p>
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+              <div class="monitor-filters">
                 <label>API <select id="api-monitor-version"><option value="all">Alle</option><option value="V1">V1</option><option value="V2">V2</option></select></label>
                 <label>Ergebnis <select id="api-monitor-result"><option value="all">Alle</option><option value="success">Erfolg</option><option value="no_data">Keine Daten</option><option value="rejected">Abgewiesen</option><option value="error">Fehler</option><option value="timeout">Zeitüberschreitung</option></select></label>
                 <label>Befehl <input id="api-monitor-command" placeholder="alle" /></label>
@@ -426,7 +433,7 @@ class WeatherRouterLab extends HTMLElement {
                 <pre id="api-monitor-manual-result">Noch keine Testabfrage.</pre>
               </details>
               <div id="api-monitor-list" class="muted">Keine aufgezeichneten Anfragen.</div>
-              <pre id="api-monitor-details" aria-label="API-Monitor Anfragedetails">Einträge auswählen, um technische Einzelheiten zu sehen.</pre>
+              <div id="api-monitor-detail-wrap" hidden><div class="actions"><button id="api-monitor-detail-close" type="button">Details schließen ×</button></div><pre id="api-monitor-details" aria-label="API-Monitor Anfragedetails"></pre></div>
             </div>
           </details>
 
@@ -495,6 +502,7 @@ class WeatherRouterLab extends HTMLElement {
     this.shadowRoot.getElementById("api-monitor-copy").addEventListener("click", () => this._monitorCopy());
     this.shadowRoot.getElementById("api-monitor-json").addEventListener("click", () => this._monitorJson());
     this.shadowRoot.getElementById("api-monitor-git").addEventListener("click", () => this._monitorGit());
+    this.shadowRoot.getElementById("api-monitor-detail-close").addEventListener("click", () => this._monitorCloseDetail());
     for (const id of ["api-monitor-version","api-monitor-result","api-monitor-consumer","api-monitor-provider","api-monitor-capability","api-monitor-correlation","api-monitor-min","api-monitor-max","api-monitor-search"]) {
       this.shadowRoot.getElementById(id).addEventListener("change", () => this._monitorRefresh());
     }
@@ -610,8 +618,13 @@ class WeatherRouterLab extends HTMLElement {
           entry.consumer + " · " + entry.capability + " · " + entry.result +
           " · " + entry.duration_ms + " ms";
         b.addEventListener("click", () => {
-          this._monitorSelected = entry;
-          this.shadowRoot.getElementById("api-monitor-details").textContent = JSON.stringify(entry, null, 2);
+          if (this._monitorSelected?.request_id === entry.request_id) {
+            this._monitorCloseDetail();
+          } else {
+            this._monitorSelected = entry;
+            this.shadowRoot.getElementById("api-monitor-detail-wrap").hidden = false;
+            this.shadowRoot.getElementById("api-monitor-details").textContent = JSON.stringify(entry, null, 2);
+          }
         });
         list.appendChild(b);
       }
@@ -619,6 +632,11 @@ class WeatherRouterLab extends HTMLElement {
     } catch(error) {
       this.shadowRoot.getElementById("api-monitor-state").textContent = "API-Monitor nicht erreichbar: " + String(error.message || error);
     }
+  }
+
+  _monitorCloseDetail() {
+    this._monitorSelected = null;
+    this.shadowRoot.getElementById("api-monitor-detail-wrap").hidden = true;
   }
 
   _monitorExportSnapshot() {
@@ -659,15 +677,25 @@ class WeatherRouterLab extends HTMLElement {
   }
 
   async _monitorGit() {
-    await this._monitorRefresh();
-    if (!this._monitorSnapshot || !this._hass) return;
+    const button = this.shadowRoot.getElementById("api-monitor-git");
+    const status = this.shadowRoot.getElementById("api-monitor-state");
+    if (button.disabled || !this._hass) return;
+    button.disabled = true;
+    button.textContent = "⏳ Export läuft …";
+    status.textContent = "Export2Git: Übertragung läuft …";
     try {
+      await this._monitorRefresh();
       const snapshot = this._monitorExportSnapshot();
       if (!snapshot) return;
       const result = await this._hass.callWS({type:"weather_router/log_git_export",target:"archive",snapshot});
-      this.shadowRoot.getElementById("api-monitor-state").textContent = "Export2Git erfolgreich: " + (result.path || result.url || "Archiv");
+      status.textContent = "✓ Export2Git erfolgreich: " + (result.path || result.url || "Privates Archiv");
+      button.textContent = "✓ Export erfolgreich";
     } catch(error) {
-      this.shadowRoot.getElementById("api-monitor-state").textContent = "Export2Git fehlgeschlagen: " + String(error.message || error);
+      status.textContent = "✕ Export2Git fehlgeschlagen: " + String(error.message || error);
+      button.textContent = "✕ Export fehlgeschlagen";
+    } finally {
+      button.disabled = false;
+      button.style.fontWeight = "bold";
     }
   }
 
