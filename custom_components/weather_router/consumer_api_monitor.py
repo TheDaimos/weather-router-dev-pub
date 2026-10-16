@@ -176,6 +176,8 @@ class ConsumerApiMonitor:
                 "contacts_selected": routing_data.get("contacts_selected"),
                 "sources_eligible": routing_data.get("sources_eligible"),
                 "selected_sources": _safe((routing_data.get("selected_sources") or [])[:12], locations=False),
+                "final_layers_count": routing_data.get("final_layers_count"),
+                "source_rejections": _safe((routing_data.get("source_rejections") or [])[:12], locations=False),
             }
             token["response"] = _safe({key: response_data.get(key) for key in
                 ("status", "code", "reason_code", "selected_provider",
