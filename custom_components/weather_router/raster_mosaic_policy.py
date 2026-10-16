@@ -272,7 +272,7 @@ def plan_raster_mosaic(
         fresh = [item for item in allowed if not item["is_background"]]
         anchor = target_dt or (
             max(fresh, key=lambda item: item["time"])["time"]
-            if fresh else foundation["time"])
+            if foundation["is_background"] and fresh else foundation["time"])
         _align_frame(foundation, anchor, max_time_delta_seconds)
         others = allowed[1:]
         for other in others:
