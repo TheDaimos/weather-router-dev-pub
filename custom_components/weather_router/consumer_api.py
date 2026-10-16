@@ -3700,6 +3700,9 @@ async def websocket_consumer_resolve(
         capability=public_id,
         contract_version=msg.get("contract_version"),
     )
+    # Correlate this precise trace without relying on global latest-trace order.
+    if getattr(connection, "_ticket", None) is not None:
+        connection._monitor_trace = trace
     diagnostic_fault = _consume_diagnostic_fault(hass, connection)
     profile_meta: dict[str, Any] | None = None
 
