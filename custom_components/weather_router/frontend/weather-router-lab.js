@@ -570,7 +570,7 @@ class WeatherRouterLab extends HTMLElement {
       if (query.type && query.type !== command) throw Error("API-Befehl stimmt nicht mit gewählter Version überein.");
       query.type = command;
       query.consumer_id = "weather_router_lab";
-      query.correlation_id = query.correlation_id || crypto.randomUUID();
+      query.correlation_id = query.correlation_id || (crypto.randomUUID?.() || ("lab-" + Date.now().toString(36)));
       output.textContent = "Anfrage läuft...";
       const result = await this._hass.callWS(query);
       output.textContent = JSON.stringify(result, null, 2);
@@ -596,6 +596,7 @@ class WeatherRouterLab extends HTMLElement {
     try {
       const snapshot = await this._hass.callWS({type:"weather_router/api_monitor/query", ...this._monitorFilters()});
       this._monitorSnapshot = snapshot;
+      if (this._monitorSelected && !snapshot.entries.some(item => item.request_id === this._monitorSelected.request_id)) this._monitorSelected = null;
       this.shadowRoot.getElementById("api-monitor-state").textContent =
         (snapshot.recording ? "● Aufzeichnung AKTIV" : "○ Aufzeichnung AUS") +
         " · " + snapshot.record_count + " Einträge · " + snapshot.buffer_bytes + " Bytes";
