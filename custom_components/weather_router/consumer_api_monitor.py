@@ -236,8 +236,19 @@ class MonitoredConnection:
                 elif raw in ("error", "rejected"):
                     status = "error"
             try:
+                trace = getattr(self, "_monitor_trace", None)
+                finished = getattr(trace, "_stored", None) if trace is not None else None
+                routing = None
+                if isinstance(finished, dict):
+                    routing = {
+                        "decision": finished.get("decision"),
+                        "candidates": finished.get("candidates"),
+                        "performance": finished.get("performance"),
+                        "errors": finished.get("errors"),
+                    }
                 self._monitor.finish(self._ticket, result=status, response=result,
-                                     providers=_providers_from_response(result))
+                                     providers=_providers_from_response(result),
+                                     routing=routing)
             except Exception:
                 pass  # Monitoring must never alter the Consumer API result.
             self._ticket = None
@@ -247,8 +258,12 @@ class MonitoredConnection:
         if msg_id == self._msg_id and self._ticket is not None:
             status = "timeout" if "timeout" in code else "error"
             try:
+                trace = getattr(self, "_monitor_trace", None)
+                finished = getattr(trace, "_stored", None) if trace is not None else None
+                routing = {"decision": finished.get("decision"), "errors": finished.get("errors")} if isinstance(finished, dict) else None
                 self._monitor.finish(self._ticket, result=status,
-                                     error_code=code, response={"message": str(message)[:160]})
+                                     error_code=code, response={"message": str(message)[:160]},
+                                     routing=routing)
             except Exception:
                 pass  # Preserve the actual error even if diagnostics fail.
             self._ticket = None
