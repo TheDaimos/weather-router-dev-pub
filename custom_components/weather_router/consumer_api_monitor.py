@@ -166,7 +166,7 @@ class ConsumerApiMonitor:
                 records = [row for row in records if str(row.get(key, "")) == str(val)]
         provider = filters.get("provider")
         if provider:
-            records = [row for row in records if provider in row.get("providers", [])]
+            records = [row for row in records if any(p == provider or p.startswith(str(provider) + "/") for p in row.get("providers", []))]
         request_id = filters.get("request_id")
         if request_id:
             records = [row for row in records if row.get("request_id") == request_id]
@@ -256,7 +256,8 @@ class MonitoredConnection:
 
     def send_error(self, msg_id: int, code: str, message: str) -> Any:
         if msg_id == self._msg_id and self._ticket is not None:
-            status = "timeout" if "timeout" in code else "error"
+            status = ("timeout" if "timeout" in code else
+                      "rejected" if code.startswith(("invalid_", "unsupported_", "profile_")) else "error")
             try:
                 trace = getattr(self, "_monitor_trace", None)
                 finished = getattr(trace, "_stored", None) if trace is not None else None
