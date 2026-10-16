@@ -18,6 +18,9 @@ from .raster_mosaic_policy import plan_raster_mosaic, viewport_overlap
 
 MAX_CANDIDATE_CONTACTS = 12
 MAX_PARALLEL_CONTACTS = 3
+# Shared across simultaneous consumer calls on the same Home Assistant event loop.
+# Per-request semaphores alone can multiply provider load under parallel clients.
+_GLOBAL_CONTACT_SLOTS = asyncio.Semaphore(MAX_PARALLEL_CONTACTS)
 
 
 def _utc_now() -> str:
@@ -91,11 +94,10 @@ async def resolve_mosaic_snapshot(
     eligible.sort(key=lambda row: _contact_priority(row, viewport))
     limited = eligible[:contact_budget]
     omitted_for_budget = max(0, len(eligible) - len(limited))
-    semaphore = asyncio.Semaphore(MAX_PARALLEL_CONTACTS)
 
     async def _fetch(source: Mapping[str, Any]) -> dict[str, Any] | None:
         try:
-            async with semaphore:
+            async with _GLOBAL_CONTACT_SLOTS:
                 payload = await asyncio.wait_for(
                     source["async_fetch"](), timeout=fetch_timeout_seconds)
             if not isinstance(payload, Mapping):
