@@ -2143,42 +2143,23 @@ def _safe_public_url(value: Any) -> str | None:
     return value
 
 
-def _iso_time(value: Any) -> str | None:
-    if isinstance(value, bool) or value is None:
-        return None
-    if isinstance(value, (int, float)) and isfinite(float(value)):
-        number = float(value)
-        if number > 10_000_000_000:
-            number /= 1000.0
-        try:
-            return datetime.fromtimestamp(number, tz=timezone.utc).isoformat().replace("+00:00", "Z")
-        except (ValueError, OSError, OverflowError):
-            return None
-    if isinstance(value, str) and value.strip():
-        text = value.strip()
-        if text.endswith("Z"):
-            return text
-        try:
-            parsed = datetime.fromisoformat(text)
-        except ValueError:
-            return text
-        if parsed.tzinfo is None:
-            parsed = parsed.replace(tzinfo=timezone.utc)
-        return parsed.astimezone(timezone.utc).isoformat().replace("+00:00", "Z")
-    return None
+def _iso_time(value: Any, *, epoch_unit: str | None = None) -> str | None:
+    """Explicit UTC instant only; reject unspecified numeric units and naive text."""
+    from .time_normalization import iso_instant, epoch_instant
+    if type(value) in (int, float):
+        return epoch_instant(value, unit=epoch_unit) if epoch_unit else None
+    return iso_instant(value)
+
 
 
 def _age_seconds(data_time: str | None) -> float | None:
-    if not data_time:
+    from .time_normalization import iso_instant
+    normalized = iso_instant(data_time)
+    if normalized is None:
         return None
-    try:
-        parsed = datetime.fromisoformat(data_time.replace("Z", "+00:00"))
-    except ValueError:
-        return None
-    if parsed.tzinfo is None:
-        parsed = parsed.replace(tzinfo=timezone.utc)
-    age = (datetime.now(timezone.utc) - parsed.astimezone(timezone.utc)).total_seconds()
-    return max(0.0, age)
+    parsed = datetime.fromisoformat(normalized.replace("Z", "+00:00"))
+    return max(0.0, (datetime.now(timezone.utc) - parsed).total_seconds())
+
 
 
 def _timeline_frames(raw: Any, *, url_field: str) -> list[dict[str, Any]]:
@@ -2329,7 +2310,7 @@ def _normalize_raster(result: dict[str, Any]) -> tuple[dict[str, Any], str | Non
             if not isinstance(frame, dict):
                 continue
             url = _safe_public_url(frame.get("tile_url"))
-            time_value = _iso_time(frame.get("time"))
+            time_value = _iso_time(frame.get("time"), epoch_unit="seconds" if result.get("provider") in ("nasa_gibs", "rainviewer") else None)
             if url is None or time_value is None:
                 continue
             item = {"time": time_value, "tile_url": url}
@@ -2353,7 +2334,7 @@ def _normalize_raster(result: dict[str, Any]) -> tuple[dict[str, Any], str | Non
                 normalized_timeline[index_field] = value
         payload["timeline"] = normalized_timeline
 
-    return payload, _iso_time(result.get("frame_time"))
+    return payload, _iso_time(result.get("frame_time"), epoch_unit="seconds" if result.get("provider") in ("nasa_gibs", "rainviewer") else None)
 
 
 def _validate_intent_resource_contract(
@@ -4407,13 +4388,12 @@ async def websocket_consumer_resolve(
 
 
 def async_register(hass: HomeAssistant) -> None:
-    """Register Consumer API V1 unchanged, plus explicit opt-in V2 raster preview."""
+    """Register only Consumer API V1 commands.
+
+    Consumer API V2 is registered once by __init__.py through
+    consumer_raster_mosaic_api.async_register().
+    """
     websocket_api.async_register_command(hass, websocket_consumer_discovery)
     websocket_api.async_register_command(hass, websocket_consumer_capabilities)
     websocket_api.async_register_command(hass, websocket_routing_diagnostic_fault_arm)
     websocket_api.async_register_command(hass, websocket_consumer_resolve)
-
-    # P7-010: separate versioned endpoint. No change to V1 dispatch, results,
-    # source ordering or public discovery. Public DEV only until HA acceptance.
-    from .consumer_raster_mosaic_api import websocket_consumer_resolve_mosaic
-    websocket_api.async_register_command(hass, websocket_consumer_resolve_mosaic)
