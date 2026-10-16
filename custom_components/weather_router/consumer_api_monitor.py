@@ -155,7 +155,8 @@ class ConsumerApiMonitor:
                     "class", "window", "include_ongoing", "feed_status",
                     "feed_updated_at", "feed_age_seconds",
                     "max_feed_update_age_seconds", "rejected_counts",
-                    "truncated", "max_results")
+                    "truncated", "max_results", "page", "page_size",
+                    "max_pages", "has_more", "rejection_counts_scope")
                 if key in event_policy
             }, locations=False)
         # Reduce noisy data in stages; retain the essential diagnostic decision.
@@ -207,7 +208,8 @@ class ConsumerApiMonitor:
             if isinstance(time_request, dict) and time_request.get("mode") == "events_intersecting_window":
                 token["request"]["time"] = _safe({
                     k: time_request.get(k) for k in ("mode", "window",
-                        "include_ongoing", "max_feed_update_age_seconds")
+                        "include_ongoing", "max_feed_update_age_seconds",
+                        "page", "page_size")
                     if k in time_request
                 }, locations=False)
             token["truncated"] = True
