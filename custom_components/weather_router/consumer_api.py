@@ -3683,6 +3683,8 @@ async def websocket_routing_diagnostic_fault_arm(
         vol.Optional("requirements"): dict,
         vol.Optional("event_filter"): dict,
         vol.Optional("profile_id"): str,
+        vol.Optional("consumer_id"): str,
+        vol.Optional("correlation_id"): str,
     }
 )
 @websocket_api.async_response
