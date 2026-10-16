@@ -220,6 +220,35 @@ class EventWindowTests(unittest.TestCase):
             self.assertEqual(declared[id]["resource_type"], resource)
             self.assertIn(declared[id]["time_class"], policy._CLASSES)
 
+    def test_bounded_event_pages_are_separate_from_age(self):
+        events = [{"id":str(i), "observed_at":"2026-10-16T10:00:00Z"}
+                  for i in range(305)]
+        base = validate("natural_hazards.earthquake.events",
+                        age=3600, start="2026-10-01T00:00:00Z")
+        pages = []
+        for p in range(1, 5):
+            contract = {**base, "page": p, "page_size": 100}
+            result = events_filtered(events, contract)
+            pages.append(result)
+        self.assertEqual([r["event_count"] for r in pages], [100, 100, 100, 5])
+        self.assertEqual([r["event_time_policy"]["has_more"] for r in pages],
+                         [True, True, True, False])
+        ids = [e["id"] for page in pages for e in page["events"]]
+        self.assertEqual(ids, [str(i) for i in range(305)])
+        self.assertTrue(all(p["event_time_policy"]["rejection_counts_scope"]
+                            == "scanned_prefix" for p in pages))
+
+    def test_event_page_and_page_size_are_hard_bounded(self):
+        for key, value in (("page", 0), ("page", 6), ("page", True),
+                           ("page_size", 0), ("page_size", 201),
+                           ("page_size", False)):
+            req = request()
+            req[key] = value
+            with self.assertRaises(ValueError):
+                policy.validate_event_time(
+                    req, public_id="weather.warning.official",
+                    resource_types={"hazard_feed"}, now=NOW)
+
     def test_limits_and_wrong_resource_fail_closed(self):
         with self.assertRaises(ValueError):
             policy.validate_event_time(request(), public_id="weather.precipitation.layer",
