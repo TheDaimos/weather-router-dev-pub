@@ -81,7 +81,7 @@ class TestApiMonitor(unittest.TestCase):
                         message={"capability": "weather.precipitation.layer",
                                  "context": {"payload": "x" * 50000}})
         m.finish(token, result="success",
-                 response={"status": "success", "data": "x" * 50000},
+                 response={"status": "success", **{f"detail_{i}": "x" * 300 for i in range(60)}},
                  routing={"decision": {"selected_provider": "nasa_gibs",
                                         "reason_code": "best_coverage",
                                         "status": "selected"},
