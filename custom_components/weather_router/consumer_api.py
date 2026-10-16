@@ -2310,7 +2310,9 @@ def _normalize_raster(result: dict[str, Any]) -> tuple[dict[str, Any], str | Non
             if not isinstance(frame, dict):
                 continue
             url = _safe_public_url(frame.get("tile_url"))
-            time_value = _iso_time(frame.get("time"), epoch_unit="seconds" if result.get("provider") in ("nasa_gibs", "rainviewer") else None)
+            time_value = (_iso_time(frame.get("time"), epoch_unit="seconds")
+             if result.get("provider") in ("nasa_gibs", "rainviewer")
+             else _iso_time(frame.get("time")))
             if url is None or time_value is None:
                 continue
             item = {"time": time_value, "tile_url": url}
@@ -2334,7 +2336,9 @@ def _normalize_raster(result: dict[str, Any]) -> tuple[dict[str, Any], str | Non
                 normalized_timeline[index_field] = value
         payload["timeline"] = normalized_timeline
 
-    return payload, _iso_time(result.get("frame_time"), epoch_unit="seconds" if result.get("provider") in ("nasa_gibs", "rainviewer") else None)
+    return payload, (_iso_time(result.get("frame_time"), epoch_unit="seconds")
+                     if result.get("provider") in ("nasa_gibs", "rainviewer")
+                     else _iso_time(result.get("frame_time")))
 
 
 def _validate_intent_resource_contract(
