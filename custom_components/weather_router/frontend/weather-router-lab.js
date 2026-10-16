@@ -394,12 +394,17 @@ class WeatherRouterLab extends HTMLElement {
               <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
                 <label>API <select id="api-monitor-version"><option value="all">Alle</option><option value="V1">V1</option><option value="V2">V2</option></select></label>
                 <label>Ergebnis <select id="api-monitor-result"><option value="all">Alle</option><option value="success">Erfolg</option><option value="no_data">Keine Daten</option><option value="rejected">Abgewiesen</option><option value="error">Fehler</option><option value="timeout">Zeitüberschreitung</option></select></label>
+                <label>Befehl <input id="api-monitor-command" placeholder="alle" /></label>
                 <label>Consumer <input id="api-monitor-consumer" placeholder="alle" /></label>
                 <label>Provider <input id="api-monitor-provider" placeholder="alle" /></label>
                 <label>Capability <input id="api-monitor-capability" placeholder="alle" /></label>
                 <label>Korrelation <input id="api-monitor-correlation" placeholder="alle" /></label>
                 <label>Min. Dauer (ms) <input id="api-monitor-min" type="number" min="0" step="1" /></label>
                 <label>Max. Dauer (ms) <input id="api-monitor-max" type="number" min="0" step="1" /></label>
+                <label>Sitzung <input id="api-monitor-session" placeholder="alle" /></label>
+                <label>Anfragekennung <input id="api-monitor-request" placeholder="alle" /></label>
+                <label>Ab UTC <input id="api-monitor-since" type="datetime-local" /></label>
+                <label>Bis UTC <input id="api-monitor-until" type="datetime-local" /></label>
               </div>
               <label>Suche <input id="api-monitor-search" placeholder="Befehl, Kennung, Fehler ..." /></label>
               <div class="actions">
@@ -408,6 +413,16 @@ class WeatherRouterLab extends HTMLElement {
                 <button id="api-monitor-json" type="button">JSON</button>
                 <button id="api-monitor-git" type="button">Export2Git</button>
               </div>
+              <details style="margin:9px 0">
+                <summary>Manuelles API-Prüfwerkzeug (V1 / V2)</summary>
+                <label>API
+                  <select id="api-monitor-manual-version"><option value="V2">Consumer V2</option><option value="V1">Consumer V1</option></select>
+                </label>
+                <label>Anfrage als JSON (ohne Zugangsgeheimnisse)</label>
+                <textarea id="api-monitor-manual-json" rows="7" style="width:100%;font:11px monospace"></textarea>
+                <div class="actions"><button id="api-monitor-manual-run" type="button">Testanfrage senden</button></div>
+                <pre id="api-monitor-manual-result">Noch keine Testabfrage.</pre>
+              </details>
               <div id="api-monitor-list" class="muted">Keine aufgezeichneten Anfragen.</div>
               <pre id="api-monitor-details" aria-label="API-Monitor Anfragedetails">Einträge auswählen, um technische Einzelheiten zu sehen.</pre>
             </div>
@@ -470,6 +485,7 @@ class WeatherRouterLab extends HTMLElement {
     }
 
     this.shadowRoot.getElementById("api-monitor-start").addEventListener("click", () => this._monitorConfigure(true));
+    this.shadowRoot.getElementById("api-monitor-manual-run").addEventListener("click", () => this._monitorManualRun());
     this.shadowRoot.getElementById("api-monitor-stop").addEventListener("click", () => this._monitorConfigure(false));
     this.shadowRoot.getElementById("api-monitor-refresh").addEventListener("click", () => this._monitorRefresh());
     this.shadowRoot.getElementById("api-monitor-copy").addEventListener("click", () => this._monitorCopy());
@@ -511,13 +527,37 @@ class WeatherRouterLab extends HTMLElement {
   _monitorFilters() {
     const get = id => this.shadowRoot.getElementById("api-monitor-" + id)?.value?.trim() || "";
     const result = {};
-    for (const [control, key] of [["version","api_version"],["result","result"],["consumer","consumer"],["provider","provider"],["capability","capability"],["correlation","correlation_id"],["search","search"]]) {
+    for (const [control, key] of [["version","api_version"],["result","result"],["command","command"],["session","session_id"],["request","request_id"],["consumer","consumer"],["provider","provider"],["capability","capability"],["correlation","correlation_id"],["search","search"]]) {
       const value = get(control);
       if (value && value !== "all") result[key] = value;
     }
+    if (get("since")) result.since = get("since") + ":00+00:00";
+    if (get("until")) result.until = get("until") + ":00+00:00";
     if (get("min")) result.min_duration_ms = Number(get("min"));
     if (get("max")) result.max_duration_ms = Number(get("max"));
     return result;
+  }
+
+  async _monitorManualRun() {
+    const output = this.shadowRoot.getElementById("api-monitor-manual-result");
+    const version = this.shadowRoot.getElementById("api-monitor-manual-version").value;
+    const raw = this.shadowRoot.getElementById("api-monitor-manual-json").value.trim();
+    try {
+      const query = JSON.parse(raw);
+      if (!query || typeof query !== "object" || Array.isArray(query)) throw Error("JSON-Objekt erwartet.");
+      const command = version === "V2" ? "weather_router/consumer/resolve_mosaic" : "weather_router/consumer/resolve";
+      if (query.type && query.type !== command) throw Error("API-Befehl stimmt nicht mit gewählter Version überein.");
+      query.type = command;
+      query.consumer_id = "weather_router_lab";
+      query.correlation_id = query.correlation_id || crypto.randomUUID();
+      output.textContent = "Anfrage läuft...";
+      const result = await this._hass.callWS(query);
+      output.textContent = JSON.stringify(result, null, 2);
+    } catch(error) {
+      output.textContent = "Anfrage abgewiesen/fehlgeschlagen: " + String(error.message || error);
+    } finally {
+      await this._monitorRefresh();
+    }
   }
 
   async _monitorConfigure(enabled) {
