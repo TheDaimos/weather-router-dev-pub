@@ -222,6 +222,16 @@ async def websocket_consumer_resolve_mosaic(
         if len(sources) < len(preflight):
             result["limitations"].append(
                 "Einige regionale Coverage-Anfragen waren nicht nutzbar.")
+        if getattr(connection, "_ticket", None) is not None:
+            connection._monitor_routing = {
+                "contact_budget": MAX_COVERAGE_CONTACTS,
+                "coverage_concurrent": MAX_COVERAGE_CONCURRENT,
+                "contacts_selected": len(preflight),
+                "sources_eligible": len(sources),
+                "selected_sources": [item["source_id"] for item in sources[:MAX_COVERAGE_CONTACTS]],
+                "limits": query["limits"],
+                "limitations": result.get("limitations", []),
+            }
         connection.send_result(msg["id"], result)
 
 
