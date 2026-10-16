@@ -84,10 +84,8 @@ def _clean_html(value: str | None) -> str | None:
 def _rss_time(value: str | None) -> str | None:
     if not value:
         return None
-    try:
-        return parsedate_to_datetime(value).isoformat()
-    except (TypeError, ValueError, OverflowError):
-        return value
+    from ..time_normalization import rss_instant
+    return rss_instant(value)
 
 
 def _safe_gvp_url(value: str | None) -> str | None:
@@ -281,7 +279,7 @@ class SmithsonianVolcanoProvider:
             _RSS_URL,
             headers={
                 "Accept": "application/rss+xml,application/xml,text/xml,*/*",
-                "User-Agent": "WeatherRouter/0.10 (+https://github.com/TheDaimos/weather-router-dev-pub)",
+                "User-Agent": "WeatherRouter/0.10 (+https://github.com/TheDaimos/weather-router-dev)",
             },
             timeout=20,
         ) as response:
