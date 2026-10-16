@@ -226,7 +226,7 @@ class RasterMosaicServiceTests(unittest.TestCase):
             def inventory(prefix):
                 result = []
                 for n in range(12):
-                    row = source(f"{prefix}_{n}")
+                    row = source(f"{prefix}_{n}", WORLD if n == 0 else REGION_CUBA)
                     row["async_fetch"] = fetch
                     result.append(row)
                 return result
