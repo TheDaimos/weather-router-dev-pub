@@ -486,6 +486,8 @@ class WeatherRouterLab extends HTMLElement {
 
     this.shadowRoot.getElementById("api-monitor-start").addEventListener("click", () => this._monitorConfigure(true));
     this.shadowRoot.getElementById("api-monitor-manual-run").addEventListener("click", () => this._monitorManualRun());
+    this.shadowRoot.getElementById("api-monitor-manual-version").addEventListener("change", () => this._monitorManualExample());
+    this._monitorManualExample();
     this.shadowRoot.getElementById("api-monitor-stop").addEventListener("click", () => this._monitorConfigure(false));
     this.shadowRoot.getElementById("api-monitor-refresh").addEventListener("click", () => this._monitorRefresh());
     this.shadowRoot.getElementById("api-monitor-copy").addEventListener("click", () => this._monitorCopy());
@@ -536,6 +538,23 @@ class WeatherRouterLab extends HTMLElement {
     if (get("min")) result.min_duration_ms = Number(get("min"));
     if (get("max")) result.max_duration_ms = Number(get("max"));
     return result;
+  }
+
+  _monitorManualExample() {
+    const version = this.shadowRoot.getElementById("api-monitor-manual-version").value;
+    const example = version === "V2" ? {
+      contract_version: 2,
+      capability: "weather.precipitation.layer",
+      context: {type:"bbox",west:-85,south:18,east:-73,north:25},
+      time: {mode:"latest_coherent",max_data_age_seconds:3600},
+      limits: {max_layers:4,max_tile_requests:64}
+    } : {
+      contract_version: 1,
+      capability: "weather.radar.precipitation",
+      context: {type:"bbox",west:-85,south:18,east:-73,north:25},
+      time: {mode:"latest"}
+    };
+    this.shadowRoot.getElementById("api-monitor-manual-json").value = JSON.stringify(example, null, 2);
   }
 
   async _monitorManualRun() {
