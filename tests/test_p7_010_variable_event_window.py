@@ -83,6 +83,39 @@ class EventWindowTests(unittest.TestCase):
         self.assertEqual(blocked["events"], [])
         self.assertEqual(blocked["event_time_policy"]["rejected_counts"]["unverified_ongoing"], 1)
 
+    def test_fresh_feed_does_not_extend_unverified_open_ended_event(self):
+        # Receiving a fresh feed cannot reactivate an old volcano, indefinite
+        # warning, or already-ended event without a fresh event lifecycle update.
+        contract = validate("natural_hazards.volcano.activity",
+                            start="2026-10-01T00:00:00Z", age=86400)
+        eruption = {"id":"outdated", "started_at":"2026-04-12T12:00:00Z",
+                    "status":"active"}
+        result = events_filtered([eruption], contract,
+                                 published="2026-10-16T11:59:00Z")
+        self.assertEqual(result["events"], [])
+        self.assertEqual(result["event_time_policy"]["feed_status"], "fresh")
+        self.assertEqual(result["event_time_policy"]["rejected_counts"]
+                         ["unverified_ongoing"], 1)
+
+    def test_closed_warning_cannot_remain_ongoing_with_future_expiry(self):
+        result = events_filtered([{
+            "id":"withdrawn", "effective":"2026-10-15T08:00:00Z",
+            "expires":"2026-10-17T08:00:00Z", "status":"withdrawn"}])
+        self.assertEqual(result["events"], [])
+        self.assertEqual(result["event_time_policy"]["rejected_counts"]
+                         ["closed_status_conflict"], 1)
+
+    def test_explicit_event_update_distinct_from_feed_update(self):
+        contract = validate("natural_hazards.volcano.activity",
+                            start="2026-10-01T00:00:00Z", age=86400)
+        event = {"id":"long-running", "started_at":"2026-04-12T12:00:00Z",
+                 "status":"active",
+                 "last_updated_at":"2026-10-16T11:00:00+00:00"}
+        result = events_filtered([event], contract,
+                                 published="2026-10-10T11:00:00Z")
+        self.assertEqual(result["events"][0]["temporal_status"], "ongoing")
+        self.assertEqual(result["event_time_policy"]["feed_status"], "stale")
+
     def test_official_usgs_elevated_notice_not_equated_with_eruption(self):
         contract = validate("natural_hazards.volcano.activity",
                             start="2026-10-01T00:00:00Z", age=86400)
