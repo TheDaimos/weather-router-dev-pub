@@ -52,6 +52,29 @@ def _safe(value: Any, *, locations: bool = False, depth: int = 0) -> Any:
     return "[unsupported]"
 
 
+
+def _providers_from_response(value: Any, *, limit: int = 12) -> list[str]:
+    """Extract only provider identifiers, not data payloads."""
+    found: list[str] = []
+    def visit(node: Any, depth: int = 0) -> None:
+        if depth > 4 or len(found) >= limit:
+            return
+        if isinstance(node, dict):
+            for key in ("provider", "provider_id", "selected_provider", "source_provider"):
+                value = node.get(key)
+                if isinstance(value, str) and 0 < len(value) <= 128 and value not in found:
+                    found.append(value)
+            for key in ("sources", "layers", "selected", "provider", "routing"):
+                child = node.get(key)
+                if isinstance(child, (dict, list)):
+                    visit(child, depth + 1)
+        elif isinstance(node, list):
+            for child in node[:limit]:
+                visit(child, depth + 1)
+    visit(value)
+    return found[:limit]
+
+
 class ConsumerApiMonitor:
     """Single-HA-process ring buffer: recording disabled until administrator opts in."""
 
@@ -213,7 +236,8 @@ class MonitoredConnection:
                 elif raw in ("error", "rejected"):
                     status = "error"
             try:
-                self._monitor.finish(self._ticket, result=status, response=result)
+                self._monitor.finish(self._ticket, result=status, response=result,
+                                     providers=_providers_from_response(result))
             except Exception:
                 pass  # Monitoring must never alter the Consumer API result.
             self._ticket = None
