@@ -133,7 +133,7 @@ def filter_event_payload(payload: Mapping[str, Any], *, time: Mapping[str, Any],
         if not isinstance(event, dict):
             reject("invalid_event")
             continue
-        state = str(event.get("status") or "").strip().lower()
+        state = str(event.get("lifecycle_status") or event.get("status") or "").strip().lower()
         closed = state in _CLOSED
         begins = next((v for field in ("valid_from", "effective", "onset",
                                         "started_at", "occurred_at", "observed_at", "sent")
@@ -156,7 +156,11 @@ def filter_event_payload(payload: Mapping[str, Any], *, time: Mapping[str, Any],
         kind = time["class"]
         # A point event/observation is historical even if the provider uses
         # a vague active label. It does not establish an ongoing location.
-        point = kind in {"point_event", "historical_sighting"}
+        volcano_meta = event.get("volcano_semantics")
+        weekly_report = (isinstance(volcano_meta, Mapping)
+                         and volcano_meta.get("semantic_class")
+                             == "weekly_volcanic_activity_report_event")
+        point = kind in {"point_event", "historical_sighting"} or weekly_report
         ongoing = False
         if point:
             if begins < start:
