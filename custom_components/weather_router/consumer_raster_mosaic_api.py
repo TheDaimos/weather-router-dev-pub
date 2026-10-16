@@ -30,6 +30,19 @@ from .spatial_coverage import normalize_coverage
 MAX_COVERAGE_CONTACTS = 12
 MAX_COVERAGE_CONCURRENT = 3
 COVERAGE_TIMEOUT_SECONDS = 3.0
+# Coverage preflights share a limit across clients, not only per request.
+_GLOBAL_COVERAGE_LOOP = None
+_GLOBAL_COVERAGE_SLOTS = None
+
+
+def _shared_coverage_slots():
+    """Share coverage contact slots among consumers on one HA event loop."""
+    global _GLOBAL_COVERAGE_LOOP, _GLOBAL_COVERAGE_SLOTS
+    loop = asyncio.get_running_loop()
+    if loop is not _GLOBAL_COVERAGE_LOOP:
+        _GLOBAL_COVERAGE_LOOP = loop
+        _GLOBAL_COVERAGE_SLOTS = asyncio.Semaphore(MAX_COVERAGE_CONCURRENT)
+    return _GLOBAL_COVERAGE_SLOTS
 # Two simultaneous full V2 requests at most, even during rapid map movements.
 _LIVE_REQUEST_SLOTS = asyncio.Semaphore(2)
 
@@ -150,12 +163,13 @@ async def websocket_consumer_resolve_mosaic(
             else:
                 next_round.append(row)
         remaining = next_round
-    semaphore = asyncio.Semaphore(MAX_COVERAGE_CONCURRENT)
+
+    coverage_slots = _shared_coverage_slots()
 
     async def _source(row: Any) -> dict[str, Any] | None:
         getter = getattr(row.provider, "async_get_coverage", None)
         try:
-            async with semaphore:
+            async with coverage_slots:
                 coverage_raw = await asyncio.wait_for(
                     getter(hass, row.capability.id),
                     timeout=COVERAGE_TIMEOUT_SECONDS,
