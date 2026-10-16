@@ -60,7 +60,7 @@ def _providers_from_response(value: Any, *, limit: int = 12) -> list[str]:
         if depth > 4 or len(found) >= limit:
             return
         if isinstance(node, dict):
-            for key in ("provider", "provider_id", "selected_provider", "source_provider"):
+            for key in ("provider", "provider_id", "selected_provider", "source_provider", "source_id"):
                 value = node.get(key)
                 if isinstance(value, str) and 0 < len(value) <= 128 and value not in found:
                     found.append(value)
@@ -238,7 +238,7 @@ class MonitoredConnection:
             try:
                 trace = getattr(self, "_monitor_trace", None)
                 finished = getattr(trace, "_stored", None) if trace is not None else None
-                routing = None
+                routing = getattr(self, "_monitor_routing", None)
                 if isinstance(finished, dict):
                     routing = {
                         "decision": finished.get("decision"),
