@@ -135,8 +135,17 @@ def filter_event_payload(payload: Mapping[str, Any], *, time: Mapping[str, Any],
             continue
         state = str(event.get("lifecycle_status") or event.get("status") or "").strip().lower()
         closed = state in _CLOSED
-        begins = next((v for field in ("valid_from", "effective", "onset",
-                                        "started_at", "occurred_at", "observed_at", "sent")
+        kind = time["class"]
+        # Point observations are anchored to actual occurrence, not to the
+        # later publication/effective time of a bulletin about that event.
+        event_time_fields = (
+            ("observed_at", "occurred_at", "started_at", "valid_from",
+             "effective", "onset", "sent")
+            if kind in {"point_event", "historical_sighting"}
+            else ("valid_from", "effective", "onset", "started_at",
+                  "occurred_at", "observed_at", "sent")
+        )
+        begins = next((v for field in event_time_fields
                        if (v := _instant(event.get(field))) is not None), None)
         ends = next((v for field in ("resolved_at", "ended_at", "ends",
                                       "expires", "valid_until")
@@ -147,13 +156,15 @@ def filter_event_payload(payload: Mapping[str, Any], *, time: Mapping[str, Any],
         if begins > end:
             reject("after_window")
             continue
+        if kind in {"point_event", "historical_sighting"} and begins > current:
+            reject("future_observation")
+            continue
         if ends is not None and ends < start:
             reject("ended_before_window")
             continue
         if ends is not None and ends < begins:
             reject("invalid_event_interval")
             continue
-        kind = time["class"]
         # A point event/observation is historical even if the provider uses
         # a vague active label. It does not establish an ongoing location.
         volcano_meta = event.get("volcano_semantics")
@@ -162,6 +173,7 @@ def filter_event_payload(payload: Mapping[str, Any], *, time: Mapping[str, Any],
                              == "weekly_volcanic_activity_report_event")
         point = kind in {"point_event", "historical_sighting"} or weekly_report
         ongoing = False
+        scheduled = not point and begins > current
         if point:
             if begins < start:
                 reject("before_window")
@@ -186,7 +198,7 @@ def filter_event_payload(payload: Mapping[str, Any], *, time: Mapping[str, Any],
             reject("closed_status_conflict")
             continue
         elif ends > current:
-            ongoing = not closed
+            ongoing = not closed and not scheduled
         elif ends <= current and ends < start:
             reject("ended_before_window")
             continue
@@ -198,8 +210,8 @@ def filter_event_payload(payload: Mapping[str, Any], *, time: Mapping[str, Any],
         entry["temporal_status"] = (
             "historical_observation" if kind == "historical_sighting"
             else "historical_event" if point
-            else "ongoing" if ongoing else "ended" if ends and ends <= current
-            else "time_bounded")
+            else "ongoing" if ongoing else "scheduled" if scheduled
+            else "ended" if ends and ends <= current else "time_bounded")
         accepted.append(entry)
         if len(accepted) >= _MAX_RESULTS:
             break
