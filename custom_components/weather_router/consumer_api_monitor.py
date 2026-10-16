@@ -2,8 +2,10 @@
 from __future__ import annotations
 
 from collections import deque
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, datetime
 import json
+import math
+import re
 from time import monotonic
 from typing import Any
 from uuid import uuid4
@@ -38,7 +40,13 @@ def _safe(value: Any, *, locations: bool = False, depth: int = 0) -> Any:
     if isinstance(value, (list, tuple)):
         return [_safe(v, locations=locations, depth=depth + 1) for v in value[:30]]
     if isinstance(value, str):
-        return value[:512] if len(value) <= 512 else "[large-text-omitted]"
+        if len(value) > 512:
+            return "[large-text-omitted]"
+        if "://" in value or re.search(r"(?i)(token|secret|password|api[_-]?key)\\s*[=:]", value):
+            return "[sensitive-text-omitted]"
+        return value
+    if isinstance(value, float) and not math.isfinite(value):
+        return "[non-finite-number]"
     if value is None or isinstance(value, (bool, int, float)):
         return value
     return "[unsupported]"
@@ -136,6 +144,14 @@ class ConsumerApiMonitor:
         provider = filters.get("provider")
         if provider:
             records = [row for row in records if provider in row.get("providers", [])]
+        request_id = filters.get("request_id")
+        if request_id:
+            records = [row for row in records if row.get("request_id") == request_id]
+        since, until = filters.get("since"), filters.get("until")
+        if since:
+            records = [row for row in records if row["started_at"] >= since]
+        if until:
+            records = [row for row in records if row["started_at"] <= until]
         minimum, maximum = filters.get("min_duration_ms"), filters.get("max_duration_ms")
         if minimum is not None:
             records = [r for r in records if r["duration_ms"] >= float(minimum)]
@@ -196,15 +212,21 @@ class MonitoredConnection:
                     status = "no_data"
                 elif raw in ("error", "rejected"):
                     status = "error"
-            self._monitor.finish(self._ticket, result=status, response=result)
+            try:
+                self._monitor.finish(self._ticket, result=status, response=result)
+            except Exception:
+                pass  # Monitoring must never alter the Consumer API result.
             self._ticket = None
         return self._connection.send_result(msg_id, result)
 
     def send_error(self, msg_id: int, code: str, message: str) -> Any:
         if msg_id == self._msg_id and self._ticket is not None:
             status = "timeout" if "timeout" in code else "error"
-            self._monitor.finish(self._ticket, result=status,
-                                 error_code=code, response={"message": str(message)[:160]})
+            try:
+                self._monitor.finish(self._ticket, result=status,
+                                     error_code=code, response={"message": str(message)[:160]})
+            except Exception:
+                pass  # Preserve the actual error even if diagnostics fail.
             self._ticket = None
         return self._connection.send_error(msg_id, code, message)
 
