@@ -65,6 +65,8 @@ async def websocket_consumer_resolve_mosaic(
     msg: dict[str, Any],
 ) -> None:
     """Resolve multiple eligible precipitation rasters, never mutate V1."""
+    from .consumer_api_monitor import monitored_connection
+    connection = monitored_connection(hass, connection, msg, "V2")
     try:
         query = validate_raster_mosaic_request(
             {key: value for key, value in msg.items() if key != "id"}
