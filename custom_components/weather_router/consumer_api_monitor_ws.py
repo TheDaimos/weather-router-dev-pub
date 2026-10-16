@@ -66,6 +66,9 @@ async def ws_api_monitor_configure(hass: HomeAssistant, connection: Any, msg: di
     vol.Optional("result"): str,
     vol.Optional("correlation_id"): str,
     vol.Optional("session_id"): str,
+    vol.Optional("request_id"): str,
+    vol.Optional("since"): str,
+    vol.Optional("until"): str,
     vol.Optional("search"): str,
     vol.Optional("min_duration_ms"): vol.Coerce(float),
     vol.Optional("max_duration_ms"): vol.Coerce(float),
@@ -73,7 +76,7 @@ async def ws_api_monitor_configure(hass: HomeAssistant, connection: Any, msg: di
 @websocket_api.async_response
 async def ws_api_monitor_query(hass: HomeAssistant, connection: Any, msg: dict[str, Any]) -> None:
     filter_keys = ("api_version", "consumer", "command", "capability", "provider",
-                   "result", "correlation_id", "session_id", "search",
+                   "result", "correlation_id", "session_id", "request_id", "since", "until", "search",
                    "min_duration_ms", "max_duration_ms")
     filters = {k: msg[k] for k in filter_keys if k in msg}
     connection.send_result(msg["id"], get_monitor(hass).query(**filters))
