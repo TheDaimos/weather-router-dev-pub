@@ -162,6 +162,36 @@ class EventWindowTests(unittest.TestCase):
         self.assertEqual(events_filtered([
             {"id": "old", "observed_at": "2026-09-01T12:00:00Z"}], sighting)["event_count"], 0)
 
+    def test_point_event_uses_occurrence_not_later_bulletin_time(self):
+        contract = validate("natural_hazards.earthquake.events",
+                            start="2026-10-15T00:00:00Z", age=3600)
+        quake = {"id":"old-quake", "occurred_at":"2026-09-01T08:00:00Z",
+                 "effective":"2026-10-16T11:00:00Z", "status":"active"}
+        result = events_filtered([quake], contract)
+        self.assertEqual(result["events"], [])
+        self.assertEqual(result["event_time_policy"]["rejected_counts"]
+                         ["before_window"], 1)
+
+    def test_future_point_event_never_marked_observed(self):
+        contract = validate("natural_hazards.earthquake.events",
+                            start="2026-10-15T00:00:00Z",
+                            end="2026-10-16T12:03:00Z", age=3600)
+        quake = {"id":"future-quake", "occurred_at":"2026-10-16T12:02:00Z"}
+        result = events_filtered([quake], contract)
+        self.assertEqual(result["events"], [])
+        self.assertEqual(result["event_time_policy"]["rejected_counts"]
+                         ["future_observation"], 1)
+
+    def test_scheduled_warning_not_falsely_active(self):
+        contract = validate(end="2026-10-16T12:03:00Z")
+        warning = {"id":"tomorrow-soon",
+                   "effective":"2026-10-16T12:02:00Z",
+                   "expires":"2026-10-16T19:00:00Z",
+                   "status":"actual"}
+        result = events_filtered([warning], contract)
+        self.assertEqual(result["event_count"], 1)
+        self.assertEqual(result["events"][0]["temporal_status"], "scheduled")
+
     def test_stale_feed_is_labelled_not_silently_made_fresh(self):
         result = events_filtered([
             {"id": "official", "effective": "2026-10-15T08:00:00Z",
