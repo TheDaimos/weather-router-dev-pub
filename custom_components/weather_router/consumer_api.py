@@ -3351,6 +3351,8 @@ async def websocket_consumer_discovery(
         vol.Required("contract_version"): int,
         vol.Optional("filter"): dict,
         vol.Optional("profile_id"): str,
+        vol.Optional("consumer_id"): str,
+        vol.Optional("correlation_id"): str,
     }
 )
 @websocket_api.async_response
