@@ -1445,6 +1445,25 @@ def _capability_catalog_row(
     event_filter_options = _hazard_filter_options(mapping, hazard_catalog, public_id)
     if event_filter_options is not None:
         row["event_filter_options"] = event_filter_options
+    # Advertise the exact server-authorized event policy in existing catalog
+    # responses. This is optional metadata, not a second event router.
+    if len(row.get("resource_types") or []) == 1:
+        resource = row["resource_types"][0]
+        from .consumer_event_time_policy import time_class, _CLASSES, _MAX_RESULTS
+        declared = time_class(public_id, resource)
+        if declared is not None:
+            limits = _CLASSES[declared]
+            row["time_modes"].append("events_intersecting_window")
+            row["event_time_options"] = {
+                "mode": "events_intersecting_window",
+                "class": declared,
+                "max_window_days": limits["days"],
+                "default_max_feed_update_age_seconds": limits["feed_seconds"],
+                "max_feed_update_age_seconds": limits["feed_seconds"] * 4,
+                "max_ongoing_update_age_seconds": limits["ongoing_seconds"],
+                "max_results": _MAX_RESULTS,
+                "include_ongoing_supported": limits["ongoing_seconds"] > 0,
+            }
     return row
 
 
@@ -2612,7 +2631,15 @@ def _normalize_hazard_feed(
             "urgency": raw.get("urgency"),
             "certainty": raw.get("certainty"),
             "status": raw.get("status"),
+            "lifecycle_status": raw.get("lifecycle_status"),
             "message_type": raw.get("message_type"),
+            "started_at": _iso_time(raw.get("started_at")),
+            "occurred_at": _iso_time(raw.get("occurred_at")),
+            "resolved_at": _iso_time(raw.get("resolved_at")),
+            "last_updated_at": _iso_time(raw.get("last_updated_at")),
+            "published_at": _iso_time(raw.get("published_at")),
+            "valid_from": _iso_time(raw.get("valid_from")),
+            "valid_until": _iso_time(raw.get("valid_until")),
             "sent": _iso_time(raw.get("sent")),
             "effective": effective,
             "onset": _iso_time(raw.get("onset")),
