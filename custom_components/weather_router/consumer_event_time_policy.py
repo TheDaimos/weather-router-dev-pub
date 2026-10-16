@@ -6,6 +6,9 @@ provider and permission/routing decisions remain in consumer_api.py.
 from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
+from functools import lru_cache
+from pathlib import Path
+import json
 from typing import Any, Mapping
 
 from .time_normalization import iso_instant, utc_iso
@@ -28,22 +31,22 @@ _CLASSES = {
 }
 
 
+@lru_cache(maxsize=1)
+def _declared_policies() -> dict[str, Any]:
+    path = Path(__file__).with_name("consumer_event_time_policies.v1.json")
+    doc = json.loads(path.read_text(encoding="utf-8"))
+    if doc.get("schema") != "weather_router.consumer.event_time_policies.v1":
+        raise ValueError("invalid_event_policy_catalog")
+    return doc["public_capabilities"]
+
+
 def time_class(public_id: str, resource_type: str) -> str | None:
-    """Use server-owned capability names and resource types, never consumer labels."""
-    if resource_type not in {"hazard_feed", "event_feed"}:
+    """Only the trusted public intent table may enable event-window filtering."""
+    row = _declared_policies().get(public_id)
+    if not isinstance(row, dict) or row.get("resource_type") != resource_type:
         return None
-    if "volcano" in public_id or "volcanic" in public_id:
-        return "long_running_event"
-    if any(tag in public_id for tag in ("earthquake", "seismic", "lightning",
-                                         "observation", "sighting", "wildlife",
-                                         "jellyfish", "shark")):
-        return "historical_sighting" if any(tag in public_id for tag in (
-            "sighting", "wildlife", "jellyfish", "shark")) else "point_event"
-    if any(tag in public_id for tag in ("warning", "alert", "advisory",
-                                         "tsunami", "civil_protection",
-                                         "security", "aviation")):
-        return "official_warning"
-    return "point_event" if resource_type == "event_feed" else "official_warning"
+    cls = row.get("time_class")
+    return cls if cls in _CLASSES else None
 
 
 def _instant(value: Any) -> datetime | None:

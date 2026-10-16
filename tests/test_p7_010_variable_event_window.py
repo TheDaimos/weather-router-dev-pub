@@ -90,8 +90,12 @@ class EventWindowTests(unittest.TestCase):
             {"id": "quake", "observed_at": "2026-10-05T12:00:00Z",
              "status": "active"}], quake)
         self.assertEqual(quake_result["events"][0]["temporal_status"], "historical_event")
-        sighting = validate("biology.jellyfish.sightings", "event_feed",
-                            start="2026-10-01T00:00:00Z", age=3600)
+        # Wildlife sightings are not yet registered. Demonstrate the
+        # historical-only semantics without enabling an unregistered intent.
+        with self.assertRaisesRegex(ValueError, "unsupported_event_time_capability"):
+            validate("biology.jellyfish.sightings", "event_feed",
+                     start="2026-10-01T00:00:00Z", age=3600)
+        sighting = dict(quake, **{"class": "historical_sighting"})
         sight = events_filtered([
             {"id": "jellyfish", "observed_at": "2026-10-05T12:00:00Z",
              "status": "active"}], sighting)
@@ -111,6 +115,21 @@ class EventWindowTests(unittest.TestCase):
             {"id": "official", "effective": "2026-10-15T08:00:00Z",
              "expires": "2026-10-17T08:00:00Z", "status": "active"}], published=None)
         self.assertEqual(unknown["event_time_policy"]["feed_status"], "unknown")
+
+    def test_all_registered_feed_capabilities_have_explicit_time_policy(self):
+        import json
+        mapping = json.loads((BASE / "consumer_capability_map.json").read_text(encoding="utf-8"))
+        registered = {
+            id: entry["resource_types"][0]
+            for id, entry in mapping["public_capabilities"].items()
+            if len(entry.get("resource_types", [])) == 1
+            and entry["resource_types"][0] in ("hazard_feed", "event_feed")
+        }
+        declared = policy._declared_policies()
+        self.assertEqual(set(declared), set(registered))
+        for id, resource in registered.items():
+            self.assertEqual(declared[id]["resource_type"], resource)
+            self.assertIn(declared[id]["time_class"], policy._CLASSES)
 
     def test_limits_and_wrong_resource_fail_closed(self):
         with self.assertRaises(ValueError):
