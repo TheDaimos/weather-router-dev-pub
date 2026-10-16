@@ -20,7 +20,18 @@ MAX_CANDIDATE_CONTACTS = 12
 MAX_PARALLEL_CONTACTS = 3
 # Shared across simultaneous consumer calls on the same Home Assistant event loop.
 # Per-request semaphores alone can multiply provider load under parallel clients.
-_GLOBAL_CONTACT_SLOTS = asyncio.Semaphore(MAX_PARALLEL_CONTACTS)
+_GLOBAL_CONTACT_LOOP = None
+_GLOBAL_CONTACT_SLOTS = None
+
+
+def _shared_contact_slots():
+    """Reuse slots on the HA event loop; isolate independent test loops."""
+    global _GLOBAL_CONTACT_LOOP, _GLOBAL_CONTACT_SLOTS
+    loop = asyncio.get_running_loop()
+    if loop is not _GLOBAL_CONTACT_LOOP:
+        _GLOBAL_CONTACT_LOOP = loop
+        _GLOBAL_CONTACT_SLOTS = asyncio.Semaphore(MAX_PARALLEL_CONTACTS)
+    return _GLOBAL_CONTACT_SLOTS
 
 
 def _utc_now() -> str:
@@ -95,9 +106,11 @@ async def resolve_mosaic_snapshot(
     limited = eligible[:contact_budget]
     omitted_for_budget = max(0, len(eligible) - len(limited))
 
+    shared_slots = _shared_contact_slots()
+
     async def _fetch(source: Mapping[str, Any]) -> dict[str, Any] | None:
         try:
-            async with _GLOBAL_CONTACT_SLOTS:
+            async with shared_slots:
                 payload = await asyncio.wait_for(
                     source["async_fetch"](), timeout=fetch_timeout_seconds)
             if not isinstance(payload, Mapping):
