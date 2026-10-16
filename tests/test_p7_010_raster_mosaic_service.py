@@ -68,6 +68,23 @@ def resolve(sources, user_request=None, **kw):
 
 
 class RasterMosaicServiceTests(unittest.TestCase):
+    def test_opt_in_old_satellite_and_fresh_radar_service_contract(self):
+        old = source("world_old", WORLD, time="2026-10-14T08:30:00Z")
+        old["semantics"] = {**SEM,
+            "measurement_method":"satellite_precipitation_estimate",
+            "observation_kind":"estimate"}
+        fresh = source("dwd_region", REGION_DE, time="2026-10-14T15:06:00Z")
+        query = request()
+        strict = resolve([old, fresh], query)
+        self.assertEqual([x["source_id"] for x in strict["layers"]], ["dwd_region"])
+        query["time"]["max_background_age_seconds"] = 43200
+        extended = resolve([old, fresh], query)
+        self.assertEqual([x["source_id"] for x in extended["layers"]],
+                         ["world_old", "dwd_region"])
+        self.assertEqual(extended["layers"][0]["freshness_class"], "older_background")
+        self.assertEqual(extended["layers"][1]["freshness_class"], "current")
+        self.assertEqual(extended["reference_time"], "2026-10-14T15:06:00Z")
+
     def test_world_survives_tiny_germany_edge(self):
         got = resolve([source("local_germany", REGION_DE),
                        source("world", WORLD)])
