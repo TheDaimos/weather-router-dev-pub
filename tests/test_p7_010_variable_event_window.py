@@ -83,6 +83,32 @@ class EventWindowTests(unittest.TestCase):
         self.assertEqual(blocked["events"], [])
         self.assertEqual(blocked["event_time_policy"]["rejected_counts"]["unverified_ongoing"], 1)
 
+    def test_official_usgs_elevated_notice_not_equated_with_eruption(self):
+        contract = validate("natural_hazards.volcano.activity",
+                            start="2026-10-01T00:00:00Z", age=86400)
+        notice = {
+            "id": "usgs-hans", "effective": "2026-10-15T11:00:00Z",
+            "status": "actual", "lifecycle_status": "ongoing",
+            "last_updated_at": "2026-10-16T11:00:00Z",
+            "volcano_semantics": {
+                "semantic_class": "official_volcano_status_event",
+                "volcano_alert_level": "WATCH"},
+        }
+        result = events_filtered([notice], contract, published=None)
+        self.assertEqual(result["events"][0]["temporal_status"], "ongoing")
+        self.assertEqual(result["events"][0]["volcano_semantics"]["volcano_alert_level"],
+                         "WATCH")
+        weekly = {
+            "id": "smithsonian-report", "effective": "2026-10-15T08:00:00Z",
+            "status": "actual", "volcano_semantics": {
+                "semantic_class": "weekly_volcanic_activity_report_event"},
+        }
+        historical = events_filtered([weekly], contract, published=None)
+        self.assertEqual(historical["events"][0]["temporal_status"], "historical_event")
+        self.assertEqual(events_filtered([{
+            **weekly, "effective": "2026-09-01T08:00:00Z"}],
+            contract, published=None)["event_count"], 0)
+
     def test_quake_and_sighting_are_historical_not_live_location(self):
         quake = validate("natural_hazards.earthquake.events",
                          start="2026-10-01T00:00:00Z", age=3600)
