@@ -1,0 +1,213 @@
+"""P7-010: bounded UTC event-window policy for existing Consumer V1 feeds.
+
+This is NOT a precipitation/mosaic command or a new event WebSocket. The
+provider and permission/routing decisions remain in consumer_api.py.
+"""
+from __future__ import annotations
+
+from datetime import datetime, timedelta, timezone
+from typing import Any, Mapping
+
+from .time_normalization import iso_instant, utc_iso
+
+UTC = timezone.utc
+_MAX_RESULTS = 200
+_CLOSED = frozenset({"ended", "resolved", "expired", "cancelled", "canceled",
+                     "cleared", "withdrawn", "inactive", "closed"})
+_ACTIVE = frozenset({"active", "ongoing", "in_progress", "erupting",
+                     "warning", "watch", "in_effect"})
+_CLASSES = {
+    "official_warning": {"days": 31, "feed_seconds": 3600,
+                         "ongoing_seconds": 21600},
+    "long_running_event": {"days": 366, "feed_seconds": 172800,
+                           "ongoing_seconds": 604800},
+    "point_event": {"days": 366, "feed_seconds": 86400,
+                    "ongoing_seconds": 0},
+    "historical_sighting": {"days": 366, "feed_seconds": 86400,
+                            "ongoing_seconds": 0},
+}
+
+
+def time_class(public_id: str, resource_type: str) -> str | None:
+    """Use server-owned capability names and resource types, never consumer labels."""
+    if resource_type not in {"hazard_feed", "event_feed"}:
+        return None
+    if "volcano" in public_id or "volcanic" in public_id:
+        return "long_running_event"
+    if any(tag in public_id for tag in ("earthquake", "seismic", "lightning",
+                                         "observation", "sighting", "wildlife",
+                                         "jellyfish", "shark")):
+        return "historical_sighting" if any(tag in public_id for tag in (
+            "sighting", "wildlife", "jellyfish", "shark")) else "point_event"
+    if any(tag in public_id for tag in ("warning", "alert", "advisory",
+                                         "tsunami", "civil_protection",
+                                         "security", "aviation")):
+        return "official_warning"
+    return "point_event" if resource_type == "event_feed" else "official_warning"
+
+
+def _instant(value: Any) -> datetime | None:
+    normalized = iso_instant(value)
+    if normalized is None:
+        return None
+    return datetime.fromisoformat(normalized.replace("Z", "+00:00"))
+
+
+def validate_event_time(raw: Any, *, public_id: str, resource_types: set[str],
+                        now: datetime | None = None) -> dict[str, Any]:
+    """Validate optional event mode against server-authorized capability resources."""
+    if not isinstance(raw, dict) or raw.get("mode") != "events_intersecting_window":
+        raise ValueError("invalid_event_time_mode")
+    if set(raw) - {"mode", "window", "include_ongoing",
+                   "max_feed_update_age_seconds"}:
+        raise ValueError("unknown_event_time_fields")
+    if resource_types != {"hazard_feed"} and resource_types != {"event_feed"}:
+        raise ValueError("event_window_requires_single_feed_resource")
+    cls = time_class(public_id, next(iter(resource_types)))
+    if cls is None:
+        raise ValueError("unsupported_event_time_capability")
+    limits = _CLASSES[cls]
+    window = raw.get("window")
+    if not isinstance(window, dict) or set(window) != {"start", "end"}:
+        raise ValueError("invalid_event_window")
+    start, end = _instant(window["start"]), _instant(window["end"])
+    current = (now or datetime.now(UTC)).astimezone(UTC)
+    if start is None or end is None or start > end:
+        raise ValueError("invalid_event_window")
+    if end - start > timedelta(days=limits["days"]):
+        raise ValueError("event_window_too_large")
+    if end > current + timedelta(minutes=5):
+        raise ValueError("future_event_window")
+    if type(raw.get("include_ongoing", False)) is not bool:
+        raise ValueError("invalid_include_ongoing")
+    feed_budget = raw.get("max_feed_update_age_seconds", limits["feed_seconds"])
+    if type(feed_budget) is not int or not 60 <= feed_budget <= limits["feed_seconds"] * 4:
+        raise ValueError("invalid_feed_update_age")
+    return {
+        "mode": "events_intersecting_window",
+        "window": {"start": utc_iso(start), "end": utc_iso(end)},
+        "include_ongoing": raw.get("include_ongoing", False),
+        "max_feed_update_age_seconds": feed_budget,
+        "class": cls,
+        "max_window_days": limits["days"],
+        "max_results": _MAX_RESULTS,
+        "max_ongoing_update_age_seconds": limits["ongoing_seconds"],
+    }
+
+
+def filter_event_payload(payload: Mapping[str, Any], *, time: Mapping[str, Any],
+                         provider_result: Mapping[str, Any] | None = None,
+                         now: datetime | None = None) -> dict[str, Any]:
+    """Bound feed event results and keep unknown/old states explicit.
+
+    Only an explicit active status with a *real provider update timestamp*
+    can establish unknown-end ongoing activity. A fetch timestamp is never
+    used to manufacture event duration or freshness.
+    """
+    current = (now or datetime.now(UTC)).astimezone(UTC)
+    start = _instant(time["window"]["start"])
+    end = _instant(time["window"]["end"])
+    if start is None or end is None:
+        raise ValueError("invalid_validated_window")
+    source = provider_result if isinstance(provider_result, Mapping) else {}
+    updated = next((v for field in ("last_updated_at", "published_at", "feed_updated_at")
+                    if (v := _instant(source.get(field))) is not None), None)
+    source_age = (current - updated).total_seconds() if updated else None
+    feed_status = ("unknown" if source_age is None else
+                   "future" if source_age < -300 else
+                   "stale" if source_age > time["max_feed_update_age_seconds"] else
+                   "fresh")
+    accepted: list[dict[str, Any]] = []
+    rejected: dict[str, int] = {}
+    input_events = payload.get("events", [])
+    if not isinstance(input_events, list):
+        input_events = []
+
+    def reject(reason: str) -> None:
+        rejected[reason] = rejected.get(reason, 0) + 1
+
+    for event in input_events[:1000]:
+        if not isinstance(event, dict):
+            reject("invalid_event")
+            continue
+        state = str(event.get("status") or "").strip().lower()
+        closed = state in _CLOSED
+        begins = next((v for field in ("valid_from", "effective", "onset",
+                                        "started_at", "occurred_at", "observed_at", "sent")
+                       if (v := _instant(event.get(field))) is not None), None)
+        ends = next((v for field in ("resolved_at", "ended_at", "ends",
+                                      "expires", "valid_until")
+                     if (v := _instant(event.get(field))) is not None), None)
+        if begins is None:
+            reject("missing_event_time")
+            continue
+        if begins > end:
+            reject("after_window")
+            continue
+        if ends is not None and ends < start:
+            reject("ended_before_window")
+            continue
+        if ends is not None and ends < begins:
+            reject("invalid_event_interval")
+            continue
+        kind = time["class"]
+        # A point event/observation is historical even if the provider uses
+        # a vague active label. It does not establish an ongoing location.
+        point = kind in {"point_event", "historical_sighting"}
+        ongoing = False
+        if point:
+            if begins < start:
+                reject("before_window")
+                continue
+        elif ends is None:
+            if closed:
+                reject("closed_without_verified_end")
+                continue
+            recent_update = next((v for field in ("last_updated_at", "published_at")
+                                  if (v := _instant(event.get(field))) is not None),
+                                 updated)
+            age = (current - recent_update).total_seconds() if recent_update else None
+            if not (time["include_ongoing"] and state in _ACTIVE
+                    and age is not None
+                    and 0 <= age <= time["max_ongoing_update_age_seconds"]):
+                reject("unverified_ongoing")
+                continue
+            ongoing = True
+        elif closed and ends > current:
+            reject("closed_status_conflict")
+            continue
+        elif ends > current:
+            ongoing = not closed
+        elif ends <= current and ends < start:
+            reject("ended_before_window")
+            continue
+        if ongoing and not time["include_ongoing"]:
+            reject("ongoing_disabled")
+            continue
+        entry = dict(event)
+        entry["event_time_class"] = kind
+        entry["temporal_status"] = (
+            "historical_observation" if kind == "historical_sighting"
+            else "historical_event" if point
+            else "ongoing" if ongoing else "ended" if ends and ends <= current
+            else "time_bounded")
+        accepted.append(entry)
+        if len(accepted) >= _MAX_RESULTS:
+            break
+
+    filtered = dict(payload)
+    filtered["events"] = accepted
+    filtered["event_count"] = len(accepted)
+    filtered["event_time_policy"] = {
+        "class": time["class"],
+        "window": dict(time["window"]),
+        "include_ongoing": time["include_ongoing"],
+        "max_results": _MAX_RESULTS,
+        "feed_status": feed_status,
+        "feed_updated_at": utc_iso(updated) if updated else None,
+        "feed_age_seconds": round(source_age, 1) if source_age is not None else None,
+        "max_feed_update_age_seconds": time["max_feed_update_age_seconds"],
+        "rejected_counts": rejected,
+        "truncated": len(input_events) > 1000 or len(accepted) >= _MAX_RESULTS,
+    }
+    return filtered

@@ -1577,14 +1577,15 @@ def _time_context(msg: dict[str, Any]) -> dict[str, Any]:
     mode = raw.get("mode")
     if mode == "latest" and set(raw) != {"mode"}:
         raise vol.Invalid("latest time context accepts only mode")
+    if mode == "events_intersecting_window":
+        # Validate timestamps, class and bounds after the verified catalog has
+        # determined the actual feed type for this public capability.
+        return dict(raw)
     if mode != "latest":
         raise CandidateUnavailable(
             "requirements_not_met",
             retryable=False,
-            message=(
-                "Der aktuelle Consumer-Prototyp unterstützt für Resolve zunächst "
-                "nur time.mode=latest."
-            ),
+            message="Unbekannter oder für diese Capability nicht erlaubter Zeitmodus.",
         )
     return {"mode": "latest"}
 
@@ -3912,6 +3913,20 @@ async def websocket_consumer_resolve(
         )
         return
 
+    if time_context["mode"] == "events_intersecting_window":
+        from .consumer_event_time_policy import validate_event_time
+        try:
+            if "max_age_seconds" in requirements:
+                raise ValueError("event windows use separate feed age, not max_age_seconds")
+            time_context = validate_event_time(
+                time_context, public_id=public_id,
+                resource_types={item.capability.render_mode for item in all_candidates},
+            )
+        except (ValueError, TypeError) as err:
+            trace.stage_end("eligibility")
+            _finish_error("invalid_consumer_request", str(err), "event_time")
+            return
+        trace.set_request(event_time_policy=time_context)
     for order, candidate in enumerate(all_candidates):
         key = _candidate_trace_key(candidate)
         raw_extension_id = getattr(candidate.provider, "weather_router_extension_id", None)
@@ -4144,6 +4159,11 @@ async def websocket_consumer_resolve(
             return
         trace.stage_end("provider_resolution")
 
+        if time_context["mode"] == "events_intersecting_window":
+            from .consumer_event_time_policy import filter_event_payload
+            payload = filter_event_payload(
+                payload, time=time_context, provider_result=provider_result)
+            trace.set_request(event_time_result=payload["event_time_policy"])
         now = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
         freshness = {
             "data_time": None,
@@ -4224,6 +4244,12 @@ async def websocket_consumer_resolve(
                 candidate,
                 payload,
             )
+
+            if time_context["mode"] == "events_intersecting_window":
+                from .consumer_event_time_policy import filter_event_payload
+                payload = filter_event_payload(
+                    payload, time=time_context, provider_result=provider_result)
+                trace.set_request(event_time_result=payload["event_time_policy"])
 
             age = _age_seconds(data_time)
             max_age = requirements.get("max_age_seconds")
