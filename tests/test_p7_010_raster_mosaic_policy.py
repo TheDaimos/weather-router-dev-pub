@@ -83,6 +83,31 @@ class MosaicPlanningTests(unittest.TestCase):
         self.assertEqual(len(result["layers"]), 3)
         self.assertEqual(len({v["source_id"] for v in result["layers"]}), 3)
 
+    def test_imerg_measured_latency_rejected_at_15min_accepted_at_12h(self):
+        # Observed in a private, redacted NASA provider diagnostic on
+        # 2026-10-16: IMERG frame 00:30 UTC, probe at 07:00 UTC.
+        # This uses synthetic public resource metadata, not archived URLs.
+        candidate = source("satellite_imerg", WORLD,
+                           "2026-10-16T00:30:00Z",
+                           method="satellite_estimate")
+        options = {
+            "viewport": VIEW,
+            "now": "2026-10-16T07:00:37Z",
+            "max_time_delta_seconds": 180,
+            "max_layers": 4,
+        }
+        strict = policy.plan_raster_mosaic(
+            [candidate], max_data_age_seconds=900, **options)
+        self.assertEqual(strict["status"], "unavailable")
+        self.assertEqual(strict["layers"], [])
+        measured_lag = policy.plan_raster_mosaic(
+            [candidate], max_data_age_seconds=43200, **options)
+        self.assertEqual(measured_lag["status"], "partial")
+        self.assertEqual([x["source_id"] for x in measured_lag["layers"]],
+                         ["satellite_imerg"])
+        self.assertEqual(measured_lag["layers"][0]["times"]["valid_at"],
+                         "2026-10-16T00:30:00Z")
+
     def test_stale_future_and_unknown_times_fail_closed(self):
         old = source("stale", WORLD, "2026-10-14T12:30:00Z")
         future = source("future", WORLD, "2026-10-14T15:09:00Z")
