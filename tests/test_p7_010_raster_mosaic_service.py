@@ -206,6 +206,45 @@ class RasterMosaicServiceTests(unittest.TestCase):
         self.assertTrue(any("Kontaktbegrenzung" in line
                             for line in result["limitations"]))
 
+    def test_parallel_consumers_share_global_contact_slots(self):
+        async def scenario():
+            active = 0
+            peak = 0
+
+            async def fetch():
+                nonlocal active, peak
+                active += 1
+                peak = max(peak, active)
+                try:
+                    await asyncio.sleep(.02)
+                    return {"tile_url": "https://example.invalid/{z}/{x}/{y}.png",
+                            "frame_time": TIME, "attribution": "synthetic",
+                            "legend": {"title": "synthetic"}}
+                finally:
+                    active -= 1
+
+            def inventory(prefix):
+                result = []
+                for n in range(12):
+                    row = source(f"{prefix}_{n}")
+                    row["async_fetch"] = fetch
+                    result.append(row)
+                return result
+
+            answers = await asyncio.gather(
+                service.resolve_mosaic_snapshot(
+                    request(12), sources=inventory("a"),
+                    server_now="2026-10-14T15:08:00Z"),
+                service.resolve_mosaic_snapshot(
+                    request(12), sources=inventory("b"),
+                    server_now="2026-10-14T15:08:00Z"))
+            return peak, answers
+
+        peak, answers = asyncio.run(scenario())
+        self.assertLessEqual(peak, service.MAX_PARALLEL_CONTACTS)
+        self.assertEqual(len(answers), 2)
+        self.assertTrue(all(len(answer["layers"]) == 12 for answer in answers))
+
     def test_time_coherent_frame_chosen(self):
         frames = [{"time": "2026-10-14T15:07:00Z",
                    "tile_url": "https://example.invalid/latest.png"},
