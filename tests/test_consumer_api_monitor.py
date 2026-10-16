@@ -93,6 +93,29 @@ class TestApiMonitor(unittest.TestCase):
         self.assertEqual(row["result"], "success")
         self.assertLessEqual(len(__import__("json").dumps(row).encode()), 8192)
 
+    def test_oversized_v2_keeps_structured_rejection_causes(self):
+        m = monitor.ConsumerApiMonitor()
+        m.configure(enabled=True)
+        token = m.begin(api_version="V2", command="weather_router/consumer/resolve_mosaic",
+                        message={"consumer_id":"gewitterradar",
+                                 "correlation_id":"abc-v2-age",
+                                 "capability":"weather.precipitation.layer"})
+        m.finish(token, result="no_data",
+                 response={"status":"unavailable",
+                           **{f"large_{i}":"data" * 100 for i in range(70)}},
+                 routing={"contacts_selected":4,
+                          "sources_eligible":1,
+                          "selected_sources":["nasa_gibs/satellite_precipitation_imerg_30min"],
+                          "final_layers_count":0,
+                          "source_rejections":[{"source_id":"nasa_gibs/satellite_precipitation_imerg_30min",
+                                                "reason":"no_fresh_verified_frame"}]})
+        row = m.query()["entries"][0]
+        self.assertEqual(row["correlation_id"], "abc-v2-age")
+        self.assertEqual(row["routing"]["final_layers_count"], 0)
+        self.assertEqual(row["routing"]["source_rejections"][0]["reason"],
+                         "no_fresh_verified_frame")
+        self.assertLessEqual(len(__import__("json").dumps(row).encode()),8192)
+
     def test_stop_removes_data(self):
         m=monitor.ConsumerApiMonitor()
         m.configure(enabled=True)
