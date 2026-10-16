@@ -132,7 +132,9 @@ def make_mosaic_candidate(
     }
     timeline = payload.get("timeline")
     if isinstance(timeline, Mapping) and isinstance(timeline.get("frames"), list):
-        if len(timeline["frames"]) > 24:
+        # Longer V1 timelines are not invalid: bound work and keep the newest
+        # validated timestamps for V2. The policy still enforces data age.
+        if len(timeline["frames"]) > 256:
             return None
         frames = []
         for raw in timeline["frames"]:
@@ -144,5 +146,17 @@ def make_mosaic_candidate(
                     and isinstance(frame_time, str) and frame_time):
                 frames.append({"tile_url": frame_url, "data_time": frame_time})
         if frames:
-            candidate["frames"] = frames
+            from datetime import datetime, timezone
+            dated = []
+            for frame in frames:
+                try:
+                    stamp = datetime.fromisoformat(
+                        frame["data_time"].replace("Z", "+00:00"))
+                    if stamp.tzinfo is not None:
+                        dated.append((stamp.astimezone(timezone.utc), frame))
+                except ValueError:
+                    continue
+            if dated:
+                dated.sort(key=lambda item: item[0], reverse=True)
+                candidate["frames"] = [frame for _, frame in dated[:24]]
     return candidate

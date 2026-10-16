@@ -262,7 +262,17 @@ def plan_raster_mosaic(
                 str(a["candidate"]["source_id"]),
             )
         )
-        ordered = [foundation, *others]
+        # latest_coherent and at_time may only combine frames inside
+        # the declared tolerance; do not label an incoherent overlay valid.
+        ordered = []
+        for item in [foundation, *others]:
+            if abs((item["time"] - anchor).total_seconds()) <= max_time_delta_seconds:
+                ordered.append(item)
+            else:
+                rejected.append({
+                    "source_id": item["candidate"]["source_id"],
+                    "reason": "outside_time_tolerance",
+                })
     else:
         ordered = []
     selected = ordered[:max_layers]

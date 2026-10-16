@@ -33,12 +33,15 @@ def real_handler_with_stubs(namespace: dict):
                     and node.name == "websocket_consumer_resolve_mosaic")
     # Decorators require HA; strip only those, not the handler logic.
     function.decorator_list = []
-    function.body = [
-        ast.Pass() if isinstance(node, ast.ImportFrom)
-                      and node.module in ("consumer_api", "consumer_api_monitor") and node.level == 1
-        else node
-        for node in function.body
-    ]
+    # Core imports moved under the V2 deadline; replace imports recursively.
+    class StripCoreImports(ast.NodeTransformer):
+        def visit_ImportFrom(self, node):
+            if node.level == 1 and node.module in (
+                    "consumer_api", "consumer_api_monitor"):
+                return ast.copy_location(ast.Pass(), node)
+            return node
+
+    function = StripCoreImports().visit(function)
     future = ast.ImportFrom(module="__future__", names=[ast.alias(name="annotations")], level=0)
     module = ast.fix_missing_locations(ast.Module(body=[future, function], type_ignores=[]))
     exec(compile(module, str(PKG / "consumer_raster_mosaic_api.py"), "exec"), namespace)
@@ -163,6 +166,7 @@ class WebsocketHarnessTests(unittest.IsolatedAsyncioTestCase):
             "MAX_COVERAGE_CONTACTS": 12,
             "MAX_COVERAGE_CONCURRENT": 3,
             "COVERAGE_TIMEOUT_SECONDS": 3.0,
+            "MOSAIC_PROVIDER_DEADLINE_SECONDS": 16.0,
             "CandidateUnavailable": FakeUnavailable,
             "_runtime_state": lambda hass: (
                 True, {"router_enabled": True, "enabled_domains": {"weather"},

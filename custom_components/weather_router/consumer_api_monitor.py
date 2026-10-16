@@ -64,7 +64,7 @@ def _providers_from_response(value: Any, *, limit: int = 12) -> list[str]:
                 value = node.get(key)
                 if isinstance(value, str) and 0 < len(value) <= 128 and value not in found:
                     found.append(value)
-            for key in ("sources", "layers", "selected", "provider", "routing"):
+            for key in ("sources", "layers", "selected", "provider", "routing", "provenance", "resource", "resources", "data"):
                 child = node.get(key)
                 if isinstance(child, (dict, list)):
                     visit(child, depth + 1)
@@ -174,6 +174,8 @@ class ConsumerApiMonitor:
                 "candidates": candidate_summary,
                 "limitations": _safe((routing_data.get("limitations") or [])[:6]),
                 "contacts_selected": routing_data.get("contacts_selected"),
+                "sources_eligible": routing_data.get("sources_eligible"),
+                "selected_sources": _safe((routing_data.get("selected_sources") or [])[:12], locations=False),
             }
             token["response"] = _safe({key: response_data.get(key) for key in
                 ("status", "code", "reason_code", "selected_provider",

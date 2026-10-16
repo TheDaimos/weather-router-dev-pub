@@ -115,15 +115,29 @@ class AdapterTests(unittest.TestCase):
         result = candidate(payload=payload)
         self.assertEqual(len(result["frames"]), 2)
         self.assertEqual(result["frames"][0]["data_time"],
-                         "2026-10-14T15:01:00Z")
+                         "2026-10-14T15:03:00Z")
         self.assertNotEqual(result["frames"][0]["tile_url"], result["frames"][1]["tile_url"])
 
-    def test_frames_budget_fail_closed(self):
-        payload = {**PUBLIC_RESOURCE, "timeline": {
-            "frames": [{"time": "2026-10-14T15:01:00Z",
-                        "tile_url": "https://example.invalid/raster"}] * 25
-        }}
-        self.assertIsNone(candidate(payload=payload))
+    def test_dwd_long_timeline_selects_bounded_newest_frames(self):
+        from datetime import datetime, timedelta, timezone
+        start = datetime(2026, 10, 14, 14, 0, tzinfo=timezone.utc)
+        frames = [
+            {"time": (start + timedelta(minutes=i)).isoformat(),
+             "tile_url": f"https://example.invalid/frame/{i}"} for i in range(48)
+        ]
+        payload = {**PUBLIC_RESOURCE, "timeline": {"frames": frames}}
+        result = candidate(payload=payload)
+        self.assertIsNotNone(result)
+        self.assertEqual(len(result["frames"]), 24)
+        self.assertEqual(result["frames"][0]["tile_url"], "https://example.invalid/frame/47")
+        self.assertEqual(result["frames"][-1]["tile_url"], "https://example.invalid/frame/24")
+
+    def test_excessive_unbounded_timeline_rejected(self):
+        frame = {"time": "2026-10-14T15:01:00Z",
+                 "tile_url": "https://example.invalid/raster"}
+        self.assertIsNone(candidate(payload={
+            **PUBLIC_RESOURCE, "timeline": {"frames": [frame] * 257}
+        }))
 
 
 if __name__ == "__main__":

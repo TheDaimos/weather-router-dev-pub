@@ -116,8 +116,9 @@ class MosaicPlanningTests(unittest.TestCase):
         older = source("older_radar", CARIBBEAN, "2026-10-14T14:50:00Z")
         base = source("world", WORLD, TIMESTAMP)
         result = plan(base, older)
-        self.assertEqual(result["layers"][1]["quality_note"], "zeitlich_abweichend")
-        self.assertIn("Quellenzeitstaende weichen", " ".join(result["limitations"]))
+        self.assertEqual([layer["source_id"] for layer in result["layers"]], ["world"])
+        self.assertFalse(any(layer["quality_note"] == "zeitlich_abweichend"
+                             for layer in result["layers"]))
 
     def test_timeline_nearby_source_preferred(self):
         same_area = {
@@ -155,9 +156,9 @@ class MosaicPlanningTests(unittest.TestCase):
              "tile_url": "https://example.invalid/older.png"},
         ]
         result = plan(source("world", WORLD), regional)
-        self.assertEqual(result["layers"][1]["tile_url"],
-                         "https://example.invalid/later.png")
-        self.assertEqual(result["layers"][1]["quality_note"], "zeitlich_abweichend")
+        self.assertEqual([layer["source_id"] for layer in result["layers"]], ["world"])
+        self.assertFalse(any(layer["quality_note"] == "zeitlich_abweichend"
+                             for layer in result["layers"]))
 
     def test_frame_limit_and_stale_only_are_rejected(self):
         excessive = source("too_many", CARIBBEAN)
