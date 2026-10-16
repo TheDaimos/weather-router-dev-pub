@@ -222,6 +222,7 @@ async def websocket_consumer_resolve_mosaic(
                     connection.send_error(msg["id"], "mosaic_temporarily_unavailable",
                                           "Die mehrteilige Rasterauflösung ist derzeit nicht verfügbar.")
                     return
+                rejected_sources = result.pop("_internal_source_rejections", [])
                 if len(unique) > len(preflight):
                     result["limitations"].append(
                         "Weitere berechtigte Quellen wurden durch das Coverage-Kontaktbudget nicht geprüft.")
@@ -235,6 +236,8 @@ async def websocket_consumer_resolve_mosaic(
                         "contacts_selected": len(preflight),
                         "sources_eligible": len(sources),
                         "selected_sources": [item["source_id"] for item in sources[:MAX_COVERAGE_CONTACTS]],
+                        "final_layers_count": len(result.get("layers", [])),
+                        "source_rejections": rejected_sources,
                         "limits": query["limits"],
                         "limitations": result.get("limitations", []),
                     }
