@@ -26,7 +26,7 @@ selected = {
     "_normalize_event_feed", "_normalize_hazard_feed",
     "_timeline_frames", "_normalize_image_sequence", "_normalize_data_file",
     "_normalize_raster",
-    "_normalize_declared_point_time_value",
+    "_normalize_declared_point_time_value", "_normalize_declared_event_parameter_times",
 }
 functions = [
     node for node in tree.body
@@ -275,6 +275,64 @@ class UniversalV1SourceTimeTests(unittest.TestCase):
         self.assertIn('"data_time": None', provider_code)
         self.assertIn('entry["interval_start"] = start', provider_code)
         self.assertIn('entry["interval_end"] = end', provider_code)
+
+
+    def test_jma_tsunami_time_roles_and_nested_parameters(self):
+        warn = candidate("jma", "official_tsunami_warnings_japan")
+        observed = candidate("jma", "tsunami_observations_japan")
+        for c, expected_role in ((warn, "valid_from"),
+                                 (observed, "observed_at")):
+            point = normalizer.normalize_provider_time(
+                c.provider.id, c.capability.id,
+                "events[].effective", "2026-10-17T21:00:00+09:00")
+            self.assertEqual(point.iso, "2026-10-17T12:00:00Z")
+            self.assertEqual(point.role, expected_role)
+        observed_payload, latest = namespace["_normalize_hazard_feed"](observed, {
+            "events": [{
+                "id": "observation", "hazard_type": "tsunami",
+                "sent": "2026-10-17T21:20:00+09:00",
+                "effective": "2026-10-17T21:00:00+09:00",
+                "onset": "2026-10-17T21:00:00+09:00",
+                "parameters": {
+                    "first_wave_arrival_time": "2026-10-17T21:00:00+09:00",
+                    "max_wave_time": "2026-10-17T21:05:00+09:00",
+                }
+            }]
+        })
+        event = observed_payload["events"][0]
+        self.assertEqual(event["sent"], "2026-10-17T12:20:00Z")
+        self.assertEqual(event["effective"], "2026-10-17T12:00:00Z")
+        self.assertEqual(event["parameters"]["max_wave_time"],
+                         "2026-10-17T12:05:00Z")
+        self.assertEqual(latest, "2026-10-17T12:00:00Z")
+        self.assertNotIn("time_normalization_error", observed_payload)
+        bad, _ = namespace["_normalize_hazard_feed"](observed, {
+            "events": [{
+                "id": "bad", "hazard_type": "tsunami",
+                "effective": "2026-10-17T21:00:00",
+                "parameters": {"max_wave_time": "2026-10-17T21:05:00"}
+            }]
+        })
+        self.assertIsNone(bad["events"][0]["effective"])
+        self.assertIsNone(bad["events"][0]["parameters"]["max_wave_time"])
+        self.assertEqual(bad["time_normalization_error"], "invalid_timestamp")
+
+    def test_usgs_seismic_origin_and_update_are_not_issued_time(self):
+        c = candidate("usgs_seismic_events", "non_earthquake_seismic_past_day")
+        payload, latest = namespace["_normalize_hazard_feed"](c, {
+            "events": [{
+                "id": "non-earthquake", "hazard_type": "volcanic_activity",
+                "effective": "2026-10-17T12:00:00Z",
+                "onset": "2026-10-17T12:00:00Z",
+                "last_updated_at": "2026-10-17T13:00:00Z",
+                "sent": None
+            }]
+        })
+        event = payload["events"][0]
+        self.assertEqual(event["effective"], latest)
+        self.assertEqual(event["last_updated_at"], "2026-10-17T13:00:00Z")
+        self.assertIsNone(event["sent"])
+        self.assertNotIn("time_normalization_error", payload)
 
 
 if __name__ == "__main__":
