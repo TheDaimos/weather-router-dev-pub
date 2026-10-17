@@ -125,11 +125,20 @@ class P5SpaceImplementationTest(unittest.TestCase):
         self.assertNotIn("space.weather.severity", ids)
 
     def test_build_lab_and_loader_are_version_synchronized(self) -> None:
-        self.assertIn('DEV_BUILD_VERSION: Final = "0.10.142"', self.const)
-        self.assertIn('DEV_LOADER_REV: Final = "0.10-loader-145"', self.const)
-        self.assertIn('WR_LAB_BUILD_VERSION = "0.10.142"', self.lab)
-        self.assertIn('WR_LAB_BUILD_VERSION = "0.10.142"', self.loader)
-        self.assertIn('LOADER_REV = "0.10-loader-145"', self.loader)
+        # Keine statisch veraltete Versionsnummer aus einem alten P5-Test.
+        import re
+        def read_value(text, variable):
+            match = re.search(
+                r"\b" + re.escape(variable) + r'(?:: Final)?\s*=\s*"([^"]+)"',
+                text,
+            )
+            self.assertIsNotNone(match, variable)
+            return match.group(1)
+        current = read_value(self.const, "DEV_BUILD_VERSION")
+        loader_revision = read_value(self.const, "DEV_LOADER_REV")
+        self.assertEqual(read_value(self.lab, "WR_LAB_BUILD_VERSION"), current)
+        self.assertEqual(read_value(self.loader, "WR_LAB_BUILD_VERSION"), current)
+        self.assertEqual(read_value(self.loader, "LOADER_REV"), loader_revision)
 
 
 if __name__ == "__main__":
