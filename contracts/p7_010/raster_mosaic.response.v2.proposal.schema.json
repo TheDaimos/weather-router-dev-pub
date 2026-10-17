@@ -178,6 +178,10 @@
                 "null"
               ],
               "minimum": 0
+            },
+            "age_seconds": {
+              "type": "number",
+              "minimum": 0
             }
           }
         },
@@ -240,6 +244,13 @@
               "maximum": 1
             }
           }
+        },
+        "freshness_class": {
+          "type": "string",
+          "enum": [
+            "current",
+            "older_background"
+          ]
         }
       }
     }

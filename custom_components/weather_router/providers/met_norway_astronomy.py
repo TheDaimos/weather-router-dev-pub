@@ -272,9 +272,22 @@ class MetNorwayAstronomyProvider:
             item: (moon_values if item in _MOON_IDS else sun_values).get(item, {"value": None})
             for item in requested
         }
-        interval = moon_payload.get("when") or sun_payload.get("when")
-        interval_value = interval.get("interval") if isinstance(interval, dict) else None
-        data_time = interval_value[0] if isinstance(interval_value, list) and interval_value else None
+        # MET Norway Sunrise 3.0: when.interval describes the calculated
+        # mean-solar-day interval, NOT a freshly observed measurement.
+        # Transfer exact source strings, then validate/convert them only at
+        # the central consumer UTC ingress according to the provider registry.
+        def _bounds(raw_payload: dict[str, Any]) -> tuple[Any, Any]:
+            when = raw_payload.get("when")
+            bounds = when.get("interval") if isinstance(when, dict) else None
+            if not isinstance(bounds, list) or len(bounds) != 2:
+                return None, None
+            return bounds[0], bounds[1]
+
+        moon_bounds, sun_bounds = _bounds(moon_payload), _bounds(sun_payload)
+        for capability_id, entry in values.items():
+            start, end = moon_bounds if capability_id in _MOON_IDS else sun_bounds
+            entry["interval_start"] = start
+            entry["interval_end"] = end
 
         return {
             "provider": self.id,
@@ -282,7 +295,7 @@ class MetNorwayAstronomyProvider:
             "source_class": "astronomy",
             "latitude": latitude,
             "longitude": longitude,
-            "data_time": data_time,
+            "data_time": None,  # date-interval boundary is not an observation
             "values": values,
             "attribution": "Meteorologisk institutt / MET Norway",
         }

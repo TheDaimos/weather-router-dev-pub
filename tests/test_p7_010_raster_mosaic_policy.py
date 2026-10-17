@@ -57,6 +57,95 @@ def plan(*sources, max_layers=4, **kwargs):
 
 
 class MosaicPlanningTests(unittest.TestCase):
+    def test_opt_in_older_global_estimate_and_fresh_dwd_remain_distinct(self):
+        nasa = source("global_imer_g", WORLD, "2026-10-14T08:30:00Z",
+                      method="satellite_precipitation_estimate")
+        nasa["semantics"]["observation_kind"] = "estimate"
+        dwd = source("regional_radar", GERMANY, "2026-10-14T15:06:00Z")
+        options = dict(viewport=VIEW, now=NOW, max_data_age_seconds=900,
+                       max_time_delta_seconds=180, max_layers=4,
+                       focus={"latitude": 21, "longitude": -76})
+        strict = policy.plan_raster_mosaic([nasa, dwd], **options)
+        self.assertEqual([x["source_id"] for x in strict["layers"]],
+                         ["regional_radar"])
+        expanded = policy.plan_raster_mosaic(
+            [nasa, dwd], max_background_age_seconds=43200, **options)
+        self.assertEqual([x["source_id"] for x in expanded["layers"]],
+                         ["global_imer_g", "regional_radar"])
+        self.assertEqual(expanded["layers"][0]["freshness_class"], "older_background")
+        self.assertEqual(expanded["layers"][0]["quality_note"], "older_satellite_background")
+        self.assertEqual(expanded["layers"][1]["freshness_class"], "current")
+        self.assertEqual(expanded["reference_time"], "2026-10-14T15:06:00Z")
+        self.assertGreater(expanded["layers"][0]["times"]["age_seconds"], 20000)
+        self.assertGreater(expanded["layers"][0]["times"]["reference_delta_seconds"], 20000)
+        self.assertEqual(expanded["layers"][1]["times"]["reference_delta_seconds"], 0)
+        self.assertTrue(any("Satellitenschaetzung" in x for x in expanded["limitations"]))
+
+    def test_source_time_contract_error_survives_raster_planning(self):
+        candidate = source("new_unverified_provider", WORLD, None)
+        candidate["time_normalization_error"] = "unverified_source_time_contract"
+        result = plan(candidate)
+        self.assertEqual(result["status"], "unavailable")
+        self.assertIn(
+            {"source_id": "new_unverified_provider",
+             "reason": "unverified_source_time_contract"},
+            result["_internal_source_rejections"]
+        )
+
+    def test_verified_world_product_bbox_opt_in_is_not_scope_global(self):
+        world_bbox = {"scope": "bbox", "bbox": {
+            "west": -180, "east": 180, "south": -90, "north": 90,
+        }}
+        nasa = source("machine_verified_world_satellite", world_bbox,
+                      "2026-10-14T08:30:00Z",
+                      method="satellite_precipitation_estimate")
+        nasa["semantics"]["observation_kind"] = "estimate"
+        nasa["verified_world_product_bbox"] = True
+        dwd = source("regional_current", GERMANY, "2026-10-14T15:06:00Z")
+        kwargs = dict(viewport=VIEW, now=NOW,
+                      max_data_age_seconds=900, max_time_delta_seconds=180)
+        no_opt_in = policy.plan_raster_mosaic([nasa, dwd], **kwargs)
+        self.assertEqual([x["source_id"] for x in no_opt_in["layers"]],
+                         ["regional_current"])
+        opt_in = policy.plan_raster_mosaic([nasa, dwd],
+            max_background_age_seconds=43200, **kwargs)
+        self.assertEqual([x["source_id"] for x in opt_in["layers"]],
+                         ["machine_verified_world_satellite", "regional_current"])
+        self.assertEqual(opt_in["layers"][0]["coverage_scope"], "bbox")
+        self.assertEqual(opt_in["layers"][0]["coverage"], world_bbox["bbox"])
+        self.assertEqual(opt_in["layers"][0]["freshness_class"], "older_background")
+        self.assertEqual(opt_in["layers"][0]["quality_note"], "older_satellite_background")
+        self.assertEqual(opt_in["layers"][1]["freshness_class"], "current")
+        self.assertEqual(opt_in["reference_time"], "2026-10-14T15:06:00Z")
+        self.assertTrue(any("Rasterpixel" in v for v in opt_in["limitations"]))
+
+    def test_world_bbox_only_fails_closed_for_13h_regional_and_radar(self):
+        world_bbox = {"scope": "bbox", "bbox": {
+            "west": -180, "east": 180, "south": -90, "north": 90}}
+        sample = source("satellite", world_bbox, "2026-10-14T08:30:00Z",
+                        method="satellite_estimate")
+        sample["semantics"]["observation_kind"] = "estimate"
+        options = dict(viewport=VIEW, now=NOW, max_data_age_seconds=900,
+                       max_time_delta_seconds=180,
+                       max_background_age_seconds=43200)
+        # Numeric world extent without machine-verification does not qualify.
+        self.assertEqual(policy.plan_raster_mosaic([sample], **options)["layers"], [])
+        sample["verified_world_product_bbox"] = True
+        late = {**sample, "data_time": "2026-10-14T01:30:00Z"}
+        self.assertEqual(policy.plan_raster_mosaic([late], **options)["layers"], [])
+        regional = {**sample, "coverage": GERMANY}
+        self.assertEqual(policy.plan_raster_mosaic([regional], **options)["layers"], [])
+        radar = {**sample, "semantics": {**sample["semantics"],
+                  "measurement_method": "radar",
+                  "observation_kind": "observation"}}
+        self.assertEqual(policy.plan_raster_mosaic([radar], **options)["layers"], [])
+
+    def test_older_local_radar_cannot_use_background_exception(self):
+        regional = source("stale_regional", GERMANY, "2026-10-14T08:30:00Z")
+        opts = dict(viewport=VIEW, now=NOW, max_data_age_seconds=900,
+                    max_background_age_seconds=43200, max_time_delta_seconds=180)
+        self.assertEqual(policy.plan_raster_mosaic([regional], **opts)["layers"], [])
+
     def test_germany_edge_never_displaces_world(self):
         fraction = policy.viewport_overlap(VIEW, GERMANY)
         self.assertGreater(fraction, 0)
@@ -82,6 +171,31 @@ class MosaicPlanningTests(unittest.TestCase):
         result = plan(source("broad"), source("region_1", GERMANY), more)
         self.assertEqual(len(result["layers"]), 3)
         self.assertEqual(len({v["source_id"] for v in result["layers"]}), 3)
+
+    def test_imerg_measured_latency_rejected_at_15min_accepted_at_12h(self):
+        # Observed in a private, redacted NASA provider diagnostic on
+        # 2026-10-16: IMERG frame 00:30 UTC, probe at 07:00 UTC.
+        # This uses synthetic public resource metadata, not archived URLs.
+        candidate = source("satellite_imerg", WORLD,
+                           "2026-10-16T00:30:00Z",
+                           method="satellite_estimate")
+        options = {
+            "viewport": VIEW,
+            "now": "2026-10-16T07:00:37Z",
+            "max_time_delta_seconds": 180,
+            "max_layers": 4,
+        }
+        strict = policy.plan_raster_mosaic(
+            [candidate], max_data_age_seconds=900, **options)
+        self.assertEqual(strict["status"], "unavailable")
+        self.assertEqual(strict["layers"], [])
+        measured_lag = policy.plan_raster_mosaic(
+            [candidate], max_data_age_seconds=43200, **options)
+        self.assertEqual(measured_lag["status"], "partial")
+        self.assertEqual([x["source_id"] for x in measured_lag["layers"]],
+                         ["satellite_imerg"])
+        self.assertEqual(measured_lag["layers"][0]["times"]["valid_at"],
+                         "2026-10-16T00:30:00Z")
 
     def test_stale_future_and_unknown_times_fail_closed(self):
         old = source("stale", WORLD, "2026-10-14T12:30:00Z")
@@ -116,8 +230,9 @@ class MosaicPlanningTests(unittest.TestCase):
         older = source("older_radar", CARIBBEAN, "2026-10-14T14:50:00Z")
         base = source("world", WORLD, TIMESTAMP)
         result = plan(base, older)
-        self.assertEqual(result["layers"][1]["quality_note"], "zeitlich_abweichend")
-        self.assertIn("Quellenzeitstaende weichen", " ".join(result["limitations"]))
+        self.assertEqual([layer["source_id"] for layer in result["layers"]], ["world"])
+        self.assertFalse(any(layer["quality_note"] == "zeitlich_abweichend"
+                             for layer in result["layers"]))
 
     def test_timeline_nearby_source_preferred(self):
         same_area = {
@@ -155,9 +270,9 @@ class MosaicPlanningTests(unittest.TestCase):
              "tile_url": "https://example.invalid/older.png"},
         ]
         result = plan(source("world", WORLD), regional)
-        self.assertEqual(result["layers"][1]["tile_url"],
-                         "https://example.invalid/later.png")
-        self.assertEqual(result["layers"][1]["quality_note"], "zeitlich_abweichend")
+        self.assertEqual([layer["source_id"] for layer in result["layers"]], ["world"])
+        self.assertFalse(any(layer["quality_note"] == "zeitlich_abweichend"
+                             for layer in result["layers"]))
 
     def test_frame_limit_and_stale_only_are_rejected(self):
         excessive = source("too_many", CARIBBEAN)

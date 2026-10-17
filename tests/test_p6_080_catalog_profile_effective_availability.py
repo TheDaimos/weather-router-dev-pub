@@ -8,6 +8,8 @@ from __future__ import annotations
 import ast
 import importlib.util
 import json
+import sys
+import types
 from pathlib import Path
 from types import SimpleNamespace
 import unittest
@@ -25,7 +27,12 @@ def load_defs(file, names, namespace):
     exec(compile(body, str(CORE / file), "exec"), namespace)
 
 
-NS = {}
+PKG = "wr_p6080_catalog_isolated"
+if PKG not in sys.modules:
+    package = types.ModuleType(PKG)
+    package.__path__ = [str(CORE)]
+    sys.modules[PKG] = package
+NS = {"__name__": PKG + ".consumer_api", "__package__": PKG}
 load_defs("consumer_profiles.py", ("profile_allows_provider", "profile_allows_candidate"), NS)
 load_defs("consumer_api.py", ("_candidate_enabled", "_capability_catalog_row"), NS)
 NS.update({

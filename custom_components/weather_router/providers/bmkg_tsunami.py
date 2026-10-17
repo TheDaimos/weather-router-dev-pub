@@ -211,7 +211,7 @@ class BmkgTsunamiProvider:
                 "certainty": "possible",
                 "status": "actual",
                 "message_type": "alert",
-                "sent": event_time,
+                "sent": None,  # BMKG DateTime bezeichnet den Erdbebenzeitpunkt, nicht die Warn-Ausstellung.
                 "effective": event_time,
                 "onset": event_time,
                 "expires": None,

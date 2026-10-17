@@ -336,7 +336,10 @@ class EcmwfOpenDataProvider:
             "content_type": "application/octet-stream",
             "transport": "direct",
             "url": f"{_PORTAL}{grib_path}",
-            "data_time": data_time,
+            # Modell-Laufzeit ist eine Vorhersage-Referenzzeit und niemals
+            # eine aktuelle Beobachtung oder ein Gültigkeitszeitpunkt.
+            "data_time": None,
+            "forecast_reference_time": data_time,
             "attribution": "ECMWF Open Data · CC BY 4.0",
             "metadata_url": "https://www.ecmwf.int/en/forecasts/datasets/open-data",
             "provider_metadata": {

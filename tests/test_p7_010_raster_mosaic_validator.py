@@ -61,6 +61,21 @@ class MosaicValidatorTests(unittest.TestCase):
         request["time"]["target_time"] += "Z"
         self.assertEqual(module.validate_raster_mosaic_request(request)["time"]["mode"], "at_time")
 
+    def test_utc_offset_target_and_background_budget(self):
+        request = sample()
+        request["time"].update(max_background_age_seconds=43200)
+        result = module.validate_raster_mosaic_request(request)
+        self.assertEqual(result["time"]["max_background_age_seconds"], 43200)
+        request["time"] = {"mode": "at_time", "max_data_age_seconds": 900,
+                           "max_background_age_seconds": 43200,
+                           "target_time": "2026-10-16T14:00:00+02:00"}
+        self.assertEqual(
+            module.validate_raster_mosaic_request(request)["time"]["target_time"],
+            "2026-10-16T12:00:00Z")
+        request["time"]["max_background_age_seconds"] = 899
+        with self.assertRaises(module.MosaicContractError):
+            module.validate_raster_mosaic_request(request)
+
     def test_boolean_coordinates_rejected(self):
         request = sample()
         request["context"]["west"] = True

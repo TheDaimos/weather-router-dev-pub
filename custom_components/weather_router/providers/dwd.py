@@ -595,8 +595,8 @@ def _parse_instant(value: str) -> datetime | None:
         parsed = datetime.fromisoformat(text.replace("Z", "+00:00"))
     except ValueError:
         return None
-    if parsed.tzinfo is None:
-        parsed = parsed.replace(tzinfo=timezone.utc)
+    if parsed.tzinfo is None or parsed.utcoffset() is None:
+        return None
     return parsed.astimezone(timezone.utc)
 
 
@@ -1547,7 +1547,7 @@ class DwdProvider:
             _DWD_CAP_WARNINGS_URL,
             headers={
                 "Accept": "application/zip,application/octet-stream,*/*",
-                "User-Agent": "WeatherRouter/0.10 (+https://github.com/TheDaimos/weather-router-dev-pub)",
+                "User-Agent": "WeatherRouter/0.10 (+https://github.com/TheDaimos/weather-router-dev)",
             },
             timeout=_REQUEST_TIMEOUT_SECONDS,
         ) as response:
@@ -1606,3 +1606,4 @@ class DwdProvider:
                 "endpoint_host": "opendata.dwd.de",
             },
         }
+

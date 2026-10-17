@@ -17,8 +17,6 @@ LAB_PATH = ROOT / "custom_components" / "weather_router" / "frontend" / "weather
 LOADER_PATH = ROOT / "custom_components" / "weather_router" / "frontend" / "weather-router-lab-dev-loader.js"
 
 
-from wr_public_version_contract import assert_current_version_surfaces
-
 class P5SpaceImplementationTest(unittest.TestCase):
     """Lock the implemented P5-SPACE-40 contracts."""
 
@@ -90,7 +88,9 @@ class P5SpaceImplementationTest(unittest.TestCase):
         self.assertIn('"Observation Time"', self.swpc)
         self.assertIn('"Forecast Time"', self.swpc)
         self.assertIn('"valid_time": forecast_time', self.swpc)
-        self.assertIn('valid_time = _iso_time(result.get("valid_time"))', self.consumer_api)
+        self.assertIn('valid_time = _provider_time(candidate, "valid_time"', self.consumer_api)
+        # NOAA OVATION: Beobachtungszeit und Vorhersagegueltigkeit bleiben
+        # getrennt. Zeit ohne belegte UTC-Basis bleibt unbekannt.
         self.assertIn('"valid_time": valid_time', self.consumer_api)
 
     def test_swpc_provider_exposes_validated_ovation_data_file(self) -> None:
@@ -125,7 +125,20 @@ class P5SpaceImplementationTest(unittest.TestCase):
         self.assertNotIn("space.weather.severity", ids)
 
     def test_build_lab_and_loader_are_version_synchronized(self) -> None:
-        assert_current_version_surfaces(self, self.const, self.lab, self.loader)
+        # Keine statisch veraltete Versionsnummer aus einem alten P5-Test.
+        import re
+        def read_value(text, variable):
+            match = re.search(
+                r"\b" + re.escape(variable) + r'(?:: Final)?\s*=\s*"([^"]+)"',
+                text,
+            )
+            self.assertIsNotNone(match, variable)
+            return match.group(1)
+        current = read_value(self.const, "DEV_BUILD_VERSION")
+        loader_revision = read_value(self.const, "DEV_LOADER_REV")
+        self.assertEqual(read_value(self.lab, "WR_LAB_BUILD_VERSION"), current)
+        self.assertEqual(read_value(self.loader, "WR_LAB_BUILD_VERSION"), current)
+        self.assertEqual(read_value(self.loader, "LOADER_REV"), loader_revision)
 
 
 if __name__ == "__main__":
