@@ -186,11 +186,15 @@ def provider_time_contracts() -> dict[str, Any]:
         for capability, contract in capabilities.items():
             if not isinstance(capability, str) or not isinstance(contract, dict):
                 raise ValueError("invalid_provider_time_contract_capability")
-            if contract.get("status") not in ("unverified", "static_code_evidence", "runtime_verified"):
+            if contract.get("status") not in ("unverified", "static_code_evidence", "runtime_verified", "no_absolute_source_time"):
                 raise ValueError("invalid_provider_time_contract_status")
             fields = contract.get("fields")
             if not isinstance(fields, dict):
                 raise ValueError("invalid_provider_time_contract_fields")
+            if contract.get("status") == "no_absolute_source_time":
+                if fields or not isinstance(contract.get("evidence"), str) or not contract["evidence"]:
+                    raise ValueError("invalid_timeless_provider_time_contract")
+
             for field, rule in fields.items():
                 if not isinstance(field, str) or not isinstance(rule, dict):
                     raise ValueError("invalid_provider_time_field")
@@ -233,6 +237,11 @@ def normalize_provider_time(
     contract = provider_time_contracts().get("providers", {}).get(provider_id, {}).get(capability_id)
     if not isinstance(contract, dict):
         return ProviderTimeResult(None, None, None, None, "rejected", "unregistered_capability")
+    if contract.get("status") == "no_absolute_source_time":
+        # Quellbeleg: Kein Zeitpunkt im produktiven Adapter vorhanden.
+        # Niemals ersatzweise HTTP-Abruf- oder Kartenzeit verwenden.
+        return ProviderTimeResult(None, None, None, None, "rejected",
+                                  "no_absolute_source_time")
     rule = contract.get("fields", {}).get(field_path)
     if not isinstance(rule, dict) or contract.get("status") == "unverified":
         return ProviderTimeResult(None, None, None, None, "rejected", "unverified_source_time_contract")
