@@ -81,6 +81,17 @@ class MosaicPlanningTests(unittest.TestCase):
         self.assertEqual(expanded["layers"][1]["times"]["reference_delta_seconds"], 0)
         self.assertTrue(any("Satellitenschaetzung" in x for x in expanded["limitations"]))
 
+    def test_source_time_contract_error_survives_raster_planning(self):
+        candidate = source("new_unverified_provider", WORLD, None)
+        candidate["time_normalization_error"] = "unverified_source_time_contract"
+        result = plan(candidate)
+        self.assertEqual(result["status"], "unavailable")
+        self.assertIn(
+            {"source_id": "new_unverified_provider",
+             "reason": "unverified_source_time_contract"},
+            result["_internal_source_rejections"]
+        )
+
     def test_older_local_radar_cannot_use_background_exception(self):
         regional = source("stale_regional", GERMANY, "2026-10-14T08:30:00Z")
         opts = dict(viewport=VIEW, now=NOW, max_data_age_seconds=900,

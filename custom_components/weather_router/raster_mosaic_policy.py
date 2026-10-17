@@ -240,7 +240,8 @@ def plan_raster_mosaic(
                                 max_background_age_seconds if is_background
                                 else max_data_age_seconds)
         if not reason and not frames:
-            reason = "no_fresh_verified_frame"
+            # Zentrale Zeitvertragfehler nicht als blosse Provider-Frische maskieren.
+            reason = candidate.get("time_normalization_error") or "no_fresh_verified_frame"
         timestamp = frames[0]["time"] if frames else None
         if reason:
             rejected.append({"source_id": source_id, "reason": reason})

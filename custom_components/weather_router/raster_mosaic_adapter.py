@@ -130,6 +130,13 @@ def make_mosaic_candidate(
         "semantics": {k: semantics[k] for k in required},
         "routing_score": list(routing_score),
     }
+    source_time_error = payload.get("time_normalization_error")
+    if source_time_error in {
+        "unregistered_capability", "unverified_source_time_contract",
+        "unverified_epoch_unit", "invalid_timestamp",
+        "unknown_time_zone", "ambiguous_local_time", "invalid_interval",
+    }:
+        candidate["time_normalization_error"] = source_time_error
     timeline = payload.get("timeline")
     if isinstance(timeline, Mapping) and isinstance(timeline.get("frames"), list):
         # Longer V1 timelines are not invalid: bound work and keep the newest

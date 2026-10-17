@@ -2259,12 +2259,16 @@ def _normalize_raster(result: dict[str, Any]) -> tuple[dict[str, Any], str | Non
             return None
         # Lazy fuer explizit zeitlose Raster (z.B. Referenzdaten).
         from .time_normalization import normalize_provider_time
-        return normalize_provider_time(
+        normalized = normalize_provider_time(
             str(result.get("provider") or ""),
             str(result.get("capability") or ""),
             field_path, raw_value,
             provider_metadata=result.get("provider_metadata"),
-        ).iso
+        )
+        if normalized.reason and normalized.reason != "missing_source_time":
+            # Nur begrenzte, sichere Fehlercodes exportieren, NIE Rohzeit/URL.
+            payload["time_normalization_error"] = normalized.reason
+        return normalized.iso
     tile_url = _safe_public_url(result.get("tile_url"))
     if tile_url is None:
         raise CandidateUnavailable(
