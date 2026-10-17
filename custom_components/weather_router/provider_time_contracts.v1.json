@@ -2265,100 +2265,460 @@
     },
     "met_norway_astronomy": {
       "moon_phase_angle": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "values[].interval_start": {
+            "format": "rfc3339",
+            "role": "interval_start",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: when.interval[0] as interval_start; official MET Norway Sunrise 3.0 JSON format https://api.met.no/doc/formats/SunriseJSON"
+          },
+          "values[].interval_end": {
+            "format": "rfc3339",
+            "role": "interval_end",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: when.interval[1] as interval_end; official MET Norway Sunrise 3.0 JSON format https://api.met.no/doc/formats/SunriseJSON"
+          }
+        }
       },
       "moon_phase_name": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "values[].interval_start": {
+            "format": "rfc3339",
+            "role": "interval_start",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: when.interval[0] as interval_start; official MET Norway Sunrise 3.0 JSON format https://api.met.no/doc/formats/SunriseJSON"
+          },
+          "values[].interval_end": {
+            "format": "rfc3339",
+            "role": "interval_end",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: when.interval[1] as interval_end; official MET Norway Sunrise 3.0 JSON format https://api.met.no/doc/formats/SunriseJSON"
+          }
+        }
       },
       "moon_illumination": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "values[].interval_start": {
+            "format": "rfc3339",
+            "role": "interval_start",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: when.interval[0] as interval_start; official MET Norway Sunrise 3.0 JSON format https://api.met.no/doc/formats/SunriseJSON"
+          },
+          "values[].interval_end": {
+            "format": "rfc3339",
+            "role": "interval_end",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: when.interval[1] as interval_end; official MET Norway Sunrise 3.0 JSON format https://api.met.no/doc/formats/SunriseJSON"
+          }
+        }
       },
       "moon_age_days": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "values[].interval_start": {
+            "format": "rfc3339",
+            "role": "interval_start",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: when.interval[0] as interval_start; official MET Norway Sunrise 3.0 JSON format https://api.met.no/doc/formats/SunriseJSON"
+          },
+          "values[].interval_end": {
+            "format": "rfc3339",
+            "role": "interval_end",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: when.interval[1] as interval_end; official MET Norway Sunrise 3.0 JSON format https://api.met.no/doc/formats/SunriseJSON"
+          }
+        }
       },
       "moonrise_time": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "values[].interval_start": {
+            "format": "rfc3339",
+            "role": "interval_start",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: when.interval[0] as interval_start; official MET Norway Sunrise 3.0 JSON format https://api.met.no/doc/formats/SunriseJSON"
+          },
+          "values[].interval_end": {
+            "format": "rfc3339",
+            "role": "interval_end",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: when.interval[1] as interval_end; official MET Norway Sunrise 3.0 JSON format https://api.met.no/doc/formats/SunriseJSON"
+          },
+          "values[].value": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: properties.*.time; official MET Norway Sunrise 3.0 JSON format has timestamp with UTC Z or explicit offset https://api.met.no/doc/formats/SunriseJSON"
+          }
+        }
       },
       "moonrise_azimuth": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "values[].interval_start": {
+            "format": "rfc3339",
+            "role": "interval_start",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: when.interval[0] as interval_start; official MET Norway Sunrise 3.0 JSON format https://api.met.no/doc/formats/SunriseJSON"
+          },
+          "values[].interval_end": {
+            "format": "rfc3339",
+            "role": "interval_end",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: when.interval[1] as interval_end; official MET Norway Sunrise 3.0 JSON format https://api.met.no/doc/formats/SunriseJSON"
+          }
+        }
       },
       "moonset_time": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "values[].interval_start": {
+            "format": "rfc3339",
+            "role": "interval_start",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: when.interval[0] as interval_start; official MET Norway Sunrise 3.0 JSON format https://api.met.no/doc/formats/SunriseJSON"
+          },
+          "values[].interval_end": {
+            "format": "rfc3339",
+            "role": "interval_end",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: when.interval[1] as interval_end; official MET Norway Sunrise 3.0 JSON format https://api.met.no/doc/formats/SunriseJSON"
+          },
+          "values[].value": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: properties.*.time; official MET Norway Sunrise 3.0 JSON format has timestamp with UTC Z or explicit offset https://api.met.no/doc/formats/SunriseJSON"
+          }
+        }
       },
       "moonset_azimuth": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "values[].interval_start": {
+            "format": "rfc3339",
+            "role": "interval_start",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: when.interval[0] as interval_start; official MET Norway Sunrise 3.0 JSON format https://api.met.no/doc/formats/SunriseJSON"
+          },
+          "values[].interval_end": {
+            "format": "rfc3339",
+            "role": "interval_end",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: when.interval[1] as interval_end; official MET Norway Sunrise 3.0 JSON format https://api.met.no/doc/formats/SunriseJSON"
+          }
+        }
       },
       "high_moon_time": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "values[].interval_start": {
+            "format": "rfc3339",
+            "role": "interval_start",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: when.interval[0] as interval_start; official MET Norway Sunrise 3.0 JSON format https://api.met.no/doc/formats/SunriseJSON"
+          },
+          "values[].interval_end": {
+            "format": "rfc3339",
+            "role": "interval_end",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: when.interval[1] as interval_end; official MET Norway Sunrise 3.0 JSON format https://api.met.no/doc/formats/SunriseJSON"
+          },
+          "values[].value": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: properties.*.time; official MET Norway Sunrise 3.0 JSON format has timestamp with UTC Z or explicit offset https://api.met.no/doc/formats/SunriseJSON"
+          }
+        }
       },
       "high_moon_elevation": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "values[].interval_start": {
+            "format": "rfc3339",
+            "role": "interval_start",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: when.interval[0] as interval_start; official MET Norway Sunrise 3.0 JSON format https://api.met.no/doc/formats/SunriseJSON"
+          },
+          "values[].interval_end": {
+            "format": "rfc3339",
+            "role": "interval_end",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: when.interval[1] as interval_end; official MET Norway Sunrise 3.0 JSON format https://api.met.no/doc/formats/SunriseJSON"
+          }
+        }
       },
       "high_moon_visible": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "values[].interval_start": {
+            "format": "rfc3339",
+            "role": "interval_start",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: when.interval[0] as interval_start; official MET Norway Sunrise 3.0 JSON format https://api.met.no/doc/formats/SunriseJSON"
+          },
+          "values[].interval_end": {
+            "format": "rfc3339",
+            "role": "interval_end",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: when.interval[1] as interval_end; official MET Norway Sunrise 3.0 JSON format https://api.met.no/doc/formats/SunriseJSON"
+          }
+        }
       },
       "low_moon_time": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "values[].interval_start": {
+            "format": "rfc3339",
+            "role": "interval_start",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: when.interval[0] as interval_start; official MET Norway Sunrise 3.0 JSON format https://api.met.no/doc/formats/SunriseJSON"
+          },
+          "values[].interval_end": {
+            "format": "rfc3339",
+            "role": "interval_end",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: when.interval[1] as interval_end; official MET Norway Sunrise 3.0 JSON format https://api.met.no/doc/formats/SunriseJSON"
+          },
+          "values[].value": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: properties.*.time; official MET Norway Sunrise 3.0 JSON format has timestamp with UTC Z or explicit offset https://api.met.no/doc/formats/SunriseJSON"
+          }
+        }
       },
       "low_moon_elevation": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "values[].interval_start": {
+            "format": "rfc3339",
+            "role": "interval_start",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: when.interval[0] as interval_start; official MET Norway Sunrise 3.0 JSON format https://api.met.no/doc/formats/SunriseJSON"
+          },
+          "values[].interval_end": {
+            "format": "rfc3339",
+            "role": "interval_end",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: when.interval[1] as interval_end; official MET Norway Sunrise 3.0 JSON format https://api.met.no/doc/formats/SunriseJSON"
+          }
+        }
       },
       "low_moon_visible": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "values[].interval_start": {
+            "format": "rfc3339",
+            "role": "interval_start",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: when.interval[0] as interval_start; official MET Norway Sunrise 3.0 JSON format https://api.met.no/doc/formats/SunriseJSON"
+          },
+          "values[].interval_end": {
+            "format": "rfc3339",
+            "role": "interval_end",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: when.interval[1] as interval_end; official MET Norway Sunrise 3.0 JSON format https://api.met.no/doc/formats/SunriseJSON"
+          }
+        }
       },
       "sunrise_time": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "values[].interval_start": {
+            "format": "rfc3339",
+            "role": "interval_start",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: when.interval[0] as interval_start; official MET Norway Sunrise 3.0 JSON format https://api.met.no/doc/formats/SunriseJSON"
+          },
+          "values[].interval_end": {
+            "format": "rfc3339",
+            "role": "interval_end",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: when.interval[1] as interval_end; official MET Norway Sunrise 3.0 JSON format https://api.met.no/doc/formats/SunriseJSON"
+          },
+          "values[].value": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: properties.*.time; official MET Norway Sunrise 3.0 JSON format has timestamp with UTC Z or explicit offset https://api.met.no/doc/formats/SunriseJSON"
+          }
+        }
       },
       "sunrise_azimuth": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "values[].interval_start": {
+            "format": "rfc3339",
+            "role": "interval_start",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: when.interval[0] as interval_start; official MET Norway Sunrise 3.0 JSON format https://api.met.no/doc/formats/SunriseJSON"
+          },
+          "values[].interval_end": {
+            "format": "rfc3339",
+            "role": "interval_end",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: when.interval[1] as interval_end; official MET Norway Sunrise 3.0 JSON format https://api.met.no/doc/formats/SunriseJSON"
+          }
+        }
       },
       "sunset_time": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "values[].interval_start": {
+            "format": "rfc3339",
+            "role": "interval_start",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: when.interval[0] as interval_start; official MET Norway Sunrise 3.0 JSON format https://api.met.no/doc/formats/SunriseJSON"
+          },
+          "values[].interval_end": {
+            "format": "rfc3339",
+            "role": "interval_end",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: when.interval[1] as interval_end; official MET Norway Sunrise 3.0 JSON format https://api.met.no/doc/formats/SunriseJSON"
+          },
+          "values[].value": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: properties.*.time; official MET Norway Sunrise 3.0 JSON format has timestamp with UTC Z or explicit offset https://api.met.no/doc/formats/SunriseJSON"
+          }
+        }
       },
       "sunset_azimuth": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "values[].interval_start": {
+            "format": "rfc3339",
+            "role": "interval_start",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: when.interval[0] as interval_start; official MET Norway Sunrise 3.0 JSON format https://api.met.no/doc/formats/SunriseJSON"
+          },
+          "values[].interval_end": {
+            "format": "rfc3339",
+            "role": "interval_end",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: when.interval[1] as interval_end; official MET Norway Sunrise 3.0 JSON format https://api.met.no/doc/formats/SunriseJSON"
+          }
+        }
       },
       "solar_noon_time": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "values[].interval_start": {
+            "format": "rfc3339",
+            "role": "interval_start",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: when.interval[0] as interval_start; official MET Norway Sunrise 3.0 JSON format https://api.met.no/doc/formats/SunriseJSON"
+          },
+          "values[].interval_end": {
+            "format": "rfc3339",
+            "role": "interval_end",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: when.interval[1] as interval_end; official MET Norway Sunrise 3.0 JSON format https://api.met.no/doc/formats/SunriseJSON"
+          },
+          "values[].value": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: properties.*.time; official MET Norway Sunrise 3.0 JSON format has timestamp with UTC Z or explicit offset https://api.met.no/doc/formats/SunriseJSON"
+          }
+        }
       },
       "solar_noon_elevation": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "values[].interval_start": {
+            "format": "rfc3339",
+            "role": "interval_start",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: when.interval[0] as interval_start; official MET Norway Sunrise 3.0 JSON format https://api.met.no/doc/formats/SunriseJSON"
+          },
+          "values[].interval_end": {
+            "format": "rfc3339",
+            "role": "interval_end",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: when.interval[1] as interval_end; official MET Norway Sunrise 3.0 JSON format https://api.met.no/doc/formats/SunriseJSON"
+          }
+        }
       },
       "solar_noon_visible": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "values[].interval_start": {
+            "format": "rfc3339",
+            "role": "interval_start",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: when.interval[0] as interval_start; official MET Norway Sunrise 3.0 JSON format https://api.met.no/doc/formats/SunriseJSON"
+          },
+          "values[].interval_end": {
+            "format": "rfc3339",
+            "role": "interval_end",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: when.interval[1] as interval_end; official MET Norway Sunrise 3.0 JSON format https://api.met.no/doc/formats/SunriseJSON"
+          }
+        }
       },
       "solar_midnight_time": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "values[].interval_start": {
+            "format": "rfc3339",
+            "role": "interval_start",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: when.interval[0] as interval_start; official MET Norway Sunrise 3.0 JSON format https://api.met.no/doc/formats/SunriseJSON"
+          },
+          "values[].interval_end": {
+            "format": "rfc3339",
+            "role": "interval_end",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: when.interval[1] as interval_end; official MET Norway Sunrise 3.0 JSON format https://api.met.no/doc/formats/SunriseJSON"
+          },
+          "values[].value": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: properties.*.time; official MET Norway Sunrise 3.0 JSON format has timestamp with UTC Z or explicit offset https://api.met.no/doc/formats/SunriseJSON"
+          }
+        }
       },
       "solar_midnight_elevation": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "values[].interval_start": {
+            "format": "rfc3339",
+            "role": "interval_start",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: when.interval[0] as interval_start; official MET Norway Sunrise 3.0 JSON format https://api.met.no/doc/formats/SunriseJSON"
+          },
+          "values[].interval_end": {
+            "format": "rfc3339",
+            "role": "interval_end",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: when.interval[1] as interval_end; official MET Norway Sunrise 3.0 JSON format https://api.met.no/doc/formats/SunriseJSON"
+          }
+        }
       },
       "solar_midnight_visible": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "values[].interval_start": {
+            "format": "rfc3339",
+            "role": "interval_start",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: when.interval[0] as interval_start; official MET Norway Sunrise 3.0 JSON format https://api.met.no/doc/formats/SunriseJSON"
+          },
+          "values[].interval_end": {
+            "format": "rfc3339",
+            "role": "interval_end",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: when.interval[1] as interval_end; official MET Norway Sunrise 3.0 JSON format https://api.met.no/doc/formats/SunriseJSON"
+          }
+        }
       }
     },
     "open_meteo_pollen": {
