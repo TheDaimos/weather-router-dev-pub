@@ -248,5 +248,71 @@ class UniversalProviderTimeContractTests(unittest.TestCase):
             for item in caps.values()), 119)
 
 
+    def test_timeless_capabilities_are_explicitly_audited_and_fail_closed(self):
+        registry = json.loads(REGISTRY.read_text(encoding="utf-8"))
+        all_caps = [v for provider in registry["providers"].values()
+                    for v in provider.values()]
+        self.assertEqual(len(all_caps), 280)
+        timeless = [v for v in all_caps
+                    if v["status"] == "no_absolute_source_time"]
+        self.assertEqual(len(timeless), 90)
+        for cap in timeless:
+            self.assertFalse(cap["fields"])
+            self.assertTrue(cap.get("evidence"))
+        for provider, capability in (
+            ("gbif_biodiversity", "occurrence_density_lion"),
+            ("nasa_iss", "iss_earth_live"),
+            ("nasa_moon", "moon_lro_wac_global"),
+        ):
+            result = module.normalize_provider_time(
+                provider, capability, "frame_time", 1792152000)
+            self.assertIsNone(result.iso)
+            self.assertEqual(result.reason, "no_absolute_source_time")
+            self.assertFalse(module.has_declared_provider_time_field(
+                provider, capability, "frame_time"))
+        self.assertEqual(sum(
+            v["status"] == "unverified" for v in all_caps), 19)
+        # Niemals eine GBIF-Vorkommensdichte als aktuellen Messwert einstufen.
+        gbif = (ROOT / "providers" / "gbif_biodiversity.py").read_text(
+            encoding="utf-8")
+        self.assertGreaterEqual(gbif.count('"frame_time": None'), 2)
+
+
+
+    def test_additional_source_evidenced_time_roles(self):
+        cases = (
+            ("dwd", "official_weather_warnings", "events[].sent",
+             "2026-10-17T16:00:00+02:00", "issued_at", "2026-10-17T14:00:00Z"),
+            ("fmi_lightning", "lightning_strikes_observed", "events[].observed_at",
+             "2026-10-17T14:00:00Z", "observed_at", "2026-10-17T14:00:00Z"),
+            ("fmi_lightning", "lightning_nearest_distance", "data_time",
+             "2026-10-17T14:00:00Z", "observed_at", "2026-10-17T14:00:00Z"),
+            ("ecmwf_open_data", "ifs_open_grib", "forecast_reference_time",
+             "2026-10-17T12:00:00Z", "forecast_reference_time", "2026-10-17T12:00:00Z"),
+            ("noaa_goes_glm", "glm_east_lcfa", "data_time",
+             "2026-10-17T14:00:00Z", "observed_at", "2026-10-17T14:00:00Z"),
+            ("eccc_lightning", "lightning_density_2_5km", "frame_time",
+             1792245600, "observed_at", "2026-10-17T14:00:00Z"),
+        )
+        for provider, cap, field, raw, role, expected in cases:
+            with self.subTest(provider=provider, cap=cap):
+                item = module.normalize_provider_time(provider, cap, field, raw)
+                self.assertEqual(item.iso, expected)
+                self.assertEqual(item.role, role)
+                if isinstance(raw, str):
+                    self.assertIsNone(module.normalize_provider_time(
+                        provider, cap, field, "2026-10-17T14:00:00").iso)
+                else:
+                    self.assertIsNone(module.normalize_provider_time(
+                        provider, cap, field, "1792245600").iso)
+        ecmwf = (ROOT / "providers" / "ecmwf_open_data.py").read_text(
+            encoding="utf-8")
+        self.assertIn('"forecast_reference_time": data_time', ecmwf)
+        self.assertIn('"data_time": None', ecmwf)
+        goes = (ROOT / "providers" / "noaa_goes_glm.py").read_text(
+            encoding="utf-8")
+        self.assertNotIn('_data_time_from_key(key) or latest.get("last_modified")', goes)
+
+
 if __name__ == "__main__":
     unittest.main()
