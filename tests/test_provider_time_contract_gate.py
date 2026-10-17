@@ -151,5 +151,52 @@ class UniversalProviderTimeContractTests(unittest.TestCase):
         self.assertIsNone(result.iso)
 
 
+    def test_documented_point_forecast_time_contracts(self):
+        # Actual central normalizer, not a replacement parser.
+        cases = (
+            ("met_norway", "temperature", "valid_at"),
+            ("met_norway", "nowcast_precipitation", "valid_at"),
+            ("smhi", "wind_speed", "valid_at"),
+            ("smhi", "thunder_probability", "valid_at"),
+            ("noaa_nws", "temperature", "interval_start"),
+            ("noaa_nws", "precipitation_probability", "interval_start"),
+        )
+        for provider, capability, role in cases:
+            with self.subTest(provider=provider, capability=capability):
+                actual = module.normalize_provider_time(
+                    provider, capability, "data_time", "2026-10-16T14:00:00+02:00")
+                self.assertEqual(actual.iso, "2026-10-16T12:00:00Z")
+                self.assertEqual(actual.role, role)
+                self.assertIsNone(module.normalize_provider_time(
+                    provider, capability, "data_time", "2026-10-16T12:00:00").iso)
+                self.assertIsNone(module.normalize_provider_time(
+                    provider, capability, "data_time", 1792152000).iso)
+        for field, role in (("values[].interval_start", "interval_start"),
+                            ("values[].interval_end", "interval_end")):
+            result = module.normalize_provider_time(
+                "smhi", "thunder_probability", field, "2026-10-16T12:00:00Z")
+            self.assertEqual(result.iso, "2026-10-16T12:00:00Z")
+            self.assertEqual(result.role, role)
+
+    def test_point_audit_coverage_not_a_runtime_pass(self):
+        registry = json.loads(REGISTRY.read_text(encoding="utf-8"))
+        for provider, count in (("met_norway", 23), ("smhi", 15),
+                                ("noaa_nws", 8)):
+            cap = registry["providers"][provider]
+            self.assertEqual(sum(
+                item["status"] == "static_code_evidence"
+                for item in cap.values()), count)
+            self.assertNotIn("runtime_verified",
+                             [item["status"] for item in cap.values()])
+        self.assertEqual(sum(
+            item["status"] == "static_code_evidence"
+            for caps in registry["providers"].values()
+            for item in caps.values()), 108)
+        self.assertEqual(sum(
+            item["status"] == "unverified"
+            for caps in registry["providers"].values()
+            for item in caps.values()), 172)
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -999,126 +999,336 @@
     },
     "met_norway": {
       "temperature": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/met_norway.py: properties.timeseries[0].time; MET Norway General Forecast JSON UTC time series https://docs.api.met.no/doc/ForecastJSON.html"
+          }
+        }
       },
       "cloud_cover": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/met_norway.py: properties.timeseries[0].time; MET Norway General Forecast JSON UTC time series https://docs.api.met.no/doc/ForecastJSON.html"
+          }
+        }
       },
       "cloud_cover_low": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/met_norway.py: properties.timeseries[0].time; MET Norway General Forecast JSON UTC time series https://docs.api.met.no/doc/ForecastJSON.html"
+          }
+        }
       },
       "cloud_cover_mid": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/met_norway.py: properties.timeseries[0].time; MET Norway General Forecast JSON UTC time series https://docs.api.met.no/doc/ForecastJSON.html"
+          }
+        }
       },
       "cloud_cover_high": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/met_norway.py: properties.timeseries[0].time; MET Norway General Forecast JSON UTC time series https://docs.api.met.no/doc/ForecastJSON.html"
+          }
+        }
       },
       "precipitation": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/met_norway.py: properties.timeseries[0].time; MET Norway General Forecast JSON UTC time series https://docs.api.met.no/doc/ForecastJSON.html"
+          }
+        }
       },
       "precipitation_probability": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/met_norway.py: properties.timeseries[0].time; MET Norway General Forecast JSON UTC time series https://docs.api.met.no/doc/ForecastJSON.html"
+          }
+        }
       },
       "thunder_probability": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/met_norway.py: properties.timeseries[0].time; MET Norway General Forecast JSON UTC time series https://docs.api.met.no/doc/ForecastJSON.html"
+          }
+        }
       },
       "wind_speed": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/met_norway.py: properties.timeseries[0].time; MET Norway General Forecast JSON UTC time series https://docs.api.met.no/doc/ForecastJSON.html"
+          }
+        }
       },
       "wind_direction": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/met_norway.py: properties.timeseries[0].time; MET Norway General Forecast JSON UTC time series https://docs.api.met.no/doc/ForecastJSON.html"
+          }
+        }
       },
       "wind_gusts": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/met_norway.py: properties.timeseries[0].time; MET Norway General Forecast JSON UTC time series https://docs.api.met.no/doc/ForecastJSON.html"
+          }
+        }
       },
       "relative_humidity": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/met_norway.py: properties.timeseries[0].time; MET Norway General Forecast JSON UTC time series https://docs.api.met.no/doc/ForecastJSON.html"
+          }
+        }
       },
       "air_pressure": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/met_norway.py: properties.timeseries[0].time; MET Norway General Forecast JSON UTC time series https://docs.api.met.no/doc/ForecastJSON.html"
+          }
+        }
       },
       "dew_point": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/met_norway.py: properties.timeseries[0].time; MET Norway General Forecast JSON UTC time series https://docs.api.met.no/doc/ForecastJSON.html"
+          }
+        }
       },
       "fog": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/met_norway.py: properties.timeseries[0].time; MET Norway General Forecast JSON UTC time series https://docs.api.met.no/doc/ForecastJSON.html"
+          }
+        }
       },
       "uv_index": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/met_norway.py: properties.timeseries[0].time; MET Norway General Forecast JSON UTC time series https://docs.api.met.no/doc/ForecastJSON.html"
+          }
+        }
       },
       "nowcast_temperature": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/met_norway.py: properties.timeseries[0].time; MET Norway General Forecast JSON UTC time series https://docs.api.met.no/doc/ForecastJSON.html"
+          }
+        }
       },
       "nowcast_precipitation_rate": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/met_norway.py: properties.timeseries[0].time; MET Norway General Forecast JSON UTC time series https://docs.api.met.no/doc/ForecastJSON.html"
+          }
+        }
       },
       "nowcast_precipitation": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/met_norway.py: properties.timeseries[0].time; MET Norway General Forecast JSON UTC time series https://docs.api.met.no/doc/ForecastJSON.html"
+          }
+        }
       },
       "nowcast_relative_humidity": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/met_norway.py: properties.timeseries[0].time; MET Norway General Forecast JSON UTC time series https://docs.api.met.no/doc/ForecastJSON.html"
+          }
+        }
       },
       "nowcast_wind_speed": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/met_norway.py: properties.timeseries[0].time; MET Norway General Forecast JSON UTC time series https://docs.api.met.no/doc/ForecastJSON.html"
+          }
+        }
       },
       "nowcast_wind_direction": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/met_norway.py: properties.timeseries[0].time; MET Norway General Forecast JSON UTC time series https://docs.api.met.no/doc/ForecastJSON.html"
+          }
+        }
       },
       "nowcast_wind_gusts": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/met_norway.py: properties.timeseries[0].time; MET Norway General Forecast JSON UTC time series https://docs.api.met.no/doc/ForecastJSON.html"
+          }
+        }
       }
     },
     "noaa_nws": {
       "temperature": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "interval_start",
+            "timezone": "UTC",
+            "evidence": "providers/noaa_nws.py: forecastHourly properties.periods[0].startTime; NOAA NWS API forecast period with zone offset https://www.weather.gov/documentation/services-web-api"
+          }
+        }
       },
       "dew_point": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "interval_start",
+            "timezone": "UTC",
+            "evidence": "providers/noaa_nws.py: forecastHourly properties.periods[0].startTime; NOAA NWS API forecast period with zone offset https://www.weather.gov/documentation/services-web-api"
+          }
+        }
       },
       "relative_humidity": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "interval_start",
+            "timezone": "UTC",
+            "evidence": "providers/noaa_nws.py: forecastHourly properties.periods[0].startTime; NOAA NWS API forecast period with zone offset https://www.weather.gov/documentation/services-web-api"
+          }
+        }
       },
       "precipitation_probability": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "interval_start",
+            "timezone": "UTC",
+            "evidence": "providers/noaa_nws.py: forecastHourly properties.periods[0].startTime; NOAA NWS API forecast period with zone offset https://www.weather.gov/documentation/services-web-api"
+          }
+        }
       },
       "wind_speed": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "interval_start",
+            "timezone": "UTC",
+            "evidence": "providers/noaa_nws.py: forecastHourly properties.periods[0].startTime; NOAA NWS API forecast period with zone offset https://www.weather.gov/documentation/services-web-api"
+          }
+        }
       },
       "wind_direction": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "interval_start",
+            "timezone": "UTC",
+            "evidence": "providers/noaa_nws.py: forecastHourly properties.periods[0].startTime; NOAA NWS API forecast period with zone offset https://www.weather.gov/documentation/services-web-api"
+          }
+        }
       },
       "weather_summary": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "interval_start",
+            "timezone": "UTC",
+            "evidence": "providers/noaa_nws.py: forecastHourly properties.periods[0].startTime; NOAA NWS API forecast period with zone offset https://www.weather.gov/documentation/services-web-api"
+          }
+        }
       },
       "official_weather_alerts": {
         "status": "static_code_evidence",
@@ -1320,64 +1530,181 @@
     },
     "smhi": {
       "temperature": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/smhi.py: timeSeries[0].time; SMHI SNOW1g UTC point forecast https://opendata.smhi.se/metfcst/snow1gv1/examples"
+          }
+        }
       },
       "relative_humidity": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/smhi.py: timeSeries[0].time; SMHI SNOW1g UTC point forecast https://opendata.smhi.se/metfcst/snow1gv1/examples"
+          }
+        }
       },
       "wind_direction": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/smhi.py: timeSeries[0].time; SMHI SNOW1g UTC point forecast https://opendata.smhi.se/metfcst/snow1gv1/examples"
+          }
+        }
       },
       "wind_speed": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/smhi.py: timeSeries[0].time; SMHI SNOW1g UTC point forecast https://opendata.smhi.se/metfcst/snow1gv1/examples"
+          }
+        }
       },
       "wind_gusts": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/smhi.py: timeSeries[0].time; SMHI SNOW1g UTC point forecast https://opendata.smhi.se/metfcst/snow1gv1/examples"
+          }
+        }
       },
       "air_pressure": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/smhi.py: timeSeries[0].time; SMHI SNOW1g UTC point forecast https://opendata.smhi.se/metfcst/snow1gv1/examples"
+          }
+        }
       },
       "visibility": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/smhi.py: timeSeries[0].time; SMHI SNOW1g UTC point forecast https://opendata.smhi.se/metfcst/snow1gv1/examples"
+          }
+        }
       },
       "thunder_probability": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/smhi.py: timeSeries[0].time; SMHI SNOW1g UTC point forecast https://opendata.smhi.se/metfcst/snow1gv1/examples"
+          },
+          "values[].interval_start": {
+            "format": "rfc3339",
+            "role": "interval_start",
+            "timezone": "UTC",
+            "evidence": "providers/smhi.py: timeSeries[0].intervalParametersStartTime; official SMHI SNOW1g UTC examples"
+          },
+          "values[].interval_end": {
+            "format": "rfc3339",
+            "role": "interval_end",
+            "timezone": "UTC",
+            "evidence": "providers/smhi.py: timeSeries[0].time; official SMHI SNOW1g UTC examples"
+          }
+        }
       },
       "cloud_cover": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/smhi.py: timeSeries[0].time; SMHI SNOW1g UTC point forecast https://opendata.smhi.se/metfcst/snow1gv1/examples"
+          }
+        }
       },
       "cloud_cover_low": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/smhi.py: timeSeries[0].time; SMHI SNOW1g UTC point forecast https://opendata.smhi.se/metfcst/snow1gv1/examples"
+          }
+        }
       },
       "cloud_cover_mid": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/smhi.py: timeSeries[0].time; SMHI SNOW1g UTC point forecast https://opendata.smhi.se/metfcst/snow1gv1/examples"
+          }
+        }
       },
       "cloud_cover_high": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/smhi.py: timeSeries[0].time; SMHI SNOW1g UTC point forecast https://opendata.smhi.se/metfcst/snow1gv1/examples"
+          }
+        }
       },
       "precipitation": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/smhi.py: timeSeries[0].time; SMHI SNOW1g UTC point forecast https://opendata.smhi.se/metfcst/snow1gv1/examples"
+          }
+        }
       },
       "precipitation_probability": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/smhi.py: timeSeries[0].time; SMHI SNOW1g UTC point forecast https://opendata.smhi.se/metfcst/snow1gv1/examples"
+          }
+        }
       },
       "weather_code": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/smhi.py: timeSeries[0].time; SMHI SNOW1g UTC point forecast https://opendata.smhi.se/metfcst/snow1gv1/examples"
+          }
+        }
       }
     },
     "eccc_geomet": {
