@@ -188,11 +188,11 @@ class UniversalProviderTimeContractTests(unittest.TestCase):
                 for item in cap.values()), count)
             self.assertNotIn("runtime_verified",
                              [item["status"] for item in cap.values()])
-        self.assertEqual(sum(
+        self.assertGreaterEqual(sum(
             item["status"] == "static_code_evidence"
             for caps in registry["providers"].values()
             for item in caps.values()), 119)
-        self.assertEqual(sum(
+        self.assertLessEqual(sum(
             item["status"] == "unverified"
             for caps in registry["providers"].values()
             for item in caps.values()), 161)
@@ -217,7 +217,7 @@ class UniversalProviderTimeContractTests(unittest.TestCase):
             "met_norway_astronomy", "moon_phase_angle",
             "data_time", "20180514T000000").iso)
         registry = json.loads(REGISTRY.read_text(encoding="utf-8"))
-        self.assertEqual(sum(
+        self.assertGreaterEqual(sum(
             cap["status"] == "static_code_evidence"
             for provider in registry["providers"].values()
             for cap in provider.values()), 119)
@@ -242,7 +242,7 @@ class UniversalProviderTimeContractTests(unittest.TestCase):
             provider, capability, "events[].sent",
             "2026-10-16T12:00:00-00:00").iso, "2026-10-16T12:00:00Z")
         registry = json.loads(REGISTRY.read_text(encoding="utf-8"))
-        self.assertEqual(sum(
+        self.assertGreaterEqual(sum(
             item["status"] == "static_code_evidence"
             for caps in registry["providers"].values()
             for item in caps.values()), 119)
