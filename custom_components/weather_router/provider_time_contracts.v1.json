@@ -4,76 +4,526 @@
   "providers": {
     "open_meteo": {
       "temperature": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: current.time timezone=auto via provider_local_instant -> aware UTC"
+          },
+          "values[].valid_at": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: local_utc(current/hourly) -> RFC3339 UTC"
+          },
+          "values[].interval_start": {
+            "format": "rfc3339",
+            "role": "interval_start",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: calendar_day_interval UTC start"
+          },
+          "values[].interval_end": {
+            "format": "rfc3339",
+            "role": "interval_end",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: calendar_day_interval UTC end"
+          }
+        }
       },
       "cloud_cover": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: current.time timezone=auto via provider_local_instant -> aware UTC"
+          },
+          "values[].valid_at": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: local_utc(current/hourly) -> RFC3339 UTC"
+          },
+          "values[].interval_start": {
+            "format": "rfc3339",
+            "role": "interval_start",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: calendar_day_interval UTC start"
+          },
+          "values[].interval_end": {
+            "format": "rfc3339",
+            "role": "interval_end",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: calendar_day_interval UTC end"
+          }
+        }
       },
       "cloud_cover_low": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: current.time timezone=auto via provider_local_instant -> aware UTC"
+          },
+          "values[].valid_at": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: local_utc(current/hourly) -> RFC3339 UTC"
+          },
+          "values[].interval_start": {
+            "format": "rfc3339",
+            "role": "interval_start",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: calendar_day_interval UTC start"
+          },
+          "values[].interval_end": {
+            "format": "rfc3339",
+            "role": "interval_end",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: calendar_day_interval UTC end"
+          }
+        }
       },
       "cloud_cover_mid": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: current.time timezone=auto via provider_local_instant -> aware UTC"
+          },
+          "values[].valid_at": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: local_utc(current/hourly) -> RFC3339 UTC"
+          },
+          "values[].interval_start": {
+            "format": "rfc3339",
+            "role": "interval_start",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: calendar_day_interval UTC start"
+          },
+          "values[].interval_end": {
+            "format": "rfc3339",
+            "role": "interval_end",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: calendar_day_interval UTC end"
+          }
+        }
       },
       "cloud_cover_high": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: current.time timezone=auto via provider_local_instant -> aware UTC"
+          },
+          "values[].valid_at": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: local_utc(current/hourly) -> RFC3339 UTC"
+          },
+          "values[].interval_start": {
+            "format": "rfc3339",
+            "role": "interval_start",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: calendar_day_interval UTC start"
+          },
+          "values[].interval_end": {
+            "format": "rfc3339",
+            "role": "interval_end",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: calendar_day_interval UTC end"
+          }
+        }
       },
       "precipitation": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: current.time timezone=auto via provider_local_instant -> aware UTC"
+          },
+          "values[].valid_at": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: local_utc(current/hourly) -> RFC3339 UTC"
+          },
+          "values[].interval_start": {
+            "format": "rfc3339",
+            "role": "interval_start",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: calendar_day_interval UTC start"
+          },
+          "values[].interval_end": {
+            "format": "rfc3339",
+            "role": "interval_end",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: calendar_day_interval UTC end"
+          }
+        }
       },
       "rain": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: current.time timezone=auto via provider_local_instant -> aware UTC"
+          },
+          "values[].valid_at": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: local_utc(current/hourly) -> RFC3339 UTC"
+          },
+          "values[].interval_start": {
+            "format": "rfc3339",
+            "role": "interval_start",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: calendar_day_interval UTC start"
+          },
+          "values[].interval_end": {
+            "format": "rfc3339",
+            "role": "interval_end",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: calendar_day_interval UTC end"
+          }
+        }
       },
       "showers": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: current.time timezone=auto via provider_local_instant -> aware UTC"
+          },
+          "values[].valid_at": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: local_utc(current/hourly) -> RFC3339 UTC"
+          },
+          "values[].interval_start": {
+            "format": "rfc3339",
+            "role": "interval_start",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: calendar_day_interval UTC start"
+          },
+          "values[].interval_end": {
+            "format": "rfc3339",
+            "role": "interval_end",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: calendar_day_interval UTC end"
+          }
+        }
       },
       "snowfall": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: current.time timezone=auto via provider_local_instant -> aware UTC"
+          },
+          "values[].valid_at": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: local_utc(current/hourly) -> RFC3339 UTC"
+          },
+          "values[].interval_start": {
+            "format": "rfc3339",
+            "role": "interval_start",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: calendar_day_interval UTC start"
+          },
+          "values[].interval_end": {
+            "format": "rfc3339",
+            "role": "interval_end",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: calendar_day_interval UTC end"
+          }
+        }
       },
       "wind_speed": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: current.time timezone=auto via provider_local_instant -> aware UTC"
+          },
+          "values[].valid_at": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: local_utc(current/hourly) -> RFC3339 UTC"
+          },
+          "values[].interval_start": {
+            "format": "rfc3339",
+            "role": "interval_start",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: calendar_day_interval UTC start"
+          },
+          "values[].interval_end": {
+            "format": "rfc3339",
+            "role": "interval_end",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: calendar_day_interval UTC end"
+          }
+        }
       },
       "wind_direction": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: current.time timezone=auto via provider_local_instant -> aware UTC"
+          },
+          "values[].valid_at": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: local_utc(current/hourly) -> RFC3339 UTC"
+          },
+          "values[].interval_start": {
+            "format": "rfc3339",
+            "role": "interval_start",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: calendar_day_interval UTC start"
+          },
+          "values[].interval_end": {
+            "format": "rfc3339",
+            "role": "interval_end",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: calendar_day_interval UTC end"
+          }
+        }
       },
       "wind_gusts": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: current.time timezone=auto via provider_local_instant -> aware UTC"
+          },
+          "values[].valid_at": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: local_utc(current/hourly) -> RFC3339 UTC"
+          },
+          "values[].interval_start": {
+            "format": "rfc3339",
+            "role": "interval_start",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: calendar_day_interval UTC start"
+          },
+          "values[].interval_end": {
+            "format": "rfc3339",
+            "role": "interval_end",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: calendar_day_interval UTC end"
+          }
+        }
       },
       "visibility": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: current.time timezone=auto via provider_local_instant -> aware UTC"
+          },
+          "values[].valid_at": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: local_utc(current/hourly) -> RFC3339 UTC"
+          },
+          "values[].interval_start": {
+            "format": "rfc3339",
+            "role": "interval_start",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: calendar_day_interval UTC start"
+          },
+          "values[].interval_end": {
+            "format": "rfc3339",
+            "role": "interval_end",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: calendar_day_interval UTC end"
+          }
+        }
       },
       "weather_code": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: current.time timezone=auto via provider_local_instant -> aware UTC"
+          },
+          "values[].valid_at": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: local_utc(current/hourly) -> RFC3339 UTC"
+          },
+          "values[].interval_start": {
+            "format": "rfc3339",
+            "role": "interval_start",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: calendar_day_interval UTC start"
+          },
+          "values[].interval_end": {
+            "format": "rfc3339",
+            "role": "interval_end",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: calendar_day_interval UTC end"
+          }
+        }
       },
       "uv_index": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: current.time timezone=auto via provider_local_instant -> aware UTC"
+          },
+          "values[].valid_at": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: local_utc(current/hourly) -> RFC3339 UTC"
+          },
+          "values[].interval_start": {
+            "format": "rfc3339",
+            "role": "interval_start",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: calendar_day_interval UTC start"
+          },
+          "values[].interval_end": {
+            "format": "rfc3339",
+            "role": "interval_end",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: calendar_day_interval UTC end"
+          }
+        }
       },
       "uv_index_clear_sky": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: current.time timezone=auto via provider_local_instant -> aware UTC"
+          },
+          "values[].valid_at": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: local_utc(current/hourly) -> RFC3339 UTC"
+          },
+          "values[].interval_start": {
+            "format": "rfc3339",
+            "role": "interval_start",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: calendar_day_interval UTC start"
+          },
+          "values[].interval_end": {
+            "format": "rfc3339",
+            "role": "interval_end",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: calendar_day_interval UTC end"
+          }
+        }
       },
       "uv_index_max_today": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: current.time timezone=auto via provider_local_instant -> aware UTC"
+          },
+          "values[].valid_at": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: local_utc(current/hourly) -> RFC3339 UTC"
+          },
+          "values[].interval_start": {
+            "format": "rfc3339",
+            "role": "interval_start",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: calendar_day_interval UTC start"
+          },
+          "values[].interval_end": {
+            "format": "rfc3339",
+            "role": "interval_end",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: calendar_day_interval UTC end"
+          }
+        }
       },
       "uv_index_clear_sky_max_today": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: current.time timezone=auto via provider_local_instant -> aware UTC"
+          },
+          "values[].valid_at": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: local_utc(current/hourly) -> RFC3339 UTC"
+          },
+          "values[].interval_start": {
+            "format": "rfc3339",
+            "role": "interval_start",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: calendar_day_interval UTC start"
+          },
+          "values[].interval_end": {
+            "format": "rfc3339",
+            "role": "interval_end",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: calendar_day_interval UTC end"
+          }
+        }
       }
     },
     "rainviewer": {
@@ -671,8 +1121,39 @@
         "fields": {}
       },
       "official_weather_alerts": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "events[].sent": {
+            "format": "rfc3339",
+            "role": "issued_at",
+            "timezone": "UTC",
+            "evidence": "providers/noaa_nws.py: NWS alert properties.sent offset-bearing RFC3339"
+          },
+          "events[].effective": {
+            "format": "rfc3339",
+            "role": "valid_from",
+            "timezone": "UTC",
+            "evidence": "providers/noaa_nws.py: NWS alert properties.effective offset-bearing RFC3339"
+          },
+          "events[].onset": {
+            "format": "rfc3339",
+            "role": "started_at",
+            "timezone": "UTC",
+            "evidence": "providers/noaa_nws.py: NWS alert properties.onset offset-bearing RFC3339"
+          },
+          "events[].expires": {
+            "format": "rfc3339",
+            "role": "valid_until",
+            "timezone": "UTC",
+            "evidence": "providers/noaa_nws.py: NWS alert properties.expires offset-bearing RFC3339"
+          },
+          "events[].ends": {
+            "format": "rfc3339",
+            "role": "ended_at",
+            "timezone": "UTC",
+            "evidence": "providers/noaa_nws.py: NWS alert properties.ends offset-bearing RFC3339"
+          }
+        }
       }
     },
     "noaa_swpc": {
@@ -921,18 +1402,69 @@
     },
     "usgs_earthquakes": {
       "earthquakes_past_day": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "events[].sent": {
+            "format": "rfc3339",
+            "role": "updated_at",
+            "timezone": "UTC",
+            "evidence": "providers/usgs_earthquakes.py: properties.updated Unix milliseconds -> _iso_from_millis UTC"
+          },
+          "events[].effective": {
+            "format": "rfc3339",
+            "role": "observed_at",
+            "timezone": "UTC",
+            "evidence": "providers/usgs_earthquakes.py: properties.time Unix milliseconds -> UTC"
+          },
+          "events[].onset": {
+            "format": "rfc3339",
+            "role": "observed_at",
+            "timezone": "UTC",
+            "evidence": "providers/usgs_earthquakes.py: properties.time Unix milliseconds -> UTC"
+          }
+        }
       },
       "significant_earthquakes_past_month": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "events[].sent": {
+            "format": "rfc3339",
+            "role": "updated_at",
+            "timezone": "UTC",
+            "evidence": "providers/usgs_earthquakes.py: properties.updated Unix milliseconds -> _iso_from_millis UTC"
+          },
+          "events[].effective": {
+            "format": "rfc3339",
+            "role": "observed_at",
+            "timezone": "UTC",
+            "evidence": "providers/usgs_earthquakes.py: properties.time Unix milliseconds -> UTC"
+          },
+          "events[].onset": {
+            "format": "rfc3339",
+            "role": "observed_at",
+            "timezone": "UTC",
+            "evidence": "providers/usgs_earthquakes.py: properties.time Unix milliseconds -> UTC"
+          }
+        }
       }
     },
     "smithsonian_volcanoes": {
       "weekly_volcanic_activity": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "events[].sent": {
+            "format": "rfc3339",
+            "role": "published_at",
+            "timezone": "UTC",
+            "evidence": "providers/smithsonian_volcanoes.py: RSS pubDate -> rss_instant UTC"
+          },
+          "events[].effective": {
+            "format": "rfc3339",
+            "role": "published_at",
+            "timezone": "UTC",
+            "evidence": "providers/smithsonian_volcanoes.py: weekly bulletin publication not eruption onset"
+          }
+        }
       }
     },
     "usgs_volcanoes": {
@@ -943,8 +1475,39 @@
     },
     "gdacs": {
       "global_disaster_alerts_7d": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "events[].sent": {
+            "format": "rfc3339",
+            "role": "published_at",
+            "timezone": "UTC",
+            "evidence": "providers/gdacs.py: RSS pubDate -> rss_instant UTC"
+          },
+          "events[].effective": {
+            "format": "rfc3339",
+            "role": "valid_from",
+            "timezone": "UTC",
+            "evidence": "providers/gdacs.py: RSS fromdate/pubDate -> rss_instant UTC"
+          },
+          "events[].onset": {
+            "format": "rfc3339",
+            "role": "started_at",
+            "timezone": "UTC",
+            "evidence": "providers/gdacs.py: RSS fromdate -> rss_instant UTC"
+          },
+          "events[].expires": {
+            "format": "rfc3339",
+            "role": "valid_until",
+            "timezone": "UTC",
+            "evidence": "providers/gdacs.py: RSS todate -> rss_instant UTC"
+          },
+          "events[].ends": {
+            "format": "rfc3339",
+            "role": "ended_at",
+            "timezone": "UTC",
+            "evidence": "providers/gdacs.py: RSS todate -> rss_instant UTC"
+          }
+        }
       }
     },
     "usgs_seismic_events": {
@@ -1135,28 +1698,106 @@
     },
     "open_meteo_pollen": {
       "alder_pollen": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo_pollen.py: current time converted with provider IANA time zone"
+          },
+          "values[].valid_at": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo_pollen.py: local current/hourly -> aware UTC"
+          }
+        }
       },
       "birch_pollen": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo_pollen.py: current time converted with provider IANA time zone"
+          },
+          "values[].valid_at": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo_pollen.py: local current/hourly -> aware UTC"
+          }
+        }
       },
       "grass_pollen": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo_pollen.py: current time converted with provider IANA time zone"
+          },
+          "values[].valid_at": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo_pollen.py: local current/hourly -> aware UTC"
+          }
+        }
       },
       "mugwort_pollen": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo_pollen.py: current time converted with provider IANA time zone"
+          },
+          "values[].valid_at": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo_pollen.py: local current/hourly -> aware UTC"
+          }
+        }
       },
       "olive_pollen": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo_pollen.py: current time converted with provider IANA time zone"
+          },
+          "values[].valid_at": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo_pollen.py: local current/hourly -> aware UTC"
+          }
+        }
       },
       "ragweed_pollen": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo_pollen.py: current time converted with provider IANA time zone"
+          },
+          "values[].valid_at": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo_pollen.py: local current/hourly -> aware UTC"
+          }
+        }
       }
     },
     "gbif_biodiversity": {

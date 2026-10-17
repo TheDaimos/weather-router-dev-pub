@@ -2522,6 +2522,23 @@ def _normalize_planetary_tile(result: dict[str, Any]) -> tuple[dict[str, Any], s
     return payload, None
 
 
+def _provider_time(candidate: Candidate, field_path: str, value: Any,
+                   result: dict[str, Any], errors: set[str]) -> str | None:
+    """P0: Pflichtgrenze fuer jede absolute Providerzeit in V1.
+
+    UNUMSTOESSLICHER WEATHERROUTER-ZEITVERTRAG: Keine unnormalisierten
+    Providerzeiten ausserhalb dieser Grenze, niemals Zeitformat/Einheit raten
+    und Abrufzeit niemals als Beobachtungszeit ausgeben.
+    """
+    from .time_normalization import normalize_provider_time
+    converted = normalize_provider_time(candidate.provider.id, candidate.capability.id,
+                                         field_path, value,
+                                         provider_metadata=result.get("provider_metadata"))
+    if converted.reason and converted.reason != "missing_source_time":
+        errors.add(converted.reason)
+    return converted.iso
+
+
 def _normalize_event_feed(
     candidate: Candidate,
     result: dict[str, Any],
@@ -2536,12 +2553,13 @@ def _normalize_event_feed(
 
     events: list[dict[str, Any]] = []
     latest_time: str | None = None
+    time_errors: set[str] = set()
     for raw in result.get("events", []):
         if not isinstance(raw, dict):
             continue
         event_id = str(raw.get("id") or "").strip()
         event_type = str(raw.get("event_type") or "").strip()
-        observed_at = _iso_time(raw.get("observed_at"))
+        observed_at = _provider_time(candidate, "events[].observed_at", raw.get("observed_at"), result, time_errors)
         if not event_id or not event_type or observed_at is None:
             continue
         if latest_time is None or observed_at > latest_time:
@@ -2577,11 +2595,14 @@ def _normalize_event_feed(
                 event[optional_key] = raw.get(optional_key)
         events.append(event)
 
-    return {
+    payload = {
         "events": events,
         "event_count": len(events),
         "window_seconds": result.get("window_seconds"),
-    }, latest_time
+    }
+    if time_errors:
+        payload["time_normalization_error"] = sorted(time_errors)[0]
+    return payload, latest_time
 
 
 def _generic_hazard_type_for_public_id(public_id: str) -> str:
@@ -2611,6 +2632,7 @@ def _normalize_hazard_feed(
 
     events: list[dict[str, Any]] = []
     latest_time: str | None = None
+    time_errors: set[str] = set()
     for raw in result.get("events", []):
         if not isinstance(raw, dict):
             continue
@@ -2636,7 +2658,11 @@ def _normalize_hazard_feed(
         if hazard_type != provider_hazard_type:
             parameters["provider_hazard_type"] = provider_hazard_type
             parameters["hazard_type_fallback"] = hazard_type
-        effective = _iso_time(raw.get("effective") or raw.get("sent") or raw.get("onset"))
+        effective = next((
+            instant for key in ("effective", "sent", "onset")
+            if (instant := _provider_time(candidate, f"events[].{key}",
+                                         raw.get(key), result, time_errors)) is not None
+        ), None)
         if effective and (latest_time is None or effective > latest_time):
             latest_time = effective
         event = {
@@ -2656,18 +2682,18 @@ def _normalize_hazard_feed(
             "status": raw.get("status"),
             "lifecycle_status": raw.get("lifecycle_status"),
             "message_type": raw.get("message_type"),
-            "started_at": _iso_time(raw.get("started_at")),
-            "occurred_at": _iso_time(raw.get("occurred_at")),
-            "resolved_at": _iso_time(raw.get("resolved_at")),
-            "last_updated_at": _iso_time(raw.get("last_updated_at")),
-            "published_at": _iso_time(raw.get("published_at")),
-            "valid_from": _iso_time(raw.get("valid_from")),
-            "valid_until": _iso_time(raw.get("valid_until")),
-            "sent": _iso_time(raw.get("sent")),
+            "started_at": _provider_time(candidate, "events[].started_at", raw.get("started_at"), result, time_errors),
+            "occurred_at": _provider_time(candidate, "events[].occurred_at", raw.get("occurred_at"), result, time_errors),
+            "resolved_at": _provider_time(candidate, "events[].resolved_at", raw.get("resolved_at"), result, time_errors),
+            "last_updated_at": _provider_time(candidate, "events[].last_updated_at", raw.get("last_updated_at"), result, time_errors),
+            "published_at": _provider_time(candidate, "events[].published_at", raw.get("published_at"), result, time_errors),
+            "valid_from": _provider_time(candidate, "events[].valid_from", raw.get("valid_from"), result, time_errors),
+            "valid_until": _provider_time(candidate, "events[].valid_until", raw.get("valid_until"), result, time_errors),
+            "sent": _provider_time(candidate, "events[].sent", raw.get("sent"), result, time_errors),
             "effective": effective,
-            "onset": _iso_time(raw.get("onset")),
-            "expires": _iso_time(raw.get("expires")),
-            "ends": _iso_time(raw.get("ends")),
+            "onset": _provider_time(candidate, "events[].onset", raw.get("onset"), result, time_errors),
+            "expires": _provider_time(candidate, "events[].expires", raw.get("expires"), result, time_errors),
+            "ends": _provider_time(candidate, "events[].ends", raw.get("ends"), result, time_errors),
             "area_desc": raw.get("area_desc"),
             "geometry": raw.get("geometry") if isinstance(raw.get("geometry"), dict) else None,
             "description": raw.get("description"),
@@ -2839,6 +2865,8 @@ def _normalize_hazard_feed(
     ):
         if result.get(key) is not None:
             payload[key] = result.get(key)
+    if time_errors:
+        payload["time_normalization_error"] = sorted(time_errors)[0]
     return payload, latest_time
 
 
@@ -3003,7 +3031,9 @@ async def _resolve_candidate(
                 retryable=True,
                 message="Der Provider lieferte keinen Wert für die angefragte Capability.",
             )
-        data_time = _iso_time(result.get("data_time"))
+        time_errors: set[str] = set()
+        data_time = _provider_time(candidate, "data_time",
+                                   result.get("data_time"), result, time_errors)
         try:
             value = normalize_shared_wind_value(candidate.public_id, entry)
             value = normalize_snowfall_value(
@@ -3022,7 +3052,14 @@ async def _resolve_candidate(
                 message=str(err),
             ) from err
         value["data_time"] = data_time
+        for time_field in ("valid_at", "interval_start", "interval_end"):
+            if time_field in value:
+                value[time_field] = _provider_time(
+                    candidate, f"values[].{time_field}", value[time_field],
+                    result, time_errors)
         payload = {"values": {candidate.public_id: value}}
+        if time_errors:
+            payload["time_normalization_error"] = sorted(time_errors)[0]
         return payload, result, data_time
 
     if mode == "event_feed":
@@ -3293,9 +3330,11 @@ def _normalize_data_file(
     if transport not in {"direct", "weather_router_proxy"}:
         raise ValueError("data_file provider returned unsupported transport")
 
-    data_time = _iso_time(result.get("data_time"))
-    valid_time = _iso_time(result.get("valid_time"))
-    forecast_reference_time = _iso_time(result.get("forecast_reference_time"))
+    time_errors: set[str] = set()
+    data_time = _provider_time(candidate, "data_time", result.get("data_time"), result, time_errors)
+    valid_time = _provider_time(candidate, "valid_time", result.get("valid_time"), result, time_errors)
+    forecast_reference_time = _provider_time(candidate, "forecast_reference_time",
+                                             result.get("forecast_reference_time"), result, time_errors)
     payload = {
         "format": file_format,
         "url": url,
@@ -3310,6 +3349,8 @@ def _normalize_data_file(
     for key in ("satellite", "product", "coverage", "checksum", "metadata_url"):
         if result.get(key) is not None:
             payload[key] = result.get(key)
+    if time_errors:
+        payload["time_normalization_error"] = sorted(time_errors)[0]
     return payload, data_time
 
 

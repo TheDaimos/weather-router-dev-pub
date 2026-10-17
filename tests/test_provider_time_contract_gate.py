@@ -106,6 +106,32 @@ class UniversalProviderTimeContractTests(unittest.TestCase):
                 provider, capability, "timeline.frames[].time", 1792152000)
             self.assertEqual(converted.iso, "2026-10-16T12:00:00Z")
 
+    def test_declared_v1_times_preserve_roles_and_do_not_guess(self):
+        self.assertEqual(module.normalize_provider_time("open_meteo", "temperature",
+            "data_time", "2026-10-16T14:00:00+02:00").iso,
+            "2026-10-16T12:00:00Z")
+        self.assertEqual(module.normalize_provider_time("usgs_earthquakes",
+            "earthquakes_past_day", "events[].effective",
+            "2026-10-16T12:00:00Z").role, "observed_at")
+        self.assertEqual(module.normalize_provider_time("noaa_nws",
+            "official_weather_alerts", "events[].expires",
+            "2026-10-16T12:00:00Z").role, "valid_until")
+        self.assertEqual(module.normalize_provider_time("smithsonian_volcanoes",
+            "weekly_volcanic_activity", "events[].effective",
+            "2026-10-16T12:00:00Z").role, "published_at")
+        self.assertIsNone(module.normalize_provider_time("fmi", "temperature",
+            "data_time", "2026-10-16T12:00:00Z").iso)
+
+    def test_v1_registry_guard_for_point_event_hazard_data_file(self):
+        code = (ROOT / "consumer_api.py").read_text(encoding="utf-8")
+        tree = ast.parse(code)
+        for target in ("_normalize_event_feed", "_normalize_hazard_feed",
+                       "_normalize_data_file", "_resolve_candidate"):
+            node = next(x for x in tree.body if x.name == target)
+            body = ast.get_source_segment(code, node)
+            self.assertIn("_provider_time(", body, target)
+            self.assertNotIn("_iso_time(raw.get(", body, target)
+
     def test_unknown_field_cannot_become_a_fresh_instant(self):
         result = module.normalize_provider_time(
             "open_meteo", "temperature", "current.time", 1792152000)

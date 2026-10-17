@@ -191,7 +191,7 @@ def provider_time_contracts() -> dict[str, Any]:
                     "observed_at", "data_time", "valid_at", "issued_at",
                     "published_at", "updated_at", "retrieved_at",
                     "forecast_reference_time", "valid_from", "valid_until",
-                    "started_at", "ended_at", "resolved_at",
+                    "started_at", "ended_at", "resolved_at", "occurred_at",
                     "interval_start", "interval_end"
                 ):
                     raise ValueError("invalid_provider_time_role")
