@@ -2671,6 +2671,41 @@ def _generic_hazard_type_for_public_id(public_id: str) -> str:
     return "natural_hazard"
 
 
+
+def _normalize_declared_event_parameter_times(
+    candidate: Candidate, result: dict[str, Any],
+    parameters: dict[str, Any], errors: set[str],
+) -> dict[str, Any]:
+    """Deklarierte verschachtelte Zeitrollen einer Ereignismeldung pruefen.
+
+    Ausschliesslich Feldpfade der EINEN Provider-Time-Registry duerfen als
+    absolute Zeiten interpretiert werden. Andere Parameter nicht raten.
+    """
+    from .time_normalization import provider_time_contracts
+    contract = (provider_time_contracts().get("providers", {})
+                .get(candidate.provider.id, {}).get(candidate.capability.id, {}))
+    for field in contract.get("fields", {}):
+        prefix = "events[].parameters."
+        if not field.startswith(prefix):
+            continue
+        segments = field[len(prefix):].split(".")
+        target = parameters
+        for segment in segments[:-1]:
+            child = target.get(segment) if isinstance(target, dict) else None
+            if not isinstance(child, dict):
+                target = None
+                break
+            # Keine Mutation des ursprünglichen Provider-Objekts.
+            copied = dict(child)
+            target[segment] = copied
+            target = copied
+        if isinstance(target, dict) and segments[-1] in target:
+            target[segments[-1]] = _provider_time(
+                candidate, field, target[segments[-1]], result, errors
+            )
+    return parameters
+
+
 def _normalize_hazard_feed(
     candidate: Candidate,
     result: dict[str, Any],
@@ -2706,6 +2741,9 @@ def _normalize_hazard_feed(
             dict(raw.get("parameters"))
             if isinstance(raw.get("parameters"), dict)
             else {}
+        )
+        parameters = _normalize_declared_event_parameter_times(
+            candidate, result, parameters, time_errors
         )
         if hazard_type != provider_hazard_type:
             parameters["provider_hazard_type"] = provider_hazard_type
