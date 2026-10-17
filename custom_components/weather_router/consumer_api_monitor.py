@@ -203,6 +203,7 @@ class ConsumerApiMonitor:
                 "selected_sources": _safe((routing_data.get("selected_sources") or [])[:12], locations=False),
                 "final_layers_count": routing_data.get("final_layers_count"),
                 "source_rejections": _safe((routing_data.get("source_rejections") or [])[:12], locations=False),
+                "coverage_preflight": _safe((routing_data.get("coverage_preflight") or [])[:12], locations=False),
             }
             token["response"] = _safe({key: response_data.get(key) for key in
                 ("status", "code", "reason_code", "selected_provider",
@@ -214,6 +215,13 @@ class ConsumerApiMonitor:
                 "type": token["command"], "capability": token["capability"],
                 "consumer_id": token["consumer"], "correlation_id": token["correlation_id"],
             }
+            if isinstance(time_request, dict) and time_request.get("mode") in ("latest_coherent", "at_time"):
+                token["request"]["time"] = _safe({
+                    k: time_request.get(k) for k in (
+                        "mode", "max_data_age_seconds", "max_background_age_seconds",
+                        "max_time_delta_seconds", "target_time")
+                    if k in time_request
+                }, locations=False)
             if isinstance(time_request, dict) and time_request.get("mode") == "events_intersecting_window":
                 token["request"]["time"] = _safe({
                     k: time_request.get(k) for k in ("mode", "window",

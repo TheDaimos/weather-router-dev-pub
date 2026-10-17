@@ -29,7 +29,9 @@ from .spatial_coverage import normalize_coverage
 
 MAX_COVERAGE_CONTACTS = 12
 MAX_COVERAGE_CONCURRENT = 3
-COVERAGE_TIMEOUT_SECONDS = 3.0
+# DWD-WMS-Metadaten koennen beim kalten Erstaufruf mehr als 3 s benoetigen.
+# Das getrennte globale V2-Limit bleibt bei 16 s; V1 unveraendert.
+COVERAGE_TIMEOUT_SECONDS = 6.0
 # End-to-end provider processing deadline. V1 remains unaffected.
 MOSAIC_PROVIDER_DEADLINE_SECONDS = 16.0
 # Coverage preflights share a limit across clients, not only per request.
@@ -200,9 +202,16 @@ async def websocket_consumer_resolve_mosaic(
                 remaining = next_round
 
             coverage_slots = _shared_coverage_slots()
+            coverage_preflight: list[dict[str, Any]] = []
 
             async def _source(row: Any) -> dict[str, Any] | None:
                 getter = getattr(row.provider, "async_get_coverage", None)
+                # Public catalogue IDs only; never leak URLs, provider
+                # exceptions, location coordinates or GetCapabilities XML.
+                source_id = f"{row.provider.id}/{row.capability.id}"
+                status = "coverage_provider_error"
+                cache_hit = False
+                started = asyncio.get_running_loop().time()
                 try:
                     async with coverage_slots:
                         coverage_raw = await asyncio.wait_for(
@@ -210,7 +219,13 @@ async def websocket_consumer_resolve_mosaic(
                             timeout=COVERAGE_TIMEOUT_SECONDS,
                         )
                     coverage = normalize_coverage(coverage_raw)
-                    if coverage is None or viewport_overlap(viewport, coverage) <= 0:
+                    if coverage is None:
+                        status = "coverage_invalid"
+                        return None
+                    cache = coverage.get("cache")
+                    cache_hit = bool(cache.get("hit") is True) if isinstance(cache, dict) else False
+                    if viewport_overlap(viewport, coverage) <= 0:
+                        status = "outside_coverage"
                         return None
 
                     async def _fetch() -> dict[str, Any]:
@@ -221,16 +236,28 @@ async def websocket_consumer_resolve_mosaic(
                         sanitized, data_time = _normalize_raster(raw)
                         return {**sanitized, "frame_time": data_time}
 
+                    status = "coverage_accepted"
                     return {
-                        "source_id": f"{row.provider.id}/{row.capability.id}",
+                        "source_id": source_id,
                         "eligible": True,
                         "machine_coverage": coverage,
                         "semantics": dict(row.semantics),
                         "routing_score": tuple(row.score),
                         "async_fetch": _fetch,
                     }
-                except Exception:  # noqa: BLE001 - one missing coverage must not collapse all
+                except TimeoutError:
+                    status = "coverage_timeout"
                     return None
+                except Exception:  # noqa: BLE001 - avoid leaking provider internals
+                    return None
+                finally:
+                    coverage_preflight.append({
+                        "source_id": source_id[:128],
+                        "result": status,
+                        "duration_ms": round(
+                            (asyncio.get_running_loop().time() - started) * 1000, 2),
+                        "cache_hit": cache_hit,
+                    })
 
             if _LIVE_REQUEST_SLOTS.locked():
                 connection.send_error(
@@ -261,6 +288,8 @@ async def websocket_consumer_resolve_mosaic(
                         "contacts_selected": len(preflight),
                         "sources_eligible": len(sources),
                         "selected_sources": [item["source_id"] for item in sources[:MAX_COVERAGE_CONTACTS]],
+                        "coverage_preflight": sorted(coverage_preflight,
+                            key=lambda item: item["source_id"])[:MAX_COVERAGE_CONTACTS],
                         "final_layers_count": len(result.get("layers", [])),
                         "source_rejections": rejected_sources,
                         "limits": query["limits"],

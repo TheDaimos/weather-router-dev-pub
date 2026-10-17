@@ -116,6 +116,36 @@ class TestApiMonitor(unittest.TestCase):
                          "no_fresh_verified_frame")
         self.assertLessEqual(len(__import__("json").dumps(row).encode()),8192)
 
+    def test_oversized_v2_keeps_coverage_preflight_and_12h_opt_in(self):
+        m = monitor.ConsumerApiMonitor()
+        m.configure(enabled=True)
+        token = m.begin(api_version="V2",
+                        command="weather_router/consumer/resolve_mosaic",
+                        message={"consumer_id": "gewitterradar",
+                                 "correlation_id": "p7-dwd-timeout",
+                                 "time": {"mode": "latest_coherent",
+                                          "max_data_age_seconds": 900,
+                                          "max_time_delta_seconds": 180,
+                                          "max_background_age_seconds": 43200}})
+        m.finish(token, result="success",
+                 response={"status": "partial",
+                           **{f"noise_{i}": "x" * 400 for i in range(50)}},
+                 routing={"coverage_preflight": [
+                     {"source_id": "dwd/radar_precipitation",
+                      "result": "coverage_timeout", "duration_ms": 6001.4,
+                      "cache_hit": False},
+                     {"source_id": "nasa_gibs/satellite_precipitation_imerg_30min",
+                      "result": "coverage_accepted", "duration_ms": 33.1,
+                      "cache_hit": True}],
+                          "contacts_selected": 2, "sources_eligible": 1,
+                          "final_layers_count": 1})
+        row = m.query(correlation_id="p7-dwd-timeout")["entries"][0]
+        self.assertTrue(row.get("truncated"))
+        self.assertEqual(row["routing"]["coverage_preflight"][0]["result"],
+                         "coverage_timeout")
+        self.assertEqual(row["request"]["time"]["max_background_age_seconds"], 43200)
+        self.assertLessEqual(len(__import__("json").dumps(row).encode()), 8192)
+
     def test_v1_time_contract_error_survives_compaction(self):
         m = monitor.ConsumerApiMonitor()
         m.configure(enabled=True)
