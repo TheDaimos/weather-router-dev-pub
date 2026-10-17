@@ -250,3 +250,16 @@ def normalize_provider_time(
         return ProviderTimeResult(parsed, role, fmt, basis, "normalized")
     except (TypeError, ValueError, OverflowError):
         return ProviderTimeResult(None, role, fmt, basis, "rejected", "invalid_timestamp")
+
+
+
+def validate_provider_time_registry_coverage(
+    mapped_providers: dict[str, Any],
+) -> None:
+    """Sperre die Consumer-Grenze, sobald Provider/Capability ohne Vertrag auftaucht."""
+    declared = provider_time_contracts()["providers"]
+    if set(declared) != set(mapped_providers):
+        raise ValueError("provider_time_contract_provider_inventory_drift")
+    for provider, capabilities in mapped_providers.items():
+        if not isinstance(capabilities, dict) or set(declared[provider]) != set(capabilities):
+            raise ValueError("provider_time_contract_capability_inventory_drift")

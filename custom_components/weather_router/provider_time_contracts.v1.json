@@ -530,8 +530,21 @@
     },
     "eumetview": {
       "satellite_clouds": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "frame_time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/eumetview.py: async_get_map_layer creates int(value.timestamp())"
+          },
+          "timeline.frames[].time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/eumetview.py: WMS UTC time vector, frames[].time epoch seconds"
+          }
+        }
       }
     },
     "met_norway": {
@@ -1516,8 +1529,21 @@
     },
     "eumetsat_mtg_li": {
       "mtg_li_accumulated_flashes": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "frame_time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/eumetsat_mtg_li.py: async_get_map_layer creates int(value.timestamp())"
+          },
+          "timeline.frames[].time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/eumetsat_mtg_li.py: WMS UTC time vector, frames[].time epoch seconds"
+          }
+        }
       }
     },
     "noaa_goes_glm": {

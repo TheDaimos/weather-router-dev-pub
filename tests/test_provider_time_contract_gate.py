@@ -69,6 +69,21 @@ class UniversalProviderTimeContractTests(unittest.TestCase):
         self.assertIsNone(module.provider_local_instant(
             "2026-03-29T02:30:00", iana_zone="Europe/Berlin"))
 
+    def test_new_capability_without_time_contract_blocks_mapping(self):
+        mapping = json.loads(MAP.read_text(encoding="utf-8"))
+        module.validate_provider_time_registry_coverage(mapping["providers"])
+        mapping["providers"]["dwd"]["future_test_capability"] = []
+        with self.assertRaisesRegex(ValueError, "capability_inventory_drift"):
+            module.validate_provider_time_registry_coverage(mapping["providers"])
+
+    def test_eumetview_and_mtg_epoch_second_paths_are_declared(self):
+        for provider in ("eumetview", "eumetsat_mtg_li"):
+            capability = next(iter(
+                json.loads(REGISTRY.read_text(encoding="utf-8"))["providers"][provider]))
+            converted = module.normalize_provider_time(
+                provider, capability, "timeline.frames[].time", 1792152000)
+            self.assertEqual(converted.iso, "2026-10-16T12:00:00Z")
+
     def test_unknown_field_cannot_become_a_fresh_instant(self):
         result = module.normalize_provider_time(
             "open_meteo", "temperature", "current.time", 1792152000)

@@ -508,6 +508,11 @@ def _load_mapping_sync() -> dict[str, Any]:
                 )
 
     validate_time_semantics_contract(payload, providers)
+    # UNUMSTOESSLICHER WEATHERROUTER-ZEITVERTRAG: jeder registrierte
+    # Provider und jede Capability besitzen einen dokumentierten Zeitstatus.
+    # Unbelegte Einheiten werden NIE als frische Zeit freigegeben.
+    from .time_normalization import validate_provider_time_registry_coverage
+    validate_provider_time_registry_coverage(providers)
 
     coverage_contract = payload.get("capability_coverage_semantics")
     if not isinstance(coverage_contract, dict):
