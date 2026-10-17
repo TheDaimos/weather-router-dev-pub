@@ -31,6 +31,7 @@ REQUIRED_FILES = (
     INTEGRATION / "consumer_profiles.py",
     INTEGRATION / "spatial_coverage.py",
     INTEGRATION / "consumer_capability_map.json",
+    INTEGRATION / "provider_time_contracts.v1.json",
     INTEGRATION / "consumer_hazard_event_types.json",
     PROVIDERS / "__init__.py",
     INTEGRATION / "extensions.py",
@@ -1812,6 +1813,7 @@ def main() -> None:
         "JSON teilen / speichern",
         "diagnostic-git",
         "Nach Git übertragen",
+        "weather_router/log_git_export",
         "_diagnosticGitExport",
         "Fachbereich teilweise deaktiviert",
         "eligibleCapabilities",
@@ -2083,7 +2085,8 @@ def main() -> None:
     log_export_ui = (FRONTEND / "weather-router-lab-log-export.js").read_text(encoding="utf-8")
     for marker in (
         "_wrGitExportSnapshot",
-        "_wrGitPendingExport",
+        "_wrPendingGitExport",
+        "pendingGitExport",
     ):
         if marker not in log_export_ui:
             raise SystemExit(f"shared Git export flow missing marker: {marker}")

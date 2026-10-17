@@ -357,6 +357,12 @@ def _runtime_state(hass: HomeAssistant) -> tuple[bool, dict[str, Any]]:
 def _load_mapping_sync() -> dict[str, Any]:
     """Load the shipped base map plus validated local extension contributions."""
     payload = json.loads(_CONSUMER_MAP_PATH.read_text(encoding="utf-8"))
+    # P0-UTC-Inventarsperre: nur den ausgelieferten Standardkatalog pruefen.
+    # Optionale Laufzeitbeitraege duerfen reguläre Consumer nicht blockieren.
+    # Undeklarierte Zeiten aus solchen Beitraegen bleiben an der zentralen
+    # normalize_provider_time-Grenze strikt ungueltig (fail closed).
+    from .time_normalization import validate_provider_time_registry_coverage
+    validate_provider_time_registry_coverage(payload.get("providers"))
     payload = merge_extension_capability_map(payload)
     if payload.get("schema") != "weather_router.consumer.capability_map.draft.v1":
         raise ValueError("consumer capability map has unexpected schema")
@@ -508,11 +514,8 @@ def _load_mapping_sync() -> dict[str, Any]:
                 )
 
     validate_time_semantics_contract(payload, providers)
-    # UNUMSTOESSLICHER WEATHERROUTER-ZEITVERTRAG: jeder registrierte
-    # Provider und jede Capability besitzen einen dokumentierten Zeitstatus.
-    # Unbelegte Einheiten werden NIE als frische Zeit freigegeben.
-    from .time_normalization import validate_provider_time_registry_coverage
-    validate_provider_time_registry_coverage(providers)
+    # Zeitvertrag der ausgelieferten Quellen wird bereits unmittelbar
+    # vor dem Laden optionaler Provider in _load_mapping_sync geprueft.
 
     coverage_contract = payload.get("capability_coverage_semantics")
     if not isinstance(coverage_contract, dict):

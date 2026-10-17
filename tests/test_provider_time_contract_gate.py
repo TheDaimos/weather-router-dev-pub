@@ -30,6 +30,28 @@ class UniversalProviderTimeContractTests(unittest.TestCase):
         module.provider_time_contracts.cache_clear()
         self.assertEqual(set(module.provider_time_contracts()["providers"]), set(mapping["providers"]))
 
+    def test_runtime_mapping_guard_precedes_optional_provider_merge(self):
+        # Der Standardkatalog muss strikt validiert werden; zusaetzliche
+        # Laufzeitprovider duerfen V1/V2 nicht insgesamt deaktivieren.
+        code = (ROOT / "consumer_api.py").read_text(encoding="utf-8")
+        tree = ast.parse(code)
+        loader = next(node for node in tree.body
+                      if isinstance(node, ast.FunctionDef)
+                      and node.name == "_load_mapping_sync")
+        body = ast.get_source_segment(code, loader)
+        self.assertLess(body.index("validate_provider_time_registry_coverage("),
+                        body.index("merge_extension_capability_map(payload)"))
+        self.assertEqual(code.count("validate_provider_time_registry_coverage("), 1)
+
+    def test_unknown_runtime_source_never_gets_implicit_utc(self):
+        # Dynamische Quellen duerfen Consumer nicht sperren, ihre Zeiten
+        # aber ohne eigene Deklaration niemals als frische Werte erscheinen.
+        self.assertEqual(module.normalize_provider_time(
+            "added_source", "rainfall", "frame_time", 1792152000).reason,
+            "unregistered_capability")
+        self.assertIsNone(module.normalize_provider_time(
+            "added_source", "rainfall", "frame_time", 1792152000).iso)
+
     def test_no_named_epoch_provider_exceptions_in_consumer(self):
         # Neue Provider duerfen nie eine zweite Epochentscheidung im Consumer einfuehren.
         consumer = (ROOT / "consumer_api.py").read_text(encoding="utf-8")
