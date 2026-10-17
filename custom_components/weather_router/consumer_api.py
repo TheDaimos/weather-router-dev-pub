@@ -2198,7 +2198,7 @@ def _timeline_frames(
 ) -> list[dict[str, Any]]:
     if not isinstance(raw, list):
         return []
-    result: list[dict[str, Any]] = []
+    frames_out: list[dict[str, Any]] = []
     for frame in raw:
         if not isinstance(frame, dict):
             continue
@@ -2208,8 +2208,8 @@ def _timeline_frames(
             frame.get("time"), result, errors)
         if frame_url is None or frame_time is None:
             continue
-        result.append({"time": frame_time, "url": frame_url})
-    return result
+        frames_out.append({"time": frame_time, "url": frame_url})
+    return frames_out
 
 
 def _provider_attribution(provider: Any, result: dict[str, Any]) -> str | None:
