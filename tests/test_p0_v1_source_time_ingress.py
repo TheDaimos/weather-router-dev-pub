@@ -175,5 +175,26 @@ class UniversalV1SourceTimeTests(unittest.TestCase):
                          "unverified_source_time_contract")
 
 
+    def test_noaa_tsunami_cap_issue_and_effective_not_confused(self):
+        payload, latest = namespace["_normalize_hazard_feed"](
+            candidate("noaa_tsunami", "official_tsunami_alerts"), {
+                "events": [{
+                    "id": "tsunami-test",
+                    "hazard_type": "tsunami",
+                    "sent": "2026-10-16T10:00:00-00:00",
+                    "effective": "2026-10-16T14:00:00+02:00",
+                    "onset": "2026-10-16T14:30:00+02:00",
+                    "expires": "2026-10-16T18:00:00+02:00",
+                }]
+            })
+        event = payload["events"][0]
+        self.assertEqual(event["sent"], "2026-10-16T10:00:00Z")
+        self.assertEqual(event["effective"], "2026-10-16T12:00:00Z")
+        self.assertEqual(event["onset"], "2026-10-16T12:30:00Z")
+        self.assertEqual(event["expires"], "2026-10-16T16:00:00Z")
+        self.assertEqual(latest, "2026-10-16T12:00:00Z")
+        self.assertNotIn("time_normalization_error", payload)
+
+
 if __name__ == "__main__":
     unittest.main()

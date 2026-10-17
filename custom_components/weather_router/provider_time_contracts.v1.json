@@ -1859,8 +1859,33 @@
     },
     "noaa_tsunami": {
       "official_tsunami_alerts": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "events[].sent": {
+            "format": "rfc3339",
+            "role": "issued_at",
+            "timezone": "UTC",
+            "evidence": "providers/noaa_tsunami.py: _event_from_cap parses CAP alert.sent/info.effective/info.onset/info.expires; OASIS CAP 1.2 datetimes require zone offsets https://docs.oasis-open.org/emergency/cap/v1.2/cs01/CAP-v1.2-cs01.html"
+          },
+          "events[].effective": {
+            "format": "rfc3339",
+            "role": "valid_from",
+            "timezone": "UTC",
+            "evidence": "providers/noaa_tsunami.py: _event_from_cap parses CAP alert.sent/info.effective/info.onset/info.expires; OASIS CAP 1.2 datetimes require zone offsets https://docs.oasis-open.org/emergency/cap/v1.2/cs01/CAP-v1.2-cs01.html"
+          },
+          "events[].onset": {
+            "format": "rfc3339",
+            "role": "started_at",
+            "timezone": "UTC",
+            "evidence": "providers/noaa_tsunami.py: _event_from_cap parses CAP alert.sent/info.effective/info.onset/info.expires; OASIS CAP 1.2 datetimes require zone offsets https://docs.oasis-open.org/emergency/cap/v1.2/cs01/CAP-v1.2-cs01.html"
+          },
+          "events[].expires": {
+            "format": "rfc3339",
+            "role": "valid_until",
+            "timezone": "UTC",
+            "evidence": "providers/noaa_tsunami.py: _event_from_cap parses CAP alert.sent/info.effective/info.onset/info.expires; OASIS CAP 1.2 datetimes require zone offsets https://docs.oasis-open.org/emergency/cap/v1.2/cs01/CAP-v1.2-cs01.html"
+          }
+        }
       }
     },
     "bmkg_tsunami": {

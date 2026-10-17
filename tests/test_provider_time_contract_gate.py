@@ -191,11 +191,11 @@ class UniversalProviderTimeContractTests(unittest.TestCase):
         self.assertEqual(sum(
             item["status"] == "static_code_evidence"
             for caps in registry["providers"].values()
-            for item in caps.values()), 118)
+            for item in caps.values()), 119)
         self.assertEqual(sum(
             item["status"] == "unverified"
             for caps in registry["providers"].values()
-            for item in caps.values()), 162)
+            for item in caps.values()), 161)
 
 
     def test_fmi_compact_utc_has_explicit_field_basis(self):
@@ -220,7 +220,32 @@ class UniversalProviderTimeContractTests(unittest.TestCase):
         self.assertEqual(sum(
             cap["status"] == "static_code_evidence"
             for provider in registry["providers"].values()
-            for cap in provider.values()), 118)
+            for cap in provider.values()), 119)
+
+
+    def test_noaa_tsunami_cap_datetime_roles_and_zone_required(self):
+        provider, capability = "noaa_tsunami", "official_tsunami_alerts"
+        for field, role in (("events[].sent", "issued_at"),
+                            ("events[].effective", "valid_from"),
+                            ("events[].onset", "started_at"),
+                            ("events[].expires", "valid_until")):
+            with self.subTest(field=field):
+                result = module.normalize_provider_time(
+                    provider, capability, field, "2026-10-16T14:00:00+02:00")
+                self.assertEqual(result.iso, "2026-10-16T12:00:00Z")
+                self.assertEqual(result.role, role)
+                self.assertIsNone(module.normalize_provider_time(
+                    provider, capability, field, "2026-10-16T12:00:00").iso)
+                self.assertIsNone(module.normalize_provider_time(
+                    provider, capability, field, 1792152000).iso)
+        self.assertEqual(module.normalize_provider_time(
+            provider, capability, "events[].sent",
+            "2026-10-16T12:00:00-00:00").iso, "2026-10-16T12:00:00Z")
+        registry = json.loads(REGISTRY.read_text(encoding="utf-8"))
+        self.assertEqual(sum(
+            item["status"] == "static_code_evidence"
+            for caps in registry["providers"].values()
+            for item in caps.values()), 119)
 
 
 if __name__ == "__main__":
