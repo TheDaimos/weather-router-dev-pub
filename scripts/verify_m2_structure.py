@@ -1813,7 +1813,6 @@ def main() -> None:
         "JSON teilen / speichern",
         "diagnostic-git",
         "Nach Git übertragen",
-        "weather_router/log_git_export",
         "_diagnosticGitExport",
         "Fachbereich teilweise deaktiviert",
         "eligibleCapabilities",
@@ -2085,8 +2084,7 @@ def main() -> None:
     log_export_ui = (FRONTEND / "weather-router-lab-log-export.js").read_text(encoding="utf-8")
     for marker in (
         "_wrGitExportSnapshot",
-        "_wrPendingGitExport",
-        "pendingGitExport",
+        "_wrGitPendingExport",
     ):
         if marker not in log_export_ui:
             raise SystemExit(f"shared Git export flow missing marker: {marker}")
