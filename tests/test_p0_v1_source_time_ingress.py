@@ -335,5 +335,77 @@ class UniversalV1SourceTimeTests(unittest.TestCase):
         self.assertNotIn("time_normalization_error", payload)
 
 
+    def test_eccc_swob_observation_from_zoned_source_timestamp(self):
+        c = candidate("eccc_geomet", "temperature")
+        normalized = namespace["_provider_time"](
+            c, "data_time", "2025-11-20T00:00:00.000Z", {}, set())
+        self.assertEqual(normalized, "2025-11-20T00:00:00Z")
+        errors = set()
+        self.assertIsNone(namespace["_provider_time"](
+            c, "data_time", "2025-11-20T00:00:00", {}, errors))
+        self.assertIn("invalid_timestamp", errors)
+
+    def test_nina_warning_window_cannot_invent_issuance(self):
+        c = candidate("bbk_mowas", "civil_protection_warnings_germany")
+        payload, latest = namespace["_normalize_hazard_feed"](c, {
+            "events": [{
+                "id": "mowas", "hazard_type": "weather_warning",
+                "sent": None,
+                "effective": "2024-06-28T19:43:20+02:00",
+                "onset": "2024-06-28T19:43:20+02:00",
+                "expires": "2024-06-29T01:43:20+02:00",
+                "ends": "2024-06-29T01:43:20+02:00",
+            }]
+        })
+        event = payload["events"][0]
+        self.assertIsNone(event["sent"])
+        self.assertEqual(event["effective"], "2024-06-28T17:43:20Z")
+        self.assertEqual(event["expires"], "2024-06-28T23:43:20Z")
+        self.assertEqual(latest, event["effective"])
+        self.assertNotIn("time_normalization_error", payload)
+        bbk_code = (ROOT / "providers" / "bbk_warning_common.py").read_text(
+            encoding="utf-8")
+        self.assertIn('"sent": None', bbk_code)
+
+    def test_nhc_status_and_bmkg_quake_time_roles(self):
+        nhc = candidate("nhc_tropical_cyclones", "active_tropical_cyclones")
+        bmkg = candidate("bmkg_tsunami", "tsunami_potential_earthquake")
+        for c, instant, role in (
+            (nhc, "2017-09-09T16:00:00.000Z", "valid_at"),
+            (bmkg, "2026-10-17T12:00:00+00:00", "occurred_at"),
+        ):
+            result = normalizer.normalize_provider_time(
+                c.provider.id, c.capability.id, "events[].effective", instant)
+            self.assertEqual(result.role, role)
+            self.assertTrue(result.iso.endswith("Z"))
+            self.assertIsNone(normalizer.normalize_provider_time(
+                c.provider.id, c.capability.id,
+                "events[].effective", "2026-10-17T12:00:00").iso)
+        for path in ("nhc_tropical_cyclones.py", "bmkg_tsunami.py"):
+            source = (ROOT / "providers" / path).read_text(encoding="utf-8")
+            self.assertIn('"sent": None', source)
+
+    def test_bom_rss_publication_not_warning_validity(self):
+        c = candidate("bom_tsunami", "official_tsunami_warnings_australia")
+        payload, latest = namespace["_normalize_hazard_feed"](c, {
+            "events": [{"id": "bom", "hazard_type": "tsunami",
+                        "sent": "Sat, 17 Oct 2026 14:00:00 +1000",
+                        "effective": None, "onset": None}]
+        })
+        event = payload["events"][0]
+        self.assertEqual(event["sent"], "2026-10-17T04:00:00Z")
+        self.assertIsNone(event["effective"])
+        self.assertIsNone(latest)
+        self.assertNotIn("time_normalization_error", payload)
+        wrong = normalizer.normalize_provider_time(
+            "bom_tsunami", "official_tsunami_warnings_australia",
+            "events[].sent", "2026-10-17T04:00:00Z")
+        self.assertIsNone(wrong.iso)
+        bom = (ROOT / "providers" / "bom_tsunami.py").read_text(
+            encoding="utf-8")
+        self.assertIn('"effective": None', bom)
+
+
+
 if __name__ == "__main__":
     unittest.main()
