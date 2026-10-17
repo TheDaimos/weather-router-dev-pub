@@ -85,6 +85,36 @@ class RasterMosaicServiceTests(unittest.TestCase):
         self.assertEqual(extended["layers"][1]["freshness_class"], "current")
         self.assertEqual(extended["reference_time"], "2026-10-14T15:06:00Z")
 
+    def test_realistic_direct_wms_world_bbox_opt_in_survives_adapter_to_policy(self):
+        machine = {
+            "scope": "bbox", "bbox": {
+                "west": -180, "east": 180, "south": -90, "north": 90},
+            "source": "wms_get_capabilities",
+            "coverage_metadata_scope": "layer_specific_wms",
+            "bbox_source": "EX_GeographicBoundingBox",
+            "bbox_inherited": False,
+            "layer": "synthetic_precipitation_world",
+        }
+        satellite = source("world_satellite", machine, time="2026-10-14T08:30:00Z")
+        satellite["semantics"] = {**SEM,
+            "measurement_method": "satellite_precipitation_estimate",
+            "observation_kind": "estimate"}
+        radar = source("dwd", REGION_DE, time="2026-10-14T15:06:00Z")
+        req = request()
+        without = resolve([satellite, radar], req)
+        self.assertEqual([v["source_id"] for v in without["layers"]], ["dwd"])
+        req["time"]["max_background_age_seconds"] = 43200
+        with_opt = resolve([satellite, radar], req)
+        self.assertEqual([v["source_id"] for v in with_opt["layers"]],
+                         ["world_satellite", "dwd"])
+        self.assertEqual(with_opt["layers"][0]["coverage_scope"], "bbox")
+        self.assertEqual(with_opt["layers"][0]["freshness_class"], "older_background")
+        inherited = {**machine, "bbox_inherited": True}
+        suspect = source("service_world", inherited, time="2026-10-14T08:30:00Z")
+        suspect["semantics"] = dict(satellite["semantics"])
+        invalid = resolve([suspect], req)
+        self.assertEqual(invalid["layers"], [])
+
     def test_world_survives_tiny_germany_edge(self):
         got = resolve([source("local_germany", REGION_DE),
                        source("world", WORLD)])

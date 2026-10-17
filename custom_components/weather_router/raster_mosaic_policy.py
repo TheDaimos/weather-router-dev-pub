@@ -227,10 +227,23 @@ def plan_raster_mosaic(
             reason = "outside_coverage"
         # Older global satellite estimates may serve as explicitly opt-in
         # background, but never as a fresh local radar observation.
+        world_coverage_for_background = (
+            isinstance(coverage, Mapping)
+            and (
+                coverage.get("scope") == "global"
+                or (
+                    coverage.get("scope") == "bbox"
+                    and candidate.get("verified_world_product_bbox") is True
+                    and _bbox(coverage.get("bbox")) == {
+                        "west": -180.0, "east": 180.0,
+                        "south": -90.0, "north": 90.0,
+                    }
+                )
+            )
+        )
         is_background = (
             max_background_age_seconds is not None
-            and isinstance(coverage, Mapping)
-            and coverage.get("scope") == "global"
+            and world_coverage_for_background
             and sem is not None
             and sem.get("measurement_method") in (
                 "satellite_precipitation_estimate", "satellite_estimate")
@@ -346,8 +359,12 @@ def plan_raster_mosaic(
             "freshness_class": ("older_background" if item["is_background"]
                                 else "current"),
         })
-    full_world_verified = bool(selected and
-                               selected[0]["candidate"]["coverage"]["scope"] == "global")
+    # Direct product-specific world BBOX counts as a world-sized *envelope*
+    # only; this never asserts pixel completeness or changes coverage_scope.
+    full_world_verified = bool(selected and (
+        selected[0]["candidate"]["coverage"]["scope"] == "global"
+        or selected[0]["candidate"].get("verified_world_product_bbox") is True
+    ))
     # Even with global coverage, valid raster pixels are not independently
     # established, so only claim partial until resource masks are validated.
     limitations = ["Rasterpixel und Datenluecken nicht vollstaendig verifiziert"]

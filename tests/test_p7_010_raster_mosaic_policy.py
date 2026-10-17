@@ -92,6 +92,54 @@ class MosaicPlanningTests(unittest.TestCase):
             result["_internal_source_rejections"]
         )
 
+    def test_verified_world_product_bbox_opt_in_is_not_scope_global(self):
+        world_bbox = {"scope": "bbox", "bbox": {
+            "west": -180, "east": 180, "south": -90, "north": 90,
+        }}
+        nasa = source("machine_verified_world_satellite", world_bbox,
+                      "2026-10-14T08:30:00Z",
+                      method="satellite_precipitation_estimate")
+        nasa["semantics"]["observation_kind"] = "estimate"
+        nasa["verified_world_product_bbox"] = True
+        dwd = source("regional_current", GERMANY, "2026-10-14T15:06:00Z")
+        kwargs = dict(viewport=VIEW, now=NOW,
+                      max_data_age_seconds=900, max_time_delta_seconds=180)
+        no_opt_in = policy.plan_raster_mosaic([nasa, dwd], **kwargs)
+        self.assertEqual([x["source_id"] for x in no_opt_in["layers"]],
+                         ["regional_current"])
+        opt_in = policy.plan_raster_mosaic([nasa, dwd],
+            max_background_age_seconds=43200, **kwargs)
+        self.assertEqual([x["source_id"] for x in opt_in["layers"]],
+                         ["machine_verified_world_satellite", "regional_current"])
+        self.assertEqual(opt_in["layers"][0]["coverage_scope"], "bbox")
+        self.assertEqual(opt_in["layers"][0]["coverage"], world_bbox["bbox"])
+        self.assertEqual(opt_in["layers"][0]["freshness_class"], "older_background")
+        self.assertEqual(opt_in["layers"][0]["quality_note"], "older_satellite_background")
+        self.assertEqual(opt_in["layers"][1]["freshness_class"], "current")
+        self.assertEqual(opt_in["reference_time"], "2026-10-14T15:06:00Z")
+        self.assertTrue(any("Rasterpixel" in v for v in opt_in["limitations"]))
+
+    def test_world_bbox_only_fails_closed_for_13h_regional_and_radar(self):
+        world_bbox = {"scope": "bbox", "bbox": {
+            "west": -180, "east": 180, "south": -90, "north": 90}}
+        sample = source("satellite", world_bbox, "2026-10-14T08:30:00Z",
+                        method="satellite_estimate")
+        sample["semantics"]["observation_kind"] = "estimate"
+        options = dict(viewport=VIEW, now=NOW, max_data_age_seconds=900,
+                       max_time_delta_seconds=180,
+                       max_background_age_seconds=43200)
+        # Numeric world extent without machine-verification does not qualify.
+        self.assertEqual(policy.plan_raster_mosaic([sample], **options)["layers"], [])
+        sample["verified_world_product_bbox"] = True
+        late = {**sample, "data_time": "2026-10-14T01:30:00Z"}
+        self.assertEqual(policy.plan_raster_mosaic([late], **options)["layers"], [])
+        regional = {**sample, "coverage": GERMANY}
+        self.assertEqual(policy.plan_raster_mosaic([regional], **options)["layers"], [])
+        radar = {**sample, "semantics": {**sample["semantics"],
+                  "measurement_method": "radar",
+                  "observation_kind": "observation"}}
+        self.assertEqual(policy.plan_raster_mosaic([radar], **options)["layers"], [])
+
     def test_older_local_radar_cannot_use_background_exception(self):
         regional = source("stale_regional", GERMANY, "2026-10-14T08:30:00Z")
         opts = dict(viewport=VIEW, now=NOW, max_data_age_seconds=900,

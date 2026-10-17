@@ -31,6 +31,38 @@ def _public_tile_url(value: Any) -> bool:
         return False
 
 
+# A whole-world WMS BBOX is not rewritten to scope=global: retain the
+# real product coverage contract. For the opt-in age exception we only trust
+# a direct, named layer's verified GetCapabilities BBOX, never a service-root
+# envelope or inherited parent-group metadata.
+_DIRECT_WMS_BBOX_SOURCES = frozenset({
+    "EX_GeographicBoundingBox", "BoundingBox/CRS:84",
+    "BoundingBox/EPSG:4326", "LatLonBoundingBox",
+})
+
+
+def verified_world_product_bbox(machine_coverage: Mapping[str, Any]) -> bool:
+    if machine_coverage.get("scope") != "bbox":
+        return False
+    box = machine_coverage.get("bbox")
+    if not isinstance(box, Mapping):
+        return False
+    if any(type(box.get(k)) not in (int, float) or not isfinite(box[k])
+           for k in ("west", "east", "south", "north")):
+        return False
+    if not (box["west"] == -180 and box["east"] == 180
+            and box["south"] == -90 and box["north"] == 90):
+        return False
+    return (
+        machine_coverage.get("source") == "wms_get_capabilities"
+        and machine_coverage.get("coverage_metadata_scope") == "layer_specific_wms"
+        and machine_coverage.get("bbox_inherited") is False
+        and machine_coverage.get("bbox_source") in _DIRECT_WMS_BBOX_SOURCES
+        and isinstance(machine_coverage.get("layer"), str)
+        and bool(machine_coverage["layer"].strip())
+    )
+
+
 def make_mosaic_candidate(
     *,
     source_id: str,
@@ -120,6 +152,9 @@ def make_mosaic_candidate(
         "eligible": True,
         "verified_coverage": True,
         "coverage": coverage,
+        # Trusted eligibility for the *age exception*, not a pixel mask and
+        # not a conversion of the output's geographical coverage scope.
+        "verified_world_product_bbox": verified_world_product_bbox(machine_coverage),
         "resource_type": "raster_tile",
         "render": render,
         "tile_url": tile_url,

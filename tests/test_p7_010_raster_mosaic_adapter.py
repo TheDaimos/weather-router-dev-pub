@@ -42,6 +42,33 @@ def candidate(**kwargs):
 
 
 class AdapterTests(unittest.TestCase):
+    def test_direct_product_world_bbox_eligible_without_scope_promotion(self):
+        world = {
+            "scope": "bbox", "bbox": {
+                "west": -180, "east": 180, "south": -90, "north": 90,
+            },
+            "source": "wms_get_capabilities",
+            "coverage_metadata_scope": "layer_specific_wms",
+            "bbox_inherited": False,
+            "bbox_source": "EX_GeographicBoundingBox",
+            "layer": "synthetic_precipitation_product",
+        }
+        result = candidate(machine_coverage=world)
+        self.assertEqual(result["coverage"]["scope"], "bbox")
+        self.assertTrue(result["verified_world_product_bbox"])
+        for variant in (
+            {"bbox_inherited": True},
+            {"coverage_metadata_scope": "service_root"},
+            {"source": "provider_static_guess"},
+            {"layer": ""},
+            {"bbox_source": "uncited_source"},
+            {"bbox": {**world["bbox"], "north": 89}},
+        ):
+            with self.subTest(variant=variant):
+                suspect = candidate(machine_coverage={**world, **variant})
+                self.assertIsNotNone(suspect)
+                self.assertFalse(suspect["verified_world_product_bbox"])
+
     def test_region_preserved_not_expanded(self):
         result = candidate()
         self.assertEqual(result["coverage"]["scope"], "bbox")
