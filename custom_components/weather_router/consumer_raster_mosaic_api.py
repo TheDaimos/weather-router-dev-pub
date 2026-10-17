@@ -45,6 +45,31 @@ def _shared_coverage_slots():
         _GLOBAL_COVERAGE_LOOP = loop
         _GLOBAL_COVERAGE_SLOTS = asyncio.Semaphore(MAX_COVERAGE_CONCURRENT)
     return _GLOBAL_COVERAGE_SLOTS
+def _catalog_failure_code(error: Exception) -> str:
+    """Use only stable, source-neutral error classes; never expose paths or secrets."""
+    if isinstance(error, FileNotFoundError):
+        missing = getattr(error, "filename", None)
+        if isinstance(missing, str) and missing.rsplit("/", 1)[-1].rsplit("\\", 1)[-1] == "provider_time_contracts.v1.json":
+            return "consumer_time_registry_missing"
+    if isinstance(error, ValueError) and str(error) in {
+        "provider_time_contract_provider_inventory_drift",
+        "provider_time_contract_capability_inventory_drift",
+        "invalid_provider_time_contract_schema",
+        "invalid_provider_time_contract_providers",
+        "invalid_provider_time_contract_provider",
+        "invalid_provider_time_contract_capability",
+        "invalid_provider_time_contract_status",
+        "invalid_provider_time_contract_fields",
+        "invalid_provider_time_field",
+        "invalid_provider_time_format",
+        "invalid_provider_time_role",
+        "provider_time_evidence_missing",
+        "invalid_provider_epoch_time_basis",
+    }:
+        return "consumer_time_registry_invalid"
+    return "consumer_contract_invalid"
+
+
 # Two simultaneous full V2 requests at most, even during rapid map movements.
 _LIVE_REQUEST_SLOTS = asyncio.Semaphore(2)
 
@@ -119,8 +144,8 @@ async def websocket_consumer_resolve_mosaic(
             except CandidateUnavailable as exc:
                 connection.send_error(msg["id"], exc.code, exc.message)
                 return
-            except Exception:  # noqa: BLE001 - never leak secrets or provider internals
-                connection.send_error(msg["id"], "consumer_contract_invalid",
+            except Exception as exc:  # noqa: BLE001 - never leak secrets or provider internals
+                connection.send_error(msg["id"], _catalog_failure_code(exc),
                                       "Providerkatalog oder Consumer-Vertrag ist nicht verfügbar.")
                 return
             if not profile_ok:
