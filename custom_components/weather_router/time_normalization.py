@@ -214,6 +214,17 @@ def provider_time_contracts() -> dict[str, Any]:
     return payload
 
 
+def has_declared_provider_time_field(
+    provider_id: str, capability_id: str, field_path: str,
+) -> bool:
+    """Only declared temporal value fields enter the single UTC conversion gate."""
+    contract = (provider_time_contracts().get("providers", {})
+                .get(provider_id, {}).get(capability_id))
+    return (isinstance(contract, dict)
+            and contract.get("status") != "unverified"
+            and field_path in contract.get("fields", {}))
+
+
 def normalize_provider_time(
     provider_id: str, capability_id: str, field_path: str, raw_value: Any,
     *, provider_metadata: dict[str, Any] | None = None,
