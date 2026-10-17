@@ -2352,16 +2352,91 @@
     },
     "aviation_weather": {
       "international_sigmet_worldwide": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "events[].effective": {
+            "format": "rfc3339_or_unix_seconds",
+            "role": "valid_from",
+            "timezone": "UTC",
+            "evidence": "providers/aviation_weather.py: all three endpoints explicitly ?format=geojson, AWC schema https://aviationweather.gov/data/api/ and GeoJSON examples https://docs.v360weather.com/guides/aviation-weather (zoned ISO strings) and https://docs.lodol.com/docs/integrations/aviation-weather-center (Unix seconds); two strictly type-declared wire variants, never epoch guess."
+          },
+          "events[].onset": {
+            "format": "rfc3339_or_unix_seconds",
+            "role": "started_at",
+            "timezone": "UTC",
+            "evidence": "providers/aviation_weather.py: all three endpoints explicitly ?format=geojson, AWC schema https://aviationweather.gov/data/api/ and GeoJSON examples https://docs.v360weather.com/guides/aviation-weather (zoned ISO strings) and https://docs.lodol.com/docs/integrations/aviation-weather-center (Unix seconds); two strictly type-declared wire variants, never epoch guess."
+          },
+          "events[].expires": {
+            "format": "rfc3339_or_unix_seconds",
+            "role": "valid_until",
+            "timezone": "UTC",
+            "evidence": "providers/aviation_weather.py: all three endpoints explicitly ?format=geojson, AWC schema https://aviationweather.gov/data/api/ and GeoJSON examples https://docs.v360weather.com/guides/aviation-weather (zoned ISO strings) and https://docs.lodol.com/docs/integrations/aviation-weather-center (Unix seconds); two strictly type-declared wire variants, never epoch guess."
+          },
+          "events[].ends": {
+            "format": "rfc3339_or_unix_seconds",
+            "role": "valid_until",
+            "timezone": "UTC",
+            "evidence": "providers/aviation_weather.py: all three endpoints explicitly ?format=geojson, AWC schema https://aviationweather.gov/data/api/ and GeoJSON examples https://docs.v360weather.com/guides/aviation-weather (zoned ISO strings) and https://docs.lodol.com/docs/integrations/aviation-weather-center (Unix seconds); two strictly type-declared wire variants, never epoch guess."
+          }
+        }
       },
       "us_airsigmet_current": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "events[].effective": {
+            "format": "rfc3339_or_unix_seconds",
+            "role": "valid_from",
+            "timezone": "UTC",
+            "evidence": "providers/aviation_weather.py: all three endpoints explicitly ?format=geojson, AWC schema https://aviationweather.gov/data/api/ and GeoJSON examples https://docs.v360weather.com/guides/aviation-weather (zoned ISO strings) and https://docs.lodol.com/docs/integrations/aviation-weather-center (Unix seconds); two strictly type-declared wire variants, never epoch guess."
+          },
+          "events[].onset": {
+            "format": "rfc3339_or_unix_seconds",
+            "role": "started_at",
+            "timezone": "UTC",
+            "evidence": "providers/aviation_weather.py: all three endpoints explicitly ?format=geojson, AWC schema https://aviationweather.gov/data/api/ and GeoJSON examples https://docs.v360weather.com/guides/aviation-weather (zoned ISO strings) and https://docs.lodol.com/docs/integrations/aviation-weather-center (Unix seconds); two strictly type-declared wire variants, never epoch guess."
+          },
+          "events[].expires": {
+            "format": "rfc3339_or_unix_seconds",
+            "role": "valid_until",
+            "timezone": "UTC",
+            "evidence": "providers/aviation_weather.py: all three endpoints explicitly ?format=geojson, AWC schema https://aviationweather.gov/data/api/ and GeoJSON examples https://docs.v360weather.com/guides/aviation-weather (zoned ISO strings) and https://docs.lodol.com/docs/integrations/aviation-weather-center (Unix seconds); two strictly type-declared wire variants, never epoch guess."
+          },
+          "events[].ends": {
+            "format": "rfc3339_or_unix_seconds",
+            "role": "valid_until",
+            "timezone": "UTC",
+            "evidence": "providers/aviation_weather.py: all three endpoints explicitly ?format=geojson, AWC schema https://aviationweather.gov/data/api/ and GeoJSON examples https://docs.v360weather.com/guides/aviation-weather (zoned ISO strings) and https://docs.lodol.com/docs/integrations/aviation-weather-center (Unix seconds); two strictly type-declared wire variants, never epoch guess."
+          }
+        }
       },
       "us_gairmet_current": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "events[].effective": {
+            "format": "rfc3339_or_unix_seconds",
+            "role": "valid_from",
+            "timezone": "UTC",
+            "evidence": "providers/aviation_weather.py: all three endpoints explicitly ?format=geojson, AWC schema https://aviationweather.gov/data/api/ and GeoJSON examples https://docs.v360weather.com/guides/aviation-weather (zoned ISO strings) and https://docs.lodol.com/docs/integrations/aviation-weather-center (Unix seconds); two strictly type-declared wire variants, never epoch guess."
+          },
+          "events[].onset": {
+            "format": "rfc3339_or_unix_seconds",
+            "role": "started_at",
+            "timezone": "UTC",
+            "evidence": "providers/aviation_weather.py: all three endpoints explicitly ?format=geojson, AWC schema https://aviationweather.gov/data/api/ and GeoJSON examples https://docs.v360weather.com/guides/aviation-weather (zoned ISO strings) and https://docs.lodol.com/docs/integrations/aviation-weather-center (Unix seconds); two strictly type-declared wire variants, never epoch guess."
+          },
+          "events[].expires": {
+            "format": "rfc3339_or_unix_seconds",
+            "role": "valid_until",
+            "timezone": "UTC",
+            "evidence": "providers/aviation_weather.py: all three endpoints explicitly ?format=geojson, AWC schema https://aviationweather.gov/data/api/ and GeoJSON examples https://docs.v360weather.com/guides/aviation-weather (zoned ISO strings) and https://docs.lodol.com/docs/integrations/aviation-weather-center (Unix seconds); two strictly type-declared wire variants, never epoch guess."
+          },
+          "events[].ends": {
+            "format": "rfc3339_or_unix_seconds",
+            "role": "valid_until",
+            "timezone": "UTC",
+            "evidence": "providers/aviation_weather.py: all three endpoints explicitly ?format=geojson, AWC schema https://aviationweather.gov/data/api/ and GeoJSON examples https://docs.v360weather.com/guides/aviation-weather (zoned ISO strings) and https://docs.lodol.com/docs/integrations/aviation-weather-center (Unix seconds); two strictly type-declared wire variants, never epoch guess."
+          }
+        }
       }
     },
     "nina_flood": {
