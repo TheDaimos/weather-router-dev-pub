@@ -22,7 +22,8 @@ normalizer = importlib.import_module(PACKAGE + ".time_normalization")
 source = (ROOT / "consumer_api.py").read_text(encoding="utf-8")
 tree = ast.parse(source)
 selected = {
-    "_provider_time", "_normalize_event_feed", "_normalize_hazard_feed",
+    "_provider_time", "_verified_feed_update_result",
+    "_normalize_event_feed", "_normalize_hazard_feed",
     "_timeline_frames", "_normalize_image_sequence", "_normalize_data_file",
 }
 functions = [
@@ -134,6 +135,20 @@ class UniversalV1SourceTimeTests(unittest.TestCase):
         self.assertIsNone(latest)
         self.assertEqual(payload["time_normalization_error"],
                          "unverified_source_time_contract")
+
+    def test_unverified_feed_update_never_claims_freshness(self):
+        # Ein neuer HTTP-Abruf darf keine Feed-Veröffentlichung vortäuschen.
+        normalized_payload = {"events": []}
+        sanitized = namespace["_verified_feed_update_result"](
+            candidate("gdacs", "global_disaster_alerts_7d"), {
+                "last_updated_at": "2026-10-16T12:00:00Z"},
+            normalized_payload)
+        self.assertIsNone(sanitized["last_updated_at"])
+        self.assertEqual(normalized_payload["time_normalization_error"],
+                         "unverified_source_time_contract")
+        empty = namespace["_verified_feed_update_result"](
+            candidate("gdacs", "global_disaster_alerts_7d"), {}, {})
+        self.assertEqual(empty, {})
 
     def test_suvi_images_retain_source_proven_utc(self):
         frame = {"time": "2026-10-16T12:00:00Z",

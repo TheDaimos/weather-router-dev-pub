@@ -2553,6 +2553,23 @@ def _provider_time(candidate: Candidate, field_path: str, value: Any,
     return converted.iso
 
 
+def _verified_feed_update_result(
+    candidate: Candidate, result: dict[str, Any], payload: dict[str, Any],
+) -> dict[str, Any]:
+    """Feed-Frische ausschliesslich aus belegten Provider-Update-Zeiten.
+
+    Eine soeben beendete HTTP-Abfrage ist KEIN Quell-Update-Zeitpunkt.
+    """
+    errors: set[str] = set()
+    verified: dict[str, Any] = {}
+    for key in ("last_updated_at", "published_at", "feed_updated_at"):
+        if result.get(key) is not None:
+            verified[key] = _provider_time(candidate, key, result[key], result, errors)
+    if errors:
+        payload["time_normalization_error"] = sorted(errors)[0]
+    return verified
+
+
 def _normalize_event_feed(
     candidate: Candidate,
     result: dict[str, Any],
@@ -4266,8 +4283,10 @@ async def websocket_consumer_resolve(
 
         if time_context["mode"] == "events_intersecting_window":
             from .consumer_event_time_policy import filter_event_payload
+            # Aggregierte Quellzeiten haben keine einzelne belegbare
+            # Provider/Capability-Herkunft; Feedalter bleibt daher unbekannt.
             payload = filter_event_payload(
-                payload, time=time_context, provider_result=provider_result)
+                payload, time=time_context, provider_result={})
             trace.set_request(event_time_result=payload["event_time_policy"])
         now = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
         freshness = {
@@ -4353,7 +4372,9 @@ async def websocket_consumer_resolve(
             if time_context["mode"] == "events_intersecting_window":
                 from .consumer_event_time_policy import filter_event_payload
                 payload = filter_event_payload(
-                    payload, time=time_context, provider_result=provider_result)
+                    payload, time=time_context,
+                    provider_result=_verified_feed_update_result(
+                        candidate, provider_result, payload))
                 trace.set_request(event_time_result=payload["event_time_policy"])
 
             age = _age_seconds(data_time)
