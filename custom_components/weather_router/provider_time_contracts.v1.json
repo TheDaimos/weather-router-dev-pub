@@ -1488,44 +1488,114 @@
     },
     "fmi": {
       "temperature": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "utc_compact",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/fmi.py: param=utctime, tz=UTC; data_time=row.utctime; FMI SmartMet Timeseries Examples official code YYYYMMDDTHHMMSS https://github.com/fmidev/smartmet-plugin-timeseries/blob/master/docs/Examples.md"
+          }
+        }
       },
       "dew_point": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "utc_compact",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/fmi.py: param=utctime, tz=UTC; data_time=row.utctime; FMI SmartMet Timeseries Examples official code YYYYMMDDTHHMMSS https://github.com/fmidev/smartmet-plugin-timeseries/blob/master/docs/Examples.md"
+          }
+        }
       },
       "relative_humidity": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "utc_compact",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/fmi.py: param=utctime, tz=UTC; data_time=row.utctime; FMI SmartMet Timeseries Examples official code YYYYMMDDTHHMMSS https://github.com/fmidev/smartmet-plugin-timeseries/blob/master/docs/Examples.md"
+          }
+        }
       },
       "wind_direction": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "utc_compact",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/fmi.py: param=utctime, tz=UTC; data_time=row.utctime; FMI SmartMet Timeseries Examples official code YYYYMMDDTHHMMSS https://github.com/fmidev/smartmet-plugin-timeseries/blob/master/docs/Examples.md"
+          }
+        }
       },
       "wind_speed": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "utc_compact",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/fmi.py: param=utctime, tz=UTC; data_time=row.utctime; FMI SmartMet Timeseries Examples official code YYYYMMDDTHHMMSS https://github.com/fmidev/smartmet-plugin-timeseries/blob/master/docs/Examples.md"
+          }
+        }
       },
       "wind_gusts": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "utc_compact",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/fmi.py: param=utctime, tz=UTC; data_time=row.utctime; FMI SmartMet Timeseries Examples official code YYYYMMDDTHHMMSS https://github.com/fmidev/smartmet-plugin-timeseries/blob/master/docs/Examples.md"
+          }
+        }
       },
       "air_pressure": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "utc_compact",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/fmi.py: param=utctime, tz=UTC; data_time=row.utctime; FMI SmartMet Timeseries Examples official code YYYYMMDDTHHMMSS https://github.com/fmidev/smartmet-plugin-timeseries/blob/master/docs/Examples.md"
+          }
+        }
       },
       "precipitation": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "utc_compact",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/fmi.py: param=utctime, tz=UTC; data_time=row.utctime; FMI SmartMet Timeseries Examples official code YYYYMMDDTHHMMSS https://github.com/fmidev/smartmet-plugin-timeseries/blob/master/docs/Examples.md"
+          }
+        }
       },
       "cloud_cover": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "utc_compact",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/fmi.py: param=utctime, tz=UTC; data_time=row.utctime; FMI SmartMet Timeseries Examples official code YYYYMMDDTHHMMSS https://github.com/fmidev/smartmet-plugin-timeseries/blob/master/docs/Examples.md"
+          }
+        }
       },
       "visibility": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "utc_compact",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/fmi.py: param=utctime, tz=UTC; data_time=row.utctime; FMI SmartMet Timeseries Examples official code YYYYMMDDTHHMMSS https://github.com/fmidev/smartmet-plugin-timeseries/blob/master/docs/Examples.md"
+          }
+        }
       }
     },
     "smhi": {

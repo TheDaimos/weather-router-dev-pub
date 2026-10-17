@@ -119,6 +119,18 @@ def wms_time_values(raw: Any, *, max_values: int = 256) -> list[str]:
     return output
 
 
+def compact_utc_instant(value: Any) -> str | None:
+    """Accept YYYYMMDDTHHMMSS only for a separately declared UTC field."""
+    import re
+    if not isinstance(value, str) or not re.fullmatch(r"[0-9]{8}T[0-9]{6}", value):
+        return None
+    try:
+        return utc_iso(datetime.strptime(
+            value, "%Y%m%dT%H%M%S").replace(tzinfo=UTC))
+    except (ValueError, OverflowError):
+        return None
+
+
 def calendar_day_interval(value: Any, *, iana_zone: str) -> tuple[str, str] | None:
     """UTC bounds of a local calendar day; never fabricate observation time."""
     if not isinstance(value, str):
@@ -184,7 +196,7 @@ def provider_time_contracts() -> dict[str, Any]:
                     raise ValueError("invalid_provider_time_field")
                 if rule.get("format") not in (
                     "rfc3339", "unix_seconds", "unix_milliseconds",
-                    "rfc2822", "iana_local", "calendar_day"
+                    "rfc2822", "iana_local", "calendar_day", "utc_compact"
                 ):
                     raise ValueError("invalid_provider_time_format")
                 if rule.get("role") not in (
@@ -197,7 +209,7 @@ def provider_time_contracts() -> dict[str, Any]:
                     raise ValueError("invalid_provider_time_role")
                 if not isinstance(rule.get("evidence"), str) or not rule["evidence"]:
                     raise ValueError("provider_time_evidence_missing")
-                if rule["format"] in ("unix_seconds", "unix_milliseconds") and rule.get("timezone") != "UTC":
+                if rule["format"] in ("unix_seconds", "unix_milliseconds", "utc_compact") and rule.get("timezone") != "UTC":
                     raise ValueError("invalid_provider_epoch_time_basis")
     return payload
 
@@ -226,6 +238,8 @@ def normalize_provider_time(
             iso = epoch_instant(raw_value, unit="milliseconds")
         elif fmt == "rfc2822":
             iso = rss_instant(raw_value)
+        elif fmt == "utc_compact":
+            iso = compact_utc_instant(raw_value)
         elif fmt == "iana_local":
             zone = basis
             if rule.get("timezone_metadata_field"):

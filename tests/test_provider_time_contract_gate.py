@@ -191,11 +191,36 @@ class UniversalProviderTimeContractTests(unittest.TestCase):
         self.assertEqual(sum(
             item["status"] == "static_code_evidence"
             for caps in registry["providers"].values()
-            for item in caps.values()), 108)
+            for item in caps.values()), 118)
         self.assertEqual(sum(
             item["status"] == "unverified"
             for caps in registry["providers"].values()
-            for item in caps.values()), 172)
+            for item in caps.values()), 162)
+
+
+    def test_fmi_compact_utc_has_explicit_field_basis(self):
+        # Test actual central parser for ten statically documented FMI fields.
+        for capability in json.loads(REGISTRY.read_text(encoding="utf-8"))["providers"]["fmi"]:
+            with self.subTest(capability=capability):
+                result = module.normalize_provider_time(
+                    "fmi", capability, "data_time", "20180514T000000")
+                self.assertEqual(result.iso, "2018-05-14T00:00:00Z")
+                self.assertEqual(result.role, "valid_at")
+                self.assertEqual(result.timezone_basis, "UTC")
+                for invalid in ("2018-05-14T00:00:00Z", "20180514T000000+02:00",
+                                "20180514T00000", "20180230T000000",
+                                "20181028T023000Z", 1526256000):
+                    self.assertIsNone(module.normalize_provider_time(
+                        "fmi", capability, "data_time", invalid).iso)
+        self.assertIsNone(module.iso_instant("20180514T000000"))
+        self.assertIsNone(module.normalize_provider_time(
+            "met_norway_astronomy", "moon_phase_angle",
+            "data_time", "20180514T000000").iso)
+        registry = json.loads(REGISTRY.read_text(encoding="utf-8"))
+        self.assertEqual(sum(
+            cap["status"] == "static_code_evidence"
+            for provider in registry["providers"].values()
+            for cap in provider.values()), 118)
 
 
 if __name__ == "__main__":

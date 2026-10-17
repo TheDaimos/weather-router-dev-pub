@@ -81,8 +81,11 @@ class UniversalV1SourceTimeTests(unittest.TestCase):
                     "2026-10-16T14:00:00+02:00", {}, errors)
         self.assertEqual(when, "2026-10-16T12:00:00Z")
         self.assertFalse(errors)
-        unknown = func(candidate("fmi", "temperature"), "data_time",
-                       "2026-10-16T12:00:00Z", {}, errors)
+        fmi = func(candidate("fmi", "temperature"), "data_time",
+                   "20180514T000000", {}, errors)
+        self.assertEqual(fmi, "2018-05-14T00:00:00Z")
+        unknown = func(candidate("met_norway_astronomy", "moon_phase_angle"),
+                       "data_time", "20180514T000000", {}, errors)
         self.assertIsNone(unknown)
         self.assertIn("unverified_source_time_contract", errors)
 
