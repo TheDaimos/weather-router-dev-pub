@@ -25,6 +25,7 @@ selected = {
     "_provider_time", "_verified_feed_update_result",
     "_normalize_event_feed", "_normalize_hazard_feed",
     "_timeline_frames", "_normalize_image_sequence", "_normalize_data_file",
+    "_normalize_raster",
 }
 functions = [
     node for node in tree.body
@@ -163,16 +164,54 @@ class UniversalV1SourceTimeTests(unittest.TestCase):
         self.assertEqual(payload["frames"][0]["time"], latest)
         self.assertNotIn("time_normalization_error", payload)
 
-    def test_undocumented_datafile_time_does_not_become_observation(self):
+    def test_noaa_ovation_observation_and_forecast_are_distinct(self):
         payload, latest = namespace["_normalize_data_file"](
             candidate("noaa_swpc", "aurora_ovation_latest"),
             {"url": "https://example.invalid/grid.json", "format": "json",
-             "data_time": "2026-10-16T12:00:00Z",
+             "data_time": "2026-10-16T14:00:00+02:00",
              "valid_time": "2026-10-16T12:30:00Z"})
+        self.assertEqual(latest, "2026-10-16T12:00:00Z")
+        self.assertEqual(payload["valid_time"], "2026-10-16T12:30:00Z")
+        self.assertNotIn("time_normalization_error", payload)
+
+        # Ohne explizite Zone gibt es keine verifizierte Beobachtungszeit.
+        payload, latest = namespace["_normalize_data_file"](
+            candidate("noaa_swpc", "aurora_ovation_latest"),
+            {"url": "https://example.invalid/grid.json", "format": "json",
+             "data_time": "2026-10-16 12:00:00",
+             "valid_time": "2026-10-16 12:30:00"})
         self.assertIsNone(latest)
         self.assertIsNone(payload["valid_time"])
-        self.assertEqual(payload["time_normalization_error"],
-                         "unverified_source_time_contract")
+        self.assertEqual(payload["time_normalization_error"], "invalid_timestamp")
+
+    def test_glofas_forecast_frames_declared_seconds_and_not_observations(self):
+        c = candidate("glofas", "flood_probability_5y")
+        result = {
+            "provider": "glofas", "capability": "flood_probability_5y",
+            "tile_url": "https://example.invalid/current.png",
+            "frame_time": 1792152000,
+            "timeline": {"frames": [
+                {"time": 1792152000, "tile_url": "https://example.invalid/f.png", "kind": "forecast"}
+            ]},
+        }
+        payload, when = namespace["_normalize_raster"](result)
+        self.assertEqual(when, normalizer.epoch_instant(1792152000, unit="seconds"))
+        self.assertEqual(payload["timeline"]["frames"][0]["time"], when)
+        self.assertEqual(payload["timeline"]["frames"][0]["kind"], "forecast")
+        result["frame_time"] = 1792152000000  # Millisekunden sind hier NICHT erlaubt.
+        _, wrong_unit = namespace["_normalize_raster"](result)
+        self.assertNotEqual(wrong_unit, when)
+
+    def test_jma_forecast_source_timestamp_requires_zone(self):
+        c = candidate("jma", "temperature")
+        errors = set()
+        valid = namespace["_provider_time"](
+            c, "data_time", "2026-10-16T21:00:00+09:00", {}, errors)
+        self.assertEqual(valid, "2026-10-16T12:00:00Z")
+        self.assertEqual(errors, set())
+        self.assertIsNone(namespace["_provider_time"](
+            c, "data_time", "2026-10-16T21:00:00", {}, errors))
+        self.assertIn("invalid_timestamp", errors)
 
 
     def test_noaa_tsunami_cap_issue_and_effective_not_confused(self):
