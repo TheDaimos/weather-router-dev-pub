@@ -1,0 +1,1540 @@
+{
+  "schema": "weather_router.provider_time_contracts.v1",
+  "policy": "fail_closed_on_undeclared_format",
+  "providers": {
+    "open_meteo": {
+      "temperature": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "cloud_cover": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "cloud_cover_low": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "cloud_cover_mid": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "cloud_cover_high": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "precipitation": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "rain": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "showers": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "snowfall": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "wind_speed": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "wind_direction": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "wind_gusts": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "visibility": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "weather_code": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "uv_index": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "uv_index_clear_sky": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "uv_index_max_today": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "uv_index_clear_sky_max_today": {
+        "status": "unverified",
+        "fields": {}
+      }
+    },
+    "rainviewer": {
+      "radar_reflectivity": {
+        "status": "static_code_evidence",
+        "fields": {
+          "frame_time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/rainviewer.py: async_get_map_layer; Unix epoch seconds"
+          },
+          "timeline.frames[].time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/rainviewer.py: timeline.frames[].time; Unix epoch seconds"
+          }
+        }
+      }
+    },
+    "dwd": {
+      "radar_precipitation": {
+        "status": "static_code_evidence",
+        "fields": {
+          "frame_time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/dwd.py: async_get_map_layer; Unix epoch seconds"
+          },
+          "timeline.frames[].time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/dwd.py: timeline.frames[].time; Unix epoch seconds"
+          }
+        }
+      },
+      "radar_precipitation_quality_checked": {
+        "status": "static_code_evidence",
+        "fields": {
+          "frame_time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/dwd.py: async_get_map_layer; Unix epoch seconds"
+          },
+          "timeline.frames[].time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/dwd.py: timeline.frames[].time; Unix epoch seconds"
+          }
+        }
+      },
+      "satellite_clouds": {
+        "status": "static_code_evidence",
+        "fields": {
+          "frame_time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/dwd.py: async_get_map_layer; Unix epoch seconds"
+          },
+          "timeline.frames[].time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/dwd.py: timeline.frames[].time; Unix epoch seconds"
+          }
+        }
+      },
+      "lightning_density": {
+        "status": "static_code_evidence",
+        "fields": {
+          "frame_time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/dwd.py: async_get_map_layer; Unix epoch seconds"
+          },
+          "timeline.frames[].time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/dwd.py: timeline.frames[].time; Unix epoch seconds"
+          }
+        }
+      },
+      "thunderstorm_cells": {
+        "status": "static_code_evidence",
+        "fields": {
+          "frame_time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/dwd.py: async_get_map_layer; Unix epoch seconds"
+          },
+          "timeline.frames[].time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/dwd.py: timeline.frames[].time; Unix epoch seconds"
+          }
+        }
+      },
+      "icon_eu_precipitation_1h": {
+        "status": "static_code_evidence",
+        "fields": {
+          "frame_time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/dwd.py: async_get_map_layer; Unix epoch seconds"
+          },
+          "timeline.frames[].time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/dwd.py: timeline.frames[].time; Unix epoch seconds"
+          }
+        }
+      },
+      "icon_temperature_2m": {
+        "status": "static_code_evidence",
+        "fields": {
+          "frame_time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/dwd.py: async_get_map_layer; Unix epoch seconds"
+          },
+          "timeline.frames[].time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/dwd.py: timeline.frames[].time; Unix epoch seconds"
+          }
+        }
+      },
+      "icon_wind_10m": {
+        "status": "static_code_evidence",
+        "fields": {
+          "frame_time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/dwd.py: async_get_map_layer; Unix epoch seconds"
+          },
+          "timeline.frames[].time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/dwd.py: timeline.frames[].time; Unix epoch seconds"
+          }
+        }
+      },
+      "official_weather_warnings": {
+        "status": "unverified",
+        "fields": {}
+      }
+    },
+    "nasa_gibs": {
+      "satellite_imagery_true_color": {
+        "status": "static_code_evidence",
+        "fields": {
+          "frame_time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/nasa_gibs.py: async_get_map_layer; Unix epoch seconds"
+          },
+          "timeline.frames[].time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/nasa_gibs.py: timeline.frames[].time; Unix epoch seconds"
+          }
+        }
+      },
+      "satellite_goes_east_geocolor": {
+        "status": "static_code_evidence",
+        "fields": {
+          "frame_time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/nasa_gibs.py: async_get_map_layer; Unix epoch seconds"
+          },
+          "timeline.frames[].time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/nasa_gibs.py: timeline.frames[].time; Unix epoch seconds"
+          }
+        }
+      },
+      "satellite_goes_west_geocolor": {
+        "status": "static_code_evidence",
+        "fields": {
+          "frame_time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/nasa_gibs.py: async_get_map_layer; Unix epoch seconds"
+          },
+          "timeline.frames[].time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/nasa_gibs.py: timeline.frames[].time; Unix epoch seconds"
+          }
+        }
+      },
+      "satellite_goes_east_clean_ir": {
+        "status": "static_code_evidence",
+        "fields": {
+          "frame_time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/nasa_gibs.py: async_get_map_layer; Unix epoch seconds"
+          },
+          "timeline.frames[].time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/nasa_gibs.py: timeline.frames[].time; Unix epoch seconds"
+          }
+        }
+      },
+      "satellite_goes_west_clean_ir": {
+        "status": "static_code_evidence",
+        "fields": {
+          "frame_time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/nasa_gibs.py: async_get_map_layer; Unix epoch seconds"
+          },
+          "timeline.frames[].time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/nasa_gibs.py: timeline.frames[].time; Unix epoch seconds"
+          }
+        }
+      },
+      "satellite_goes_east_visible_red": {
+        "status": "static_code_evidence",
+        "fields": {
+          "frame_time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/nasa_gibs.py: async_get_map_layer; Unix epoch seconds"
+          },
+          "timeline.frames[].time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/nasa_gibs.py: timeline.frames[].time; Unix epoch seconds"
+          }
+        }
+      },
+      "satellite_goes_west_visible_red": {
+        "status": "static_code_evidence",
+        "fields": {
+          "frame_time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/nasa_gibs.py: async_get_map_layer; Unix epoch seconds"
+          },
+          "timeline.frames[].time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/nasa_gibs.py: timeline.frames[].time; Unix epoch seconds"
+          }
+        }
+      },
+      "satellite_goes_east_air_mass": {
+        "status": "static_code_evidence",
+        "fields": {
+          "frame_time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/nasa_gibs.py: async_get_map_layer; Unix epoch seconds"
+          },
+          "timeline.frames[].time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/nasa_gibs.py: timeline.frames[].time; Unix epoch seconds"
+          }
+        }
+      },
+      "satellite_goes_west_air_mass": {
+        "status": "static_code_evidence",
+        "fields": {
+          "frame_time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/nasa_gibs.py: async_get_map_layer; Unix epoch seconds"
+          },
+          "timeline.frames[].time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/nasa_gibs.py: timeline.frames[].time; Unix epoch seconds"
+          }
+        }
+      },
+      "satellite_goes_east_dust": {
+        "status": "static_code_evidence",
+        "fields": {
+          "frame_time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/nasa_gibs.py: async_get_map_layer; Unix epoch seconds"
+          },
+          "timeline.frames[].time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/nasa_gibs.py: timeline.frames[].time; Unix epoch seconds"
+          }
+        }
+      },
+      "satellite_goes_west_dust": {
+        "status": "static_code_evidence",
+        "fields": {
+          "frame_time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/nasa_gibs.py: async_get_map_layer; Unix epoch seconds"
+          },
+          "timeline.frames[].time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/nasa_gibs.py: timeline.frames[].time; Unix epoch seconds"
+          }
+        }
+      },
+      "satellite_goes_east_fire_temperature": {
+        "status": "static_code_evidence",
+        "fields": {
+          "frame_time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/nasa_gibs.py: async_get_map_layer; Unix epoch seconds"
+          },
+          "timeline.frames[].time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/nasa_gibs.py: timeline.frames[].time; Unix epoch seconds"
+          }
+        }
+      },
+      "satellite_goes_west_fire_temperature": {
+        "status": "static_code_evidence",
+        "fields": {
+          "frame_time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/nasa_gibs.py: async_get_map_layer; Unix epoch seconds"
+          },
+          "timeline.frames[].time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/nasa_gibs.py: timeline.frames[].time; Unix epoch seconds"
+          }
+        }
+      },
+      "satellite_himawari_air_mass": {
+        "status": "static_code_evidence",
+        "fields": {
+          "frame_time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/nasa_gibs.py: async_get_map_layer; Unix epoch seconds"
+          },
+          "timeline.frames[].time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/nasa_gibs.py: timeline.frames[].time; Unix epoch seconds"
+          }
+        }
+      },
+      "satellite_himawari_clean_ir": {
+        "status": "static_code_evidence",
+        "fields": {
+          "frame_time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/nasa_gibs.py: async_get_map_layer; Unix epoch seconds"
+          },
+          "timeline.frames[].time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/nasa_gibs.py: timeline.frames[].time; Unix epoch seconds"
+          }
+        }
+      },
+      "satellite_himawari_visible_red": {
+        "status": "static_code_evidence",
+        "fields": {
+          "frame_time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/nasa_gibs.py: async_get_map_layer; Unix epoch seconds"
+          },
+          "timeline.frames[].time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/nasa_gibs.py: timeline.frames[].time; Unix epoch seconds"
+          }
+        }
+      },
+      "satellite_precipitation_imerg_30min": {
+        "status": "static_code_evidence",
+        "fields": {
+          "frame_time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/nasa_gibs.py: async_get_map_layer; Unix epoch seconds"
+          },
+          "timeline.frames[].time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/nasa_gibs.py: timeline.frames[].time; Unix epoch seconds"
+          }
+        }
+      }
+    },
+    "eumetview": {
+      "satellite_clouds": {
+        "status": "unverified",
+        "fields": {}
+      }
+    },
+    "met_norway": {
+      "temperature": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "cloud_cover": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "cloud_cover_low": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "cloud_cover_mid": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "cloud_cover_high": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "precipitation": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "precipitation_probability": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "thunder_probability": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "wind_speed": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "wind_direction": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "wind_gusts": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "relative_humidity": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "air_pressure": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "dew_point": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "fog": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "uv_index": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "nowcast_temperature": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "nowcast_precipitation_rate": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "nowcast_precipitation": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "nowcast_relative_humidity": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "nowcast_wind_speed": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "nowcast_wind_direction": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "nowcast_wind_gusts": {
+        "status": "unverified",
+        "fields": {}
+      }
+    },
+    "noaa_nws": {
+      "temperature": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "dew_point": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "relative_humidity": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "precipitation_probability": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "wind_speed": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "wind_direction": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "weather_summary": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "official_weather_alerts": {
+        "status": "unverified",
+        "fields": {}
+      }
+    },
+    "noaa_swpc": {
+      "solar_suvi_094": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "solar_suvi_131": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "solar_suvi_171": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "solar_suvi_195": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "solar_suvi_284": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "solar_suvi_304": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "aurora_ovation_latest": {
+        "status": "unverified",
+        "fields": {}
+      }
+    },
+    "nasa_iss": {
+      "iss_earth_live": {
+        "status": "unverified",
+        "fields": {}
+      }
+    },
+    "nasa_moon": {
+      "moon_lro_wac_global": {
+        "status": "unverified",
+        "fields": {}
+      }
+    },
+    "fmi": {
+      "temperature": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "dew_point": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "relative_humidity": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "wind_direction": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "wind_speed": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "wind_gusts": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "air_pressure": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "precipitation": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "cloud_cover": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "visibility": {
+        "status": "unverified",
+        "fields": {}
+      }
+    },
+    "smhi": {
+      "temperature": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "relative_humidity": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "wind_direction": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "wind_speed": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "wind_gusts": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "air_pressure": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "visibility": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "thunder_probability": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "cloud_cover": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "cloud_cover_low": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "cloud_cover_mid": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "cloud_cover_high": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "precipitation": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "precipitation_probability": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "weather_code": {
+        "status": "unverified",
+        "fields": {}
+      }
+    },
+    "eccc_geomet": {
+      "temperature": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "dew_point": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "relative_humidity": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "air_pressure": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "visibility": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "precipitation_1h": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "cloud_cover": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "wind_direction": {
+        "status": "unverified",
+        "fields": {}
+      }
+    },
+    "jma": {
+      "temperature": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "precipitation_probability": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "weather_summary": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "weather_code": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "wind_summary": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "official_tsunami_warnings_japan": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "tsunami_observations_japan": {
+        "status": "unverified",
+        "fields": {}
+      }
+    },
+    "ecmwf_open_data": {
+      "ifs_open_grib": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "aifs_open_grib": {
+        "status": "unverified",
+        "fields": {}
+      }
+    },
+    "nhc_tropical_cyclones": {
+      "active_tropical_cyclones": {
+        "status": "unverified",
+        "fields": {}
+      }
+    },
+    "noaa_tsunami": {
+      "official_tsunami_alerts": {
+        "status": "unverified",
+        "fields": {}
+      }
+    },
+    "bmkg_tsunami": {
+      "tsunami_potential_earthquake": {
+        "status": "unverified",
+        "fields": {}
+      }
+    },
+    "bom_tsunami": {
+      "official_tsunami_warnings_australia": {
+        "status": "unverified",
+        "fields": {}
+      }
+    },
+    "usgs_earthquakes": {
+      "earthquakes_past_day": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "significant_earthquakes_past_month": {
+        "status": "unverified",
+        "fields": {}
+      }
+    },
+    "smithsonian_volcanoes": {
+      "weekly_volcanic_activity": {
+        "status": "unverified",
+        "fields": {}
+      }
+    },
+    "usgs_volcanoes": {
+      "elevated_us_volcanoes": {
+        "status": "unverified",
+        "fields": {}
+      }
+    },
+    "gdacs": {
+      "global_disaster_alerts_7d": {
+        "status": "unverified",
+        "fields": {}
+      }
+    },
+    "usgs_seismic_events": {
+      "non_earthquake_seismic_past_day": {
+        "status": "unverified",
+        "fields": {}
+      }
+    },
+    "bbk_mowas": {
+      "civil_protection_warnings_germany": {
+        "status": "unverified",
+        "fields": {}
+      }
+    },
+    "bbk_police": {
+      "police_public_safety_warnings_germany": {
+        "status": "unverified",
+        "fields": {}
+      }
+    },
+    "aviation_weather": {
+      "international_sigmet_worldwide": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "us_airsigmet_current": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "us_gairmet_current": {
+        "status": "unverified",
+        "fields": {}
+      }
+    },
+    "nina_flood": {
+      "flood_information_germany": {
+        "status": "unverified",
+        "fields": {}
+      }
+    },
+    "nina_katwarn": {
+      "katwarn_public_warnings": {
+        "status": "unverified",
+        "fields": {}
+      }
+    },
+    "nina_biwapp": {
+      "biwapp_public_warnings": {
+        "status": "unverified",
+        "fields": {}
+      }
+    },
+    "glofas": {
+      "flood_reporting_points": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "flood_probability_5y": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "flood_probability_20y": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "flood_summary_1_3d": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "flood_summary_4_10d": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "flood_summary_11_30d": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "rapid_flood_mapping": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "rapid_impact_assessment": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "flood_hazard_100y": {
+        "status": "unverified",
+        "fields": {}
+      }
+    },
+    "met_norway_astronomy": {
+      "moon_phase_angle": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "moon_phase_name": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "moon_illumination": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "moon_age_days": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "moonrise_time": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "moonrise_azimuth": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "moonset_time": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "moonset_azimuth": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "high_moon_time": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "high_moon_elevation": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "high_moon_visible": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "low_moon_time": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "low_moon_elevation": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "low_moon_visible": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "sunrise_time": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "sunrise_azimuth": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "sunset_time": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "sunset_azimuth": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "solar_noon_time": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "solar_noon_elevation": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "solar_noon_visible": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "solar_midnight_time": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "solar_midnight_elevation": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "solar_midnight_visible": {
+        "status": "unverified",
+        "fields": {}
+      }
+    },
+    "open_meteo_pollen": {
+      "alder_pollen": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "birch_pollen": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "grass_pollen": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "mugwort_pollen": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "olive_pollen": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "ragweed_pollen": {
+        "status": "unverified",
+        "fields": {}
+      }
+    },
+    "gbif_biodiversity": {
+      "occurrence_density_felidae": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "occurrence_density_panthera": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "occurrence_density_lion": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "occurrence_density_tiger": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "occurrence_density_leopard": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "occurrence_density_jaguar": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "occurrence_density_puma": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "occurrence_density_snow_leopard": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "occurrence_density_cheetah": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "occurrence_density_ursidae": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "occurrence_density_brown_bear": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "occurrence_density_polar_bear": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "occurrence_density_wolf": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "occurrence_density_hyaenidae": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "occurrence_density_african_wild_dog": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "occurrence_density_elephantidae": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "occurrence_density_hippopotamus": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "occurrence_density_african_buffalo": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "occurrence_density_rhinocerotidae": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "occurrence_density_crocodylia": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "occurrence_density_crocodylus": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "occurrence_density_nile_crocodile": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "occurrence_density_saltwater_crocodile": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "occurrence_density_alligatoridae": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "occurrence_density_american_alligator": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "occurrence_density_caiman": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "occurrence_density_sharks": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "occurrence_density_requiem_sharks": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "occurrence_density_great_white_shark": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "occurrence_density_tiger_shark": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "occurrence_density_bull_shark": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "occurrence_density_hammerhead_sharks": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "occurrence_density_stingrays": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "occurrence_density_box_jellyfish": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "occurrence_density_chironex_fleckeri": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "occurrence_density_portuguese_man_o_war": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "occurrence_density_cone_snails": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "occurrence_density_stonefish": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "occurrence_density_blue_ringed_octopus": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "occurrence_density_sea_snakes": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "occurrence_density_serpentes": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "occurrence_density_elapidae": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "occurrence_density_viperidae": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "occurrence_density_pit_vipers": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "occurrence_density_cobras": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "occurrence_density_mambas": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "occurrence_density_taipans": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "occurrence_density_kraits": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "occurrence_density_coral_snakes": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "occurrence_density_puff_adders": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "occurrence_density_lanceheads": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "occurrence_density_rattlesnakes": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "occurrence_density_saw_scaled_vipers": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "occurrence_density_scorpions": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "occurrence_density_buthidae": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "occurrence_density_black_widows": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "occurrence_density_recluse_spiders": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "occurrence_density_wandering_spiders": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "occurrence_density_funnel_web_spiders": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "occurrence_density_poison_dart_frogs": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "occurrence_density_aconite": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "occurrence_density_deadly_nightshade": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "occurrence_density_foxglove": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "occurrence_density_castor_bean": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "occurrence_density_oleander": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "occurrence_density_yew": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "occurrence_density_poison_hemlock": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "occurrence_density_datura": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "occurrence_density_brugmansia": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "occurrence_density_toxicodendron": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "occurrence_density_giant_hogweed": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "occurrence_density_gympie_gympie": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "occurrence_density_manchineel": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "occurrence_density_rosary_pea": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "occurrence_density_suicide_tree": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "occurrence_density_strychnine_tree": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "occurrence_density_water_hemlock": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "occurrence_density_autumn_crocus": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "occurrence_density_golden_chain": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "occurrence_density_death_cap": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "occurrence_density_destroying_angel": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "occurrence_density_galerina_marginata": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "occurrence_density_deadly_webcap": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "occurrence_density_false_morel": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "occurrence_density_ticks": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "occurrence_density_aedes_aegypti": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "occurrence_density_aedes_albopictus": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "occurrence_density_anopheles": {
+        "status": "unverified",
+        "fields": {}
+      }
+    },
+    "fmi_lightning": {
+      "lightning_strikes_observed": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "lightning_nearest_distance": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "lightning_nearest_azimuth": {
+        "status": "unverified",
+        "fields": {}
+      }
+    },
+    "eumetsat_mtg_li": {
+      "mtg_li_accumulated_flashes": {
+        "status": "unverified",
+        "fields": {}
+      }
+    },
+    "noaa_goes_glm": {
+      "glm_east_lcfa": {
+        "status": "unverified",
+        "fields": {}
+      },
+      "glm_west_lcfa": {
+        "status": "unverified",
+        "fields": {}
+      }
+    },
+    "eccc_lightning": {
+      "lightning_density_2_5km": {
+        "status": "unverified",
+        "fields": {}
+      }
+    }
+  }
+}

@@ -58,6 +58,7 @@ class ProviderUtcPathTests(unittest.TestCase):
         )
         raw = {
             "provider": "dwd",
+            "capability": "radar_precipitation",
             "tile_url": "https://example.invalid/dwd/current",
             "frame_time": 1792152000,
             "attribution": "Synthetic DWD source",

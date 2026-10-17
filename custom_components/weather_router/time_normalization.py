@@ -132,3 +132,122 @@ def calendar_day_interval(value: Any, *, iana_zone: str) -> tuple[str, str] | No
         return utc_iso(start), utc_iso(end)
     except (ValueError, ZoneInfoNotFoundError, OverflowError):
         return None
+
+
+# UNUMSTOESSLICHER WEATHERROUTER-ZEITVERTRAG:
+# Keine unnormalisierten Providerzeiten ausserhalb dieser Grenze; keine
+# Einheit raten; fehlende Beobachtungszeit ist NIEMALS die Abrufzeit.
+# Format, UTC-Basis und Zeitrolle sind PRO QUELLE UND ROHFELD deklariert.
+# Neue Provider/Capabilities muessen im Vertrag registriert sein.
+from dataclasses import dataclass
+from functools import lru_cache
+import json
+from pathlib import Path
+
+
+@dataclass(frozen=True, slots=True)
+class ProviderTimeResult:
+    utc: datetime | None
+    role: str | None
+    source_format: str | None
+    timezone_basis: str | None
+    status: str
+    reason: str | None = None
+
+    @property
+    def iso(self) -> str | None:
+        return utc_iso(self.utc) if self.utc is not None else None
+
+
+@lru_cache(maxsize=1)
+def provider_time_contracts() -> dict[str, Any]:
+    """Load the authoritative, declarative provider/capability/field registry."""
+    path = Path(__file__).with_name("provider_time_contracts.v1.json")
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    if payload.get("schema") != "weather_router.provider_time_contracts.v1":
+        raise ValueError("invalid_provider_time_contract_schema")
+    providers = payload.get("providers")
+    if not isinstance(providers, dict):
+        raise ValueError("invalid_provider_time_contract_providers")
+    for provider, capabilities in providers.items():
+        if not isinstance(provider, str) or not isinstance(capabilities, dict):
+            raise ValueError("invalid_provider_time_contract_provider")
+        for capability, contract in capabilities.items():
+            if not isinstance(capability, str) or not isinstance(contract, dict):
+                raise ValueError("invalid_provider_time_contract_capability")
+            if contract.get("status") not in ("unverified", "static_code_evidence", "runtime_verified"):
+                raise ValueError("invalid_provider_time_contract_status")
+            fields = contract.get("fields")
+            if not isinstance(fields, dict):
+                raise ValueError("invalid_provider_time_contract_fields")
+            for field, rule in fields.items():
+                if not isinstance(field, str) or not isinstance(rule, dict):
+                    raise ValueError("invalid_provider_time_field")
+                if rule.get("format") not in (
+                    "rfc3339", "unix_seconds", "unix_milliseconds",
+                    "rfc2822", "iana_local", "calendar_day"
+                ):
+                    raise ValueError("invalid_provider_time_format")
+                if rule.get("role") not in (
+                    "observed_at", "data_time", "valid_at", "issued_at",
+                    "published_at", "updated_at", "retrieved_at",
+                    "forecast_reference_time", "valid_from", "valid_until",
+                    "started_at", "ended_at", "resolved_at",
+                    "interval_start", "interval_end"
+                ):
+                    raise ValueError("invalid_provider_time_role")
+                if not isinstance(rule.get("evidence"), str) or not rule["evidence"]:
+                    raise ValueError("provider_time_evidence_missing")
+                if rule["format"] in ("unix_seconds", "unix_milliseconds") and rule.get("timezone") != "UTC":
+                    raise ValueError("invalid_provider_epoch_time_basis")
+    return payload
+
+
+def normalize_provider_time(
+    provider_id: str, capability_id: str, field_path: str, raw_value: Any,
+    *, provider_metadata: dict[str, Any] | None = None,
+) -> ProviderTimeResult:
+    """Single declared ingress for absolute provider times, never heuristic."""
+    contract = provider_time_contracts().get("providers", {}).get(provider_id, {}).get(capability_id)
+    if not isinstance(contract, dict):
+        return ProviderTimeResult(None, None, None, None, "rejected", "unregistered_capability")
+    rule = contract.get("fields", {}).get(field_path)
+    if not isinstance(rule, dict) or contract.get("status") == "unverified":
+        return ProviderTimeResult(None, None, None, None, "rejected", "unverified_source_time_contract")
+    fmt, role = rule["format"], rule["role"]
+    basis = rule.get("timezone")
+    if raw_value is None:
+        return ProviderTimeResult(None, role, fmt, basis, "unknown", "missing_source_time")
+    try:
+        if fmt == "rfc3339":
+            iso = iso_instant(raw_value)
+        elif fmt == "unix_seconds":
+            iso = epoch_instant(raw_value, unit="seconds")
+        elif fmt == "unix_milliseconds":
+            iso = epoch_instant(raw_value, unit="milliseconds")
+        elif fmt == "rfc2822":
+            iso = rss_instant(raw_value)
+        elif fmt == "iana_local":
+            zone = basis
+            if rule.get("timezone_metadata_field"):
+                zone = (provider_metadata or {}).get(rule["timezone_metadata_field"])
+            if not isinstance(zone, str) or not zone:
+                return ProviderTimeResult(None, role, fmt, None, "rejected", "unknown_time_zone")
+            iso = provider_local_instant(raw_value, iana_zone=zone)
+            basis = zone
+        elif fmt == "calendar_day":
+            zone = basis
+            if not isinstance(zone, str) or not zone:
+                return ProviderTimeResult(None, role, fmt, None, "rejected", "unknown_time_zone")
+            interval = calendar_day_interval(raw_value, iana_zone=zone)
+            # A calendar day has no single observational instant.
+            return ProviderTimeResult(None, role, fmt, zone, "interval" if interval else "rejected",
+                                      "calendar_interval_not_instant" if interval else "invalid_interval")
+        else:
+            iso = None
+        if iso is None:
+            return ProviderTimeResult(None, role, fmt, basis, "rejected", "invalid_timestamp")
+        parsed = datetime.fromisoformat(iso.replace("Z", "+00:00"))
+        return ProviderTimeResult(parsed, role, fmt, basis, "normalized")
+    except (TypeError, ValueError, OverflowError):
+        return ProviderTimeResult(None, role, fmt, basis, "rejected", "invalid_timestamp")
