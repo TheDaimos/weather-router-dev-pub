@@ -203,7 +203,7 @@ class NoaaGoesGlmProvider:
                 },
                 headers={
                     "Accept": "application/xml,text/xml",
-                    "User-Agent": "WeatherRouter/0.10 (+https://github.com/TheDaimos/weather-router-dev-pub)",
+                    "User-Agent": "WeatherRouter/0.10 (+https://github.com/TheDaimos/weather-router-dev)",
                 },
                 timeout=20,
             ) as response:
@@ -220,7 +220,9 @@ class NoaaGoesGlmProvider:
             raise ValueError(f"NOAA NODD has no recent {_PRODUCT_PREFIX} file for {metadata['satellite']}")
 
         key = str(latest["key"])
-        data_time = _data_time_from_key(key) or latest.get("last_modified")
+        # S3-Objektaktualisierung ist KEINE Messzeit. Nur den belegten
+        # GOES-GLM-Dateinamenszeitpunkt als Datenzeit verwenden.
+        data_time = _data_time_from_key(key)
         return {
             "provider": self.id,
             "provider_name": self.name,
