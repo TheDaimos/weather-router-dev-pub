@@ -271,7 +271,7 @@ class UniversalProviderTimeContractTests(unittest.TestCase):
             self.assertFalse(module.has_declared_provider_time_field(
                 provider, capability, "frame_time"))
         self.assertEqual(sum(
-            v["status"] == "unverified" for v in all_caps), 19)
+            v["status"] == "unverified" for v in all_caps), 3)
         # Niemals eine GBIF-Vorkommensdichte als aktuellen Messwert einstufen.
         gbif = (ROOT / "providers" / "gbif_biodiversity.py").read_text(
             encoding="utf-8")
@@ -312,6 +312,28 @@ class UniversalProviderTimeContractTests(unittest.TestCase):
         goes = (ROOT / "providers" / "noaa_goes_glm.py").read_text(
             encoding="utf-8")
         self.assertNotIn('_data_time_from_key(key) or latest.get("last_modified")', goes)
+
+
+    def test_aviation_api_mixed_epoch_and_zoned_formats_stay_unverified(self):
+        # AWC exposes distinct JSON and GeoJSON temporal wire types.
+        # Never guess before the exact source payload is verified.
+        registry = json.loads(REGISTRY.read_text(encoding="utf-8"))
+        unresolved = [
+            (provider, cap)
+            for provider, caps in registry["providers"].items()
+            for cap, rule in caps.items() if rule["status"] == "unverified"
+        ]
+        self.assertEqual(set(unresolved), {
+            ("aviation_weather", "international_sigmet_worldwide"),
+            ("aviation_weather", "us_airsigmet_current"),
+            ("aviation_weather", "us_gairmet_current"),
+        })
+        for provider, cap in unresolved:
+            for raw in (1792245600, "2026-10-17T14:00:00Z"):
+                result = module.normalize_provider_time(
+                    provider, cap, "events[].effective", raw)
+                self.assertIsNone(result.iso)
+                self.assertEqual(result.reason, "unverified_source_time_contract")
 
 
 if __name__ == "__main__":
