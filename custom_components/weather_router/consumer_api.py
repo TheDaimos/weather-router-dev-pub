@@ -2530,6 +2530,9 @@ def _provider_time(candidate: Candidate, field_path: str, value: Any,
     Providerzeiten ausserhalb dieser Grenze, niemals Zeitformat/Einheit raten
     und Abrufzeit niemals als Beobachtungszeit ausgeben.
     """
+    if value is None:
+        # Nicht vorhandene optionale Felder sind keine Zeitvertragsverletzung.
+        return None
     from .time_normalization import normalize_provider_time
     converted = normalize_provider_time(candidate.provider.id, candidate.capability.id,
                                          field_path, value,
@@ -2659,7 +2662,7 @@ def _normalize_hazard_feed(
             parameters["provider_hazard_type"] = provider_hazard_type
             parameters["hazard_type_fallback"] = hazard_type
         effective = next((
-            instant for key in ("effective", "sent", "onset")
+            instant for key in ("effective", "onset")
             if (instant := _provider_time(candidate, f"events[].{key}",
                                          raw.get(key), result, time_errors)) is not None
         ), None)

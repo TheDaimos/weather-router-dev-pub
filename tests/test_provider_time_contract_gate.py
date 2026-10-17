@@ -127,7 +127,8 @@ class UniversalProviderTimeContractTests(unittest.TestCase):
         tree = ast.parse(code)
         for target in ("_normalize_event_feed", "_normalize_hazard_feed",
                        "_normalize_data_file", "_resolve_candidate"):
-            node = next(x for x in tree.body if x.name == target)
+            node = next(x for x in tree.body if isinstance(
+                x, (ast.FunctionDef, ast.AsyncFunctionDef)) and x.name == target)
             body = ast.get_source_segment(code, node)
             self.assertIn("_provider_time(", body, target)
             self.assertNotIn("_iso_time(raw.get(", body, target)
