@@ -1470,8 +1470,21 @@
         }
       },
       "aurora_ovation_latest": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "observed_at",
+            "timezone": "UTC",
+            "evidence": "providers/noaa_swpc.py: NOAA SWPC OVATION JSON Observation Time; source https://services.swpc.noaa.gov/json/ovation_aurora_latest.json and dated source sample 2026-08-12T22:56:00Z"
+          },
+          "valid_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/noaa_swpc.py: NOAA SWPC OVATION JSON Forecast Time; source https://services.swpc.noaa.gov/json/ovation_aurora_latest.json and dated source sample 2026-08-13T00:04:00Z"
+          }
+        }
       }
     },
     "nasa_iss": {
@@ -1813,24 +1826,59 @@
     },
     "jma": {
       "temperature": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "offset_in_source",
+            "evidence": "providers/jma.py: _extract_forecast_values timeSeries[].timeDefines selected as when; async_fetch_point returns min(times); JMA forecast times must carry explicit zone"
+          }
+        }
       },
       "precipitation_probability": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "offset_in_source",
+            "evidence": "providers/jma.py: _extract_forecast_values timeSeries[].timeDefines selected as when; async_fetch_point returns min(times); JMA forecast times must carry explicit zone"
+          }
+        }
       },
       "weather_summary": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "offset_in_source",
+            "evidence": "providers/jma.py: _extract_forecast_values timeSeries[].timeDefines selected as when; async_fetch_point returns min(times); JMA forecast times must carry explicit zone"
+          }
+        }
       },
       "weather_code": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "offset_in_source",
+            "evidence": "providers/jma.py: _extract_forecast_values timeSeries[].timeDefines selected as when; async_fetch_point returns min(times); JMA forecast times must carry explicit zone"
+          }
+        }
       },
       "wind_summary": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "offset_in_source",
+            "evidence": "providers/jma.py: _extract_forecast_values timeSeries[].timeDefines selected as when; async_fetch_point returns min(times); JMA forecast times must carry explicit zone"
+          }
+        }
       },
       "official_tsunami_warnings_japan": {
         "status": "unverified",
@@ -2062,40 +2110,157 @@
     },
     "glofas": {
       "flood_reporting_points": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "frame_time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/glofas.py: frame_time = int(value.timestamp()) from WMS time-dimension aware datetimes (forecast product)"
+          },
+          "timeline.frames[].time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/glofas.py: frames[].time = int(value.timestamp()) for WMS layer_time_dimension values; forecast, not observation"
+          }
+        }
       },
       "flood_probability_5y": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "frame_time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/glofas.py: frame_time = int(value.timestamp()) from WMS time-dimension aware datetimes (forecast product)"
+          },
+          "timeline.frames[].time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/glofas.py: frames[].time = int(value.timestamp()) for WMS layer_time_dimension values; forecast, not observation"
+          }
+        }
       },
       "flood_probability_20y": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "frame_time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/glofas.py: frame_time = int(value.timestamp()) from WMS time-dimension aware datetimes (forecast product)"
+          },
+          "timeline.frames[].time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/glofas.py: frames[].time = int(value.timestamp()) for WMS layer_time_dimension values; forecast, not observation"
+          }
+        }
       },
       "flood_summary_1_3d": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "frame_time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/glofas.py: frame_time = int(value.timestamp()) from WMS time-dimension aware datetimes (forecast product)"
+          },
+          "timeline.frames[].time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/glofas.py: frames[].time = int(value.timestamp()) for WMS layer_time_dimension values; forecast, not observation"
+          }
+        }
       },
       "flood_summary_4_10d": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "frame_time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/glofas.py: frame_time = int(value.timestamp()) from WMS time-dimension aware datetimes (forecast product)"
+          },
+          "timeline.frames[].time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/glofas.py: frames[].time = int(value.timestamp()) for WMS layer_time_dimension values; forecast, not observation"
+          }
+        }
       },
       "flood_summary_11_30d": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "frame_time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/glofas.py: frame_time = int(value.timestamp()) from WMS time-dimension aware datetimes (forecast product)"
+          },
+          "timeline.frames[].time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/glofas.py: frames[].time = int(value.timestamp()) for WMS layer_time_dimension values; forecast, not observation"
+          }
+        }
       },
       "rapid_flood_mapping": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "frame_time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/glofas.py: frame_time = int(value.timestamp()) from WMS time-dimension aware datetimes (forecast product)"
+          },
+          "timeline.frames[].time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/glofas.py: frames[].time = int(value.timestamp()) for WMS layer_time_dimension values; forecast, not observation"
+          }
+        }
       },
       "rapid_impact_assessment": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "frame_time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/glofas.py: frame_time = int(value.timestamp()) from WMS time-dimension aware datetimes (forecast product)"
+          },
+          "timeline.frames[].time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/glofas.py: frames[].time = int(value.timestamp()) for WMS layer_time_dimension values; forecast, not observation"
+          }
+        }
       },
       "flood_hazard_100y": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "frame_time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/glofas.py: frame_time = int(value.timestamp()) from WMS time-dimension aware datetimes (forecast product)"
+          },
+          "timeline.frames[].time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/glofas.py: frames[].time = int(value.timestamp()) for WMS layer_time_dimension values; forecast, not observation"
+          }
+        }
       }
     },
     "met_norway_astronomy": {
