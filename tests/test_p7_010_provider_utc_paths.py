@@ -79,6 +79,35 @@ class ProviderUtcPathTests(unittest.TestCase):
         self.assertIsNone(undated)
         self.assertEqual(unknown["timeline"]["frames"], [])
 
+    def test_dwd_48_frame_epoch_timeline_survives_central_normalization(self):
+        normalizer = extracted(ROOT / "consumer_api.py", "_normalize_raster")
+        normalizer.__globals__.update(
+            _iso_time=extracted(ROOT / "consumer_api.py", "_iso_time"),
+            _safe_public_url=lambda value: value if isinstance(value, str)
+                and value.startswith("https://example.invalid/") else None,
+        )
+        raw = {
+            "provider": "dwd",
+            "capability": "radar_precipitation",
+            "tile_url": "https://example.invalid/dwd/current",
+            "frame_time": 1792152000,
+            "attribution": "DWD simulated 48-frame WMS timeline",
+            "timeline": {
+                "frames": [
+                    {"time": 1792152000 - i * 300,
+                     "tile_url": f"https://example.invalid/dwd/f{i}"}
+                    for i in range(48)
+                ]
+            },
+        }
+        payload, data_time = normalizer(raw)
+        self.assertEqual(data_time, "2026-10-16T12:00:00Z")
+        self.assertEqual(len(payload["timeline"]["frames"]), 48)
+        self.assertEqual(payload["timeline"]["frames"][0]["time"], data_time)
+        self.assertEqual(payload["timeline"]["frames"][-1]["time"],
+                         "2026-10-16T08:05:00Z")
+        self.assertEqual(len({frame["time"] for frame in payload["timeline"]["frames"]}), 48)
+
     def test_dwd_wms_avoids_naive_utc_guess(self):
         func = extracted(ROOT / "providers/dwd.py", "_parse_instant")
         self.assertIsNone(func("2026-10-16T12:00:00"))
