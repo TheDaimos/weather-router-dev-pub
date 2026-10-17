@@ -2249,7 +2249,17 @@ def _aggregate_provenance(sources: list[dict[str, Any]]) -> dict[str, Any]:
 
 
 def _normalize_raster(result: dict[str, Any]) -> tuple[dict[str, Any], str | None]:
-    from .time_normalization import normalize_provider_time
+    def _source_time(field_path: str, raw_value: Any) -> str | None:
+        if raw_value is None:
+            return None
+        # Lazy fuer explizit zeitlose Raster (z.B. Referenzdaten).
+        from .time_normalization import normalize_provider_time
+        return normalize_provider_time(
+            str(result.get("provider") or ""),
+            str(result.get("capability") or ""),
+            field_path, raw_value,
+            provider_metadata=result.get("provider_metadata"),
+        ).iso
     tile_url = _safe_public_url(result.get("tile_url"))
     if tile_url is None:
         raise CandidateUnavailable(
@@ -2335,12 +2345,7 @@ def _normalize_raster(result: dict[str, Any]) -> tuple[dict[str, Any], str | Non
             url = _safe_public_url(frame.get("tile_url"))
             # Der deklarative UTC-Quellenvertrag ist die EINZIGE Zeitgrenze.
             # Fehlende/mehrdeutige Rohzeit darf niemals als frisch erscheinen.
-            time_value = normalize_provider_time(
-                str(result.get("provider") or ""),
-                str(result.get("capability") or ""),
-                "timeline.frames[].time", frame.get("time"),
-                provider_metadata=result.get("provider_metadata"),
-            ).iso
+            time_value = _source_time("timeline.frames[].time", frame.get("time"))
             if url is None or time_value is None:
                 continue
             item = {"time": time_value, "tile_url": url}
@@ -2364,12 +2369,7 @@ def _normalize_raster(result: dict[str, Any]) -> tuple[dict[str, Any], str | Non
                 normalized_timeline[index_field] = value
         payload["timeline"] = normalized_timeline
 
-    return payload, normalize_provider_time(
-        str(result.get("provider") or ""),
-        str(result.get("capability") or ""),
-        "frame_time", result.get("frame_time"),
-        provider_metadata=result.get("provider_metadata"),
-    ).iso
+    return payload, _source_time("frame_time", result.get("frame_time"))
 
 
 def _validate_intent_resource_contract(

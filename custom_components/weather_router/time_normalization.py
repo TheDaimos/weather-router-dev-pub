@@ -139,14 +139,13 @@ def calendar_day_interval(value: Any, *, iana_zone: str) -> tuple[str, str] | No
 # Einheit raten; fehlende Beobachtungszeit ist NIEMALS die Abrufzeit.
 # Format, UTC-Basis und Zeitrolle sind PRO QUELLE UND ROHFELD deklariert.
 # Neue Provider/Capabilities muessen im Vertrag registriert sein.
-from dataclasses import dataclass
+from typing import NamedTuple
 from functools import lru_cache
 import json
 from pathlib import Path
 
 
-@dataclass(frozen=True, slots=True)
-class ProviderTimeResult:
+class ProviderTimeResult(NamedTuple):
     utc: datetime | None
     role: str | None
     source_format: str | None
