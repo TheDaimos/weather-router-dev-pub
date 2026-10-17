@@ -1825,36 +1825,92 @@
     },
     "eccc_geomet": {
       "temperature": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "observed_at",
+            "timezone": "UTC",
+            "evidence": "providers/eccc_geomet.py: props['date_tm-value'] (or obs_date_tm), MSC GeoMet SWOB realtime ISO UTC observed datetime, 2025-11-20T00:00:00.000Z example https://github.com/rywhale/mscgeometR and official collection https://eccc-msc.github.io/open-data/msc-geomet/ogc_api_en/"
+          }
+        }
       },
       "dew_point": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "observed_at",
+            "timezone": "UTC",
+            "evidence": "providers/eccc_geomet.py: props['date_tm-value'] (or obs_date_tm), MSC GeoMet SWOB realtime ISO UTC observed datetime, 2025-11-20T00:00:00.000Z example https://github.com/rywhale/mscgeometR and official collection https://eccc-msc.github.io/open-data/msc-geomet/ogc_api_en/"
+          }
+        }
       },
       "relative_humidity": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "observed_at",
+            "timezone": "UTC",
+            "evidence": "providers/eccc_geomet.py: props['date_tm-value'] (or obs_date_tm), MSC GeoMet SWOB realtime ISO UTC observed datetime, 2025-11-20T00:00:00.000Z example https://github.com/rywhale/mscgeometR and official collection https://eccc-msc.github.io/open-data/msc-geomet/ogc_api_en/"
+          }
+        }
       },
       "air_pressure": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "observed_at",
+            "timezone": "UTC",
+            "evidence": "providers/eccc_geomet.py: props['date_tm-value'] (or obs_date_tm), MSC GeoMet SWOB realtime ISO UTC observed datetime, 2025-11-20T00:00:00.000Z example https://github.com/rywhale/mscgeometR and official collection https://eccc-msc.github.io/open-data/msc-geomet/ogc_api_en/"
+          }
+        }
       },
       "visibility": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "observed_at",
+            "timezone": "UTC",
+            "evidence": "providers/eccc_geomet.py: props['date_tm-value'] (or obs_date_tm), MSC GeoMet SWOB realtime ISO UTC observed datetime, 2025-11-20T00:00:00.000Z example https://github.com/rywhale/mscgeometR and official collection https://eccc-msc.github.io/open-data/msc-geomet/ogc_api_en/"
+          }
+        }
       },
       "precipitation_1h": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "observed_at",
+            "timezone": "UTC",
+            "evidence": "providers/eccc_geomet.py: props['date_tm-value'] (or obs_date_tm), MSC GeoMet SWOB realtime ISO UTC observed datetime, 2025-11-20T00:00:00.000Z example https://github.com/rywhale/mscgeometR and official collection https://eccc-msc.github.io/open-data/msc-geomet/ogc_api_en/"
+          }
+        }
       },
       "cloud_cover": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "observed_at",
+            "timezone": "UTC",
+            "evidence": "providers/eccc_geomet.py: props['date_tm-value'] (or obs_date_tm), MSC GeoMet SWOB realtime ISO UTC observed datetime, 2025-11-20T00:00:00.000Z example https://github.com/rywhale/mscgeometR and official collection https://eccc-msc.github.io/open-data/msc-geomet/ogc_api_en/"
+          }
+        }
       },
       "wind_direction": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "observed_at",
+            "timezone": "UTC",
+            "evidence": "providers/eccc_geomet.py: props['date_tm-value'] (or obs_date_tm), MSC GeoMet SWOB realtime ISO UTC observed datetime, 2025-11-20T00:00:00.000Z example https://github.com/rywhale/mscgeometR and official collection https://eccc-msc.github.io/open-data/msc-geomet/ogc_api_en/"
+          }
+        }
       }
     },
     "jma": {
@@ -2004,8 +2060,15 @@
     },
     "nhc_tropical_cyclones": {
       "active_tropical_cyclones": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "events[].effective": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/nhc_tropical_cyclones.py: storm.lastUpdate is status validity timestamp 2017-09-09T16:00:00.000Z (NOT advisory issue), official NHC JSON schema https://www.nhc.noaa.gov/productexamples/NHC_Tropical_Cyclone_Status_JSON_File_Reference.pdf"
+          }
+        }
       }
     },
     "noaa_tsunami": {
@@ -2041,14 +2104,34 @@
     },
     "bmkg_tsunami": {
       "tsunami_potential_earthquake": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "events[].effective": {
+            "format": "rfc3339",
+            "role": "occurred_at",
+            "timezone": "UTC",
+            "evidence": "providers/bmkg_tsunami.py: quake.DateTime is earthquake origin time, ISO8601 UTC (+00:00), official BMKG https://data.bmkg.go.id/gempabumi/"
+          },
+          "events[].onset": {
+            "format": "rfc3339",
+            "role": "started_at",
+            "timezone": "UTC",
+            "evidence": "providers/bmkg_tsunami.py: quake.DateTime denotes observed quake origin, NOT issuance of tsunami warning, official BMKG https://data.bmkg.go.id/gempabumi/"
+          }
+        }
       }
     },
     "bom_tsunami": {
       "official_tsunami_warnings_australia": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "events[].sent": {
+            "format": "rfc2822",
+            "role": "published_at",
+            "timezone": "offset_in_source",
+            "evidence": "providers/bom_tsunami.py: RSS item.pubDate publication time (RFC 822/2822 with timezone), BOM/JATWC RSS is a published bulletin, no separate onset in this adapter"
+          }
+        }
       }
     },
     "usgs_earthquakes": {
@@ -2207,14 +2290,64 @@
     },
     "bbk_mowas": {
       "civil_protection_warnings_germany": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "events[].effective": {
+            "format": "rfc3339",
+            "role": "valid_from",
+            "timezone": "offset_in_source",
+            "evidence": "providers/bbk_warning_common.py: shared warnung.bund.de/api31/{mowas,police,lhp,katwarn,biwapp}/mapData.json startDate/expiresDate, date examples 2024-06-28T19:43:20+02:00 https://thilo-negendanck.de/projekte/warnungen.bbk/nina-api/"
+          },
+          "events[].onset": {
+            "format": "rfc3339",
+            "role": "started_at",
+            "timezone": "offset_in_source",
+            "evidence": "providers/bbk_warning_common.py: shared warnung.bund.de/api31/{mowas,police,lhp,katwarn,biwapp}/mapData.json startDate/expiresDate, date examples 2024-06-28T19:43:20+02:00 https://thilo-negendanck.de/projekte/warnungen.bbk/nina-api/"
+          },
+          "events[].expires": {
+            "format": "rfc3339",
+            "role": "valid_until",
+            "timezone": "offset_in_source",
+            "evidence": "providers/bbk_warning_common.py: shared warnung.bund.de/api31/{mowas,police,lhp,katwarn,biwapp}/mapData.json startDate/expiresDate, date examples 2024-06-28T19:43:20+02:00 https://thilo-negendanck.de/projekte/warnungen.bbk/nina-api/"
+          },
+          "events[].ends": {
+            "format": "rfc3339",
+            "role": "valid_until",
+            "timezone": "offset_in_source",
+            "evidence": "providers/bbk_warning_common.py: shared warnung.bund.de/api31/{mowas,police,lhp,katwarn,biwapp}/mapData.json startDate/expiresDate, date examples 2024-06-28T19:43:20+02:00 https://thilo-negendanck.de/projekte/warnungen.bbk/nina-api/"
+          }
+        }
       }
     },
     "bbk_police": {
       "police_public_safety_warnings_germany": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "events[].effective": {
+            "format": "rfc3339",
+            "role": "valid_from",
+            "timezone": "offset_in_source",
+            "evidence": "providers/bbk_warning_common.py: shared warnung.bund.de/api31/{mowas,police,lhp,katwarn,biwapp}/mapData.json startDate/expiresDate, date examples 2024-06-28T19:43:20+02:00 https://thilo-negendanck.de/projekte/warnungen.bbk/nina-api/"
+          },
+          "events[].onset": {
+            "format": "rfc3339",
+            "role": "started_at",
+            "timezone": "offset_in_source",
+            "evidence": "providers/bbk_warning_common.py: shared warnung.bund.de/api31/{mowas,police,lhp,katwarn,biwapp}/mapData.json startDate/expiresDate, date examples 2024-06-28T19:43:20+02:00 https://thilo-negendanck.de/projekte/warnungen.bbk/nina-api/"
+          },
+          "events[].expires": {
+            "format": "rfc3339",
+            "role": "valid_until",
+            "timezone": "offset_in_source",
+            "evidence": "providers/bbk_warning_common.py: shared warnung.bund.de/api31/{mowas,police,lhp,katwarn,biwapp}/mapData.json startDate/expiresDate, date examples 2024-06-28T19:43:20+02:00 https://thilo-negendanck.de/projekte/warnungen.bbk/nina-api/"
+          },
+          "events[].ends": {
+            "format": "rfc3339",
+            "role": "valid_until",
+            "timezone": "offset_in_source",
+            "evidence": "providers/bbk_warning_common.py: shared warnung.bund.de/api31/{mowas,police,lhp,katwarn,biwapp}/mapData.json startDate/expiresDate, date examples 2024-06-28T19:43:20+02:00 https://thilo-negendanck.de/projekte/warnungen.bbk/nina-api/"
+          }
+        }
       }
     },
     "aviation_weather": {
@@ -2233,20 +2366,95 @@
     },
     "nina_flood": {
       "flood_information_germany": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "events[].effective": {
+            "format": "rfc3339",
+            "role": "valid_from",
+            "timezone": "offset_in_source",
+            "evidence": "providers/bbk_warning_common.py: shared warnung.bund.de/api31/{mowas,police,lhp,katwarn,biwapp}/mapData.json startDate/expiresDate, date examples 2024-06-28T19:43:20+02:00 https://thilo-negendanck.de/projekte/warnungen.bbk/nina-api/"
+          },
+          "events[].onset": {
+            "format": "rfc3339",
+            "role": "started_at",
+            "timezone": "offset_in_source",
+            "evidence": "providers/bbk_warning_common.py: shared warnung.bund.de/api31/{mowas,police,lhp,katwarn,biwapp}/mapData.json startDate/expiresDate, date examples 2024-06-28T19:43:20+02:00 https://thilo-negendanck.de/projekte/warnungen.bbk/nina-api/"
+          },
+          "events[].expires": {
+            "format": "rfc3339",
+            "role": "valid_until",
+            "timezone": "offset_in_source",
+            "evidence": "providers/bbk_warning_common.py: shared warnung.bund.de/api31/{mowas,police,lhp,katwarn,biwapp}/mapData.json startDate/expiresDate, date examples 2024-06-28T19:43:20+02:00 https://thilo-negendanck.de/projekte/warnungen.bbk/nina-api/"
+          },
+          "events[].ends": {
+            "format": "rfc3339",
+            "role": "valid_until",
+            "timezone": "offset_in_source",
+            "evidence": "providers/bbk_warning_common.py: shared warnung.bund.de/api31/{mowas,police,lhp,katwarn,biwapp}/mapData.json startDate/expiresDate, date examples 2024-06-28T19:43:20+02:00 https://thilo-negendanck.de/projekte/warnungen.bbk/nina-api/"
+          }
+        }
       }
     },
     "nina_katwarn": {
       "katwarn_public_warnings": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "events[].effective": {
+            "format": "rfc3339",
+            "role": "valid_from",
+            "timezone": "offset_in_source",
+            "evidence": "providers/bbk_warning_common.py: shared warnung.bund.de/api31/{mowas,police,lhp,katwarn,biwapp}/mapData.json startDate/expiresDate, date examples 2024-06-28T19:43:20+02:00 https://thilo-negendanck.de/projekte/warnungen.bbk/nina-api/"
+          },
+          "events[].onset": {
+            "format": "rfc3339",
+            "role": "started_at",
+            "timezone": "offset_in_source",
+            "evidence": "providers/bbk_warning_common.py: shared warnung.bund.de/api31/{mowas,police,lhp,katwarn,biwapp}/mapData.json startDate/expiresDate, date examples 2024-06-28T19:43:20+02:00 https://thilo-negendanck.de/projekte/warnungen.bbk/nina-api/"
+          },
+          "events[].expires": {
+            "format": "rfc3339",
+            "role": "valid_until",
+            "timezone": "offset_in_source",
+            "evidence": "providers/bbk_warning_common.py: shared warnung.bund.de/api31/{mowas,police,lhp,katwarn,biwapp}/mapData.json startDate/expiresDate, date examples 2024-06-28T19:43:20+02:00 https://thilo-negendanck.de/projekte/warnungen.bbk/nina-api/"
+          },
+          "events[].ends": {
+            "format": "rfc3339",
+            "role": "valid_until",
+            "timezone": "offset_in_source",
+            "evidence": "providers/bbk_warning_common.py: shared warnung.bund.de/api31/{mowas,police,lhp,katwarn,biwapp}/mapData.json startDate/expiresDate, date examples 2024-06-28T19:43:20+02:00 https://thilo-negendanck.de/projekte/warnungen.bbk/nina-api/"
+          }
+        }
       }
     },
     "nina_biwapp": {
       "biwapp_public_warnings": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "events[].effective": {
+            "format": "rfc3339",
+            "role": "valid_from",
+            "timezone": "offset_in_source",
+            "evidence": "providers/bbk_warning_common.py: shared warnung.bund.de/api31/{mowas,police,lhp,katwarn,biwapp}/mapData.json startDate/expiresDate, date examples 2024-06-28T19:43:20+02:00 https://thilo-negendanck.de/projekte/warnungen.bbk/nina-api/"
+          },
+          "events[].onset": {
+            "format": "rfc3339",
+            "role": "started_at",
+            "timezone": "offset_in_source",
+            "evidence": "providers/bbk_warning_common.py: shared warnung.bund.de/api31/{mowas,police,lhp,katwarn,biwapp}/mapData.json startDate/expiresDate, date examples 2024-06-28T19:43:20+02:00 https://thilo-negendanck.de/projekte/warnungen.bbk/nina-api/"
+          },
+          "events[].expires": {
+            "format": "rfc3339",
+            "role": "valid_until",
+            "timezone": "offset_in_source",
+            "evidence": "providers/bbk_warning_common.py: shared warnung.bund.de/api31/{mowas,police,lhp,katwarn,biwapp}/mapData.json startDate/expiresDate, date examples 2024-06-28T19:43:20+02:00 https://thilo-negendanck.de/projekte/warnungen.bbk/nina-api/"
+          },
+          "events[].ends": {
+            "format": "rfc3339",
+            "role": "valid_until",
+            "timezone": "offset_in_source",
+            "evidence": "providers/bbk_warning_common.py: shared warnung.bund.de/api31/{mowas,police,lhp,katwarn,biwapp}/mapData.json startDate/expiresDate, date examples 2024-06-28T19:43:20+02:00 https://thilo-negendanck.de/projekte/warnungen.bbk/nina-api/"
+          }
+        }
       }
     },
     "glofas": {
