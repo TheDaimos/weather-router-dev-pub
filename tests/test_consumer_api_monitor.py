@@ -116,6 +116,24 @@ class TestApiMonitor(unittest.TestCase):
                          "no_fresh_verified_frame")
         self.assertLessEqual(len(__import__("json").dumps(row).encode()),8192)
 
+    def test_v1_time_contract_error_survives_compaction(self):
+        m = monitor.ConsumerApiMonitor()
+        m.configure(enabled=True)
+        t = m.begin(api_version="V1", command="resolve",
+                    message={"consumer_id": "gewitterradar",
+                             "correlation_id": "p7-utc-failure"})
+        m.finish(t, result="success", response={
+            "status": "ready",
+            "resource": {"type": "raster_tile", "payload": {
+                "time_normalization_error": "unverified_source_time_contract",
+                "tile_url": "https://example.invalid/secret-path",
+            }},
+            **{f"large_{i}": "x" * 300 for i in range(70)}
+        })
+        row = m.query(correlation_id="p7-utc-failure")["entries"][0]
+        self.assertEqual(row["source_time_error"], "unverified_source_time_contract")
+        self.assertLessEqual(len(__import__("json").dumps(row).encode()), 8192)
+
     def test_event_window_compaction_keeps_separate_feed_age_and_reasons(self):
         m = monitor.ConsumerApiMonitor()
         m.configure(enabled=True)

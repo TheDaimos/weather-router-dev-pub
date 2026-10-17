@@ -148,6 +148,15 @@ class ConsumerApiMonitor:
         resp = response if isinstance(response, dict) else {}
         resource = resp.get("resource")
         payload = resource.get("payload") if isinstance(resource, dict) else None
+        # Zeitvertragsfehler duerfen bei V1 nicht im 8192-Byte-Kuerzungspfad
+        # verschwinden. Nur erlaubte Diagnosecodes, keine Rohzeiten/URLs.
+        source_time_error = payload.get("time_normalization_error") if isinstance(payload, dict) else None
+        if source_time_error in {
+            "unregistered_capability", "unverified_source_time_contract",
+            "unverified_epoch_unit", "invalid_timestamp",
+            "unknown_time_zone", "ambiguous_local_time", "invalid_interval",
+        }:
+            token["source_time_error"] = source_time_error
         event_policy = payload.get("event_time_policy") if isinstance(payload, dict) else None
         if isinstance(event_policy, dict):
             token["event_time_policy"] = _safe({
