@@ -200,7 +200,8 @@ def provider_time_contracts() -> dict[str, Any]:
                     raise ValueError("invalid_provider_time_field")
                 if rule.get("format") not in (
                     "rfc3339", "unix_seconds", "unix_milliseconds",
-                    "rfc2822", "iana_local", "calendar_day", "utc_compact"
+                    "rfc2822", "iana_local", "calendar_day", "utc_compact",
+                    "rfc3339_or_unix_seconds"
                 ):
                     raise ValueError("invalid_provider_time_format")
                 if rule.get("role") not in (
@@ -213,7 +214,8 @@ def provider_time_contracts() -> dict[str, Any]:
                     raise ValueError("invalid_provider_time_role")
                 if not isinstance(rule.get("evidence"), str) or not rule["evidence"]:
                     raise ValueError("provider_time_evidence_missing")
-                if rule["format"] in ("unix_seconds", "unix_milliseconds", "utc_compact") and rule.get("timezone") != "UTC":
+                if rule["format"] in ("unix_seconds", "unix_milliseconds", "utc_compact",
+                                      "rfc3339_or_unix_seconds") and rule.get("timezone") != "UTC":
                     raise ValueError("invalid_provider_epoch_time_basis")
     return payload
 
@@ -256,6 +258,14 @@ def normalize_provider_time(
             iso = epoch_instant(raw_value, unit="seconds")
         elif fmt == "unix_milliseconds":
             iso = epoch_instant(raw_value, unit="milliseconds")
+        elif fmt == "rfc3339_or_unix_seconds":
+            # Nur bei explizit ZWEIFACH belegtem Wire-Vertrag (z.B.
+            # GeoJSON-Varianten). Typ bestimmt die registrierte Variante,
+            # NIEMALS die Zahlenlaenge oder eine Providersonderliste.
+            iso = (epoch_instant(raw_value, unit="seconds")
+                   if type(raw_value) in (int, float)
+                   else iso_instant(raw_value)
+                   if isinstance(raw_value, str) else None)
         elif fmt == "rfc2822":
             iso = rss_instant(raw_value)
         elif fmt == "utc_compact":
