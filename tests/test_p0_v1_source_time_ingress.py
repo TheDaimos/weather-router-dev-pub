@@ -26,6 +26,7 @@ selected = {
     "_normalize_event_feed", "_normalize_hazard_feed",
     "_timeline_frames", "_normalize_image_sequence", "_normalize_data_file",
     "_normalize_raster",
+    "_normalize_declared_point_time_value",
 }
 functions = [
     node for node in tree.body
@@ -233,6 +234,47 @@ class UniversalV1SourceTimeTests(unittest.TestCase):
         self.assertEqual(event["expires"], "2026-10-16T16:00:00Z")
         self.assertEqual(latest, "2026-10-16T12:00:00Z")
         self.assertNotIn("time_normalization_error", payload)
+
+
+    def test_met_astronomy_values_use_declared_utc_not_fetch_freshness(self):
+        c = candidate("met_norway_astronomy", "sunrise_time")
+        entry = {"value": "2026-10-16T08:10:00+02:00"}
+        errors = set()
+        value = namespace["_normalize_declared_point_time_value"](
+            c, {}, entry, errors)
+        self.assertEqual(value["value"], "2026-10-16T06:10:00Z")
+        self.assertFalse(errors)
+        self.assertFalse(normalizer.has_declared_provider_time_field(
+            "met_norway_astronomy", "sunrise_time", "data_time"))
+        self.assertTrue(normalizer.has_declared_provider_time_field(
+            "met_norway_astronomy", "sunrise_time", "values[].value"))
+        self.assertEqual(normalizer.normalize_provider_time(
+            "met_norway_astronomy", "sunrise_time",
+            "values[].interval_start", "2026-10-16T00:00:00Z").role,
+            "interval_start")
+        self.assertEqual(normalizer.normalize_provider_time(
+            "met_norway_astronomy", "sunrise_time",
+            "values[].interval_end", "2026-10-17T00:00:00Z").role,
+            "interval_end")
+        value = namespace["_normalize_declared_point_time_value"](
+            c, {}, {"value": "2026-10-16T08:10:00"}, errors)
+        self.assertIsNone(value["value"])
+        self.assertIn("invalid_timestamp", errors)
+        # Numeric astronomical values may not accidentally enter the timestamp parser.
+        angle = {"value": 21.8}
+        namespace["_normalize_declared_point_time_value"](
+            candidate("met_norway_astronomy", "moon_phase_angle"), {},
+            angle, set())
+        self.assertEqual(angle["value"], 21.8)
+
+    def test_met_astronomy_provider_uses_intervals_not_observation_time(self):
+        # Statische Sicherheitskontrolle der realen Provider-Ausgabe:
+        # die Intervalldatumsgrenze darf nicht zu data_time umetikettiert werden.
+        provider_code = (ROOT / "providers" / "met_norway_astronomy.py").read_text(
+            encoding="utf-8")
+        self.assertIn('"data_time": None', provider_code)
+        self.assertIn('entry["interval_start"] = start', provider_code)
+        self.assertIn('entry["interval_end"] = end', provider_code)
 
 
 if __name__ == "__main__":
