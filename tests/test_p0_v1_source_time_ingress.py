@@ -407,5 +407,33 @@ class UniversalV1SourceTimeTests(unittest.TestCase):
 
 
 
+    def test_aviation_geojson_validity_normalization_is_type_declared(self):
+        capability = candidate("aviation_weather", "us_gairmet_current")
+        for raw in ("2026-10-17T14:00:00Z", 1792245600):
+            payload, latest = namespace["_normalize_hazard_feed"](
+                capability, {"events": [{
+                    "id": "gairmet-test", "hazard_type": "aviation_warning",
+                    "sent": None, "effective": raw, "onset": raw,
+                    "expires": "2026-10-17T15:00:00Z",
+                }]}
+            )
+            event = payload["events"][0]
+            self.assertEqual(event["effective"], "2026-10-17T14:00:00Z")
+            self.assertEqual(event["onset"], "2026-10-17T14:00:00Z")
+            self.assertEqual(event["expires"], "2026-10-17T15:00:00Z")
+            self.assertEqual(latest, "2026-10-17T14:00:00Z")
+            self.assertIsNone(event["sent"])
+            self.assertNotIn("time_normalization_error", payload)
+        bad, _ = namespace["_normalize_hazard_feed"](capability, {
+            "events": [{"id": "bad", "hazard_type": "aviation_warning",
+                        "effective": "1792245600"}]})
+        self.assertIsNone(bad["events"][0]["effective"])
+        self.assertEqual(bad["time_normalization_error"], "invalid_timestamp")
+        aviation = (ROOT / "providers" / "aviation_weather.py").read_text(
+            encoding="utf-8")
+        self.assertIn('"sent": None', aviation)
+
+
+
 if __name__ == "__main__":
     unittest.main()
