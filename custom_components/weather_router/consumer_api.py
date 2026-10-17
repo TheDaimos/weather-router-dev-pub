@@ -2192,7 +2192,10 @@ def _age_seconds(data_time: str | None) -> float | None:
 
 
 
-def _timeline_frames(raw: Any, *, url_field: str) -> list[dict[str, Any]]:
+def _timeline_frames(
+    candidate: Candidate, result: dict[str, Any], raw: Any, *,
+    url_field: str, errors: set[str],
+) -> list[dict[str, Any]]:
     if not isinstance(raw, list):
         return []
     result: list[dict[str, Any]] = []
@@ -2200,7 +2203,9 @@ def _timeline_frames(raw: Any, *, url_field: str) -> list[dict[str, Any]]:
         if not isinstance(frame, dict):
             continue
         frame_url = _safe_public_url(frame.get(url_field))
-        frame_time = _iso_time(frame.get("time"))
+        frame_time = _provider_time(
+            candidate, "timeline.frames[].time",
+            frame.get("time"), result, errors)
         if frame_url is None or frame_time is None:
             continue
         result.append({"time": frame_time, "url": frame_url})
@@ -2448,10 +2453,14 @@ def _validate_intent_resource_contract(
             )
 
 
-def _normalize_image_sequence(result: dict[str, Any]) -> tuple[dict[str, Any], str | None]:
+def _normalize_image_sequence(
+    candidate: Candidate, result: dict[str, Any],
+) -> tuple[dict[str, Any], str | None]:
     timeline = result.get("timeline")
     frames_raw = timeline.get("frames") if isinstance(timeline, dict) else None
-    frames = _timeline_frames(frames_raw, url_field="image_url")
+    time_errors: set[str] = set()
+    frames = _timeline_frames(
+        candidate, result, frames_raw, url_field="image_url", errors=time_errors)
     if not frames:
         raise CandidateUnavailable(
             "temporarily_unavailable",
@@ -2468,6 +2477,8 @@ def _normalize_image_sequence(result: dict[str, Any]) -> tuple[dict[str, Any], s
         ),
         "loop": bool(timeline.get("loop", True)) if isinstance(timeline, dict) else True,
     }
+    if time_errors:
+        payload["time_normalization_error"] = sorted(time_errors)[0]
     return payload, frames[-1]["time"]
 
 
@@ -3299,7 +3310,7 @@ async def _resolve_candidate(
         payload = apply_lightning_resource_semantics(candidate.public_id, payload)
         payload = apply_thunder_resource_semantics(candidate.public_id, payload)
     elif mode == "image_sequence":
-        payload, data_time = _normalize_image_sequence(result)
+        payload, data_time = _normalize_image_sequence(candidate, result)
     elif mode == "live_stream":
         payload, data_time = _normalize_live_stream(result)
     elif mode == "planetary_tile":

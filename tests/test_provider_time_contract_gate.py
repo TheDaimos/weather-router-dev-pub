@@ -133,6 +133,17 @@ class UniversalProviderTimeContractTests(unittest.TestCase):
             self.assertIn("_provider_time(", body, target)
             self.assertNotIn("_iso_time(raw.get(", body, target)
 
+    def test_suvi_frame_times_are_source_declarations(self):
+        for wavelength in ("094", "131", "171", "195", "284", "304"):
+            converted = module.normalize_provider_time(
+                "noaa_swpc", "solar_suvi_" + wavelength,
+                "timeline.frames[].time", "2026-10-16T12:00:00Z")
+            self.assertEqual(converted.iso, "2026-10-16T12:00:00Z")
+            self.assertEqual(converted.role, "observed_at")
+        source = (ROOT / "consumer_api.py").read_text(encoding="utf-8")
+        self.assertIn('candidate, "timeline.frames[].time"', source)
+        self.assertNotIn('_iso_time(frame.get("time"))', source)
+
     def test_unknown_field_cannot_become_a_fresh_instant(self):
         result = module.normalize_provider_time(
             "open_meteo", "temperature", "current.time", 1792152000)

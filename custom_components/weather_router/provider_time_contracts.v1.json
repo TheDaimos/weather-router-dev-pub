@@ -1158,28 +1158,106 @@
     },
     "noaa_swpc": {
       "solar_suvi_094": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "timeline.frames[].time": {
+            "format": "rfc3339",
+            "role": "observed_at",
+            "timezone": "UTC",
+            "evidence": "providers/noaa_swpc.py: _timestamp_from_url parses captured YYYYmmddHHMMSS using datetime(...,tzinfo=timezone.utc)"
+          },
+          "frame_time": {
+            "format": "rfc3339",
+            "role": "observed_at",
+            "timezone": "UTC",
+            "evidence": "providers/noaa_swpc.py: latest frames[-1].time from _timestamp_from_url UTC"
+          }
+        }
       },
       "solar_suvi_131": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "timeline.frames[].time": {
+            "format": "rfc3339",
+            "role": "observed_at",
+            "timezone": "UTC",
+            "evidence": "providers/noaa_swpc.py: _timestamp_from_url parses captured YYYYmmddHHMMSS using datetime(...,tzinfo=timezone.utc)"
+          },
+          "frame_time": {
+            "format": "rfc3339",
+            "role": "observed_at",
+            "timezone": "UTC",
+            "evidence": "providers/noaa_swpc.py: latest frames[-1].time from _timestamp_from_url UTC"
+          }
+        }
       },
       "solar_suvi_171": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "timeline.frames[].time": {
+            "format": "rfc3339",
+            "role": "observed_at",
+            "timezone": "UTC",
+            "evidence": "providers/noaa_swpc.py: _timestamp_from_url parses captured YYYYmmddHHMMSS using datetime(...,tzinfo=timezone.utc)"
+          },
+          "frame_time": {
+            "format": "rfc3339",
+            "role": "observed_at",
+            "timezone": "UTC",
+            "evidence": "providers/noaa_swpc.py: latest frames[-1].time from _timestamp_from_url UTC"
+          }
+        }
       },
       "solar_suvi_195": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "timeline.frames[].time": {
+            "format": "rfc3339",
+            "role": "observed_at",
+            "timezone": "UTC",
+            "evidence": "providers/noaa_swpc.py: _timestamp_from_url parses captured YYYYmmddHHMMSS using datetime(...,tzinfo=timezone.utc)"
+          },
+          "frame_time": {
+            "format": "rfc3339",
+            "role": "observed_at",
+            "timezone": "UTC",
+            "evidence": "providers/noaa_swpc.py: latest frames[-1].time from _timestamp_from_url UTC"
+          }
+        }
       },
       "solar_suvi_284": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "timeline.frames[].time": {
+            "format": "rfc3339",
+            "role": "observed_at",
+            "timezone": "UTC",
+            "evidence": "providers/noaa_swpc.py: _timestamp_from_url parses captured YYYYmmddHHMMSS using datetime(...,tzinfo=timezone.utc)"
+          },
+          "frame_time": {
+            "format": "rfc3339",
+            "role": "observed_at",
+            "timezone": "UTC",
+            "evidence": "providers/noaa_swpc.py: latest frames[-1].time from _timestamp_from_url UTC"
+          }
+        }
       },
       "solar_suvi_304": {
-        "status": "unverified",
-        "fields": {}
+        "status": "static_code_evidence",
+        "fields": {
+          "timeline.frames[].time": {
+            "format": "rfc3339",
+            "role": "observed_at",
+            "timezone": "UTC",
+            "evidence": "providers/noaa_swpc.py: _timestamp_from_url parses captured YYYYmmddHHMMSS using datetime(...,tzinfo=timezone.utc)"
+          },
+          "frame_time": {
+            "format": "rfc3339",
+            "role": "observed_at",
+            "timezone": "UTC",
+            "evidence": "providers/noaa_swpc.py: latest frames[-1].time from _timestamp_from_url UTC"
+          }
+        }
       },
       "aurora_ovation_latest": {
         "status": "unverified",
