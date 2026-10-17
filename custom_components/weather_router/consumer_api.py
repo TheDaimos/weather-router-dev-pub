@@ -2553,6 +2553,27 @@ def _provider_time(candidate: Candidate, field_path: str, value: Any,
     return converted.iso
 
 
+
+def _normalize_declared_point_time_value(
+    candidate: Candidate, result: dict[str, Any],
+    value: dict[str, Any], errors: set[str],
+) -> dict[str, Any]:
+    """Nur vertraglich als Zeitwert deklarierte Punktwerte nach UTC wandeln.
+
+    UNUMSTOESSLICHER WEATHERROUTER-ZEITVERTRAG: Ein Sonnenaufgang ist
+    eine gueltige Ereigniszeit, kein Mess- oder Provider-Abrufzeitpunkt.
+    Ohne deklarierte Feldrolle niemals aus dem Text einen Zeitwert raten.
+    """
+    from .time_normalization import has_declared_provider_time_field
+    if has_declared_provider_time_field(
+        candidate.provider.id, candidate.capability.id, "values[].value"
+    ):
+        value["value"] = _provider_time(
+            candidate, "values[].value", value.get("value"), result, errors
+        )
+    return value
+
+
 def _verified_feed_update_result(
     candidate: Candidate, result: dict[str, Any], payload: dict[str, Any],
 ) -> dict[str, Any]:
@@ -3082,6 +3103,9 @@ async def _resolve_candidate(
                 retryable=False,
                 message=str(err),
             ) from err
+        value = _normalize_declared_point_time_value(
+            candidate, result, value, time_errors
+        )
         value["data_time"] = data_time
         for time_field in ("valid_at", "interval_start", "interval_end"):
             if time_field in value:
