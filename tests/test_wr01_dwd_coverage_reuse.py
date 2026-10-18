@@ -34,6 +34,9 @@ methods = {
 wanted = (
     "_local_name",
     "_capabilities_cache_diagnostic",
+    "_parse_wms_document",
+    "_wms_layer_coverage",
+    "_wms_named_layers",
     "_layer_coverage_cache_diagnostic",
     "_named_layer_names",
     "_shared_global_wms_root",
@@ -235,6 +238,22 @@ class DwdCoverageReuseTests(unittest.IsolatedAsyncioTestCase):
                 "south": 18, "north": 24}
         self.assertTrue(spatial.coverage_matches_context(result, germany))
         self.assertFalse(spatial.coverage_matches_context(result, cuba))
+
+    async def test_actual_coverage_lookup_runs_in_ha_executor(self):
+        class FakeHass:
+            def __init__(self):
+                self.executions = []
+
+            async def async_add_executor_job(self, function, *args):
+                self.executions.append(function.__name__)
+                return await asyncio.to_thread(function, *args)
+
+        hass = FakeHass()
+        session = Session(delay=0)
+        _, provider = harness(session)
+        coverage = await provider.async_get_coverage(hass, "radar_precipitation")
+        self.assertEqual(coverage["scope"], "bbox")
+        self.assertIn("wms_layer_geographic_coverage", hass.executions)
 
     async def test_network_failure_never_becomes_fake_cached_coverage(self):
         session = Session(delay=.001, fail=True)

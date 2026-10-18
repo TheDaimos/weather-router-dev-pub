@@ -740,6 +740,35 @@ def _capabilities_cache_diagnostic(now: float | None = None) -> dict[str, Any]:
     }
 
 
+async def _parse_wms_document(
+    hass: HomeAssistant, payload: bytes,
+) -> ET.Element:
+    """Keep large provider XML parsing off the Home Assistant event loop."""
+    executor = getattr(hass, "async_add_executor_job", None)
+    if callable(executor) and len(payload) >= 65536:
+        return await executor(ET.fromstring, payload)
+    return ET.fromstring(payload)
+
+
+async def _wms_layer_coverage(
+    hass: HomeAssistant, root: ET.Element, layer: str,
+) -> dict[str, Any] | None:
+    """Inspect provider XML without blocking HA for large layer collections."""
+    executor = getattr(hass, "async_add_executor_job", None)
+    if callable(executor):
+        return await executor(wms_layer_geographic_coverage, root, layer)
+    return wms_layer_geographic_coverage(root, layer)
+
+
+async def _wms_named_layers(
+    hass: HomeAssistant, root: ET.Element,
+) -> list[str]:
+    executor = getattr(hass, "async_add_executor_job", None)
+    if callable(executor):
+        return await executor(_named_layer_names, root)
+    return _named_layer_names(root)
+
+
 async def _fetch_capabilities_uncached(
     hass: HomeAssistant,
     attempts: list[dict[str, Any]] | None = None,
@@ -781,7 +810,7 @@ async def _fetch_capabilities_uncached(
                 payload = await response.read()
                 record["bytes"] = len(payload)
                 response.raise_for_status()
-            root = ET.fromstring(payload)
+            root = await _parse_wms_document(hass, payload)
             record["xml_root"] = _local_name(root.tag)
             record["wms_version"] = root.attrib.get("version")
             record["ok"] = True
@@ -970,7 +999,7 @@ async def _shared_global_wms_root(
                 payload = await response.read()
                 metadata["bytes"] = len(payload)
                 response.raise_for_status()
-            root = ET.fromstring(payload)
+            root = await _parse_wms_document(hass, payload)
             entry = {
                 "root": root,
                 "metadata": metadata,
@@ -1021,7 +1050,7 @@ async def _async_global_wms_coverage(
             )
             record.update(metadata)
             record["cache_hit"] = was_cached
-            names = _named_layer_names(root)
+            names = await _wms_named_layers(hass, root)
             record["xml_root"] = _local_name(root.tag)
             record["wms_version"] = root.attrib.get("version")
             record["named_layer_count"] = len(names)
@@ -1030,7 +1059,7 @@ async def _async_global_wms_coverage(
                 or any(name.rsplit(":", 1)[-1] == layer for name in names)
             )
 
-            coverage = wms_layer_geographic_coverage(root, layer)
+            coverage = await _wms_layer_coverage(hass, root, layer)
             if coverage is None:
                 raise ValueError(
                     "global DWD WMS contains no usable machine-readable "
@@ -1136,10 +1165,10 @@ async def _async_layer_specific_coverage(
                 payload = await response.read()
                 record["bytes"] = len(payload)
                 response.raise_for_status()
-            root = ET.fromstring(payload)
+            root = await _parse_wms_document(hass, payload)
             record["xml_root"] = _local_name(root.tag)
             record["wms_version"] = root.attrib.get("version")
-            coverage = wms_layer_geographic_coverage(root, layer)
+            coverage = await _wms_layer_coverage(hass, root, layer)
             if coverage is None:
                 raise ValueError(
                     f"DWD layer-specific WMS has no machine-readable geographic coverage: {layer}"
@@ -1557,7 +1586,7 @@ class DwdProvider:
         """Existing WMS layer and fallback validation, unchanged."""
         cache_before = _capabilities_cache_diagnostic()
         base, root = await _async_capabilities(hass)
-        coverage = wms_layer_geographic_coverage(root, spec.layer)
+        coverage = await _wms_layer_coverage(hass, root, spec.layer)
         if coverage is None:
             attempts: list[dict[str, Any]] = []
             try:
