@@ -257,7 +257,7 @@ async def websocket_consumer_resolve_mosaic(
                     return None
                 finally:
                     ended = clock.time()
-                    coverage_preflight.append({
+                    entry = {
                         "source_id": source_id[:128],
                         "result": status,
                         "duration_ms": round((ended - started) * 1000, 2),
@@ -268,7 +268,31 @@ async def websocket_consumer_resolve_mosaic(
                             ((provider_finished_at or ended) - slot_acquired_at) * 1000, 2)
                         if slot_acquired_at is not None else None,
                         "cache_hit": cache_hit,
-                    })
+                    }
+                    # Optional provider-neutral, local state snapshot: on a
+                    # timed-out request the coverage result itself is absent.
+                    # Never include raw exceptions, URLs, XML or coordinates.
+                    detail = getattr(
+                        row.provider, "coverage_preflight_diagnostics", None
+                    )
+                    if callable(detail):
+                        try:
+                            state = detail(row.capability.id)
+                            if isinstance(state, dict):
+                                allowed = {
+                                    "cache_valid", "cache_ttl_remaining_seconds",
+                                    "refresh_running", "lookup_stage",
+                                    "aggregate_wms_cached",
+                                    "global_wms_refresh_running",
+                                    "retry_after_seconds",
+                                }
+                                entry["provider_state"] = {
+                                    k: v for k, v in state.items() if k in allowed
+                                    and isinstance(v, (bool, int, float, str, type(None)))
+                                }
+                        except Exception:  # noqa: BLE001 - diagnostics cannot break routing
+                            pass
+                    coverage_preflight.append(entry)
 
             if _LIVE_REQUEST_SLOTS.locked():
                 connection.send_error(

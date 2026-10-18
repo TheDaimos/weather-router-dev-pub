@@ -54,6 +54,7 @@ module = ast.fix_missing_locations(ast.Module(
         *(functions[name] for name in wanted),
         methods["async_get_coverage"],
         methods["_start_coverage_lookup"],
+        methods["coverage_preflight_diagnostics"],
         methods["_async_get_coverage_uncached"],
     ], type_ignores=[],
 ))
@@ -156,6 +157,7 @@ def harness(session):
         "_coverage_result_cache": {},
         "_coverage_refresh_last_started": {},
         "_coverage_failure_retry_until": {},
+        "_coverage_lookup_stage": {},
         "_layer_coverage_cache": {},
         "_CAPABILITY_MAP": {
             cap: types.SimpleNamespace(layer=layer)
@@ -169,6 +171,7 @@ def harness(session):
     cls = type("DwdUnderTest", (), {
         "async_get_coverage": ns["async_get_coverage"],
         "_start_coverage_lookup": ns["_start_coverage_lookup"],
+        "coverage_preflight_diagnostics": ns["coverage_preflight_diagnostics"],
         "_async_get_coverage_uncached": ns["_async_get_coverage_uncached"],
     })
     return ns, cls()
@@ -289,6 +292,23 @@ class DwdCoverageReuseTests(unittest.IsolatedAsyncioTestCase):
             recent = await provider.async_get_coverage(None, cap)
             self.assertGreater(recent["cache"]["ttl_remaining_seconds"], 250.0)
             self.assertTrue(recent["cache"]["hit"])
+
+    async def test_cold_cache_state_tracks_real_inflight_stage(self):
+        session = Session(delay=.045)
+        _, provider = harness(session)
+        task = asyncio.create_task(
+            provider.async_get_coverage(None, "radar_precipitation")
+        )
+        await asyncio.sleep(.005)
+        detail = provider.coverage_preflight_diagnostics("radar_precipitation")
+        self.assertFalse(detail["cache_valid"])
+        self.assertTrue(detail["refresh_running"])
+        self.assertEqual(detail["lookup_stage"], "aggregate_wms")
+        self.assertNotIn("https", repr(detail))
+        await task
+        after = provider.coverage_preflight_diagnostics("radar_precipitation")
+        self.assertTrue(after["cache_valid"])
+        self.assertFalse(after["refresh_running"])
 
     async def test_expired_proof_is_never_accepted_after_failed_refresh(self):
         session = Session(delay=.002)

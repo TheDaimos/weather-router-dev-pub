@@ -241,6 +241,27 @@ class WebsocketHarnessTests(unittest.IsolatedAsyncioTestCase):
         self.assertTrue(all(x["provider_wait_ms"] >= 25 for x in report))
         self.assertNotIn("https://", repr(report))
 
+    async def test_timeout_shows_safe_provider_stage_only(self):
+        self.regional.coverage_delay = .030
+        self.environment["COVERAGE_TIMEOUT_SECONDS"] = .006
+        self.regional.coverage_preflight_diagnostics = lambda _: {
+            "cache_valid": False, "refresh_running": True,
+            "lookup_stage": "aggregate_wms",
+            "cache_ttl_remaining_seconds": None,
+            "unexpected_detail": "omit-this-value",
+        }
+        await self.handler(None, self.connection, request())
+        report = {
+            x["source_id"]: x for x in
+            self.connection._monitor_routing["coverage_preflight"]
+        }
+        self.assertEqual(report["regional_radar/radar_layer"]["result"],
+                         "coverage_timeout")
+        state = report["regional_radar/radar_layer"]["provider_state"]
+        self.assertEqual(state["lookup_stage"], "aggregate_wms")
+        self.assertTrue(state["refresh_running"])
+        self.assertNotIn("unexpected_detail", repr(report))
+
     async def test_coverage_provider_failure_is_safe_and_distinct(self):
         self.regional.crash = True
         await self.handler(None, self.connection, request())

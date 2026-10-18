@@ -220,6 +220,7 @@ _coverage_inflight: dict[str, asyncio.Task[dict[str, Any]]] = {}
 _coverage_result_cache: dict[str, dict[str, Any]] = {}
 _coverage_refresh_last_started: dict[str, float] = {}
 _coverage_failure_retry_until: dict[str, float] = {}
+_coverage_lookup_stage: dict[str, str] = {}
 # The worldwide WMS fallback is one service document shared by all DWD layers.
 _global_wms_cache: dict[str, dict[str, Any]] = {}
 _global_wms_inflight_loop: asyncio.AbstractEventLoop | None = None
@@ -1589,8 +1590,10 @@ class DwdProvider:
                     "valid_until": loaded + _CAPABILITIES_TTL_SECONDS,
                 }
                 _coverage_failure_retry_until.pop(spec.layer, None)
+                _coverage_lookup_stage[spec.layer] = "verified"
                 return result
             except Exception:
+                _coverage_lookup_stage[spec.layer] = "failed"
                 # A broken WMS host must not trigger a new 40s host-failover
                 # operation on every map refresh. Never cache fake coverage.
                 _coverage_failure_retry_until[spec.layer] = (
@@ -1627,6 +1630,7 @@ class DwdProvider:
             _coverage_inflight.clear()
             _coverage_refresh_last_started.clear()
             _coverage_failure_retry_until.clear()
+            _coverage_lookup_stage.clear()
 
         now = monotonic()
         cached = _cached_coverage_result(spec.layer, now)
@@ -1651,6 +1655,41 @@ class DwdProvider:
             task = self._start_coverage_lookup(hass, spec)
         return dict(await asyncio.shield(task))
 
+    def coverage_preflight_diagnostics(
+        self, capability_id: str,
+    ) -> dict[str, Any]:
+        """Provider-neutral optional monitor detail: no network/URLs/coordinates."""
+        spec = _CAPABILITY_MAP.get(capability_id)
+        if spec is None:
+            return {}
+        now = monotonic()
+        cached = _coverage_result_cache.get(spec.layer)
+        task = _coverage_inflight.get(spec.layer)
+        remaining = (
+            float(cached.get("valid_until", 0.0)) - now
+            if isinstance(cached, dict) else None
+        )
+        return {
+            "cache_valid": remaining is not None and remaining > 0,
+            "cache_ttl_remaining_seconds": (
+                round(max(0.0, remaining), 2) if remaining is not None else None
+            ),
+            "refresh_running": task is not None and not task.done(),
+            "lookup_stage": (
+                _coverage_lookup_stage.get(spec.layer)
+                if task is not None and not task.done() else None
+            ),
+            "aggregate_wms_cached": (
+                _cached_root is not None and now < _cache_valid_until
+            ),
+            "global_wms_refresh_running": any(
+                not value.done() for value in _global_wms_inflight.values()
+            ),
+            "retry_after_seconds": round(max(
+                0.0, _coverage_failure_retry_until.get(spec.layer, 0.0) - now
+            ), 2),
+        }
+
     async def _async_get_coverage_uncached(
         self,
         hass: HomeAssistant,
@@ -1659,13 +1698,16 @@ class DwdProvider:
         refresh_if_aging: bool = False,
     ) -> dict[str, Any]:
         """Existing WMS layer and fallback validation, unchanged."""
+        _coverage_lookup_stage[spec.layer] = "aggregate_wms"
         cache_before = _capabilities_cache_diagnostic()
         base, root = await _async_capabilities(
             hass, refresh_if_aging=refresh_if_aging
         )
+        _coverage_lookup_stage[spec.layer] = "aggregate_layer_bbox"
         coverage = await _wms_layer_coverage(hass, root, spec.layer)
         if coverage is None:
             attempts: list[dict[str, Any]] = []
+            _coverage_lookup_stage[spec.layer] = "global_wms"
             try:
                 return await _async_global_wms_coverage(
                     hass,
@@ -1674,6 +1716,7 @@ class DwdProvider:
                     refresh_if_aging=refresh_if_aging,
                 )
             except Exception as global_err:  # noqa: BLE001 - explicit fallback chain
+                _coverage_lookup_stage[spec.layer] = "layer_specific_wms"
                 try:
                     return await _async_layer_specific_coverage(
                         hass,
