@@ -39,7 +39,7 @@ from .hazard_common import (
     wind_hazard_match_scope,
     wind_hazard_semantic_class,
 )
-from ..spatial_coverage import wms_layer_geographic_coverage
+from ..spatial_coverage import (CoverageTemporarilyUnavailable, wms_layer_geographic_coverage)
 
 _PRIMARY_WMS = "https://maps.dwd.de/geoserver/dwd/wms"
 _BACKUP_WMS = "https://brz-maps.dwd.de/geoserver/dwd/wms"
@@ -48,7 +48,7 @@ _BACKUP_GLOBAL_WMS = "https://brz-maps.dwd.de/geoserver/ows"
 _CAPABILITIES_TTL_SECONDS = 300.0
 # Refresh proven geographic metadata before hard expiry, without treating old
 # bounds as indefinitely valid or extending expiry without new source evidence.
-_COVERAGE_REFRESH_LEAD_SECONDS = 90.0
+_COVERAGE_REFRESH_LEAD_SECONDS = 150.0
 _COVERAGE_REFRESH_RETRY_SECONDS = 30.0
 _REQUEST_TIMEOUT_SECONDS = 20
 _DWD_CAP_WARNINGS_URL = (
@@ -1772,7 +1772,7 @@ class DwdProvider:
 
         if task is None or task.done():
             if now < _coverage_failure_retry_until.get(spec.layer, 0.0):
-                raise ValueError("DWD coverage provider temporarily unavailable")
+                raise CoverageTemporarilyUnavailable("DWD coverage metadata temporarily unavailable")
             _coverage_last_refresh_reason[spec.layer] = (
                 "expired_or_cold_cache"
             )

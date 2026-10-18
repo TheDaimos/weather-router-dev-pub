@@ -25,7 +25,7 @@ from .raster_mosaic_contract import (
 )
 from .raster_mosaic_policy import viewport_overlap
 from .raster_mosaic_service import resolve_mosaic_snapshot
-from .spatial_coverage import normalize_coverage
+from .spatial_coverage import CoverageTemporarilyUnavailable, normalize_coverage
 
 MAX_COVERAGE_CONTACTS = 12
 MAX_COVERAGE_CONCURRENT = 3
@@ -252,6 +252,9 @@ async def websocket_consumer_resolve_mosaic(
                     }
                 except TimeoutError:
                     status = "coverage_timeout"
+                    return None
+                except CoverageTemporarilyUnavailable:
+                    status = "temporarily_unavailable"
                     return None
                 except Exception:  # noqa: BLE001 - avoid leaking provider internals
                     return None

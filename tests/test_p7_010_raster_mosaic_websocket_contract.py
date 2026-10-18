@@ -24,6 +24,7 @@ if NAME not in sys.modules:
 validator = importlib.import_module(NAME + ".raster_mosaic_contract")
 policy = importlib.import_module(NAME + ".raster_mosaic_policy")
 service = importlib.import_module(NAME + ".raster_mosaic_service")
+spatial = importlib.import_module(NAME + ".spatial_coverage")
 
 
 def real_handler_with_stubs(namespace: dict):
@@ -163,6 +164,7 @@ class WebsocketHarnessTests(unittest.IsolatedAsyncioTestCase):
             "MosaicContractError": validator.MosaicContractError,
             "viewport_overlap": policy.viewport_overlap,
             "normalize_coverage": lambda raw: raw,
+            "CoverageTemporarilyUnavailable": spatial.CoverageTemporarilyUnavailable,
             "resolve_mosaic_snapshot": deterministic_mosaic,
             "profile_allows_capability": lambda *args: (True, None),
             "profile_allows_provider": lambda *args: True,
@@ -198,6 +200,22 @@ class WebsocketHarnessTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(result["layers"][0]["source_id"], "wide_world/radar_layer")
         self.assertEqual(result["layers"][1]["source_id"], "regional_radar/radar_layer")
         self.assertEqual(result["layers"][1]["coverage"]["west"], 5)
+
+    async def test_transient_coverage_error_does_not_mean_outside_coverage(self):
+        async def transient(*args):
+            raise spatial.CoverageTemporarilyUnavailable(
+                "source metadata is unavailable"
+            )
+        self.regional.async_get_coverage = transient
+        await self.handler(None, self.connection, request())
+        self.assertEqual(self.connection.errors, [])
+        report = self.connection._monitor_routing["coverage_preflight"]
+        statuses = {row["source_id"]: row["result"] for row in report}
+        self.assertEqual(
+            statuses["regional_radar/radar_layer"], "temporarily_unavailable"
+        )
+        self.assertEqual(statuses["wide_world/radar_layer"], "coverage_accepted")
+        self.assertNotIn("source metadata is unavailable", repr(report))
 
     async def test_coverage_timeout_is_visible_even_when_nasa_succeeds(self):
         # Reproduce HA: working world source and slow regional WMS coverage.

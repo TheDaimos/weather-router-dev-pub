@@ -136,6 +136,7 @@ def harness(session):
         "datetime": datetime,
         "timezone": timezone,
         "ET": ET,
+        "CoverageTemporarilyUnavailable": spatial.CoverageTemporarilyUnavailable,
         "urlsplit": urlsplit,
         "async_get_clientsession": lambda hass: session,
         "_PRIMARY_WMS": "https://primary.invalid/wms",
@@ -451,7 +452,7 @@ class DwdCoverageReuseTests(unittest.IsolatedAsyncioTestCase):
         with self.assertRaises(ValueError):
             await provider.async_get_coverage(None, "radar_precipitation")
         first_attempts = len(session.calls)
-        with self.assertRaises(ValueError):
+        with self.assertRaises(spatial.CoverageTemporarilyUnavailable):
             await provider.async_get_coverage(None, "radar_precipitation")
         self.assertEqual(first_attempts, len(session.calls),
                          "offline retries must be bounded, not a request storm")
@@ -464,7 +465,7 @@ class DwdCoverageReuseTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(namespace["_coverage_result_cache"], {})
         session.fail = False
         # The provider retry throttle blocks hot-looping an unreachable WMS.
-        with self.assertRaises(ValueError):
+        with self.assertRaises(spatial.CoverageTemporarilyUnavailable):
             await provider.async_get_coverage(None, "radar_precipitation")
         namespace["_coverage_failure_retry_until"].clear()
         good = await provider.async_get_coverage(None, "radar_precipitation")
