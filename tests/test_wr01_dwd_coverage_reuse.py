@@ -34,6 +34,7 @@ methods = {
 wanted = (
     "_local_name",
     "_capabilities_cache_diagnostic",
+    "_cached_coverage_result",
     "_parse_wms_document",
     "_wms_layer_coverage",
     "_wms_named_layers",
@@ -52,6 +53,7 @@ module = ast.fix_missing_locations(ast.Module(
                        names=[ast.alias(name="annotations")], level=0),
         *(functions[name] for name in wanted),
         methods["async_get_coverage"],
+        methods["_start_coverage_lookup"],
         methods["_async_get_coverage_uncached"],
     ], type_ignores=[],
 ))
@@ -141,6 +143,8 @@ def harness(session):
         "_global_wms_inflight": {},
         "_REQUEST_TIMEOUT_SECONDS": 20,
         "_CAPABILITIES_TTL_SECONDS": 300.0,
+        "_COVERAGE_REFRESH_LEAD_SECONDS": 90.0,
+        "_COVERAGE_REFRESH_RETRY_SECONDS": 30.0,
         "_cached_root": None,
         "_cached_wms_base": None,
         "_cache_valid_until": 0.0,
@@ -150,6 +154,8 @@ def harness(session):
         "_coverage_inflight_loop": None,
         "_coverage_inflight": {},
         "_coverage_result_cache": {},
+        "_coverage_refresh_last_started": {},
+        "_coverage_failure_retry_until": {},
         "_layer_coverage_cache": {},
         "_CAPABILITY_MAP": {
             cap: types.SimpleNamespace(layer=layer)
@@ -162,6 +168,7 @@ def harness(session):
     ns["_async_layer_specific_coverage"] = lambda *args, **kw: None
     cls = type("DwdUnderTest", (), {
         "async_get_coverage": ns["async_get_coverage"],
+        "_start_coverage_lookup": ns["_start_coverage_lookup"],
         "_async_get_coverage_uncached": ns["_async_get_coverage_uncached"],
     })
     return ns, cls()
@@ -255,6 +262,51 @@ class DwdCoverageReuseTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(coverage["scope"], "bbox")
         self.assertIn("wms_layer_geographic_coverage", hass.executions)
 
+    async def test_preexpiry_background_refresh_avoids_six_second_cache_gap(self):
+        session = Session(delay=.028)
+        namespace, provider = harness(session)
+        for cap in CAPABILITIES:
+            await provider.async_get_coverage(None, cap)
+        self.assertEqual(len(session.calls), 1)
+
+        # The aggregate provider document and the three verified layer proofs
+        # approach their hard TTL concurrently, reproducing the HA transition.
+        approaching = time.monotonic() + .12
+        namespace["_cache_valid_until"] = approaching
+        for layer in LAYERS:
+            namespace["_coverage_result_cache"][layer]["valid_until"] = approaching
+
+        t0 = time.monotonic()
+        hits = await asyncio.gather(*(
+            provider.async_get_coverage(None, cap) for cap in CAPABILITIES
+        ))
+        self.assertLess(time.monotonic() - t0, .021)
+        self.assertTrue(all(x["cache"]["hit"] for x in hits))
+        self.assertTrue(all(x["cache"]["ttl_remaining_seconds"] <= .12 for x in hits))
+        await asyncio.sleep(.07)
+        self.assertEqual(len(session.calls), 2, "refresh must be shared")
+        for cap in CAPABILITIES:
+            recent = await provider.async_get_coverage(None, cap)
+            self.assertGreater(recent["cache"]["ttl_remaining_seconds"], 250.0)
+            self.assertTrue(recent["cache"]["hit"])
+
+    async def test_expired_proof_is_never_accepted_after_failed_refresh(self):
+        session = Session(delay=.002)
+        namespace, provider = harness(session)
+        original = await provider.async_get_coverage(None, "radar_precipitation")
+        self.assertEqual(original["scope"], "bbox")
+        past = time.monotonic() - 1
+        namespace["_coverage_result_cache"]["Niederschlagsradar"]["valid_until"] = past
+        namespace["_cache_valid_until"] = past
+        session.fail = True
+        with self.assertRaises(ValueError):
+            await provider.async_get_coverage(None, "radar_precipitation")
+        first_attempts = len(session.calls)
+        with self.assertRaises(ValueError):
+            await provider.async_get_coverage(None, "radar_precipitation")
+        self.assertEqual(first_attempts, len(session.calls),
+                         "offline retries must be bounded, not a request storm")
+
     async def test_network_failure_never_becomes_fake_cached_coverage(self):
         session = Session(delay=.001, fail=True)
         namespace, provider = harness(session)
@@ -262,6 +314,10 @@ class DwdCoverageReuseTests(unittest.IsolatedAsyncioTestCase):
             await provider.async_get_coverage(None, "radar_precipitation")
         self.assertEqual(namespace["_coverage_result_cache"], {})
         session.fail = False
+        # The provider retry throttle blocks hot-looping an unreachable WMS.
+        with self.assertRaises(ValueError):
+            await provider.async_get_coverage(None, "radar_precipitation")
+        namespace["_coverage_failure_retry_until"].clear()
         good = await provider.async_get_coverage(None, "radar_precipitation")
         self.assertEqual(good["scope"], "bbox")
         self.assertGreaterEqual(len(session.calls), 3)
