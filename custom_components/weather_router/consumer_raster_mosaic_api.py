@@ -211,13 +211,18 @@ async def websocket_consumer_resolve_mosaic(
                 source_id = f"{row.provider.id}/{row.capability.id}"
                 status = "coverage_provider_error"
                 cache_hit = False
-                started = asyncio.get_running_loop().time()
+                clock = asyncio.get_running_loop()
+                started = clock.time()
+                slot_acquired_at: float | None = None
+                provider_finished_at: float | None = None
                 try:
                     async with coverage_slots:
+                        slot_acquired_at = clock.time()
                         coverage_raw = await asyncio.wait_for(
                             getter(hass, row.capability.id),
                             timeout=COVERAGE_TIMEOUT_SECONDS,
                         )
+                        provider_finished_at = clock.time()
                     coverage = normalize_coverage(coverage_raw)
                     if coverage is None:
                         status = "coverage_invalid"
@@ -251,11 +256,17 @@ async def websocket_consumer_resolve_mosaic(
                 except Exception:  # noqa: BLE001 - avoid leaking provider internals
                     return None
                 finally:
+                    ended = clock.time()
                     coverage_preflight.append({
                         "source_id": source_id[:128],
                         "result": status,
-                        "duration_ms": round(
-                            (asyncio.get_running_loop().time() - started) * 1000, 2),
+                        "duration_ms": round((ended - started) * 1000, 2),
+                        "slot_wait_ms": round(
+                            (slot_acquired_at - started) * 1000, 2)
+                        if slot_acquired_at is not None else None,
+                        "provider_wait_ms": round(
+                            ((provider_finished_at or ended) - slot_acquired_at) * 1000, 2)
+                        if slot_acquired_at is not None else None,
                         "cache_hit": cache_hit,
                     })
 

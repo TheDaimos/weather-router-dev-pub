@@ -225,6 +225,22 @@ class WebsocketHarnessTests(unittest.IsolatedAsyncioTestCase):
                      self.connection._monitor_routing["coverage_preflight"]}
         self.assertEqual(by_source["regional_radar/radar_layer"], "coverage_accepted")
 
+    async def test_monitor_separates_slot_wait_from_provider_wait(self):
+        self.regional.coverage_delay = .035
+        self.world.coverage_delay = .035
+        self.environment["_shared_coverage_slots"] = lambda: asyncio.Semaphore(1)
+        await self.handler(None, self.connection, request())
+        self.assertEqual(self.connection.errors, [])
+        report = self.connection._monitor_routing["coverage_preflight"]
+        self.assertEqual(len(report), 2)
+        self.assertTrue(all(isinstance(x["slot_wait_ms"], (int, float))
+                            for x in report))
+        self.assertTrue(all(isinstance(x["provider_wait_ms"], (int, float))
+                            for x in report))
+        self.assertTrue(any(x["slot_wait_ms"] >= 20 for x in report))
+        self.assertTrue(all(x["provider_wait_ms"] >= 25 for x in report))
+        self.assertNotIn("https://", repr(report))
+
     async def test_coverage_provider_failure_is_safe_and_distinct(self):
         self.regional.crash = True
         await self.handler(None, self.connection, request())
