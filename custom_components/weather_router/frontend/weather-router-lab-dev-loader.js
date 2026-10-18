@@ -1,6 +1,6 @@
 const TARGET_ELEMENT = "weather-router-lab";
-const WR_LAB_BUILD_VERSION = "0.10.157";
-const LOADER_REV = "0.10-loader-160"
+const WR_LAB_BUILD_VERSION = "0.10.158";
+const LOADER_REV = "0.10-loader-161"
 
 class WeatherRouterLabDevLoader extends HTMLElement {
   constructor() {
