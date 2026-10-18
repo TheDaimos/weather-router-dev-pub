@@ -29,7 +29,7 @@ provider = next(node for node in tree.body
                 if isinstance(node, ast.ClassDef) and node.name == "DwdProvider")
 methods = {
     node.name: node for node in provider.body
-    if isinstance(node, ast.AsyncFunctionDef)
+    if isinstance(node, (ast.AsyncFunctionDef, ast.FunctionDef))
 }
 wanted = (
     "_local_name",
