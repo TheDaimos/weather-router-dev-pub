@@ -285,6 +285,14 @@ async def websocket_consumer_resolve_mosaic(
                                     "aggregate_wms_cached",
                                     "global_wms_refresh_running",
                                     "retry_after_seconds",
+                                    "refresh_scheduled_in_seconds",
+                                    "last_verified_at_utc",
+                                    "refresh_reason",
+                                    "wms_request_stage",
+                                    "network_wait_ms",
+                                    "xml_parse_ms",
+                                    "bbox_validation_ms",
+                                    "wms_failure_kind",
                                 }
                                 entry["provider_state"] = {
                                     k: v for k, v in state.items() if k in allowed

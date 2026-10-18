@@ -274,6 +274,48 @@ class DwdCoverageReuseTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(coverage["scope"], "bbox")
         self.assertIn("wms_layer_geographic_coverage", hass.executions)
 
+    async def test_first_refresh_at_low_system_uptime(self):
+        session = Session(delay=.016)
+        namespace, provider = harness(session)
+        # Start at a synthetic monotonic uptime of five seconds. First
+        # refresh must not be delayed by a fabricated previous attempt at 0.
+        offset = time.monotonic() - 5.0
+        namespace["monotonic"] = lambda: time.monotonic() - offset
+        await provider.async_get_coverage(None, "radar_precipitation")
+        near = namespace["monotonic"]() + 1.5
+        namespace["_cache_valid_until"] = near
+        namespace["_coverage_result_cache"]["Niederschlagsradar"][
+            "valid_until"
+        ] = near
+        proof = await provider.async_get_coverage(None, "radar_precipitation")
+        self.assertTrue(proof["cache"]["hit"])
+        self.assertTrue(
+            provider.coverage_preflight_diagnostics(
+                "radar_precipitation"
+            )["refresh_running"]
+        )
+        await asyncio.wait_for(
+            namespace["_coverage_inflight"]["Niederschlagsradar"],
+            timeout=1.0
+        )
+        self.assertEqual(len(session.calls), 2)
+
+    async def test_wms_diagnostics_include_verified_utc_and_phase_times(self):
+        session = Session(delay=.010)
+        namespace, provider = harness(session)
+        await provider.async_get_coverage(None, "radar_precipitation")
+        state = provider.coverage_preflight_diagnostics(
+            "radar_precipitation"
+        )
+        self.assertTrue(state["cache_valid"])
+        self.assertGreater(state["network_wait_ms"], 0)
+        self.assertGreaterEqual(state["xml_parse_ms"], 0)
+        self.assertGreaterEqual(state["bbox_validation_ms"], 0)
+        self.assertIsNotNone(state["refresh_scheduled_in_seconds"])
+        self.assertTrue(state["last_verified_at_utc"].endswith("+00:00"))
+        self.assertEqual(state["wms_request_stage"], "verified")
+        self.assertNotIn("primary.invalid", repr(state))
+
     async def test_idle_viewport_refresh_starts_before_expiry(self):
         session = Session(delay=.008)
         namespace, provider = harness(session)

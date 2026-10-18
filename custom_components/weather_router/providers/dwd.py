@@ -769,10 +769,16 @@ async def _wms_layer_coverage(
     hass: HomeAssistant, root: ET.Element, layer: str,
 ) -> dict[str, Any] | None:
     """Inspect provider XML without blocking HA for large layer collections."""
+    begun = monotonic()
     executor = getattr(hass, "async_add_executor_job", None)
-    if callable(executor):
-        return await executor(wms_layer_geographic_coverage, root, layer)
-    return wms_layer_geographic_coverage(root, layer)
+    try:
+        if callable(executor):
+            return await executor(wms_layer_geographic_coverage, root, layer)
+        return wms_layer_geographic_coverage(root, layer)
+    finally:
+        _dwd_wms_fetch_phases["bbox_validation_ms"] = round(
+            (monotonic() - begun) * 1000, 2
+        )
 
 
 async def _wms_named_layers(
@@ -823,6 +829,13 @@ async def _fetch_capabilities_uncached(
             "cache_hit": False,
             "stage": "get_capabilities",
         }
+        begun = monotonic()
+        _dwd_wms_fetch_phases.update({
+            "stage": "network_wait",
+            "network_wait_ms": None,
+            "xml_parse_ms": None,
+            "last_failure_kind": None,
+        })
         try:
             async with session.get(base, params=params, timeout=_REQUEST_TIMEOUT_SECONDS) as response:
                 record["http_status"] = response.status
@@ -830,11 +843,25 @@ async def _fetch_capabilities_uncached(
                 payload = await response.read()
                 record["bytes"] = len(payload)
                 response.raise_for_status()
+            _dwd_wms_fetch_phases["network_wait_ms"] = round(
+                (monotonic() - begun) * 1000, 2
+            )
+            parsing_begun = monotonic()
+            _dwd_wms_fetch_phases["stage"] = "xml_parse"
             root = await _parse_wms_document(hass, payload)
+            _dwd_wms_fetch_phases["xml_parse_ms"] = round(
+                (monotonic() - parsing_begun) * 1000, 2
+            )
+            _dwd_wms_fetch_phases["stage"] = "xml_validated"
             record["xml_root"] = _local_name(root.tag)
             record["wms_version"] = root.attrib.get("version")
             record["ok"] = True
         except Exception as err:  # noqa: BLE001 - provider host failover is intentional
+            _dwd_wms_fetch_phases.update({
+                "stage": "provider_error",
+                "last_failure_kind": type(err).__name__[:64],
+                "network_wait_ms": round((monotonic() - begun) * 1000, 2),
+            })
             record["ok"] = False
             record["exception_type"] = type(err).__name__
             record["message"] = str(err)
@@ -849,6 +876,7 @@ async def _fetch_capabilities_uncached(
         _cached_wms_base = base
         _cache_loaded_at = monotonic()
         _cache_valid_until = _cache_loaded_at + _CAPABILITIES_TTL_SECONDS
+        _dwd_wms_fetch_phases["stage"] = "verified"
         return base, root
 
     raise ValueError("DWD WMS capabilities are unavailable") from last_error
@@ -1729,8 +1757,11 @@ class DwdProvider:
             if (
                 remaining <= _COVERAGE_REFRESH_LEAD_SECONDS
                 and (task is None or task.done())
-                and now >= _coverage_refresh_last_started.get(spec.layer, 0.0)
-                    + _COVERAGE_REFRESH_RETRY_SECONDS
+                and (
+                    spec.layer not in _coverage_refresh_last_started
+                    or now - _coverage_refresh_last_started[spec.layer]
+                    >= _COVERAGE_REFRESH_RETRY_SECONDS
+                )
             ):
                 _coverage_refresh_last_started[spec.layer] = now
                 _coverage_last_refresh_reason[spec.layer] = "request_pre_expiry"
@@ -1787,6 +1818,11 @@ class DwdProvider:
             ),
             "last_verified_at_utc": _coverage_last_verified_at.get(spec.layer),
             "refresh_reason": _coverage_last_refresh_reason.get(spec.layer),
+            "wms_request_stage": _dwd_wms_fetch_phases.get("stage"),
+            "network_wait_ms": _dwd_wms_fetch_phases.get("network_wait_ms"),
+            "xml_parse_ms": _dwd_wms_fetch_phases.get("xml_parse_ms"),
+            "bbox_validation_ms": _dwd_wms_fetch_phases.get("bbox_validation_ms"),
+            "wms_failure_kind": _dwd_wms_fetch_phases.get("last_failure_kind"),
         }
 
     async def _async_get_coverage_uncached(
