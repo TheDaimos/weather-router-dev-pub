@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import ast
 import asyncio
-from datetime import datetime
+from datetime import datetime, timezone
 import importlib.util
 from pathlib import Path
 import time
@@ -54,6 +54,7 @@ module = ast.fix_missing_locations(ast.Module(
         *(functions[name] for name in wanted),
         methods["async_get_coverage"],
         methods["_start_coverage_lookup"],
+        methods["_schedule_coverage_refresh"],
         methods["coverage_preflight_diagnostics"],
         methods["_async_get_coverage_uncached"],
     ], type_ignores=[],
@@ -132,6 +133,8 @@ def harness(session):
     ns = {
         "asyncio": asyncio,
         "monotonic": time.monotonic,
+        "datetime": datetime,
+        "timezone": timezone,
         "ET": ET,
         "urlsplit": urlsplit,
         "async_get_clientsession": lambda hass: session,
@@ -158,6 +161,11 @@ def harness(session):
         "_coverage_refresh_last_started": {},
         "_coverage_failure_retry_until": {},
         "_coverage_lookup_stage": {},
+        "_coverage_refresh_handles": {},
+        "_coverage_refresh_next_at": {},
+        "_coverage_last_verified_at": {},
+        "_coverage_last_refresh_reason": {},
+        "_dwd_wms_fetch_phases": {},
         "_layer_coverage_cache": {},
         "_CAPABILITY_MAP": {
             cap: types.SimpleNamespace(layer=layer)
@@ -171,6 +179,7 @@ def harness(session):
     cls = type("DwdUnderTest", (), {
         "async_get_coverage": ns["async_get_coverage"],
         "_start_coverage_lookup": ns["_start_coverage_lookup"],
+        "_schedule_coverage_refresh": ns["_schedule_coverage_refresh"],
         "coverage_preflight_diagnostics": ns["coverage_preflight_diagnostics"],
         "_async_get_coverage_uncached": ns["_async_get_coverage_uncached"],
     })
@@ -264,6 +273,81 @@ class DwdCoverageReuseTests(unittest.IsolatedAsyncioTestCase):
         coverage = await provider.async_get_coverage(hass, "radar_precipitation")
         self.assertEqual(coverage["scope"], "bbox")
         self.assertIn("wms_layer_geographic_coverage", hass.executions)
+
+    async def test_idle_viewport_refresh_starts_before_expiry(self):
+        session = Session(delay=.008)
+        namespace, provider = harness(session)
+        # Short scaled TTL, still the same real production method and timer.
+        namespace["_CAPABILITIES_TTL_SECONDS"] = .24
+        namespace["_COVERAGE_REFRESH_LEAD_SECONDS"] = .16
+        namespace["_COVERAGE_REFRESH_RETRY_SECONDS"] = .02
+        await asyncio.gather(*(
+            provider.async_get_coverage(None, cap) for cap in CAPABILITIES
+        ))
+        self.assertEqual(len(session.calls), 1)
+        self.assertEqual(len(namespace["_coverage_refresh_handles"]), 3)
+        # No further consumer requests: real event-loop timers must refresh.
+        deadline = time.monotonic() + .70
+        while len(session.calls) < 2 and time.monotonic() < deadline:
+            await asyncio.sleep(.012)
+        self.assertEqual(len(session.calls), 2)
+        tasks = list(namespace["_coverage_inflight"].values())
+        await asyncio.wait_for(asyncio.gather(*tasks), timeout=1.0)
+        self.assertTrue(all(
+            namespace["_coverage_result_cache"][layer]["valid_until"]
+            > time.monotonic()
+            for layer in LAYERS
+        ))
+        self.assertEqual(len(namespace["_coverage_refresh_handles"]), 3)
+        # A second autonomous renewal demonstrates repeated cycles.
+        deadline = time.monotonic() + .70
+        while len(session.calls) < 3 and time.monotonic() < deadline:
+            await asyncio.sleep(.012)
+        self.assertEqual(len(session.calls), 3)
+
+    async def test_slow_refresh_uses_valid_proof_without_waiting(self):
+        session = Session(delay=.035)
+        namespace, provider = harness(session)
+        await provider.async_get_coverage(None, "radar_precipitation")
+        namespace["_coverage_result_cache"]["Niederschlagsradar"][
+            "valid_until"
+        ] = time.monotonic() + 1.0
+        namespace["_cache_valid_until"] = time.monotonic() + 1.0
+        task = provider._start_coverage_lookup(
+            None, namespace["_CAPABILITY_MAP"]["radar_precipitation"],
+            refresh_if_aging=True
+        )
+        t0 = time.monotonic()
+        proof = await provider.async_get_coverage(None, "radar_precipitation")
+        self.assertLess(time.monotonic() - t0, .02)
+        self.assertTrue(proof["cache"]["hit"])
+        self.assertTrue(proof["cache"]["ttl_remaining_seconds"] <= 1)
+        self.assertTrue(provider.coverage_preflight_diagnostics(
+            "radar_precipitation"
+        )["refresh_running"])
+        await asyncio.wait_for(task, timeout=1.0)
+        self.assertGreater(
+            (await provider.async_get_coverage(None, "radar_precipitation"))[
+                "cache"]["ttl_remaining_seconds"], 250
+        )
+
+    async def test_timer_is_replaced_not_accumulated_on_refresh(self):
+        session = Session(delay=.001)
+        namespace, provider = harness(session)
+        await provider.async_get_coverage(None, "radar_precipitation")
+        first = namespace["_coverage_refresh_handles"]["Niederschlagsradar"]
+        namespace["_coverage_result_cache"]["Niederschlagsradar"][
+            "valid_until"
+        ] = time.monotonic() + 1.0
+        await provider._start_coverage_lookup(
+            None, namespace["_CAPABILITY_MAP"]["radar_precipitation"],
+            refresh_if_aging=True
+        )
+        second = namespace["_coverage_refresh_handles"]["Niederschlagsradar"]
+        self.assertIsNot(first, second)
+        self.assertTrue(first.cancelled())
+        self.assertFalse(second.cancelled())
+        self.assertEqual(len(namespace["_coverage_refresh_handles"]), 1)
 
     async def test_preexpiry_background_refresh_avoids_six_second_cache_gap(self):
         session = Session(delay=.028)

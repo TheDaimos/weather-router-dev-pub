@@ -221,6 +221,14 @@ _coverage_result_cache: dict[str, dict[str, Any]] = {}
 _coverage_refresh_last_started: dict[str, float] = {}
 _coverage_failure_retry_until: dict[str, float] = {}
 _coverage_lookup_stage: dict[str, str] = {}
+# One event-loop timer per *successfully verified* geographic layer. This is
+# necessary because a map can be idle throughout the 90-second refresh window.
+# A lazy on-request refresh alone cannot prevent the reported TTL-gap.
+_coverage_refresh_handles: dict[str, asyncio.TimerHandle] = {}
+_coverage_refresh_next_at: dict[str, float] = {}
+_coverage_last_verified_at: dict[str, str] = {}
+_coverage_last_refresh_reason: dict[str, str] = {}
+_dwd_wms_fetch_phases: dict[str, float | str | None] = {}
 # The worldwide WMS fallback is one service document shared by all DWD layers.
 _global_wms_cache: dict[str, dict[str, Any]] = {}
 _global_wms_inflight_loop: asyncio.AbstractEventLoop | None = None
@@ -1565,6 +1573,63 @@ class DwdProvider:
             "available_layers": names,
         }
 
+    def _schedule_coverage_refresh(
+        self,
+        hass: HomeAssistant,
+        spec: _LayerSpec,
+        *,
+        delay_seconds: float,
+    ) -> None:
+        """At most one scheduled renewal per layer; never keep a stale proof.
+
+        The timer is armed by a *successful* source verification, not by
+        incoming map requests. Thus even an idle viewport renews at T-90s.
+        Background WMS requests remain bounded by their HTTP timeouts.
+        """
+        loop = asyncio.get_running_loop()
+        old_handle = _coverage_refresh_handles.pop(spec.layer, None)
+        if old_handle is not None:
+            old_handle.cancel()
+        entry = _coverage_result_cache.get(spec.layer)
+        remaining = (
+            float(entry.get("valid_until", 0.0)) - monotonic()
+            if isinstance(entry, dict) else 0.0
+        )
+        if remaining <= 0:
+            _coverage_refresh_next_at.pop(spec.layer, None)
+            return
+        delay = min(max(0.0, delay_seconds), max(0.0, remaining))
+        if delay >= remaining:
+            _coverage_refresh_next_at.pop(spec.layer, None)
+            return
+
+        def _wake() -> None:
+            _coverage_refresh_handles.pop(spec.layer, None)
+            _coverage_refresh_next_at.pop(spec.layer, None)
+            if _coverage_inflight_loop is not loop:
+                return
+            now = monotonic()
+            proof = _cached_coverage_result(spec.layer, now)
+            if proof is None:
+                return  # hard expired: next request must obtain new evidence
+            task = _coverage_inflight.get(spec.layer)
+            if task is not None and not task.done():
+                # A long-running bounded request is still being shared.
+                # Its completion owns the next scheduling decision.
+                return
+            retry_at = _coverage_failure_retry_until.get(spec.layer, 0.0)
+            if now < retry_at:
+                self._schedule_coverage_refresh(
+                    hass, spec, delay_seconds=retry_at - now
+                )
+                return
+            _coverage_refresh_last_started[spec.layer] = now
+            _coverage_last_refresh_reason[spec.layer] = "scheduled_pre_expiry"
+            self._start_coverage_lookup(hass, spec, refresh_if_aging=True)
+
+        _coverage_refresh_next_at[spec.layer] = monotonic() + delay
+        _coverage_refresh_handles[spec.layer] = loop.call_later(delay, _wake)
+
     def _start_coverage_lookup(
         self,
         hass: HomeAssistant,
@@ -1591,6 +1656,16 @@ class DwdProvider:
                 }
                 _coverage_failure_retry_until.pop(spec.layer, None)
                 _coverage_lookup_stage[spec.layer] = "verified"
+                _coverage_last_verified_at[spec.layer] = (
+                    datetime.now(timezone.utc).isoformat()
+                )
+                self._schedule_coverage_refresh(
+                    hass, spec,
+                    delay_seconds=max(
+                        0.0, _CAPABILITIES_TTL_SECONDS
+                        - _COVERAGE_REFRESH_LEAD_SECONDS
+                    ),
+                )
                 return result
             except Exception:
                 _coverage_lookup_stage[spec.layer] = "failed"
@@ -1599,6 +1674,15 @@ class DwdProvider:
                 _coverage_failure_retry_until[spec.layer] = (
                     monotonic() + _COVERAGE_REFRESH_RETRY_SECONDS
                 )
+                entry = _coverage_result_cache.get(spec.layer)
+                if (
+                    isinstance(entry, dict)
+                    and monotonic() < float(entry.get("valid_until", 0.0))
+                ):
+                    self._schedule_coverage_refresh(
+                        hass, spec,
+                        delay_seconds=_COVERAGE_REFRESH_RETRY_SECONDS,
+                    )
                 raise
 
         task = loop.create_task(
@@ -1631,6 +1715,11 @@ class DwdProvider:
             _coverage_refresh_last_started.clear()
             _coverage_failure_retry_until.clear()
             _coverage_lookup_stage.clear()
+            _coverage_last_refresh_reason.clear()
+            _coverage_refresh_next_at.clear()
+            for handle in _coverage_refresh_handles.values():
+                handle.cancel()
+            _coverage_refresh_handles.clear()
 
         now = monotonic()
         cached = _cached_coverage_result(spec.layer, now)
@@ -1644,6 +1733,7 @@ class DwdProvider:
                     + _COVERAGE_REFRESH_RETRY_SECONDS
             ):
                 _coverage_refresh_last_started[spec.layer] = now
+                _coverage_last_refresh_reason[spec.layer] = "request_pre_expiry"
                 self._start_coverage_lookup(
                     hass, spec, refresh_if_aging=True
                 )
@@ -1652,6 +1742,9 @@ class DwdProvider:
         if task is None or task.done():
             if now < _coverage_failure_retry_until.get(spec.layer, 0.0):
                 raise ValueError("DWD coverage provider temporarily unavailable")
+            _coverage_last_refresh_reason[spec.layer] = (
+                "expired_or_cold_cache"
+            )
             task = self._start_coverage_lookup(hass, spec)
         return dict(await asyncio.shield(task))
 
@@ -1688,6 +1781,12 @@ class DwdProvider:
             "retry_after_seconds": round(max(
                 0.0, _coverage_failure_retry_until.get(spec.layer, 0.0) - now
             ), 2),
+            "refresh_scheduled_in_seconds": (
+                round(max(0.0, _coverage_refresh_next_at[spec.layer] - now), 2)
+                if spec.layer in _coverage_refresh_next_at else None
+            ),
+            "last_verified_at_utc": _coverage_last_verified_at.get(spec.layer),
+            "refresh_reason": _coverage_last_refresh_reason.get(spec.layer),
         }
 
     async def _async_get_coverage_uncached(
