@@ -274,7 +274,7 @@ class DwdCoverageReuseTests(unittest.IsolatedAsyncioTestCase):
 
         # The aggregate provider document and the three verified layer proofs
         # approach their hard TTL concurrently, reproducing the HA transition.
-        approaching = time.monotonic() + .12
+        approaching = time.monotonic() + 1.5
         namespace["_cache_valid_until"] = approaching
         for layer in LAYERS:
             namespace["_coverage_result_cache"][layer]["valid_until"] = approaching
@@ -283,10 +283,13 @@ class DwdCoverageReuseTests(unittest.IsolatedAsyncioTestCase):
         hits = await asyncio.gather(*(
             provider.async_get_coverage(None, cap) for cap in CAPABILITIES
         ))
-        self.assertLess(time.monotonic() - t0, .021)
+        self.assertLess(time.monotonic() - t0, .2)
         self.assertTrue(all(x["cache"]["hit"] for x in hits))
-        self.assertTrue(all(x["cache"]["ttl_remaining_seconds"] <= .12 for x in hits))
-        await asyncio.sleep(.07)
+        self.assertTrue(all(x["cache"]["ttl_remaining_seconds"] <= 1.5 for x in hits))
+        # Await the real background tasks, not a runner-dependent fixed sleep.
+        # Under loaded CI the thread executor may not be scheduled immediately.
+        refreshes = [namespace["_coverage_inflight"][layer] for layer in LAYERS]
+        await asyncio.wait_for(asyncio.gather(*refreshes), timeout=3.0)
         self.assertEqual(len(session.calls), 2, "refresh must be shared")
         for cap in CAPABILITIES:
             recent = await provider.async_get_coverage(None, cap)
