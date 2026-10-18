@@ -8,6 +8,7 @@ discovery, time-axis parsing, provider metadata and failover host selection.
 
 from __future__ import annotations
 
+import asyncio
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from io import BytesIO
@@ -203,6 +204,49 @@ _cache_loaded_at = 0.0
 # does not expose a usable geographic bbox on the concrete named layer.
 # Entries are bounded by the same short TTL as the aggregate capabilities cache.
 _layer_coverage_cache: dict[str, dict[str, Any]] = {}
+
+# WMS GetCapabilities can take longer than a V2 consumer's six-second
+# preflight budget. Coalesce repeated requests, and let the one bounded
+# provider task finish even when an individual consumer cancels its wait.
+# This cache stores proven layer coverage only, never a guessed extent.
+_capabilities_inflight_loop: asyncio.AbstractEventLoop | None = None
+_capabilities_inflight: asyncio.Task[tuple[str, ET.Element]] | None = None
+_coverage_inflight_loop: asyncio.AbstractEventLoop | None = None
+_coverage_inflight: dict[str, asyncio.Task[dict[str, Any]]] = {}
+_coverage_result_cache: dict[str, dict[str, Any]] = {}
+
+
+def _observe_background_result(task: asyncio.Task[Any]) -> None:
+    """Retrieve errors from intentionally shielded, finite provider tasks."""
+    if not task.cancelled():
+        try:
+            task.exception()
+        except Exception:  # noqa: BLE001 - error returned to future clients
+            pass
+
+
+def _cached_coverage_result(layer: str, now: float) -> dict[str, Any] | None:
+    """Only reuse successfully verified geographic layer metadata."""
+    entry = _coverage_result_cache.get(layer)
+    if not isinstance(entry, dict) or now >= entry.get("valid_until", 0.0):
+        return None
+    coverage = entry.get("coverage")
+    if not isinstance(coverage, dict):
+        return None
+    result = dict(coverage)
+    cache = dict(result.get("cache") or {})
+    cache.update({
+        "type": "wms_verified_layer_coverage",
+        "layer": layer,
+        "populated": True,
+        "valid": True,
+        "hit": True,
+        "age_seconds": round(max(0.0, now - entry["loaded_at"]), 3),
+        "ttl_seconds": _CAPABILITIES_TTL_SECONDS,
+        "ttl_remaining_seconds": round(max(0.0, entry["valid_until"] - now), 3),
+    })
+    result["cache"] = cache
+    return result
 
 _DURATION_RE = re.compile(
     r"^P(?:(?P<days>\d+)D)?(?:T(?:(?P<hours>\d+)H)?(?:(?P<minutes>\d+)M)?(?:(?P<seconds>\d+(?:\.\d+)?)S)?)?$"
@@ -692,7 +736,7 @@ def _capabilities_cache_diagnostic(now: float | None = None) -> dict[str, Any]:
     }
 
 
-async def _async_capabilities(
+async def _fetch_capabilities_uncached(
     hass: HomeAssistant,
     attempts: list[dict[str, Any]] | None = None,
 ) -> tuple[str, ET.Element]:
@@ -750,11 +794,48 @@ async def _async_capabilities(
             attempts.append(record)
         _cached_root = root
         _cached_wms_base = base
-        _cache_loaded_at = now
-        _cache_valid_until = now + _CAPABILITIES_TTL_SECONDS
+        _cache_loaded_at = monotonic()
+        _cache_valid_until = _cache_loaded_at + _CAPABILITIES_TTL_SECONDS
         return base, root
 
     raise ValueError("DWD WMS capabilities are unavailable") from last_error
+
+
+async def _async_capabilities(
+    hass: HomeAssistant,
+    attempts: list[dict[str, Any]] | None = None,
+) -> tuple[str, ET.Element]:
+    """One shared WMS metadata fetch across concurrent DWD layer requests.
+
+    The individual V2 wait_for may expire; shield keeps the already-started
+    bounded network operation alive to populate the normal five-minute cache.
+    V1 continues to use exactly the same provider metadata and time axis.
+    """
+    global _capabilities_inflight_loop, _capabilities_inflight
+    now = monotonic()
+    if _cached_root is not None and _cached_wms_base is not None and now < _cache_valid_until:
+        if attempts is not None:
+            attempts.append({
+                "stage": "capabilities_cache",
+                "cache_hit": True,
+                "ok": True,
+                "cache": _capabilities_cache_diagnostic(now),
+            })
+        return _cached_wms_base, _cached_root
+
+    loop = asyncio.get_running_loop()
+    if _capabilities_inflight_loop is not loop:
+        _capabilities_inflight_loop = loop
+        _capabilities_inflight = None
+    if _capabilities_inflight is None or _capabilities_inflight.done():
+        _capabilities_inflight = loop.create_task(
+            _fetch_capabilities_uncached(hass),
+            name="wr-dwd-wms-capabilities",
+        )
+        _capabilities_inflight.add_done_callback(_observe_background_result)
+    elif attempts is not None:
+        attempts.append({"stage": "capabilities_shared_inflight", "cache_hit": False})
+    return await asyncio.shield(_capabilities_inflight)
 
 
 def _layer_capabilities_endpoint(base: str, layer: str) -> str:
@@ -1385,11 +1466,49 @@ class DwdProvider:
         hass: HomeAssistant,
         capability_id: str,
     ) -> dict[str, Any]:
-        """Return layer-specific geographic coverage from DWD WMS capabilities."""
+        """Resolve proven geographic coverage with bounded, reusable work.
+
+        Do not cancel the shared DWD metadata lookup merely because one V2
+        request has reached its shorter coverage waiting budget.
+        """
+        global _coverage_inflight_loop
         spec = _CAPABILITY_MAP.get(capability_id)
         if spec is None:
             raise ValueError(f"Unsupported DWD map capability: {capability_id}")
+        now = monotonic()
+        cached = _cached_coverage_result(spec.layer, now)
+        if cached is not None:
+            return cached
+        loop = asyncio.get_running_loop()
+        if _coverage_inflight_loop is not loop:
+            _coverage_inflight_loop = loop
+            _coverage_inflight.clear()
+        task = _coverage_inflight.get(spec.layer)
+        if task is None or task.done():
+            async def _resolve_and_cache() -> dict[str, Any]:
+                result = await self._async_get_coverage_uncached(hass, spec)
+                loaded = monotonic()
+                _coverage_result_cache[spec.layer] = {
+                    "coverage": dict(result),
+                    "loaded_at": loaded,
+                    "valid_until": loaded + _CAPABILITIES_TTL_SECONDS,
+                }
+                return result
 
+            task = loop.create_task(
+                _resolve_and_cache(),
+                name="wr-dwd-verified-layer-coverage",
+            )
+            task.add_done_callback(_observe_background_result)
+            _coverage_inflight[spec.layer] = task
+        return dict(await asyncio.shield(task))
+
+    async def _async_get_coverage_uncached(
+        self,
+        hass: HomeAssistant,
+        spec: _LayerSpec,
+    ) -> dict[str, Any]:
+        """Existing WMS layer and fallback validation, unchanged."""
         cache_before = _capabilities_cache_diagnostic()
         base, root = await _async_capabilities(hass)
         coverage = wms_layer_geographic_coverage(root, spec.layer)
