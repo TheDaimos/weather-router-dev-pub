@@ -214,6 +214,10 @@ _capabilities_inflight: asyncio.Task[tuple[str, ET.Element]] | None = None
 _coverage_inflight_loop: asyncio.AbstractEventLoop | None = None
 _coverage_inflight: dict[str, asyncio.Task[dict[str, Any]]] = {}
 _coverage_result_cache: dict[str, dict[str, Any]] = {}
+# The worldwide WMS fallback is one service document shared by all DWD layers.
+_global_wms_cache: dict[str, dict[str, Any]] = {}
+_global_wms_inflight_loop: asyncio.AbstractEventLoop | None = None
+_global_wms_inflight: dict[str, asyncio.Task[dict[str, Any]]] = {}
 
 
 def _observe_background_result(task: asyncio.Task[Any]) -> None:
@@ -928,6 +932,60 @@ def _documented_icon_global_grid_coverage(
     }
 
 
+async def _shared_global_wms_root(
+    hass: HomeAssistant, endpoint: str,
+) -> tuple[ET.Element, dict[str, Any], bool]:
+    """Fetch the canonical WMS document once per host and event loop.
+
+    Keep valid parsed provider metadata for five minutes, not inferred bbox
+    claims. A layer must still prove its own named geographic footprint.
+    """
+    global _global_wms_inflight_loop
+    now = monotonic()
+    cached = _global_wms_cache.get(endpoint)
+    if isinstance(cached, dict) and now < cached.get("valid_until", 0.0):
+        return cached["root"], dict(cached["metadata"]), True
+
+    loop = asyncio.get_running_loop()
+    if _global_wms_inflight_loop is not loop:
+        _global_wms_inflight_loop = loop
+        _global_wms_inflight.clear()
+    task = _global_wms_inflight.get(endpoint)
+    if task is None or task.done():
+        async def _load() -> dict[str, Any]:
+            session = async_get_clientsession(hass)
+            async with session.get(
+                endpoint,
+                params={
+                    "service": "WMS",
+                    "version": "1.3.0",
+                    "request": "GetCapabilities",
+                },
+                timeout=_REQUEST_TIMEOUT_SECONDS,
+            ) as response:
+                metadata = {
+                    "http_status": response.status,
+                    "content_type": response.headers.get("Content-Type"),
+                }
+                payload = await response.read()
+                metadata["bytes"] = len(payload)
+                response.raise_for_status()
+            root = ET.fromstring(payload)
+            entry = {
+                "root": root,
+                "metadata": metadata,
+                "valid_until": monotonic() + _CAPABILITIES_TTL_SECONDS,
+            }
+            _global_wms_cache[endpoint] = entry
+            return entry
+
+        task = loop.create_task(_load(), name="wr-dwd-global-wms-metadata")
+        task.add_done_callback(_observe_background_result)
+        _global_wms_inflight[endpoint] = task
+    entry = await asyncio.shield(task)
+    return entry["root"], dict(entry["metadata"]), False
+
+
 async def _async_global_wms_coverage(
     hass: HomeAssistant,
     layer: str,
@@ -949,7 +1007,6 @@ async def _async_global_wms_coverage(
         result["cache"] = cache
         return result
 
-    session = async_get_clientsession(hass)
     last_error: Exception | None = None
     for endpoint in (_PRIMARY_GLOBAL_WMS, _BACKUP_GLOBAL_WMS):
         record: dict[str, Any] = {
@@ -959,22 +1016,11 @@ async def _async_global_wms_coverage(
             "cache_hit": False,
         }
         try:
-            async with session.get(
-                endpoint,
-                params={
-                    "service": "WMS",
-                    "version": "1.3.0",
-                    "request": "GetCapabilities",
-                },
-                timeout=_REQUEST_TIMEOUT_SECONDS,
-            ) as response:
-                record["http_status"] = response.status
-                record["content_type"] = response.headers.get("Content-Type")
-                payload = await response.read()
-                record["bytes"] = len(payload)
-                response.raise_for_status()
-
-            root = ET.fromstring(payload)
+            root, metadata, was_cached = await _shared_global_wms_root(
+                hass, endpoint
+            )
+            record.update(metadata)
+            record["cache_hit"] = was_cached
             names = _named_layer_names(root)
             record["xml_root"] = _local_name(root.tag)
             record["wms_version"] = root.attrib.get("version")

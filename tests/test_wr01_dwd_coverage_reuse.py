@@ -34,6 +34,10 @@ methods = {
 wanted = (
     "_local_name",
     "_capabilities_cache_diagnostic",
+    "_layer_coverage_cache_diagnostic",
+    "_named_layer_names",
+    "_shared_global_wms_root",
+    "_async_global_wms_coverage",
     "_cached_coverage_result",
     "_observe_background_result",
     "_fetch_capabilities_uncached",
@@ -73,11 +77,18 @@ WMS_XML = (
         for layer in LAYERS
     ) + '</Layer></Capability></WMS_Capabilities>'
 ).encode("utf-8")
+NO_BBOX_XML = (
+    '<WMS_Capabilities xmlns="http://www.opengis.net/wms" version="1.3.0">'
+    '<Capability><Layer>' +
+    "".join('<Layer><Name>' + layer + '</Name></Layer>' for layer in LAYERS) +
+    '</Layer></Capability></WMS_Capabilities>'
+).encode("utf-8")
 
 
 class Response:
-    def __init__(self, session):
+    def __init__(self, session, endpoint):
         self.session = session
+        self.endpoint = endpoint
         self.status = 200
         self.headers = {"Content-Type": "text/xml"}
 
@@ -91,6 +102,8 @@ class Response:
         return False
 
     async def read(self):
+        if not self.session.aggregate_has_bbox and not self.endpoint.endswith("/ows"):
+            return NO_BBOX_XML
         return WMS_XML
 
     def raise_for_status(self):
@@ -98,14 +111,15 @@ class Response:
 
 
 class Session:
-    def __init__(self, *, delay=.045, fail=False):
+    def __init__(self, *, delay=.045, fail=False, aggregate_has_bbox=True):
         self.delay = delay
         self.fail = fail
+        self.aggregate_has_bbox = aggregate_has_bbox
         self.calls = []
 
     def get(self, base, *, params, timeout):
         self.calls.append((base, params["request"], timeout))
-        return Response(self)
+        return Response(self, base)
 
 
 def harness(session):
@@ -117,6 +131,11 @@ def harness(session):
         "async_get_clientsession": lambda hass: session,
         "_PRIMARY_WMS": "https://primary.invalid/wms",
         "_BACKUP_WMS": "https://backup.invalid/wms",
+        "_PRIMARY_GLOBAL_WMS": "https://primary.invalid/ows",
+        "_BACKUP_GLOBAL_WMS": "https://backup.invalid/ows",
+        "_global_wms_cache": {},
+        "_global_wms_inflight_loop": None,
+        "_global_wms_inflight": {},
         "_REQUEST_TIMEOUT_SECONDS": 20,
         "_CAPABILITIES_TTL_SECONDS": 300.0,
         "_cached_root": None,
@@ -137,7 +156,6 @@ def harness(session):
     }
     exec(compile(module, str(DWD), "exec"), ns)
     # These helpers are needed only if actual metadata has no geographic bbox.
-    ns["_async_global_wms_coverage"] = lambda *args, **kw: None
     ns["_async_layer_specific_coverage"] = lambda *args, **kw: None
     cls = type("DwdUnderTest", (), {
         "async_get_coverage": ns["async_get_coverage"],
@@ -183,6 +201,29 @@ class DwdCoverageReuseTests(unittest.IsolatedAsyncioTestCase):
         self.assertIsInstance(results[0], asyncio.CancelledError)
         self.assertTrue(all(isinstance(x, dict) for x in results[1:]))
         self.assertEqual(len(session.calls), 1)
+
+    async def test_shared_global_fallback_preserves_actual_layer_bbox(self):
+        # The DWD aggregate document can omit explicit layer bbox metadata.
+        # Three distinct DWD sources must share one fallback document.
+        session = Session(delay=.035, aggregate_has_bbox=False)
+        namespace, provider = harness(session)
+        first = await asyncio.gather(*(
+            asyncio.wait_for(provider.async_get_coverage(None, cap), timeout=.009)
+            for cap in CAPABILITIES
+        ), return_exceptions=True)
+        self.assertTrue(all(isinstance(item, TimeoutError) for item in first))
+        await asyncio.sleep(.105)
+        by_layer = [await provider.async_get_coverage(None, cap)
+                    for cap in CAPABILITIES]
+        self.assertEqual(len([x for x in session.calls if x[0].endswith("/wms")]), 1)
+        self.assertEqual(len([x for x in session.calls if x[0].endswith("/ows")]), 1)
+        self.assertTrue(all(x["coverage_metadata_scope"] == "global_wms_layer"
+                            for x in by_layer))
+        self.assertTrue(all(x["cache"]["hit"] is True for x in by_layer))
+        self.assertEqual(len(namespace["_global_wms_cache"]), 1)
+        self.assertTrue(all(x["bbox"] == {
+            "west": 2.0, "south": 46.0, "east": 17.0, "north": 56.0
+        } for x in by_layer))
 
     async def test_actual_wms_coverage_not_invented_for_cuba(self):
         session = Session(delay=0)
