@@ -110,7 +110,7 @@ class OperaCogFetch:
                     if length is not None and len(payload) != reported:
                         raise OperaDownloadError("incomplete_object")
             if len(payload) < 8 or bytes(payload[:4]) not in (
-                b"II*\\x00", b"MM\\x00*", b"II+\\x00", b"MM\\x00+",
+                b"II*\x00", b"MM\x00*", b"II+\x00", b"MM\x00+",
             ):
                 raise OperaDownloadError("not_a_tiff")
             # Critical: snapshot age is checked again after download activity.
