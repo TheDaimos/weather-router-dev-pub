@@ -348,6 +348,21 @@ def plan_raster_mosaic(
                 })
     else:
         ordered = []
+    # A one-layer request cannot use a satellite foundation and a radar
+    # overlay together. Prefer a verified current local measurement when it
+    # covers the focus and a substantial part of the viewport; otherwise
+    # retain the broad foundation for a geographically wide view. Never let
+    # a tiny regional edge-contact replace a global source.
+    if max_layers == 1 and ordered:
+        local = [item for item in ordered if not item["is_background"]
+                 and item["focus"] and item["fraction"] >= 0.5]
+        if local:
+            local.sort(key=lambda item: (
+                item["score"], -item["fraction"],
+                -item["time"].timestamp(),
+                str(item["candidate"]["source_id"])))
+            best = local[0]
+            ordered = [best, *(item for item in ordered if item is not best)]
     selected = ordered[:max_layers]
     # Preserve selection budgets and source ranking, but expose a stable
     # COMPOSITING order: older authorized satellite background first,
