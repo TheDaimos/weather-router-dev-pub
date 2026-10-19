@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "WeatherRouter raster mosaic proposal v2 (P7-010, not a live endpoint)",
+  "title": "WeatherRouter active Consumer API V2 raster mosaic response (P7-010)",
   "type": "object",
   "additionalProperties": false,
   "required": [
