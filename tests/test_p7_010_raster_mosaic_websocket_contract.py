@@ -257,6 +257,56 @@ class WebsocketHarnessTests(unittest.IsolatedAsyncioTestCase):
                          "coverage_timeout")
         self.assertEqual(outcome["wide_world/radar_layer"], "selected")
 
+    async def test_old_world_satellite_requires_consent_then_draws_below_radar(self):
+        self.rows[1].semantics = {
+            "quantity": "precipitation_rate", "unit": "mm/h",
+            "measurement_method": "satellite_precipitation_estimate",
+            "observation_kind": "estimate",
+        }
+        async def old_world(*args):
+            return {
+                "tile_url": "https://example.invalid/{z}/{x}/{y}.png",
+                "frame_time": "2026-10-14T08:30:00Z",
+                "attribution": "world", "legend": {"title": "world"},
+            }
+        self.world.async_get_map_layer = old_world
+        strict = request()
+        await self.handler(None, self.connection, strict)
+        answer = self.connection.results[0][1]
+        by_source = {r["source_id"]: r["result"]
+                     for r in answer["source_outcomes"]}
+        self.assertEqual(by_source["wide_world/radar_layer"], "consent_required")
+        self.assertEqual(by_source["regional_radar/radar_layer"], "selected")
+        self.assertEqual(len(answer["layers"]), 1)
+
+        approved = request()
+        approved["time"]["max_background_age_seconds"] = 43200
+        self.connection = FakeConnection()
+        await self.handler(None, self.connection, approved)
+        answer = self.connection.results[0][1]
+        self.assertEqual(
+            [x["source_id"] for x in answer["layers"]],
+            ["wide_world/radar_layer", "regional_radar/radar_layer"])
+        self.assertEqual(answer["layers"][0]["freshness_class"],
+                         "older_background")
+        self.assertEqual(answer["layers"][0]["composition"]["draw_order"], 0)
+        self.assertEqual(answer["layers"][1]["composition"]["draw_order"], 1)
+
+    async def test_stale_regional_is_reported_but_world_kept(self):
+        async def old_radar(*args):
+            return {
+                "tile_url": "https://example.invalid/{z}/{x}/{y}.png",
+                "frame_time": "2026-10-14T12:00:00Z",
+                "attribution": "regional", "legend": {"title": "regional"},
+            }
+        self.regional.async_get_map_layer = old_radar
+        await self.handler(None, self.connection, request())
+        answer = self.connection.results[0][1]
+        status = {x["source_id"]: x["result"]
+                  for x in answer["source_outcomes"]}
+        self.assertEqual(status["regional_radar/radar_layer"], "source_stale")
+        self.assertEqual(status["wide_world/radar_layer"], "selected")
+
     async def test_coverage_timeout_is_visible_even_when_nasa_succeeds(self):
         # Reproduce HA: working world source and slow regional WMS coverage.
         self.regional.coverage_delay = .04
