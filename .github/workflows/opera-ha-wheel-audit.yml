@@ -1,0 +1,46 @@
+name: OPERA Rasterbibliotheken – Home Assistant Wheel-Pruefung
+
+on:
+  push:
+    branches:
+      - "feature/p7-010-global-concurrency-2026-10-16"
+    paths:
+      - ".github/workflows/opera-ha-wheel-audit.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  wheel-availability:
+    name: "HA musllinux CP314 / ${{ matrix.arch }}"
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: ["x86_64", "aarch64"]
+    steps:
+      - name: Python installieren – nur Pruefcontainer
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: HA musllinux Python 3.14 Raster-Wheels rein lesend pruefen
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "HA-WHEEL-PROBE: nur oeffentliche PyPI-Wheels, keine HA-Installation."
+          mkdir -p "${RUNNER_TEMP}/opera-ha-wheels"
+          python -m pip download \
+            --index-url https://pypi.org/simple \
+            --only-binary=:all: \
+            --no-deps \
+            --platform "musllinux_1_2_${{ matrix.arch }}" \
+            --python-version 3.14 \
+            --implementation cp \
+            --abi cp314 \
+            --dest "${RUNNER_TEMP}/opera-ha-wheels" \
+            "numpy==2.3.5" "rasterio==1.5.0" "Pillow==12.3.0"
+          find "${RUNNER_TEMP}/opera-ha-wheels" -type f -name '*.whl' -printf "%f\n"
+          echo "HA-WHEEL-PROBE PASS: alle drei angeforderten PyPI-Wheels fuer dieses Ziel gefunden."
