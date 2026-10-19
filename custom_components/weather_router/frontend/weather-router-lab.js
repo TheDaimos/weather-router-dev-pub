@@ -2,7 +2,7 @@ import * as maplibregl from "https://unpkg.com/maplibre-gl@6.9.1/dist/maplibre-g
 
 const SELECT_ENTITY = "select.weather_router_reference_location";
 const MAPLIBRE_CSS = "https://unpkg.com/maplibre-gl@6.9.1/dist/maplibre-gl.css";
-const WR_LAB_BUILD_VERSION = "0.10.159";
+const WR_LAB_BUILD_VERSION = "0.10.160";
 const LAB_MENU_STATE_KEY = "weather_router_lab_menu_state_v1";
 
 const OPENFREEMAP_STYLES = {
