@@ -129,6 +129,34 @@ class TileRouteTests(unittest.TestCase):
         with self.assertRaises(web.HTTPForbidden):
             self.request()
 
+    def test_untrusted_query_rejected_even_with_authenticated_user(self):
+        req=FakeRequest(hass_user=object())
+        req.query={"authSig":"unacceptable"}
+        with self.assertRaises(web.HTTPForbidden):
+            self.request(req=req)
+
+    def test_executor_concurrency_budget_rejects_excess(self):
+        import time
+        # A long-running worker must keep its slot; requests cannot spawn
+        # unbounded parallel GDAL work while earlier jobs are incomplete.
+        gate=tile_http.OperaTileView(FakeHass(),
+            registry_lookup=lambda product,stamp:self.registration,
+            is_permitted=lambda user,product:True,is_enabled=lambda:True,
+            max_active=1,wait_seconds=0.02,render_seconds=1.0)
+        def slow_render(**kwargs):
+            time.sleep(0.25)
+            return b"PNG dummy"
+        async def exercise():
+            first=asyncio.create_task(gate.get(
+                self.req,"DBZH",self.stamp,"6","33","19"))
+            await asyncio.sleep(0.05)
+            with self.assertRaises(web.HTTPServiceUnavailable):
+                await gate.get(self.req,"DBZH",self.stamp,"6","33","19")
+            response=await first
+            self.assertEqual(response.content_type,"image/png")
+        with patch.object(tile_http,"render_verified_cog",side_effect=slow_render):
+            asyncio.run(exercise())
+
     def test_no_public_proxy_and_disabled_by_default(self):
         self.assertTrue(tile_http.OperaTileView.requires_auth)
         self.assertNotIn("token",tile_http.OperaTileView.url)
