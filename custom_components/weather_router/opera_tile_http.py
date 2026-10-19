@@ -28,6 +28,8 @@ class TileRegistration:
     palette: Callable[[float], tuple[int, int, int, int]]
     palette_verified: bool
     attribution: str
+    quality_verified: bool = False
+    raster_metadata_verified: bool = False
 
 class OperaTileView(HomeAssistantView):
     """Authenticated read-only image route, disabled until explicitly staged."""
@@ -80,6 +82,8 @@ class OperaTileView(HomeAssistantView):
                 product == "DBZH" and entry.unit != "dBZ"
             ) or (product == "RATE" and entry.unit != "mm/h"):
                 raise TileAccessDenied("product_semantics_unverified")
+            if entry.quality_verified is not True or entry.raster_metadata_verified is not True:
+                raise TileAccessDenied("quality_or_geometry_unverified")
             if not entry.attribution.strip():
                 raise TileAccessDenied("missing_attribution")
             assert_authorized(
