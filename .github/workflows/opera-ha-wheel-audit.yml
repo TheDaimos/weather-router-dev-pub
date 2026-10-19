@@ -32,16 +32,27 @@ jobs:
           set -euo pipefail
           echo "HA-WHEEL-PROBE: nur oeffentliche PyPI-Wheels, keine HA-Installation."
           mkdir -p "${RUNNER_TEMP}/opera-ha-wheels"
-          python -m pip download \
-            --index-url https://pypi.org/simple \
-            --extra-index-url https://wheels.home-assistant.io/musllinux-index/ \
-            --only-binary=:all: \
-            --no-deps \
-            --platform "musllinux_1_2_${{ matrix.arch }}" \
-            --python-version 3.14 \
-            --implementation cp \
-            --abi cp314 \
-            --dest "${RUNNER_TEMP}/opera-ha-wheels" \
-            "numpy==2.3.5" "rasterio==1.5.0" "Pillow==12.3.0"
-          find "${RUNNER_TEMP}/opera-ha-wheels" -type f -name '*.whl' -printf "%f\n"
+          failures=0
+          for dependency in "numpy==2.3.5" "rasterio==1.5.0" "Pillow==12.3.0"; do
+            echo "HA-WHEEL-PROBE: pruefe ${dependency} ..."
+            if python -m pip download \
+                --index-url https://pypi.org/simple \
+                --extra-index-url https://wheels.home-assistant.io/musllinux-index/ \
+                --only-binary=:all: \
+                --no-deps \
+                --platform "musllinux_1_2_${{ matrix.arch }}" \
+                --python-version 3.14 \
+                --implementation cp \
+                --abi cp314 \
+                --dest "${RUNNER_TEMP}/opera-ha-wheels" "${dependency}"; then
+              echo "HA-WHEEL-PROBE PASS: ${dependency}"
+            else
+              echo "::error::HA-WHEEL-PROBE FAIL: kein passendes Fertigpaket fuer ${dependency}"
+              failures=1
+            fi
+          done
+          find "${RUNNER_TEMP}/opera-ha-wheels" -type f -name '*.whl' -printf "%f\\n"
+          if [ "${failures}" -ne 0 ]; then
+            exit 1
+          fi
           echo "HA-WHEEL-PROBE PASS: alle drei angeforderten PyPI-Wheels fuer dieses Ziel gefunden."
