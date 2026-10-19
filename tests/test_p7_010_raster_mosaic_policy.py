@@ -309,6 +309,60 @@ class MosaicPlanningTests(unittest.TestCase):
                 max_data_age_seconds=1200, max_time_delta_seconds=180,
                 max_layers=True)
 
+    def test_radar_composition_overrides_full_world_older_satellite(self):
+        nasa = source("nasa", WORLD, "2026-10-14T08:30:00Z",
+                      method="satellite_precipitation_estimate")
+        nasa["semantics"]["observation_kind"] = "estimate"
+        nasa["routing_score"] = [2, 0, 1]
+        radar = source("dwd_radar", GERMANY, "2026-10-14T15:06:00Z")
+        radar["routing_score"] = [1, 0, 0]
+        checked = source("dwd_quality", GERMANY, "2026-10-14T15:06:00Z")
+        checked["routing_score"] = [0, 0, 0]
+        checked["semantics"]["unit"] = None
+        for candidates in ([radar, nasa, checked],
+                           [checked, radar, nasa], [nasa, checked, radar]):
+            result = policy.plan_raster_mosaic(
+                list(candidates), viewport=VIEW, now=NOW,
+                max_data_age_seconds=900, max_background_age_seconds=43200,
+                max_time_delta_seconds=180, max_layers=3,
+                focus={"latitude": 50, "longitude": 8})
+            self.assertEqual(
+                [x["source_id"] for x in result["layers"]],
+                ["nasa", "dwd_radar", "dwd_quality"])
+            self.assertEqual(result["layer_order"], "background_to_foreground")
+            self.assertEqual(
+                [x["composition"]["draw_order"] for x in result["layers"]],
+                [0, 1, 2])
+            self.assertEqual(result["layers"][0]["composition"]["role"], "background")
+            self.assertEqual(result["layers"][0]["freshness_class"], "older_background")
+            self.assertEqual(result["layers"][-1]["composition"]["routing_score"],
+                             [0, 0, 0])
+            self.assertIsNone(result["layers"][-1]["semantics"]["unit"])
+            self.assertEqual(result["layers"][-1]["semantics"]["quantity"],
+                             "precipitation_rate")
+
+    def test_unapproved_background_has_explicit_consent_reason(self):
+        nasa = source("nasa", WORLD, "2026-10-14T08:30:00Z",
+                      method="satellite_precipitation_estimate")
+        nasa["semantics"]["observation_kind"] = "estimate"
+        result = plan(nasa)
+        self.assertFalse(result["layers"])
+        self.assertEqual(result["_internal_source_rejections"][0]["reason"],
+                         "consent_required")
+
+    def test_outdated_radar_has_explicit_stale_reason(self):
+        radar = source("dwd", GERMANY, "2026-10-14T13:00:00Z")
+        result = plan(radar)
+        self.assertEqual(result["_internal_source_rejections"][0]["reason"],
+                         "source_stale")
+
+    def test_temporal_mismatch_preserves_explicit_machine_reason(self):
+        fresh = source("world", WORLD, "2026-10-14T15:06:00Z")
+        older = source("regional", GERMANY, "2026-10-14T15:01:00Z")
+        result = plan(fresh, older)
+        self.assertEqual(result["_internal_source_rejections"][0]["reason"],
+                         "outside_time_tolerance")
+
     def test_reference_time_is_distinct_from_provider_times(self):
         result = plan(source("world"), reference_time="2026-10-14T15:02:00Z")
         self.assertEqual(result["reference_time"], "2026-10-14T15:02:00Z")

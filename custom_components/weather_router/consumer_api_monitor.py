@@ -201,14 +201,35 @@ class ConsumerApiMonitor:
                 "contacts_selected": routing_data.get("contacts_selected"),
                 "sources_eligible": routing_data.get("sources_eligible"),
                 "selected_sources": _safe((routing_data.get("selected_sources") or [])[:12], locations=False),
+                "delivered_sources": _safe((routing_data.get("delivered_sources") or [])[:12], locations=False),
+                "layer_order": routing_data.get("layer_order"),
+                "source_outcomes": _safe((routing_data.get("source_outcomes") or [])[:12], locations=False),
                 "final_layers_count": routing_data.get("final_layers_count"),
                 "source_rejections": _safe((routing_data.get("source_rejections") or [])[:12], locations=False),
                 "coverage_preflight": _safe((routing_data.get("coverage_preflight") or [])[:12], locations=False),
             }
             token["response"] = _safe({key: response_data.get(key) for key in
                 ("status", "code", "reason_code", "selected_provider",
-                 "source_id", "contract_version", "capability")
+                 "source_id", "contract_version", "capability", "layer_order")
                 if key in response_data})
+            if response_data.get("contract_version") == 2:
+                token["response"]["layers"] = _safe([
+                    {
+                        "source_id": layer.get("source_id"),
+                        "freshness_class": layer.get("freshness_class"),
+                        "composition": layer.get("composition"),
+                        "times": {
+                            "valid_at": layer.get("times", {}).get("valid_at"),
+                            "age_seconds": layer.get("times", {}).get("age_seconds"),
+                        },
+                    }
+                    for layer in (response_data.get("layers") or [])[:12]
+                    if isinstance(layer, dict)
+                ], locations=False)
+                token["response"]["source_outcomes"] = _safe(
+                    (response_data.get("source_outcomes") or [])[:12],
+                    locations=False
+                )
             old_request = token["request"] if isinstance(token.get("request"), dict) else {}
             time_request = old_request.get("time")
             token["request"] = {

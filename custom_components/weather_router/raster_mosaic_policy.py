@@ -253,8 +253,41 @@ def plan_raster_mosaic(
                                 max_background_age_seconds if is_background
                                 else max_data_age_seconds)
         if not reason and not frames:
-            # Zentrale Zeitvertragfehler nicht als blosse Provider-Frische maskieren.
-            reason = candidate.get("time_normalization_error") or "no_fresh_verified_frame"
+            # Keep source age and explicit background consent distinct. A valid
+            # but old time is stale; a permitted 12h satellite time with
+            # *missing* opt-in has a separate machine-readable reason. Do
+            # not infer missing observation times from the HTTP retrieval.
+            reason = candidate.get("time_normalization_error")
+            if not reason:
+                all_times = [
+                    _time(frame.get("data_time"))
+                    for frame in (candidate.get("frames") or [
+                        {"data_time": candidate.get("data_time")}
+                    ])
+                    if isinstance(frame, Mapping)
+                ]
+                valid_ages = [
+                    (now_dt - value).total_seconds()
+                    for value in all_times if value is not None
+                ]
+                if (
+                    max_background_age_seconds is None
+                    and world_coverage_for_background and sem is not None
+                    and sem.get("measurement_method") in (
+                        "satellite_precipitation_estimate", "satellite_estimate")
+                    and sem.get("observation_kind") == "estimate"
+                    and any(max_data_age_seconds < age <= 43200
+                            for age in valid_ages)
+                ):
+                    reason = "consent_required"
+                elif valid_ages and all(
+                    age > (max_background_age_seconds
+                           if is_background else max_data_age_seconds)
+                    for age in valid_ages
+                ):
+                    reason = "source_stale"
+                else:
+                    reason = "no_fresh_verified_frame"
         timestamp = frames[0]["time"] if frames else None
         if reason:
             rejected.append({"source_id": source_id, "reason": reason})
@@ -276,9 +309,9 @@ def plan_raster_mosaic(
     # Regional candidates are independent, geographically clipped overlays:
     # prefer actual viewer focus, time-coherence with the foundation, then
     # spatial relevance and existing provider-neutral semantic scoring.
-    allowed.sort(key=lambda a: (-a["fraction"], a["score"],
-                                -a["time"].timestamp(),
-                                str(a["candidate"]["source_id"])))
+    allowed.sort(key=lambda a: (
+        not a["is_background"], -a["fraction"], a["score"],
+        -a["time"].timestamp(), str(a["candidate"]["source_id"])))
     if allowed:
         foundation = allowed[0]
         # Anchor coherence on the most recent ordinary source, not on a
@@ -316,6 +349,16 @@ def plan_raster_mosaic(
     else:
         ordered = []
     selected = ordered[:max_layers]
+    # Preserve selection budgets and source ranking, but expose a stable
+    # COMPOSITING order: older authorized satellite background first,
+    # qualified higher-ranked radar last. The highest-quality source is
+    # drawn on top; source_id resolves exact scoring ties deterministically.
+    selected.sort(key=lambda item: (
+        0 if item["is_background"] else 1,
+        tuple(-n for n in item["score"]),
+        item["time"].timestamp(),
+        str(item["candidate"]["source_id"]),
+    ))
     for item in ordered[max_layers:]:
         rejected.append({"source_id": item["candidate"]["source_id"],
                          "reason": "layer_budget"})
@@ -332,6 +375,11 @@ def plan_raster_mosaic(
         layers.append({
             "source_id": candidate["source_id"],
             "resource_type": "raster_tile",
+            "composition": {
+                "draw_order": index,
+                "role": "background" if item["is_background"] else "overlay",
+                "routing_score": list(item["score"]),
+            },
             "render": dict(candidate.get("render") or {
                 "tile_size": 256, "min_zoom": 0.0,
                 "max_zoom": 18.0, "opacity": 1.0,
@@ -381,6 +429,7 @@ def plan_raster_mosaic(
         "viewport": box,
         "reference_time": _iso(reference) if reference else None,
         "layers": layers,
+        "layer_order": "background_to_foreground",
         "limitations": limitations,
         "_internal_source_rejections": rejected[:12],
     }

@@ -321,6 +321,36 @@ async def websocket_consumer_resolve_mosaic(
                                           "Die mehrteilige Rasterauflösung ist derzeit nicht verfügbar.")
                     return
                 rejected_sources = result.pop("_internal_source_rejections", [])
+                # Additive V2 source outcomes are the consumer's authoritative
+                # source-specific decision, not solely monitor-only details.
+                # Coverage is checked first, then fetch/time/composition.
+                # Only catalogue source IDs and fixed, bounded reason codes.
+                selected_ids = {
+                    row["source_id"] for row in result.get("layers", [])
+                    if isinstance(row, dict)
+                    and isinstance(row.get("source_id"), str)
+                }
+                rejection_codes = {
+                    str(item.get("source_id"))[:128]: str(item.get("reason"))[:72]
+                    for item in rejected_sources[:MAX_COVERAGE_CONTACTS]
+                    if isinstance(item, dict)
+                    and isinstance(item.get("source_id"), str)
+                    and isinstance(item.get("reason"), str)
+                }
+                outcome_rows = []
+                for item in sorted(coverage_preflight,
+                                   key=lambda row: row["source_id"]):
+                    source_id = item["source_id"]
+                    state = item["result"]
+                    if source_id in selected_ids:
+                        state = "selected"
+                    elif state == "coverage_accepted":
+                        state = rejection_codes.get(source_id, "not_selected")
+                    outcome_rows.append({
+                        "source_id": source_id,
+                        "result": state,
+                    })
+                result["source_outcomes"] = outcome_rows[:MAX_COVERAGE_CONTACTS]
                 if len(unique) > len(preflight):
                     result["limitations"].append(
                         "Weitere berechtigte Quellen wurden durch das Coverage-Kontaktbudget nicht geprüft.")
@@ -334,6 +364,11 @@ async def websocket_consumer_resolve_mosaic(
                         "contacts_selected": len(preflight),
                         "sources_eligible": len(sources),
                         "selected_sources": [item["source_id"] for item in sources[:MAX_COVERAGE_CONTACTS]],
+                        "delivered_sources": [
+                            item["source_id"] for item in result.get("layers", [])
+                        ][:MAX_COVERAGE_CONTACTS],
+                        "layer_order": result.get("layer_order"),
+                        "source_outcomes": result["source_outcomes"],
                         "coverage_preflight": sorted(coverage_preflight,
                             key=lambda item: item["source_id"])[:MAX_COVERAGE_CONTACTS],
                         "final_layers_count": len(result.get("layers", [])),

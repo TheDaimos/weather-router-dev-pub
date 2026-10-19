@@ -217,6 +217,46 @@ class WebsocketHarnessTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(statuses["wide_world/radar_layer"], "coverage_accepted")
         self.assertNotIn("source metadata is unavailable", repr(report))
 
+    async def test_v2_exposes_selected_and_outside_coverage_in_response(self):
+        # The consumer must not need private API-Monitor information to
+        # distinguish a genuine bbox miss from delivered layers.
+        self.regional.coverage = {"scope": "bbox", "bbox": {
+            "west": 60, "south": -40, "east": 80, "north": -20}}
+        await self.handler(None, self.connection, request())
+        answer = self.connection.results[0][1]
+        outcome = {v["source_id"]: v["result"]
+                   for v in answer["source_outcomes"]}
+        self.assertEqual(outcome["regional_radar/radar_layer"],
+                         "outside_coverage")
+        self.assertEqual(outcome["wide_world/radar_layer"], "selected")
+        self.assertEqual(answer["layer_order"], "background_to_foreground")
+        self.assertEqual(
+            self.connection._monitor_routing["delivered_sources"],
+            ["wide_world/radar_layer"])
+
+    async def test_v2_transient_reason_available_in_public_response(self):
+        async def temporary(*args):
+            raise spatial.CoverageTemporarilyUnavailable("synthetic WMS issue")
+        self.regional.async_get_coverage = temporary
+        await self.handler(None, self.connection, request())
+        outcome = {v["source_id"]: v["result"]
+                   for v in self.connection.results[0][1]["source_outcomes"]}
+        self.assertEqual(outcome["regional_radar/radar_layer"],
+                         "temporarily_unavailable")
+        self.assertEqual(outcome["wide_world/radar_layer"], "selected")
+        self.assertNotIn("synthetic WMS issue",
+                         repr(self.connection.results[0][1]))
+
+    async def test_v2_timeout_reason_available_in_public_response(self):
+        self.regional.coverage_delay = .06
+        self.environment["COVERAGE_TIMEOUT_SECONDS"] = .005
+        await self.handler(None, self.connection, request())
+        outcome = {v["source_id"]: v["result"]
+                   for v in self.connection.results[0][1]["source_outcomes"]}
+        self.assertEqual(outcome["regional_radar/radar_layer"],
+                         "coverage_timeout")
+        self.assertEqual(outcome["wide_world/radar_layer"], "selected")
+
     async def test_coverage_timeout_is_visible_even_when_nasa_succeeds(self):
         # Reproduce HA: working world source and slow regional WMS coverage.
         self.regional.coverage_delay = .04
