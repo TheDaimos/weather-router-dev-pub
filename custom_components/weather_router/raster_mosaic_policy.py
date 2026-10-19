@@ -353,12 +353,15 @@ def plan_raster_mosaic(
     # COMPOSITING order: older authorized satellite background first,
     # qualified higher-ranked radar last. The highest-quality source is
     # drawn on top; source_id resolves exact scoring ties deterministically.
-    selected.sort(key=lambda item: (
-        0 if item["is_background"] else 1,
-        tuple(-n for n in item["score"]),
-        item["time"].timestamp(),
-        str(item["candidate"]["source_id"]),
-    ))
+    if selected:
+        foundation, *overlays = selected
+        overlays.sort(key=lambda item: (
+            0 if item["is_background"] else 1,
+            tuple(-n for n in item["score"]),
+            item["time"].timestamp(),
+            str(item["candidate"]["source_id"]),
+        ))
+        selected = [foundation, *overlays]
     for item in ordered[max_layers:]:
         rejected.append({"source_id": item["candidate"]["source_id"],
                          "reason": "layer_budget"})
