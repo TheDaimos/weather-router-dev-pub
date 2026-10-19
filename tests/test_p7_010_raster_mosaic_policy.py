@@ -341,6 +341,30 @@ class MosaicPlanningTests(unittest.TestCase):
             self.assertEqual(result["layers"][-1]["semantics"]["quantity"],
                              "precipitation_rate")
 
+    def test_one_layer_current_local_measurement_beats_older_satellite(self):
+        nasa = source("nasa", WORLD, "2026-10-14T08:30:00Z",
+                      method="satellite_precipitation_estimate")
+        nasa["semantics"]["observation_kind"] = "estimate"
+        radar = source("radar", GERMANY, "2026-10-14T15:06:00Z")
+        radar["routing_score"] = [1, 0, 0]
+        checked = source("quality", GERMANY, "2026-10-14T15:06:00Z")
+        checked["routing_score"] = [0, 0, 0]
+        options = dict(viewport=GERMANY["bbox"], now=NOW,
+                       max_data_age_seconds=900,
+                       max_background_age_seconds=43200,
+                       max_time_delta_seconds=180, max_layers=1,
+                       focus={"latitude": 50, "longitude": 8})
+        for items in ([nasa, radar, checked], [checked, nasa, radar]):
+            result = policy.plan_raster_mosaic(items, **options)
+            self.assertEqual([x["source_id"] for x in result["layers"]],
+                             ["quality"])
+            self.assertEqual(result["layers"][0]["freshness_class"], "current")
+        wide = policy.plan_raster_mosaic([nasa, radar, checked],
+            **{**options, "viewport": VIEW})
+        self.assertEqual(wide["layers"][0]["source_id"], "nasa")
+        self.assertIn({"source_id": "quality", "reason": "layer_budget"},
+                      wide["_internal_source_rejections"])
+
     def test_unapproved_background_has_explicit_consent_reason(self):
         nasa = source("nasa", WORLD, "2026-10-14T08:30:00Z",
                       method="satellite_precipitation_estimate")
