@@ -78,7 +78,7 @@ class TileRouteTests(unittest.TestCase):
         frame=self.cache.admit(source_path=source,product="DBZH",
                                valid_at=self.t,expected_sha256=digest)
         self.registration=tile_http.TileRegistration(frame,"dBZ",lambda v:(1,2,3,255),
-                                                     True,"EUMETNET CC BY 4.0")
+                                                     True,"EUMETNET CC BY 4.0",quality_verified=True,raster_metadata_verified=True)
         self.stamp=self.t.strftime("%Y%m%dT%H%M%SZ")
         self.req=FakeRequest(hass_user=object())
         self.calls=0
@@ -123,9 +123,18 @@ class TileRouteTests(unittest.TestCase):
         with self.assertRaises(web.HTTPForbidden):
             self.request(req=req)
 
+    def test_unapproved_quality_or_geometry_rejected_before_rendering(self):
+        for quality_ok,geometry_ok in ((False,True),(True,False),(False,False)):
+            self.registration=tile_http.TileRegistration(
+                self.registration.frame,"dBZ",lambda v:(1,2,3,255),
+                True,"EUMETNET CC BY 4.0",
+                quality_verified=quality_ok,raster_metadata_verified=geometry_ok)
+            with self.assertRaises(web.HTTPForbidden):
+                self.request()
+
     def test_unverified_palette_or_source_rejected(self):
         self.registration=tile_http.TileRegistration(self.registration.frame,"mm/h",
-                lambda v:(1,2,3,255),True,"EUMETNET")
+                lambda v:(1,2,3,255),True,"EUMETNET",quality_verified=True,raster_metadata_verified=True)
         with self.assertRaises(web.HTTPForbidden):
             self.request()
 
