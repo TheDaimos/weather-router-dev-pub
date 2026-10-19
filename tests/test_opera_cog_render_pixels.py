@@ -75,8 +75,14 @@ class OperaPixels(unittest.TestCase):
                     self.assertGreater(np.count_nonzero(rgba[:,:,3]==0),0)
                     self.assertGreater(np.count_nonzero((rgba[:,:,0]==255)&(rgba[:,:,3]==255)),0)
                 self.assertEqual(cache.hash_operations,1)
-                blank=renderer.render_verified_cog(
+                edge=renderer.render_verified_cog(
                     trusted_path=admitted.path,expected_sha256=digest,z=6,x=33,y=20,
+                    verified_frame=admitted,
+                    palette=lambda v: (255,10,20,255))
+                with Image.open(BytesIO(edge)) as im:
+                    self.assertIsNotNone(im.getbbox()) # Real georeferenced edge coverage
+                blank=renderer.render_verified_cog(
+                    trusted_path=admitted.path,expected_sha256=digest,z=6,x=33,y=21,
                     verified_frame=admitted,
                     palette=lambda v: (255,10,20,255))
                 with Image.open(BytesIO(blank)) as im:
