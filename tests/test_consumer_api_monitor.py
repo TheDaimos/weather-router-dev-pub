@@ -146,6 +146,58 @@ class TestApiMonitor(unittest.TestCase):
         self.assertEqual(row["request"]["time"]["max_background_age_seconds"], 43200)
         self.assertLessEqual(len(__import__("json").dumps(row).encode()), 8192)
 
+    def test_truncated_v2_retains_source_order_and_machine_reasons(self):
+        m = monitor.ConsumerApiMonitor()
+        m.configure(enabled=True)
+        layers = [
+            {
+                "source_id": "nasa_gibs/imer",
+                "freshness_class": "older_background",
+                "composition": {"draw_order": 0, "role": "background",
+                                "routing_score": [2, 0, 1]},
+                "times": {"valid_at": "2026-10-19T04:00:00Z",
+                          "age_seconds": 27000},
+            },
+            {
+                "source_id": "dwd/checked",
+                "freshness_class": "current",
+                "composition": {"draw_order": 1, "role": "overlay",
+                                "routing_score": [0, 0, 0]},
+                "times": {"valid_at": "2026-10-19T07:00:00Z",
+                          "age_seconds": 90},
+            },
+        ]
+        outcomes = [
+            {"source_id": "nasa_gibs/imer", "result": "selected"},
+            {"source_id": "dwd/checked", "result": "selected"},
+            {"source_id": "dwd/icon", "result": "source_stale"},
+        ]
+        t = m.begin(api_version="V2", command="resolve_mosaic",
+                    message={"consumer_id": "gewitterradar",
+                             "correlation_id": "rf03-monitor"})
+        m.finish(t, result="success", response={
+            "contract_version": 2, "status": "partial",
+            "layer_order": "background_to_foreground",
+            "layers": layers, "source_outcomes": outcomes,
+            **{f"large_{i}": "x" * 420 for i in range(45)},
+        }, routing={
+            "delivered_sources": ["nasa_gibs/imer", "dwd/checked"],
+            "source_outcomes": outcomes,
+            "layer_order": "background_to_foreground",
+            "final_layers_count": 2,
+        })
+        row = m.query(correlation_id="rf03-monitor")["entries"][0]
+        self.assertTrue(row["truncated"])
+        self.assertEqual(row["response"]["layer_order"],
+                         "background_to_foreground")
+        self.assertEqual(
+            [layer["source_id"] for layer in row["response"]["layers"]],
+            ["nasa_gibs/imer", "dwd/checked"])
+        self.assertEqual(row["response"]["layers"][-1]["composition"]["draw_order"], 1)
+        self.assertEqual(row["routing"]["source_outcomes"][-1]["result"],
+                         "source_stale")
+        self.assertEqual(row["routing"]["delivered_sources"][-1], "dwd/checked")
+
     def test_v1_time_contract_error_survives_compaction(self):
         m = monitor.ConsumerApiMonitor()
         m.configure(enabled=True)
