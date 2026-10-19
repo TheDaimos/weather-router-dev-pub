@@ -68,6 +68,9 @@ jobs:
       - name: Python-Tests
         run: python -m unittest discover -s tests -p 'test_*.py' -v
 
+      - name: F7 synthetisches CoG-Laufzeitprofil (kein HA-Nachweis)
+        run: python scripts/probe_opera_raster_runtime.py
+
       - name: WeatherRouter-Struktur pruefen
         run: python scripts/verify_m2_structure.py
 
