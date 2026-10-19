@@ -43,6 +43,28 @@ jobs:
       - name: P7-010 Raster-Mosaik-Vertrag (oeffentliche Nachholpruefung)
         run: python -m unittest discover -s tests -p 'test_p7_010_raster_mosaic_*.py' -v
 
+      - name: Raster-Bildtest-Bibliotheken installieren (nur oeffentliche CI)
+        run: |
+          python -m pip install --only-binary=:all: "numpy==2.3.5" "rasterio==1.5.0" "Pillow==12.3.0"
+          python - <<'PY'
+          import numpy, rasterio, PIL
+          print("F13 Rasterumgebung:", numpy.__version__, rasterio.__version__, PIL.__version__)
+          PY
+
+      - name: F13 echte Renderfunktion und Bildpunkte pruefen – Skip verboten
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import sys
+          import unittest
+          suite = unittest.defaultTestLoader.discover("tests", pattern="test_opera_cog_render_pixels.py")
+          result = unittest.TextTestRunner(verbosity=2).run(suite)
+          if result.testsRun < 2 or result.skipped or not result.wasSuccessful():
+              raise SystemExit(f"F13 PIXEL FAIL: tests={result.testsRun} skipped={len(result.skipped)} failures={len(result.failures)} errors={len(result.errors)}")
+          print(f"F13 PIXEL PASS: {result.testsRun} tests, no skipped tests")
+          PY
+
       - name: Python-Tests
         run: python -m unittest discover -s tests -p 'test_*.py' -v
 
