@@ -27,7 +27,7 @@ case "$mode" in
     apk add --no-cache \
       python3 python3-dev py3-pip py3-numpy py3-numpy-dev cython py3-setuptools py3-wheel \
       py3-packaging build-base linux-headers gdal-dev gdal-tools \
-      patchelf
+      patchelf binutils
     python3 -m venv --system-site-packages /tmp/f7-build-venv
     echo "F7 BUILD: python=$(python3 --version), GDAL=$(gdal-config --version)"
     /tmp/f7-build-venv/bin/python -m pip install --disable-pip-version-check \
@@ -50,7 +50,27 @@ case "$mode" in
     /tmp/f7-build-venv/bin/auditwheel repair \
       --plat musllinux_1_2_x86_64 --wheel-dir /wheelhouse/repaired "$1"
     /tmp/f7-build-venv/bin/auditwheel show /wheelhouse/repaired/*.whl
-    echo "F7 BUILD-PROTOTYPE READY FOR ISOLATED RUNTIME; NOT DISTRIBUTABLE"
+    # Build and inventory in the SAME disposable Alpine job; preserve only
+    # an unapproved JSON evidence artifact. Do not publish or upload the wheel.
+    set -- /wheelhouse/repaired/rasterio-1.5.2-cp314-cp314-musllinux_1_2_x86_64.whl
+    candidate_sha="$(sha256sum "$1" | cut -d ' ' -f1)"
+    python3 scripts/inventory_opera_native_wheel.py "$1" "$candidate_sha" --require-elf \
+      > /wheelhouse/f7-native-inventory.json
+    python3 - <<'PY'
+import json
+from pathlib import Path
+report = json.loads(Path("/wheelhouse/f7-native-inventory.json").read_text())
+assert report["status"] == "UNAPPROVED_NOT_DISTRIBUTABLE"
+assert report["native_elf_count"] > 0
+assert report["files_count"] > 0
+assert not report["source_provenance_verified"]
+assert report["ha_installation"] == "BLOCKED"
+print("F7 REAL WHEEL ELF INVENTORY:", report["files_count"],
+      "files,", report["native_elf_count"], "ELF objects,",
+      len(report["elf_external_dependency_names"]), "external dependency names;",
+      "license review REQUIRED and distribution BLOCKED")
+PY
+    echo "F7 BUILD-PROTOTYPE INVENTORIED IN ISOLATED CI; NOT DISTRIBUTABLE"
     ;;
   verify)
     echo "F7 VERIFY: fresh alpine=$(cat /etc/alpine-release) arch=$(uname -m)"
