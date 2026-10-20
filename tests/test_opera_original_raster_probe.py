@@ -131,6 +131,43 @@ class OriginalRasterProbeTests(unittest.TestCase):
         self.assertFalse(staged.exists())
         self.assertFalse(staged.parent.exists())
 
+    def test_preflight_rejection_closes_source_fd(self):
+        """Type and size fail-closed paths must not leak the open descriptor."""
+        import os
+        from unittest.mock import patch
+        empty = Path(self.temp.name) / "zero-byte.tiff"
+        empty.touch()
+        oversize = Path(self.temp.name) / "oversize.tiff"
+        with oversize.open("wb") as f:
+            f.truncate(probe.MAX_BYTES + 1)
+        directory = Path(self.temp.name)
+        real_close = os.close
+        for candidate, error in (
+            (empty, "invalid_source_size"),
+            (oversize, "invalid_source_size"),
+            (directory, "invalid_local_source"),
+        ):
+            with self.subTest(error=error, candidate=candidate.name):
+                with patch.object(probe.os, "close", wraps=real_close) as closing:
+                    with self.assertRaisesRegex(probe.OriginalRasterProbeError, error):
+                        probe.inspect_file(
+                            candidate, product="DBZH", expected_sha256=self.digest)
+                    self.assertEqual(closing.call_count, 1, "leaked_source_fd")
+
+    def test_fstat_failure_closes_source_fd_and_redacts_native_error(self):
+        """An OSError after os.open must close FD and suppress its message."""
+        import os
+        from unittest.mock import patch
+        real_close = os.close
+        with patch.object(probe.os, "fstat",
+                          side_effect=OSError("/private/secret/source")), \
+             patch.object(probe.os, "close", wraps=real_close) as closing:
+            with self.assertRaisesRegex(
+                    probe.OriginalRasterProbeError, "^invalid_local_source$"):
+                probe.inspect_file(
+                    self.path, product="DBZH", expected_sha256=self.digest)
+            self.assertEqual(closing.call_count, 1, "leaked_source_fd")
+
     def test_nonfile_and_symlink_rejected(self):
         link = Path(self.temp.name) / "link.tiff"
         link.symlink_to(self.path)
