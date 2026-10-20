@@ -1,5 +1,8 @@
 """F7 no-install candidate validation; standard-library-only isolated tests."""
 import hashlib
+import contextlib
+import io
+import json
 import importlib.util
 import tempfile
 import unittest
@@ -39,6 +42,22 @@ class AdmissionTests(unittest.TestCase):
             p, h = self.make_wheel(d)
             with self.assertRaises(module.NativePackageRejected):
                 module.inspect_candidate(p, "0" * 64)
+
+    def test_offline_inventory_not_distributable(self):
+        script = Path(__file__).resolve().parents[1] / "scripts/inventory_opera_native_wheel.py"
+        spec = importlib.util.spec_from_file_location("native_inventory", script)
+        inventory = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(inventory)
+        with tempfile.TemporaryDirectory() as d:
+            p, h = self.make_wheel(d)
+            captured = io.StringIO()
+            with contextlib.redirect_stdout(captured):
+                self.assertEqual(inventory.main(["inventory", str(p), h]), 0)
+            report = json.loads(captured.getvalue())
+            self.assertEqual(report["status"], "UNAPPROVED_NOT_DISTRIBUTABLE")
+            self.assertFalse(report["source_provenance_verified"])
+            self.assertTrue(any(item["native"] for item in report["files"]))
+            self.assertEqual(report["candidate"]["sha256"], h)
 
     def test_runtime_remains_disabled(self):
         self.assertFalse(module.optional_runtime_status()["opera_native_enabled"])
