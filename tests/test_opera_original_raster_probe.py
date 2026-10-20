@@ -177,9 +177,14 @@ class OriginalRasterProbeTests(unittest.TestCase):
             ds.set_band_description(2, "quality1")
             ds.update_tags(2, task="pl.imgw.quality.qi_total")
         digest = sha256(self.path.read_bytes()).hexdigest()
-        result = probe.inspect_file(
-            self.path, product="DBZH", expected_sha256=digest,
-            reference="CIRRUS_DBZH_20261019T1340")
+        from unittest.mock import patch
+        # Fixture is synthetic; override only the local test's fingerprint.
+        with patch.dict(probe.ORIGINALS, {
+            "CIRRUS_DBZH_20261019T1340": ("DBZH", digest),
+        }):
+            result = probe.inspect_file(
+                self.path, product="DBZH", expected_sha256=digest,
+                reference="CIRRUS_DBZH_20261019T1340")
         meta = result["technical_metadata"]
         self.assertEqual(meta["nominal_time_consistency"], "matches_reference")
         self.assertEqual(meta["nominal_time_basis"],
@@ -199,9 +204,14 @@ class OriginalRasterProbeTests(unittest.TestCase):
             ds.update_tags(date="20261019", time="131500",
                            arbitrary_secret="/private/credentials")
         digest = sha256(self.path.read_bytes()).hexdigest()
-        result = probe.inspect_file(
-            self.path, product="DBZH", expected_sha256=digest,
-            reference="CIRRUS_DBZH_20261019T1340")
+        from unittest.mock import patch
+        # Fixture is synthetic; override only the local test's fingerprint.
+        with patch.dict(probe.ORIGINALS, {
+            "CIRRUS_DBZH_20261019T1340": ("DBZH", digest),
+        }):
+            result = probe.inspect_file(
+                self.path, product="DBZH", expected_sha256=digest,
+                reference="CIRRUS_DBZH_20261019T1340")
         meta = result["technical_metadata"]
         self.assertEqual(meta["nominal_time_consistency"], "mismatch")
         self.assertEqual(result["pixel_counts"]["valid_negative"], 1)
@@ -212,9 +222,13 @@ class OriginalRasterProbeTests(unittest.TestCase):
 
     def test_missing_nominal_metadata_is_not_guessed_from_file_mtime(self):
         """Missing embedded UTC tags never fall back to local filesystem time."""
-        result = probe.inspect_file(
-            self.path, product="RATE", expected_sha256=self.digest,
-            reference="NIMBUS_RATE_20261019T1315")
+        from unittest.mock import patch
+        with patch.dict(probe.ORIGINALS, {
+            "NIMBUS_RATE_20261019T1315": ("RATE", self.digest),
+        }):
+            result = probe.inspect_file(
+                self.path, product="RATE", expected_sha256=self.digest,
+                reference="NIMBUS_RATE_20261019T1315")
         self.assertEqual(result["unit"], "mm/h")
         self.assertEqual(
             result["technical_metadata"]["nominal_time_consistency"],
@@ -229,6 +243,33 @@ class OriginalRasterProbeTests(unittest.TestCase):
             probe.inspect_file(
                 self.path, product="RATE", expected_sha256=self.digest,
                 reference="CIRRUS_DBZH_20261019T1340")
+
+    def test_known_reference_rejects_substituted_checksum_before_file_open(self):
+        """A real historic reference must never validate synthetic bytes."""
+        from unittest.mock import patch
+        # The fixture digest intentionally is not the fixed real CIRRUS hash.
+        self.assertNotEqual(
+            self.digest, probe.ORIGINALS["CIRRUS_DBZH_20261019T1340"][1])
+        with patch.object(probe, "_verified_private_snapshot") as snapshot:
+            with self.assertRaisesRegex(
+                    probe.OriginalRasterProbeError, "^invalid_expected_identity$"):
+                probe.inspect_file(
+                    self.path, product="DBZH", expected_sha256=self.digest,
+                    reference="CIRRUS_DBZH_20261019T1340")
+            snapshot.assert_not_called()
+
+    def test_unknown_and_nonstring_reference_fails_before_file_open(self):
+        """Reject fabricated or unhashable references deterministically."""
+        from unittest.mock import patch
+        for reference in ("UNKNOWN", [], {}, True):
+            with self.subTest(reference=str(reference)):
+                with patch.object(probe, "_verified_private_snapshot") as snapshot:
+                    with self.assertRaisesRegex(
+                            probe.OriginalRasterProbeError, "^invalid_expected_identity$"):
+                        probe.inspect_file(
+                            self.path, product="RATE", expected_sha256=self.digest,
+                            reference=reference)
+                    snapshot.assert_not_called()
 
     def test_nonfile_and_symlink_rejected(self):
         link = Path(self.temp.name) / "link.tiff"
