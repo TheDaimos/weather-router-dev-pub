@@ -99,3 +99,23 @@ jobs:
           PY
       - name: CoG synthetische CPU- und RSS-Messung
         run: python scripts/probe_opera_raster_runtime.py
+
+  alpine-apk-investigation:
+    name: "Alpine 3.24 vorkompilierte APK Rasterio - isolierte Alternative"
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Oeffentlichen CoG-Code auschecken
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Nur vorgebaute Alpine-Pakete im Wegwerfcontainer
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker run --rm -v "$PWD:/wr:ro" -w /wr alpine:3.24 sh -ec '
+            apk add --no-cache python3 py3-numpy py3-pillow py3-rasterio
+            python3 -c "import sys, numpy, rasterio, PIL; from rasterio.warp import reproject; print(dict(python=sys.version, rasterio=rasterio.__version__, gdal=rasterio.__gdal_version__, proj=rasterio.__proj_version__, numpy=numpy.__version__, pillow=PIL.__version__))"
+            python3 scripts/probe_opera_raster_runtime.py
+          '
+          echo "Alpine-Containerbeweis ist keine Installation von APK im Home-Assistant-Core."
