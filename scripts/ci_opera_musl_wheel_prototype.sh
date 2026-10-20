@@ -25,7 +25,7 @@ case "$mode" in
   build)
     echo "F7 BUILD: alpine=$(cat /etc/alpine-release) arch=$(uname -m)"
     apk add --no-cache \
-      python3 py3-pip py3-numpy cython py3-setuptools py3-wheel \
+      python3 python3-dev py3-pip py3-numpy cython py3-setuptools py3-wheel \
       py3-packaging build-base linux-headers gdal-dev gdal-tools \
       patchelf
     python3 -m venv --system-site-packages /tmp/f7-build-venv
