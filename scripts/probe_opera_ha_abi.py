@@ -85,26 +85,77 @@ def _libc_class(wheel_tags):
     return "glibc" if libc_name in ("glibc", "GNU libc") else "not_identified"
 
 
-def _native_import(timeout=8):
+def _bounded_child_output(code, timeout=8, max_bytes=4096):
+    """Read at most max_bytes+1 from a native child and kill on timeout.
+
+    Unlike subprocess.run(capture_output=True), this cannot buffer unbounded
+    native library output. Never return child stderr or native exception text.
+    Linux/HA only: select() handles a pipe without reading arbitrary output.
+    """
+    import os
+    import selectors
+    import time
+
+    deadline = time.monotonic() + timeout
+    process = None
+    selector = None
     try:
-        result = subprocess.run(
-            [sys.executable, "-I", "-c", IMPORT_PROBE],
-            capture_output=True, text=True, timeout=timeout, check=False,
+        process = subprocess.Popen(
+            [sys.executable, "-I", "-c", code],
+            stdin=subprocess.DEVNULL, stdout=subprocess.PIPE,
+            stderr=subprocess.DEVNULL, close_fds=True,
         )
-    except subprocess.TimeoutExpired:
-        return {"native_import": "timeout"}
-    except UnicodeError:
-        return {"native_import": "invalid_child_output"}
+        selector = selectors.DefaultSelector()
+        selector.register(process.stdout, selectors.EVENT_READ)
+        result = bytearray()
+        while True:
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                return "timeout", None
+            events = selector.select(remaining)
+            if not events:
+                return "timeout", None
+            # If the next chunk would exceed the budget, abort immediately.
+            chunk = os.read(process.stdout.fileno(),
+                            min(max_bytes + 1 - len(result), 4097))
+            if not chunk:
+                break
+            result.extend(chunk)
+            if len(result) > max_bytes:
+                return "invalid_child_output", None
+        try:
+            status = process.wait(timeout=max(0.001, deadline-time.monotonic()))
+        except subprocess.TimeoutExpired:
+            return "timeout", None
+        if status:
+            return "import_error", None
+        return None, bytes(result)
     except (OSError, ValueError):
-        return {"native_import": "unavailable"}
-    if result.returncode != 0:
-        return {"native_import": "import_error"}
-    # A native subprocess is not a trusted data source, even on exit code 0.
-    if not isinstance(result.stdout, str) or len(result.stdout) > 4096:
-        return {"native_import": "invalid_child_output"}
+        return "unavailable", None
+    finally:
+        if selector is not None:
+            selector.close()
+        if process is not None:
+            if process.poll() is None:
+                try:
+                    process.kill()
+                except OSError:
+                    pass
+            try:
+                process.wait(timeout=1)
+            except (OSError, subprocess.TimeoutExpired):
+                pass
+            if process.stdout is not None:
+                process.stdout.close()
+
+
+def _native_import(timeout=8):
+    state, raw = _bounded_child_output(IMPORT_PROBE, timeout=timeout)
+    if state is not None:
+        return {"native_import": state}
     try:
-        data = json.loads(result.stdout)
-    except (TypeError, ValueError):
+        data = json.loads(raw.decode("utf-8", errors="strict"))
+    except (UnicodeError, AttributeError, TypeError, ValueError):
         return {"native_import": "invalid_child_output"}
     if not isinstance(data, dict):
         return {"native_import": "invalid_child_output"}
@@ -115,10 +166,9 @@ def _native_import(timeout=8):
     if state == "ok":
         for key in ("rasterio", "gdal", "proj"):
             value = data.get(key)
-            # A malicious/accidental version string must not leak raw output.
-            if not isinstance(value, str) or not 1 <= len(value) <= 48:
-                return {"native_import": "invalid_child_output"}
-            if not all(ch.isalnum() or ch in ".-_+" for ch in value):
+            if not isinstance(value, str) or not re.fullmatch(
+                r"[0-9][0-9A-Za-z.+_-]{0,47}", value, flags=re.ASCII
+            ):
                 return {"native_import": "invalid_child_output"}
             sanitized[key] = value
     return sanitized
