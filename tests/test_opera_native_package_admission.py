@@ -70,11 +70,11 @@ class AdmissionTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as folder:
             wheel, _ = self.make_wheel(folder)
             with ZipFile(wheel, "a") as f:
-                f.writestr("rasterio.libs/libelf-test.so", b"\\x7fELF" + bytes(12))
+                f.writestr("rasterio.libs/libelf-test.so", bytes([127, 69, 76, 70]) + bytes(12))
                 f.writestr("rasterio-1.5.2.dist-info/METADATA",
-                           "Name: rasterio\\nVersion: 1.5.2\\n"
-                           "License-Expression: BSD-3-Clause\\n"
-                           "Requires-Dist: numpy\\n")
+                           chr(10).join(("Name: rasterio", "Version: 1.5.2",
+                                         "License-Expression: BSD-3-Clause",
+                                         "Requires-Dist: numpy", "")))
                 f.writestr("rasterio-1.5.2.dist-info/licenses/LICENSE.txt",
                            "SYNTHETIC TEST LICENSE ONLY")
             digest = hashlib.sha256(wheel.read_bytes()).hexdigest()
