@@ -39,6 +39,30 @@ case "$mode" in
       PROJ_DATA=/usr/share/proj /tmp/f7-build-venv/bin/python -m pip wheel \
       --disable-pip-version-check --no-deps --no-build-isolation \
       --no-binary rasterio --wheel-dir /wheelhouse/raw "rasterio==1.5.2"
+    # Deliberately compile a SECOND source wheel in this SAME disposable
+    # Alpine/CP314 build container; no wheel is retained as an artifact.
+    # This is an intra-container diagnostic, NOT independent provenance.
+    mkdir -p /wheelhouse/raw-repeat
+    PACKAGE_DATA=1 GDAL_CONFIG=/usr/bin/gdal-config GDAL_DATA=/usr/share/gdal \
+      PROJ_DATA=/usr/share/proj /tmp/f7-build-venv/bin/python -m pip wheel \
+      --disable-pip-version-check --no-cache-dir --no-deps --no-build-isolation \
+      --no-binary rasterio --wheel-dir /wheelhouse/raw-repeat "rasterio==1.5.2"
+    python3 scripts/probe_opera_raw_elf_drift.py \
+      /wheelhouse/raw/rasterio-1.5.2-cp314-cp314-linux_x86_64.whl \
+      /wheelhouse/raw-repeat/rasterio-1.5.2-cp314-cp314-linux_x86_64.whl \
+      > /wheelhouse/f7-raw-elf-drift-unapproved.json
+    python3 - <<'PY'
+import json
+from pathlib import Path
+report = json.loads(Path("/wheelhouse/f7-raw-elf-drift-unapproved.json").read_text())
+assert report["extensions_count"] == 15
+assert report["status"] == "DIAGNOSTIC_ONLY_NOT_DISTRIBUTABLE"
+assert not report["wheel_reproducibility_proven"]
+assert report["ha_installation"] == "BLOCKED"
+print("F7 REAL DOUBLE SOURCE BUILD ELF:", report["changed_extensions"],
+      "of", report["extensions_count"], "changed extensions;",
+      "root cause and distribution NOT approved")
+PY
     set -- /wheelhouse/raw/rasterio-1.5.2-cp314-cp314-linux_x86_64.whl
     if [ ! -f "$1" ]; then
       echo "F7 BUILD FAIL: source compilation did not yield exact CP314 Linux wheel" >&2
