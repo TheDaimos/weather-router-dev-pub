@@ -14,6 +14,8 @@ on:
       - "scripts/f7_build_input_snapshot.py"
       - "scripts/probe_opera_raw_elf_drift.py"
       - "scripts/f7_prepare_fixed_source.py"
+      - "scripts/probe_f7_repaired_double.py"
+      - "tests/test_f7_repaired_double.py"
       - "custom_components/weather_router/opera_native_package.py"
       - "custom_components/weather_router/opera_cog_tiles.py"
       - "custom_components/weather_router/opera_frame_cache.py"
@@ -68,6 +70,7 @@ jobs:
             ${{ runner.temp }}/f7-wheelhouse/f7-build-inputs-unapproved.json
             ${{ runner.temp }}/f7-wheelhouse/f7-raw-elf-drift-unapproved.json
             ${{ runner.temp }}/f7-wheelhouse/f7-fixed-source-unapproved.json
+            ${{ runner.temp }}/f7-wheelhouse/f7-repaired-double-unapproved.json
           if-no-files-found: error
           retention-days: 7
 
