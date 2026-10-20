@@ -139,10 +139,13 @@ def inspect_file(source_path, *, product, expected_sha256, reference=None):
         r"[0-9a-f]{64}", expected_sha256
     ):
         raise OriginalRasterProbeError("invalid_expected_identity")
-    if reference is not None and (
-        reference not in REFERENCE_TIME or REFERENCE_TIME[reference][0] != product
-    ):
-        raise OriginalRasterProbeError("invalid_expected_identity")
+    if reference is not None:
+        # A named historical original is inseparable from its fixed SHA-256.
+        # Do not allow a caller to relabel arbitrary bytes as that reference.
+        if (type(reference) is not str
+                or REFERENCE_TIME.get(reference, (None,))[0] != product
+                or ORIGINALS.get(reference) != (product, expected_sha256)):
+            raise OriginalRasterProbeError("invalid_expected_identity")
     with _verified_private_snapshot(source_path, expected_sha256) as (snapshot, nbytes, digest):
         return _inspect_verified_snapshot(snapshot, product=product,
                                           nbytes=nbytes, digest=digest,
