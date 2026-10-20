@@ -35,18 +35,33 @@ case "$mode" in
     mkdir -p /wheelhouse/raw /wheelhouse/repaired
     # Build from authentic Rasterio source, against native Alpine GDAL headers.
     # This is NOT a Home Assistant install, not an official package publication.
-    PACKAGE_DATA=1 GDAL_CONFIG=/usr/bin/gdal-config GDAL_DATA=/usr/share/gdal \
-      PROJ_DATA=/usr/share/proj /tmp/f7-build-venv/bin/python -m pip wheel \
-      --disable-pip-version-check --no-deps --no-build-isolation \
-      --no-binary rasterio --wheel-dir /wheelhouse/raw "rasterio==1.5.2"
-    # Deliberately compile a SECOND source wheel in this SAME disposable
-    # Alpine/CP314 build container; no wheel is retained as an artifact.
-    # This is an intra-container diagnostic, NOT independent provenance.
-    mkdir -p /wheelhouse/raw-repeat
+    # Deterministic-build EXPERIMENT, disposable CI ONLY. Pin the build
+    # timestamp and eliminate pip's random source extraction directories.
+    # This does not attest the downloaded source's authenticity or licenses.
+    export SOURCE_DATE_EPOCH=1704067200
+    export CFLAGS="${CFLAGS:+$CFLAGS }-ffile-prefix-map=/tmp/f7-opera-repro-source=/usr/src/f7-rasterio -fdebug-prefix-map=/tmp/f7-opera-repro-source=/usr/src/f7-rasterio"
+    mkdir -p /wheelhouse/source /wheelhouse/raw-repeat
+    /tmp/f7-build-venv/bin/python -m pip download \
+      --disable-pip-version-check --no-cache-dir --no-deps --no-build-isolation \
+      --no-binary=:all: --dest /wheelhouse/source "rasterio==1.5.2"
+    python3 scripts/f7_prepare_fixed_source.py \
+      /wheelhouse/source/rasterio-1.5.2.tar.gz \
+      > /wheelhouse/f7-fixed-source-first.json
     PACKAGE_DATA=1 GDAL_CONFIG=/usr/bin/gdal-config GDAL_DATA=/usr/share/gdal \
       PROJ_DATA=/usr/share/proj /tmp/f7-build-venv/bin/python -m pip wheel \
       --disable-pip-version-check --no-cache-dir --no-deps --no-build-isolation \
-      --no-binary rasterio --wheel-dir /wheelhouse/raw-repeat "rasterio==1.5.2"
+      --wheel-dir /wheelhouse/raw /tmp/f7-opera-repro-source/rasterio-1.5.2
+    # Freshly unpack the same Sdist to the SAME fixed source path, restoring
+    # a clean tree. Never run pip on a wheel left by the previous build.
+    python3 scripts/f7_prepare_fixed_source.py \
+      /wheelhouse/source/rasterio-1.5.2.tar.gz \
+      > /wheelhouse/f7-fixed-source-second.json
+    cmp -s /wheelhouse/f7-fixed-source-first.json /wheelhouse/f7-fixed-source-second.json
+    cp /wheelhouse/f7-fixed-source-first.json /wheelhouse/f7-fixed-source-unapproved.json
+    PACKAGE_DATA=1 GDAL_CONFIG=/usr/bin/gdal-config GDAL_DATA=/usr/share/gdal \
+      PROJ_DATA=/usr/share/proj /tmp/f7-build-venv/bin/python -m pip wheel \
+      --disable-pip-version-check --no-cache-dir --no-deps --no-build-isolation \
+      --wheel-dir /wheelhouse/raw-repeat /tmp/f7-opera-repro-source/rasterio-1.5.2
     python3 scripts/probe_opera_raw_elf_drift.py \
       /wheelhouse/raw/rasterio-1.5.2-cp314-cp314-linux_x86_64.whl \
       /wheelhouse/raw-repeat/rasterio-1.5.2-cp314-cp314-linux_x86_64.whl \
