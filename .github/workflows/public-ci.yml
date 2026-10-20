@@ -71,6 +71,9 @@ jobs:
       - name: F7 synthetisches CoG-Laufzeitprofil (kein HA-Nachweis)
         run: python scripts/probe_opera_raster_runtime.py
 
+      - name: F7 native 3800x4400 Parallel-Rasterprobe – kein HA-REAL-PASS
+        run: python scripts/probe_opera_concurrent_raster.py
+
       - name: WeatherRouter-Struktur pruefen
         run: python scripts/verify_m2_structure.py
 
