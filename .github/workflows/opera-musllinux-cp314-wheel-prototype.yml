@@ -1,0 +1,62 @@
+name: "F7 CP314 musllinux Rasterio native wheel PROTOTYPE (isolated only)"
+
+on:
+  push:
+    branches:
+      - "feature/p7-010-global-concurrency-2026-10-16"
+    paths:
+      - ".github/workflows/opera-musllinux-cp314-wheel-prototype.yml"
+      - "scripts/ci_opera_musl_wheel_prototype.sh"
+      - "scripts/probe_opera_raster_runtime.py"
+      - "scripts/probe_opera_concurrent_raster.py"
+      - "custom_components/weather_router/opera_cog_tiles.py"
+      - "custom_components/weather_router/opera_frame_cache.py"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  cp314-musl-wheel-feasibility:
+    name: "Alpine 3.24 / CP314 / x86-64 source build, auditwheel and clean native renderer"
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - name: "Read-only checkout of public WR test mirror"
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: "Build a source-based native musllinux candidate in an isolated Alpine container"
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/f7-wheelhouse"
+          docker run --rm --pull=always \
+            --cpus=2 --memory=4g --pids-limit=256 \
+            -e GITHUB_ACTIONS=true -e WR_OPERA_ISOLATED_CI=1 \
+            -v "$PWD:/wr:ro" \
+            -v "$RUNNER_TEMP/f7-wheelhouse:/wheelhouse" \
+            -w /wr alpine:3.24 \
+            sh scripts/ci_opera_musl_wheel_prototype.sh build
+
+      - name: "Verify bundled GDAL/PROJ and WR CoG→PNG in a NEW minimal musl container"
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker run --rm --pull=always \
+            --cpus=2 --memory=4g --pids-limit=256 \
+            -e GITHUB_ACTIONS=true -e WR_OPERA_ISOLATED_CI=1 \
+            -v "$PWD:/wr:ro" \
+            -v "$RUNNER_TEMP/f7-wheelhouse:/wheelhouse:ro" \
+            -w /wr alpine:3.24 \
+            sh scripts/ci_opera_musl_wheel_prototype.sh verify
+
+      - name: "Explicit no-install and no-distribution boundary"
+        if: always()
+        shell: bash
+        run: |
+          echo "F7 WHEEL PROTOTYPE: All package operations happened in disposable GitHub Actions Alpine containers."
+          echo "No wheels are uploaded, published, committed or installed on any user Home Assistant host."
+          echo "Even a green job is a PROTOTYPE, NOT HA ABI/load/update/license/OPERA original/HA-REAL approval."
+          echo "WR manifest requirements=[], provider and OPERA HTTP endpoint remain unchanged."
