@@ -168,6 +168,68 @@ class OriginalRasterProbeTests(unittest.TestCase):
                     self.path, product="DBZH", expected_sha256=self.digest)
             self.assertEqual(closing.call_count, 1, "leaked_source_fd")
 
+    def test_offline_nominal_utc_metadata_only_confirms_reference_consistency(self):
+        """Matching fixed UTC metadata cannot approve science or HA use."""
+        with rasterio.open(self.path, "r+") as ds:
+            ds.update_tags(date="20261019", time="134000",
+                           retrieval_time="20300101T000000Z")
+            ds.set_band_description(1, "DBZH")
+            ds.set_band_description(2, "quality1")
+            ds.update_tags(2, task="pl.imgw.quality.qi_total")
+        digest = sha256(self.path.read_bytes()).hexdigest()
+        result = probe.inspect_file(
+            self.path, product="DBZH", expected_sha256=digest,
+            reference="CIRRUS_DBZH_20261019T1340")
+        meta = result["technical_metadata"]
+        self.assertEqual(meta["nominal_time_consistency"], "matches_reference")
+        self.assertEqual(meta["nominal_time_basis"],
+                         "fixed_reference_utc_not_retrieval_time")
+        self.assertTrue(meta["band1_label_matches_product"])
+        self.assertTrue(meta["band2_label_is_quality1"])
+        self.assertTrue(meta["known_qi_total_task_label_present"])
+        self.assertEqual(meta["quality1_scientific_policy"], "unverified")
+        self.assertEqual(meta["nominal_freshness_for_live_response"], "not_tested")
+        self.assertEqual(result["consumer_provider_activation"], "BLOCKED")
+        self.assertEqual(result["ha_installation"], "BLOCKED")
+        self.assertNotIn("20300101", str(result))
+
+    def test_mismatched_raster_clock_fails_closed_for_metadata_without_pixel_loss(self):
+        """A different source clock must not be treated as the expected UTC."""
+        with rasterio.open(self.path, "r+") as ds:
+            ds.update_tags(date="20261019", time="131500",
+                           arbitrary_secret="/private/credentials")
+        digest = sha256(self.path.read_bytes()).hexdigest()
+        result = probe.inspect_file(
+            self.path, product="DBZH", expected_sha256=digest,
+            reference="CIRRUS_DBZH_20261019T1340")
+        meta = result["technical_metadata"]
+        self.assertEqual(meta["nominal_time_consistency"], "mismatch")
+        self.assertEqual(result["pixel_counts"]["valid_negative"], 1)
+        self.assertEqual(result["ha_real_acceptance"], "NOT_TESTED")
+        self.assertEqual(result["consumer_provider_activation"], "BLOCKED")
+        self.assertNotIn("arbitrary_secret", str(result))
+        self.assertNotIn("/private/credentials", str(result))
+
+    def test_missing_nominal_metadata_is_not_guessed_from_file_mtime(self):
+        """Missing embedded UTC tags never fall back to local filesystem time."""
+        result = probe.inspect_file(
+            self.path, product="RATE", expected_sha256=self.digest,
+            reference="NIMBUS_RATE_20261019T1315")
+        self.assertEqual(result["unit"], "mm/h")
+        self.assertEqual(
+            result["technical_metadata"]["nominal_time_consistency"],
+            "not_available")
+        self.assertEqual(result["color_palette"], "unverified")
+
+    def test_wrong_reference_product_rejected_before_raster(self):
+        """Reference DBZH is never reinterpreted as a RATE product."""
+        with self.assertRaisesRegex(
+            probe.OriginalRasterProbeError, "^invalid_expected_identity$"
+        ):
+            probe.inspect_file(
+                self.path, product="RATE", expected_sha256=self.digest,
+                reference="CIRRUS_DBZH_20261019T1340")
+
     def test_nonfile_and_symlink_rejected(self):
         link = Path(self.temp.name) / "link.tiff"
         link.symlink_to(self.path)
