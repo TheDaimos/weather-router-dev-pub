@@ -64,6 +64,17 @@ case "$mode" in
     python3 -m venv --system-site-packages /tmp/f7-runtime-venv
     /tmp/f7-runtime-venv/bin/python -m pip install --disable-pip-version-check \
       --only-binary=:all: "affine" "attrs" "certifi" "click" "cligj" "click-plugins" "pyparsing"
+    # The actual operator HA DEV has NumPy 2.3.2 and Pillow 12.3.0,
+    # not the newer Alpine preinstalled versions used to build the wheel.
+    # An isolated venv shadows those APK packages with exact tested pins.
+    /tmp/f7-runtime-venv/bin/python -m pip install --disable-pip-version-check \
+      --only-binary=:all: "numpy==2.3.2" "Pillow==12.3.0"
+    /tmp/f7-runtime-venv/bin/python -I -c '
+import numpy, PIL
+assert numpy.__version__ == "2.3.2", numpy.__version__
+assert PIL.__version__ == "12.3.0", PIL.__version__
+print("F7 VERIFY: exact HA DEV NumPy/Pillow package versions", numpy.__version__, PIL.__version__)
+'
     set -- /wheelhouse/repaired/rasterio-1.5.2-cp314-cp314-musllinux_1_2_x86_64.whl
     if [ ! -f "$1" ]; then
       echo "F7 VERIFY FAIL: no exact CP314 musllinux x86_64 repaired wheel" >&2
