@@ -39,19 +39,18 @@ class TestHaAbiInventory(unittest.TestCase):
             self.assertNotIn(sensitive, report)
 
     def test_native_import_uses_bounded_isolated_subprocess(self):
-        completed = subprocess.CompletedProcess(
-            args=[], returncode=0, stdout=json.dumps({
-                "native_import": "ok",
-                "rasterio": "1.5.0", "gdal": "3.13.3", "proj": "9.8.1",
-            }), stderr="private absolute path or token must never be copied")
-        with patch.object(probe.subprocess, "run", return_value=completed) as run:
+        payload = json.dumps({
+            "native_import": "ok", "rasterio": "1.5.0",
+            "gdal": "3.13.3", "proj": "9.8.1",
+        }).encode("ascii")
+        with patch.object(probe, "_bounded_child_output",
+                          return_value=(None, payload)) as run:
             report = probe._native_import()
         self.assertEqual(report["native_import"], "ok")
         self.assertNotIn("stderr", report)
         args, kwargs = run.call_args
-        self.assertEqual(args[0][1:3], ["-I", "-c"])
+        self.assertEqual(args[0], probe.IMPORT_PROBE)
         self.assertEqual(kwargs["timeout"], 8)
-        self.assertTrue(kwargs["capture_output"])
 
     def test_no_native_libraries_or_unexpected_stdout_never_approve(self):
         for exit_code, stdout, expected in (
@@ -64,15 +63,16 @@ class TestHaAbiInventory(unittest.TestCase):
             (0, "unparseable stderr data", "invalid_child_output"),
         ):
             with self.subTest(expected=expected, stdout=stdout):
-                value = subprocess.CompletedProcess(
-                    args=[], returncode=exit_code, stdout=stdout, stderr="")
-                with patch.object(probe.subprocess, "run", return_value=value):
+                value = (("import_error", None) if exit_code
+                         else (None, stdout.encode("utf-8")))
+                with patch.object(probe, "_bounded_child_output",
+                                  return_value=value):
                     report = probe._native_import()
                 self.assertEqual(report, {"native_import": expected})
 
     def test_timeout_does_not_propagate_process_details(self):
-        with patch.object(probe.subprocess, "run",
-                          side_effect=subprocess.TimeoutExpired("secret", 8)):
+        with patch.object(probe, "_bounded_child_output",
+                          return_value=("timeout", None)):
             self.assertEqual(probe._native_import(),
                              {"native_import": "timeout"})
 
@@ -101,18 +101,16 @@ class TestHaAbiInventory(unittest.TestCase):
         invalid_samples = ("[]", "null", "12", '"secret"', "x" * 5000)
         for stdout in invalid_samples:
             with self.subTest(stdout_length=len(stdout)):
-                process = subprocess.CompletedProcess(
-                    args=[], returncode=0, stdout=stdout, stderr="private path")
-                with patch.object(probe.subprocess, "run",
-                                  return_value=process):
+                with patch.object(probe, "_bounded_child_output",
+                                  return_value=(None, stdout.encode("utf-8"))):
                     report = probe._native_import()
                 self.assertEqual(report, {
                     "native_import": "invalid_child_output"})
 
     def test_invalid_utf8_and_package_metadata_do_not_escape(self):
         """No exception text, secret path or malformed version reaches JSON."""
-        malformed = UnicodeDecodeError("utf-8", b"\xff", 0, 1, "invalid byte")
-        with patch.object(probe.subprocess, "run", side_effect=malformed):
+        with patch.object(probe, "_bounded_child_output",
+                          return_value=(None, b"\xff")):
             self.assertEqual(probe._native_import(),
                              {"native_import": "invalid_child_output"})
         with patch.object(probe.importlib.metadata, "version",
@@ -121,6 +119,48 @@ class TestHaAbiInventory(unittest.TestCase):
         with patch.object(probe.importlib.metadata, "version",
                           return_value="1.5.0"):
             self.assertEqual(probe._package_version("rasterio"), "1.5.0")
+
+    def test_bounded_child_stdout_limits_memory_at_pipe_boundary(self):
+        """Exactly 4096 bytes are accepted; the 4097th terminates the child."""
+        for size, expected in ((4096, None), (4097, "invalid_child_output"),
+                               (1_000_000, "invalid_child_output")):
+            with self.subTest(size=size):
+                code = ("import os; os.write(1, b'x' * " + str(size) + ")")
+                status, data = probe._bounded_child_output(code, timeout=2)
+                self.assertEqual(status, expected)
+                if status is None:
+                    self.assertEqual(len(data), 4096)
+                else:
+                    self.assertIsNone(data)
+
+    def test_bounded_child_timeout_terminates_running_process(self):
+        import time
+        before = time.monotonic()
+        status, data = probe._bounded_child_output(
+            "import time;time.sleep(10)", timeout=0.15)
+        self.assertEqual(status, "timeout")
+        self.assertIsNone(data)
+        self.assertLess(time.monotonic() - before, 2.0)
+
+    def test_bounded_child_stderr_is_never_captured_or_serialized(self):
+        code = ("import os,json; os.write(2,b'/private/token'); "
+                "print(json.dumps({'native_import':'missing'}))")
+        status, data = probe._bounded_child_output(code, timeout=2)
+        self.assertIsNone(status)
+        self.assertNotIn(b"private", data)
+        self.assertEqual(json.loads(data), {"native_import": "missing"})
+
+    def test_bounded_child_nonzero_exit_and_invalid_utf8_are_safe(self):
+        status, data = probe._bounded_child_output(
+            "import sys;sys.exit(5)", timeout=2)
+        self.assertEqual((status, data), ("import_error", None))
+        code = "import os;os.write(1,b'\\xff')"
+        status, data = probe._bounded_child_output(code, timeout=2)
+        self.assertIsNone(status)
+        with patch.object(probe, "_bounded_child_output",
+                          return_value=(status, data)):
+            self.assertEqual(probe._native_import(),
+                             {"native_import": "invalid_child_output"})
 
     def test_machine_report_is_valid_json_and_remains_blocked(self):
         with patch.object(probe, "_native_import",
