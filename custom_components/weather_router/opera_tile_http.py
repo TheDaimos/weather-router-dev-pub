@@ -98,6 +98,24 @@ class OperaTileView(HomeAssistantView):
         except asyncio.TimeoutError as exc:
             raise web.HTTPServiceUnavailable() from exc
 
+        # Policies can change while the request waits for a worker slot.
+        # Check again BEFORE spending CPU, and release a slot acquired by
+        # a now-denied request; final authorization still happens below.
+        try:
+            assert_authorized(
+                authenticated_user=user,
+                profile_and_provider_allowed=self._is_permitted(user, product),
+                valid_at=frame.valid_at, now=datetime.now(timezone.utc),
+            )
+            if not self._is_enabled() or not request.secure:
+                raise TileAccessDenied("disabled_or_insecure")
+        except TileAccessDenied as exc:
+            self._limit.release()
+            raise web.HTTPForbidden() from exc
+        except Exception:
+            self._limit.release()
+            raise
+
         # Keep semaphore occupied until the worker is ACTUALLY finished, even
         # after request cancellation or a response deadline.
         work = partial(
