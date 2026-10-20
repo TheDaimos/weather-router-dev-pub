@@ -11,6 +11,7 @@ from __future__ import annotations
 import importlib.metadata
 import json
 import platform
+import re
 import subprocess
 import sys
 import sysconfig
@@ -45,11 +46,15 @@ print(json.dumps(probe, sort_keys=True))
 
 def _package_version(package):
     try:
-        return importlib.metadata.version(package)
-    except importlib.metadata.PackageNotFoundError:
-        return None
+        raw = importlib.metadata.version(package)
     except Exception:
         return None
+    # Malformed package metadata must not put arbitrary text into a report.
+    if not isinstance(raw, str) or not re.fullmatch(
+        r"[0-9][0-9A-Za-z.!+_-]{0,47}", raw, flags=re.ASCII
+    ):
+        return None
+    return raw
 
 
 def _wheel_tags():
@@ -69,6 +74,17 @@ def _wheel_tags():
         return []
 
 
+def _libc_class(wheel_tags):
+    """Classify musl without reading host files or running OS commands."""
+    if any(isinstance(tag, str) and "-musllinux_" in tag for tag in wheel_tags):
+        return "musl"
+    try:
+        libc_name = platform.libc_ver()[0]
+    except Exception:
+        libc_name = ""
+    return "glibc" if libc_name in ("glibc", "GNU libc") else "not_identified"
+
+
 def _native_import(timeout=8):
     try:
         result = subprocess.run(
@@ -77,13 +93,20 @@ def _native_import(timeout=8):
         )
     except subprocess.TimeoutExpired:
         return {"native_import": "timeout"}
+    except UnicodeError:
+        return {"native_import": "invalid_child_output"}
     except (OSError, ValueError):
         return {"native_import": "unavailable"}
     if result.returncode != 0:
         return {"native_import": "import_error"}
+    # A native subprocess is not a trusted data source, even on exit code 0.
+    if not isinstance(result.stdout, str) or len(result.stdout) > 4096:
+        return {"native_import": "invalid_child_output"}
     try:
         data = json.loads(result.stdout)
     except (TypeError, ValueError):
+        return {"native_import": "invalid_child_output"}
+    if not isinstance(data, dict):
         return {"native_import": "invalid_child_output"}
     state = data.get("native_import")
     if state not in ALLOWED_CHILD_STATES:
@@ -104,6 +127,7 @@ def _native_import(timeout=8):
 def inventory():
     versions = {name.lower(): _package_version(name)
                 for name in PACKAGE_NAMES}
+    wheel_tags = _wheel_tags()
     return {
         "schema": SCHEMA,
         "target": "currently_executing_python_only",
@@ -113,8 +137,8 @@ def inventory():
         "soabi": sysconfig.get_config_var("SOABI"),
         "sysconfig_platform": sysconfig.get_platform(),
         "architecture": platform.machine(),
-        "libc": platform.libc_ver()[0] or "not_identified",
-        "wheel_tags_head": _wheel_tags(),
+        "libc": _libc_class(wheel_tags),
+        "wheel_tags_head": wheel_tags,
         "installed_distributions": versions,
         **_native_import(),
         "ha_os_or_supervisor_version": "not_probed",
