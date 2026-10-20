@@ -51,7 +51,14 @@ def _verified_private_snapshot(source_path, expected_sha256):
             raise OriginalRasterProbeError("invalid_local_source")
         if not 0 < info.st_size <= MAX_BYTES:
             raise OriginalRasterProbeError("invalid_source_size")
-    except OSError:
+    except (OSError, OriginalRasterProbeError) as exc:
+        # A rejected regularity/size check happens *before* the snapshot
+        # context's finally block. Close the already opened source here.
+        if fd is not None:
+            os.close(fd)
+            fd = None
+        if isinstance(exc, OriginalRasterProbeError):
+            raise
         raise OriginalRasterProbeError("invalid_local_source") from None
     try:
         with tempfile.TemporaryDirectory(prefix="wr-opera-forensic-") as folder:
