@@ -35,7 +35,8 @@ case "$mode" in
     mkdir -p /wheelhouse/raw /wheelhouse/repaired
     # Build from authentic Rasterio source, against native Alpine GDAL headers.
     # This is NOT a Home Assistant install, not an official package publication.
-    GDAL_CONFIG=/usr/bin/gdal-config /tmp/f7-build-venv/bin/python -m pip wheel \
+    PACKAGE_DATA=1 GDAL_CONFIG=/usr/bin/gdal-config GDAL_DATA=/usr/share/gdal \
+      PROJ_DATA=/usr/share/proj /tmp/f7-build-venv/bin/python -m pip wheel \
       --disable-pip-version-check --no-deps --no-build-isolation \
       --no-binary rasterio --wheel-dir /wheelhouse/raw "rasterio==1.5.2"
     set -- /wheelhouse/raw/rasterio-1.5.2-cp314-cp314-linux_x86_64.whl
@@ -79,6 +80,10 @@ with zipfile.ZipFile(wheel) as archive:
     proj = [name for name in names if "libproj" in name.lower() and ".so" in name]
     if not gdal or not proj:
         raise SystemExit("F7 VERIFY FAIL: native GDAL/PROJ not bundled; tag alone is invalid")
+    if not any(name.endswith("rasterio/proj_data/proj.db") for name in names):
+        raise SystemExit("F7 VERIFY FAIL: essential PROJ database not bundled")
+    if not any(name.endswith("rasterio/gdal_data/gdalvrt.xsd") for name in names):
+        raise SystemExit("F7 VERIFY FAIL: essential GDAL data not bundled")
     print("F7 VERIFY: bundled GDAL objects=", len(gdal), "PROJ objects=", len(proj))
 PY
     /tmp/f7-runtime-venv/bin/python -m pip install --disable-pip-version-check \
