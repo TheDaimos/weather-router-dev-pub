@@ -70,6 +70,24 @@ print("F7 REAL WHEEL ELF INVENTORY:", report["files_count"],
       len(report["elf_external_dependency_names"]), "external dependency names;",
       "license review REQUIRED and distribution BLOCKED")
 PY
+    # Attribute bundled ELF names to installed Alpine package records,
+    # if possible; this does NOT prove license obligations or provenance.
+    python3 scripts/audit_opera_native_apk_licenses.py \
+      /wheelhouse/f7-native-inventory.json /lib/apk/db/installed \
+      > /wheelhouse/f7-native-apk-license-candidates.json
+    python3 - <<'PY'
+import json
+from pathlib import Path
+r = json.loads(Path("/wheelhouse/f7-native-apk-license-candidates.json").read_text())
+assert r["native_elf_count"] > 0
+assert r["status"] == "UNAPPROVED_NOT_DISTRIBUTABLE"
+assert r["ha_installation"] == "BLOCKED"
+assert not r["mapping_is_binary_hash_verified"]
+assert not r["full_sbom_approved"]
+print("F7 SOURCE CANDIDATES:", r["apk_filename_candidate_count"],
+      "APK name-only matches,", r["unresolved_component_count"],
+      "unresolved native ELF objects;", "license clearance BLOCKED")
+PY
     echo "F7 BUILD-PROTOTYPE INVENTORIED IN ISOLATED CI; NOT DISTRIBUTABLE"
     ;;
   verify)
