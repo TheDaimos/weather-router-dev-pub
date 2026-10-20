@@ -55,7 +55,15 @@ def _package_version(package):
 def _wheel_tags():
     try:
         from packaging.tags import sys_tags
-        # Report only Python-ABI-platform triplets; never local wheel paths.
+    except ImportError:
+        # Home Assistant/CI may have pip but not a separately installed
+        # "packaging" distribution; pip's bundled tag parser is read-only.
+        try:
+            from pip._vendor.packaging.tags import sys_tags
+        except ImportError:
+            return []
+    try:
+        # Report only Python-ABI-platform triplets; never wheel file paths.
         return [str(tag) for _, tag in zip(range(6), sys_tags())]
     except Exception:
         return []
