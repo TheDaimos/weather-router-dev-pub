@@ -40,16 +40,22 @@ class OperaTileView(HomeAssistantView):
 
     def __init__(self, hass, *, registry_lookup, is_permitted, is_enabled=None,
                  max_active: int = 2, wait_seconds: float = 0.2,
-                 render_seconds: float = 3.0):
+                 render_seconds: float = 3.0, max_waiting: int = 16):
         if type(max_active) is not int or not 1 <= max_active <= 3:
             raise ValueError("invalid_parallel_budget")
         if not 0 < wait_seconds <= 1 or not 0 < render_seconds <= 10:
             raise ValueError("invalid_timeout")
+        if type(max_waiting) is not int or not 1 <= max_waiting <= 64:
+            raise ValueError("invalid_queue_budget")
         self.hass = hass
         self._registry_lookup = registry_lookup
         self._is_permitted = is_permitted
         self._is_enabled = is_enabled or (lambda: False)
         self._limit = asyncio.Semaphore(max_active)
+        # Bound concurrent slot-acquisition attempts as well as live workers.
+        # Each counter transition is synchronous within the HA event loop;
+        # cancellation and timeout always decrement it via finally.
+        self._max_waiting, self._waiting = max_waiting, 0
         self._wait_seconds, self._render_seconds = wait_seconds, render_seconds
 
     async def get(self, request: web.Request, product: str, stamp: str,
@@ -93,10 +99,17 @@ class OperaTileView(HomeAssistantView):
         except TileAccessDenied as exc:
             raise web.HTTPForbidden() from exc
 
+        if self._waiting >= self._max_waiting:
+            raise web.HTTPServiceUnavailable()
+        self._waiting += 1
         try:
-            await asyncio.wait_for(self._limit.acquire(),timeout=self._wait_seconds)
-        except asyncio.TimeoutError as exc:
-            raise web.HTTPServiceUnavailable() from exc
+            try:
+                await asyncio.wait_for(self._limit.acquire(),timeout=self._wait_seconds)
+            except asyncio.TimeoutError as exc:
+                raise web.HTTPServiceUnavailable() from exc
+        finally:
+            # A waiting client's cancellation must not leak a queue place.
+            self._waiting -= 1
 
         # Policies can change while the request waits for a worker slot.
         # Check again BEFORE spending CPU, and release a slot acquired by
