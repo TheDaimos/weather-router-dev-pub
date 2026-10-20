@@ -12,6 +12,7 @@ on:
       - "scripts/inventory_opera_native_wheel.py"
       - "scripts/audit_opera_native_apk_licenses.py"
       - "scripts/f7_build_input_snapshot.py"
+      - "scripts/probe_opera_raw_elf_drift.py"
       - "custom_components/weather_router/opera_native_package.py"
       - "custom_components/weather_router/opera_cog_tiles.py"
       - "custom_components/weather_router/opera_frame_cache.py"
@@ -64,6 +65,7 @@ jobs:
             ${{ runner.temp }}/f7-wheelhouse/f7-native-inventory.json
             ${{ runner.temp }}/f7-wheelhouse/f7-native-apk-license-candidates.json
             ${{ runner.temp }}/f7-wheelhouse/f7-build-inputs-unapproved.json
+            ${{ runner.temp }}/f7-wheelhouse/f7-raw-elf-drift-unapproved.json
           if-no-files-found: error
           retention-days: 7
 
