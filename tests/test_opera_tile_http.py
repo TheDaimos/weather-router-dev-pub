@@ -325,6 +325,111 @@ class TileRouteTests(unittest.TestCase):
             finally:
                 release.set()
 
+    def test_waiting_queue_limit_and_cancel_cleanup(self):
+        """At most one waiter may compete for a busy native GDAL slot."""
+        import threading
+        started = threading.Event()
+        release = threading.Event()
+        worker_calls = []
+
+        def blocked_render(**kwargs):
+            worker_calls.append(kwargs["z"])
+            started.set()
+            if not release.wait(timeout=3.0):
+                raise AssertionError("worker_release_timeout")
+            return b"PNG dummy"
+
+        gate = tile_http.OperaTileView(
+            FakeHass(),
+            registry_lookup=lambda product, stamp:self.registration,
+            is_permitted=lambda user,product:True,
+            is_enabled=lambda:True,
+            max_active=1, max_waiting=1,
+            wait_seconds=0.5, render_seconds=1.0,
+        )
+
+        async def exercise():
+            first = asyncio.create_task(gate.get(
+                self.req,"DBZH",self.stamp,"6","33","19"))
+            self.assertTrue(await asyncio.to_thread(started.wait,1.0))
+            second = asyncio.create_task(gate.get(
+                self.req,"DBZH",self.stamp,"6","33","19"))
+            for _ in range(100):
+                if gate._waiting == 1:
+                    break
+                await asyncio.sleep(0.005)
+            self.assertEqual(gate._waiting,1,"second_request_not_waiting")
+            with self.assertRaises(web.HTTPServiceUnavailable):
+                await gate.get(self.req,"DBZH",self.stamp,"6","33","19")
+            self.assertEqual(len(worker_calls),1)
+            self.assertEqual(gate._waiting,1)
+            second.cancel()
+            with self.assertRaises(asyncio.CancelledError):
+                await second
+            self.assertEqual(gate._waiting,0,
+                             "cancelled_waiter_leaked_a_queue_slot")
+            release.set()
+            self.assertEqual((await first).content_type,"image/png")
+            self.assertEqual((await gate.get(
+                self.req,"DBZH",self.stamp,"6","33","19"
+            )).content_type,"image/png")
+            self.assertEqual(gate._waiting,0)
+            self.assertEqual(len(worker_calls),2)
+
+        with patch.object(tile_http,"render_verified_cog",side_effect=blocked_render):
+            try:
+                asyncio.run(exercise())
+            finally:
+                release.set()
+
+    def test_wait_timeout_restores_queue_budget(self):
+        """An expired waiter frees admission space without freeing worker."""
+        import threading
+        started = threading.Event()
+        release = threading.Event()
+
+        def blocked_render(**kwargs):
+            started.set()
+            if not release.wait(timeout=3.0):
+                raise AssertionError("worker_release_timeout")
+            return b"PNG dummy"
+
+        gate = tile_http.OperaTileView(
+            FakeHass(),
+            registry_lookup=lambda product,stamp:self.registration,
+            is_permitted=lambda user,product:True,
+            is_enabled=lambda:True,
+            max_active=1,max_waiting=1,wait_seconds=0.03,
+            render_seconds=1.0,
+        )
+        async def exercise():
+            first = asyncio.create_task(gate.get(
+                self.req,"DBZH",self.stamp,"6","33","19"))
+            self.assertTrue(await asyncio.to_thread(started.wait,1.0))
+            for _ in range(2):
+                with self.assertRaises(web.HTTPServiceUnavailable):
+                    await gate.get(self.req,"DBZH",self.stamp,"6","33","19")
+                self.assertEqual(gate._waiting,0)
+            release.set()
+            self.assertEqual((await first).content_type,"image/png")
+            self.assertEqual((await gate.get(
+                self.req,"DBZH",self.stamp,"6","33","19"
+            )).content_type,"image/png")
+
+        with patch.object(tile_http,"render_verified_cog",side_effect=blocked_render):
+            try:
+                asyncio.run(exercise())
+            finally:
+                release.set()
+
+    def test_invalid_waiting_queue_configuration_fails_closed(self):
+        """Prevent accidental unbounded or boolean waiting budgets."""
+        for invalid in (0, -1, 65, True, 3.0, "4", None):
+            with self.assertRaises(ValueError):
+                tile_http.OperaTileView(
+                    FakeHass(),registry_lookup=lambda p,s:self.registration,
+                    is_permitted=lambda u,p:True,max_waiting=invalid)
+
     def test_no_public_proxy_and_disabled_by_default(self):
         self.assertTrue(tile_http.OperaTileView.requires_auth)
         self.assertNotIn("token",tile_http.OperaTileView.url)
