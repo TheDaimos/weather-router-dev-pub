@@ -32,7 +32,7 @@ case "$mode" in
     echo "F7 BUILD: python=$(python3 --version), GDAL=$(gdal-config --version)"
     /tmp/f7-build-venv/bin/python -m pip install --disable-pip-version-check \
       --only-binary=:all: "auditwheel==6.8.2"
-    mkdir -p /wheelhouse/raw /wheelhouse/repaired
+    mkdir -p /wheelhouse/raw /wheelhouse/repaired /wheelhouse/repaired-repeat
     # Build from authentic Rasterio source, against native Alpine GDAL headers.
     # This is NOT a Home Assistant install, not an official package publication.
     # Deterministic-build EXPERIMENT, disposable CI ONLY. Pin the build
@@ -88,6 +88,22 @@ PY
     # alone is insufficient. A clean runtime will check the repaired result.
     /tmp/f7-build-venv/bin/auditwheel repair \
       --plat musllinux_1_2_x86_64 --wheel-dir /wheelhouse/repaired "$1"
+    # Second genuine repair of the SAME bit-identical raw wheel, in a separate
+    # output directory. The comparator reports both file-level and ZIP metadata
+    # drift without modifying the resulting binaries or asserting approval.
+    /tmp/f7-build-venv/bin/auditwheel repair \
+      --plat musllinux_1_2_x86_64 --wheel-dir /wheelhouse/repaired-repeat "$1"
+    python3 scripts/probe_f7_repaired_double.py \
+      /wheelhouse/repaired/rasterio-1.5.2-cp314-cp314-musllinux_1_2_x86_64.whl \
+      /wheelhouse/repaired-repeat/rasterio-1.5.2-cp314-cp314-musllinux_1_2_x86_64.whl \
+      > /wheelhouse/f7-repaired-double-unapproved.json
+    python3 - <<'PY'
+import json
+from pathlib import Path
+r = json.loads(Path("/wheelhouse/f7-repaired-double-unapproved.json").read_text())
+assert r["distribution"] == "BLOCKED" and r["ha_installation"] == "BLOCKED"
+print("F7 REPAIRED REAL DOUBLE:", r["status"], "changed members=", r["different_member_count"])
+PY
     /tmp/f7-build-venv/bin/auditwheel show /wheelhouse/repaired/*.whl
     # Build and inventory in the SAME disposable Alpine job; preserve only
     # an unapproved JSON evidence artifact. Do not publish or upload the wheel.
