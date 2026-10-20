@@ -107,13 +107,77 @@ class TileRouteTests(unittest.TestCase):
             response=self.request(view=self.view(allow))
         self.assertEqual(response.content_type,"image/png")
         self.assertIn("no-store",response.headers["Cache-Control"])
-        self.assertEqual(len(calls),2)
+        self.assertEqual(len(calls),3)
 
     def test_permission_revoked_before_cached_response(self):
-        calls=iter((True,False))
+        # First two decisions allow the work, but the last check must deny
+        # a result that may already be cached or computed.
+        calls=iter((True,True,False))
         with patch.object(tile_http,"render_verified_cog",return_value=b"PNGdummy"):
             with self.assertRaises(web.HTTPForbidden):
                 self.request(view=self.view(lambda _u,_p: next(calls)))
+
+    def test_permission_revoked_in_executor_queue_does_not_start_raster(self):
+        """Fail closed after queue wait, without wasting native GDAL work.
+
+        This is an isolated HomeAssistantView stub test, not a HA deployment.
+        """
+        import threading
+        render_started=threading.Event()
+        unblock=threading.Event()
+        second_user=object()
+        first_req=FakeRequest(hass_user=object())
+        second_req=FakeRequest(hass_user=second_user)
+        checks=[]
+        revoked=False
+        workers=[]
+        second_prechecked=asyncio.Event()
+
+        def permitted(user, product):
+            checks.append((user,product))
+            if user is second_user:
+                second_prechecked.set()
+                return not revoked
+            return True
+
+        def blocked_render(**kwargs):
+            workers.append(kwargs["z"])
+            render_started.set()
+            if not unblock.wait(timeout=2):
+                raise AssertionError("test_worker_not_released")
+            return b"PNG dummy"
+
+        gate=tile_http.OperaTileView(
+            FakeHass(),
+            registry_lookup=lambda product,stamp:self.registration,
+            is_permitted=permitted,is_enabled=lambda:True,
+            max_active=1,wait_seconds=0.5,render_seconds=1.0,
+        )
+        async def exercise():
+            nonlocal revoked
+            first=asyncio.create_task(gate.get(
+                first_req,"DBZH",self.stamp,"6","33","19"))
+            self.assertTrue(await asyncio.to_thread(render_started.wait,1.0))
+            second=asyncio.create_task(gate.get(
+                second_req,"DBZH",self.stamp,"6","33","19"))
+            await asyncio.wait_for(second_prechecked.wait(),timeout=1.0)
+            revoked=True
+            unblock.set()
+            first_reply=await first
+            self.assertEqual(first_reply.content_type,"image/png")
+            with self.assertRaises(web.HTTPForbidden):
+                await second
+            # Native executor was never entered on behalf of revoked user.
+            self.assertEqual(len(workers),1)
+            self.assertGreaterEqual(
+                sum(1 for user,_ in checks if user is second_user),2)
+            await asyncio.wait_for(gate._limit.acquire(),timeout=1.0)
+            gate._limit.release()
+        with patch.object(tile_http,"render_verified_cog",side_effect=blocked_render):
+            try:
+                asyncio.run(exercise())
+            finally:
+                unblock.set()
 
     def test_unauthenticated_and_insecure_fail_closed(self):
         with self.assertRaises(web.HTTPUnauthorized):
