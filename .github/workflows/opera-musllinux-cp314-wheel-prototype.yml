@@ -10,6 +10,7 @@ on:
       - "scripts/probe_opera_raster_runtime.py"
       - "scripts/probe_opera_concurrent_raster.py"
       - "scripts/inventory_opera_native_wheel.py"
+      - "scripts/audit_opera_native_apk_licenses.py"
       - "custom_components/weather_router/opera_native_package.py"
       - "custom_components/weather_router/opera_cog_tiles.py"
       - "custom_components/weather_router/opera_frame_cache.py"
@@ -57,8 +58,10 @@ jobs:
       - name: "Archive ONLY non-binary SHA/ELF/license candidate inventory"
         uses: actions/upload-artifact@v4
         with:
-          name: f7-cp314-musl-inventory-not-approved
-          path: ${{ runner.temp }}/f7-wheelhouse/f7-native-inventory.json
+          name: f7-cp314-musl-inventory-and-license-candidates-not-approved
+          path: |
+            ${{ runner.temp }}/f7-wheelhouse/f7-native-inventory.json
+            ${{ runner.temp }}/f7-wheelhouse/f7-native-apk-license-candidates.json
           if-no-files-found: error
           retention-days: 7
 
