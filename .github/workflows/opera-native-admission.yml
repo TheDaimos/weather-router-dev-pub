@@ -1,0 +1,22 @@
+name: F7 optional native admission (no HA install)
+on:
+  push:
+    branches: [feature/p7-010-global-concurrency-2026-10-16]
+    paths:
+      - 'custom_components/weather_router/opera_native_package.py'
+      - 'tests/test_opera_native_package_admission.py'
+      - '.github/workflows/opera-native-admission.yml'
+  workflow_dispatch:
+jobs:
+  isolated-standard-library-tests:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Exercise fail-closed Wheel admission without install or network
+        run: python -m unittest discover -s tests -p test_opera_native_package_admission.py -v
