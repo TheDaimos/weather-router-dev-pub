@@ -9,10 +9,14 @@ installation; the product gate remains BLOCKED unconditionally.
 from __future__ import annotations
 
 import argparse
+from contextlib import contextmanager
 from hashlib import sha256
 import json
+import os
 from pathlib import Path
 import re
+import stat
+import tempfile
 
 MAX_BYTES = 12 * 1024 * 1024
 ORIGINALS = {
@@ -28,24 +32,69 @@ class OriginalRasterProbeError(ValueError):
     """Only a fixed, non-sensitive reason may be externally reported."""
 
 
+@contextmanager
+def _verified_private_snapshot(source_path, expected_sha256):
+    """Hash the *same private bytes* later read by GDAL, never trust a mutable source.
+
+    Source is opened read-only with O_NOFOLLOW; writes occur only to an
+    unpredictable 0700 temporary staging directory, removed after inspection.
+    This is not the production ImmutableFrameCache and never enables HA.
+    """
+    source = Path(source_path)
+    if source.is_symlink():
+        raise OriginalRasterProbeError("invalid_local_source")
+    fd = None
+    try:
+        fd = os.open(source, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK)
+        info = os.fstat(fd)
+        if not stat.S_ISREG(info.st_mode):
+            raise OriginalRasterProbeError("invalid_local_source")
+        if not 0 < info.st_size <= MAX_BYTES:
+            raise OriginalRasterProbeError("invalid_source_size")
+    except OSError:
+        raise OriginalRasterProbeError("invalid_local_source") from None
+    try:
+        with tempfile.TemporaryDirectory(prefix="wr-opera-forensic-") as folder:
+            local = Path(folder) / "verified-original.tiff"
+            digest = sha256()
+            size = 0
+            with os.fdopen(fd, "rb") as incoming:
+                fd = None
+                # Exclusive new destination, only owner-readable; no caller
+                # input is ever used as a destination pathname.
+                out_fd = os.open(local, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
+                with os.fdopen(out_fd, "wb") as out:
+                    while block := incoming.read(65536):
+                        size += len(block)
+                        if size > MAX_BYTES:
+                            raise OriginalRasterProbeError("invalid_source_size")
+                        digest.update(block)
+                        out.write(block)
+            if size != info.st_size or digest.hexdigest() != expected_sha256:
+                raise OriginalRasterProbeError("sha256_mismatch")
+            yield local, size, digest.hexdigest()
+    except OriginalRasterProbeError:
+        raise
+    except OSError:
+        raise OriginalRasterProbeError("invalid_local_source") from None
+    finally:
+        if fd is not None:
+            os.close(fd)
+
+
 def inspect_file(source_path, *, product, expected_sha256):
     """Count raster value classes in bounded windows; never infer quality1."""
     if product not in ("DBZH", "RATE") or not isinstance(expected_sha256, str) or not re.fullmatch(
         r"[0-9a-f]{64}", expected_sha256
     ):
         raise OriginalRasterProbeError("invalid_expected_identity")
-    src_path = Path(source_path)
-    if src_path.is_symlink() or not src_path.is_file():
-        raise OriginalRasterProbeError("invalid_local_source")
-    nbytes = src_path.stat().st_size
-    if not 0 < nbytes <= MAX_BYTES:
-        raise OriginalRasterProbeError("invalid_source_size")
-    digest = sha256()
-    with src_path.open("rb") as inp:
-        for chunk in iter(lambda: inp.read(65536), b""):
-            digest.update(chunk)
-    if digest.hexdigest() != expected_sha256:
-        raise OriginalRasterProbeError("sha256_mismatch")
+    with _verified_private_snapshot(source_path, expected_sha256) as (snapshot, nbytes, digest):
+        return _inspect_verified_snapshot(snapshot, product=product,
+                                          nbytes=nbytes, digest=digest)
+
+
+def _inspect_verified_snapshot(src_path, *, product, nbytes, digest):
+    """Raster scan uses private SHA-verified bytes, never the mutable input."""
     try:
         import numpy as np
         import rasterio
@@ -93,7 +142,7 @@ def inspect_file(source_path, *, product, expected_sha256):
                 return {
                     "schema": SCHEMA, "product": product,
                     "expected_reference_matched": True,
-                    "sha256": digest.hexdigest(), "source_size_bytes": nbytes,
+                    "sha256": digest, "source_size_bytes": nbytes,
                     "width": ds.width, "height": ds.height,
                     "bands": ds.count, "unit": "dBZ" if product == "DBZH" else "mm/h",
                     "pixel_counts": stats,
