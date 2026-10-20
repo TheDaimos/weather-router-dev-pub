@@ -166,6 +166,101 @@ class TileRouteTests(unittest.TestCase):
         with patch.object(tile_http,"render_verified_cog",side_effect=slow_render):
             asyncio.run(exercise())
 
+    def test_render_deadline_keeps_native_worker_slot(self):
+        """HTTP timeout must not release the slot of a still-running GDAL worker.
+
+        Isolated stub regression only; does not claim real HA thread/CPU budget.
+        """
+        import threading
+        started = threading.Event()
+        release = threading.Event()
+        finished = threading.Event()
+        gate = tile_http.OperaTileView(
+            FakeHass(),
+            registry_lookup=lambda product,stamp:self.registration,
+            is_permitted=lambda user,product:True,
+            is_enabled=lambda:True,
+            max_active=1,wait_seconds=0.02,render_seconds=0.05,
+        )
+        def blocked_render(**kwargs):
+            started.set()
+            try:
+                if not release.wait(timeout=3.0):
+                    raise AssertionError("native_worker_test_not_released")
+                return b"PNG dummy"
+            finally:
+                finished.set()
+
+        async def exercise():
+            first = asyncio.create_task(gate.get(
+                self.req,"DBZH",self.stamp,"6","33","19"))
+            self.assertTrue(await asyncio.to_thread(started.wait,1.0))
+            # HTTP deadline expires while the shielded executor still runs.
+            with self.assertRaises(web.HTTPServiceUnavailable):
+                await first
+            self.assertFalse(finished.is_set())
+            # Starting a second worker would violate the concurrency budget.
+            with self.assertRaises(web.HTTPServiceUnavailable):
+                await gate.get(self.req,"DBZH",self.stamp,"6","33","19")
+            self.assertFalse(finished.is_set())
+            release.set()
+            self.assertTrue(await asyncio.to_thread(finished.wait,1.0))
+            # The completion callback, not the HTTP timeout, releases the slot.
+            await asyncio.wait_for(gate._limit.acquire(),timeout=1.0)
+            gate._limit.release()
+            response = await gate.get(self.req,"DBZH",self.stamp,"6","33","19")
+            self.assertEqual(response.content_type,"image/png")
+
+        with patch.object(tile_http,"render_verified_cog",side_effect=blocked_render):
+            try:
+                asyncio.run(exercise())
+            finally:
+                release.set()
+
+    def test_cancellation_keeps_native_worker_slot(self):
+        """Client cancellation cannot spawn replacement workers early."""
+        import threading
+        started = threading.Event()
+        release = threading.Event()
+        finished = threading.Event()
+        gate = tile_http.OperaTileView(
+            FakeHass(),
+            registry_lookup=lambda product,stamp:self.registration,
+            is_permitted=lambda user,product:True,
+            is_enabled=lambda:True,
+            max_active=1,wait_seconds=0.02,render_seconds=1.0,
+        )
+        def blocked_render(**kwargs):
+            started.set()
+            try:
+                if not release.wait(timeout=3.0):
+                    raise AssertionError("native_worker_test_not_released")
+                return b"PNG dummy"
+            finally:
+                finished.set()
+
+        async def exercise():
+            first = asyncio.create_task(gate.get(
+                self.req,"DBZH",self.stamp,"6","33","19"))
+            self.assertTrue(await asyncio.to_thread(started.wait,1.0))
+            first.cancel()
+            with self.assertRaises(asyncio.CancelledError):
+                await first
+            self.assertFalse(finished.is_set())
+            with self.assertRaises(web.HTTPServiceUnavailable):
+                await gate.get(self.req,"DBZH",self.stamp,"6","33","19")
+            self.assertFalse(finished.is_set())
+            release.set()
+            self.assertTrue(await asyncio.to_thread(finished.wait,1.0))
+            await asyncio.wait_for(gate._limit.acquire(),timeout=1.0)
+            gate._limit.release()
+
+        with patch.object(tile_http,"render_verified_cog",side_effect=blocked_render):
+            try:
+                asyncio.run(exercise())
+            finally:
+                release.set()
+
     def test_no_public_proxy_and_disabled_by_default(self):
         self.assertTrue(tile_http.OperaTileView.requires_auth)
         self.assertNotIn("token",tile_http.OperaTileView.url)
