@@ -85,7 +85,7 @@ class AdmissionTests(unittest.TestCase):
             }):
                 report = inv.inventory(wheel, digest, require_elf=False)
             self.assertEqual(report["native_elf_count"], 1)
-            self.assertEqual(report["files_count"], 7)
+            self.assertEqual(report["files_count"], 8)
             self.assertIn("libc.musl-x86_64.so.1",
                           report["elf_external_dependency_names"])
             self.assertEqual(report["python_distribution_metadata"]["name"],
