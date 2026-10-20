@@ -27,6 +27,50 @@ ORIGINALS = {
 }
 SCHEMA = "weather_router.opera.original_raster_forensic.v1"
 
+# Fixed historical references, never derive the nominal source time from S3
+# retrieval timestamps, file mtimes, or the native TIFF metadata itself.
+REFERENCE_TIME = {
+    "CIRRUS_DBZH_20261019T1340": ("DBZH", "20261019", "134000"),
+    "NIMBUS_RATE_20261019T1315": ("RATE", "20261019", "131500"),
+}
+
+
+def _classified_metadata(ds, *, product, reference):
+    """Classify only allowlisted technical TIFF attributes, never copy raw tags.
+
+    Matching tags are a provenance consistency check, NOT confirmation of a
+    scientific quality mask or of the live 900-second UTC freshness policy.
+    """
+    tags = ds.tags()
+    expected = REFERENCE_TIME.get(reference)
+    if expected is None:
+        nominal = "not_checked"
+    elif (tags.get("date") is None or tags.get("time") is None):
+        nominal = "not_available"
+    elif tags.get("date") == expected[1] and tags.get("time") == expected[2]:
+        nominal = "matches_reference"
+    else:
+        nominal = "mismatch"
+
+    first = ds.descriptions[0] if ds.descriptions else None
+    second = ds.descriptions[1] if len(ds.descriptions) > 1 else None
+    try:
+        quality_task_known = (ds.tags(2).get("task") ==
+                              "pl.imgw.quality.qi_total")
+    except Exception:
+        quality_task_known = False
+    return {
+        "nominal_time_consistency": nominal,
+        "nominal_time_basis": "fixed_reference_utc_not_retrieval_time",
+        "band1_label_matches_product": first == product,
+        "band2_label_is_quality1": second == "quality1",
+        "known_qi_total_task_label_present": quality_task_known,
+        "cog_layout_marker_present": (
+            ds.tags(ns="IMAGE_STRUCTURE").get("LAYOUT") == "COG"),
+        "quality1_scientific_policy": "unverified",
+        "nominal_freshness_for_live_response": "not_tested",
+    }
+
 
 class OriginalRasterProbeError(ValueError):
     """Only a fixed, non-sensitive reason may be externally reported."""
@@ -89,18 +133,24 @@ def _verified_private_snapshot(source_path, expected_sha256):
             os.close(fd)
 
 
-def inspect_file(source_path, *, product, expected_sha256):
+def inspect_file(source_path, *, product, expected_sha256, reference=None):
     """Count raster value classes in bounded windows; never infer quality1."""
     if product not in ("DBZH", "RATE") or not isinstance(expected_sha256, str) or not re.fullmatch(
         r"[0-9a-f]{64}", expected_sha256
     ):
         raise OriginalRasterProbeError("invalid_expected_identity")
+    if reference is not None and (
+        reference not in REFERENCE_TIME or REFERENCE_TIME[reference][0] != product
+    ):
+        raise OriginalRasterProbeError("invalid_expected_identity")
     with _verified_private_snapshot(source_path, expected_sha256) as (snapshot, nbytes, digest):
         return _inspect_verified_snapshot(snapshot, product=product,
-                                          nbytes=nbytes, digest=digest)
+                                          nbytes=nbytes, digest=digest,
+                                          reference=reference)
 
 
-def _inspect_verified_snapshot(src_path, *, product, nbytes, digest):
+def _inspect_verified_snapshot(src_path, *, product, nbytes, digest,
+                               reference=None):
     """Raster scan uses private SHA-verified bytes, never the mutable input."""
     try:
         import numpy as np
@@ -152,6 +202,8 @@ def _inspect_verified_snapshot(src_path, *, product, nbytes, digest):
                     "sha256": digest, "source_size_bytes": nbytes,
                     "width": ds.width, "height": ds.height,
                     "bands": ds.count, "unit": "dBZ" if product == "DBZH" else "mm/h",
+                    "technical_metadata": _classified_metadata(
+                        ds, product=product, reference=reference),
                     "pixel_counts": stats,
                     "quality1_scientific_meaning": "unverified",
                     "color_palette": "unverified", "ha_installation": "BLOCKED",
@@ -172,7 +224,8 @@ def main(argv=None):
     args = parser.parse_args(argv)
     product, digest = ORIGINALS[args.reference]
     try:
-        result = inspect_file(args.source, product=product, expected_sha256=digest)
+        result = inspect_file(args.source, product=product,
+                              expected_sha256=digest, reference=args.reference)
     except OriginalRasterProbeError as exc:
         result = {"schema": SCHEMA, "reference": args.reference,
                   "status": str(exc), "ha_installation": "BLOCKED",
