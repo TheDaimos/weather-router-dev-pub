@@ -101,9 +101,13 @@ jobs:
         run: python scripts/probe_opera_raster_runtime.py
 
   alpine-apk-investigation:
-    name: "Alpine 3.24 vorkompilierte APK Rasterio - isolierte Alternative"
-    runs-on: ubuntu-latest
-    timeout-minutes: 12
+    name: "Alpine 3.24 APK Rasterio / ${{ matrix.runner }} - isoliert"
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: ["ubuntu-latest", "ubuntu-24.04-arm"]
     steps:
       - name: Oeffentlichen CoG-Code auschecken
         uses: actions/checkout@v4
