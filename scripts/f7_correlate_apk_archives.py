@@ -12,6 +12,7 @@ from pathlib import Path
 import re
 import sys
 import tarfile
+from f7_apk_multi_gzip import open_apk_tar_segments, UnsafeApkArchive
 
 HEX = re.compile(r"[0-9a-f]{64}\Z")
 MAX_APK_BYTES = 100 * 1024 * 1024
@@ -26,7 +27,8 @@ def _candidates(archive, filenames):
     """Only decompress candidate .so regular members; no links/extract."""
     found = []
     total, count = 0, 0
-    with tarfile.open(archive, "r|gz") as tar:
+    for segment in open_apk_tar_segments(archive):
+      with tarfile.open(fileobj=segment, mode="r:") as tar:
         for info in tar:
             count += 1
             if count > MAX_ARCHIVE_MEMBERS:
@@ -146,7 +148,7 @@ def main(args):
         result=correlate(json.loads(Path(args[1]).read_text()),
                          json.loads(Path(args[2]).read_text()),args[3])
         Path(args[4]).write_text(json.dumps(result,sort_keys=True,indent=2)+"\n")
-    except (ValueError,KeyError,TypeError,OSError,tarfile.TarError):
+    except (ValueError,KeyError,TypeError,OSError,tarfile.TarError,UnsafeApkArchive):
         print("F7 Alpine signed archive ELF correlation rejected",file=sys.stderr)
         return 1
     print("F7 VERIFIED APK ARCHIVE MEMBER BYTES:",result["archive_elf_matches_installed_count"],
