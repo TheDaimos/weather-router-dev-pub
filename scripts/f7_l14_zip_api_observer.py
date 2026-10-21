@@ -72,6 +72,7 @@ def _trace(name):
                 "repair_pass": PASS, "operation": "ZipFile." + name,
                 "archive": archive, "member_name": member,
                 "supplied_sha256": supplied_hash, "supplied_bytes": supplied_size,
+                "file_sha256_before": supplied_hash,
                 "extracted_path": extracted, "extracted_sha256": extracted_hash,
                 "extracted_bytes": extracted_size,
                 "operation_succeeded": True, "archive_finalized": False,
