@@ -48,6 +48,7 @@ jobs:
                 sha256sum "$file"
                 echo "F7 APK PROBE HEADER: $(head -c 6 "$file" | od -An -tx1)"
                 if tar -tzf "$file" >/dev/null 2>&1; then echo "F7 APK PROBE TAR GZIP readable"; else echo "F7 APK PROBE NOT STANDARD TAR GZIP"; fi
+                echo "F7 APK PROBE MEMBER SAMPLE: $(tar -tzf "$file" 2>/dev/null | head -n 4 | tr "\n" "," || true)"
                 if apk verify "$file"; then
                   echo "F7 APK PROBE SIGNATURE PASS USING CI IMAGE KEYS (not independently attested)"
                 else
