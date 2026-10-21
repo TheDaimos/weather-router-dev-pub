@@ -175,6 +175,12 @@ PY
         /wheelhouse/repaired/rasterio-1.5.2-cp314-cp314-musllinux_1_2_x86_64.whl \
         /wheelhouse/f7-original-elf-comparison-unapproved.json \
         /wheelhouse/apk-originals
+      # Record original and repaired ELF dynamic tags before any release gate.
+      # Read-only, deliberately NOT treated as replay or provenance approval.
+      python3 scripts/f7_observe_elf_dynamic_transform.py \
+        /wheelhouse/f7-original-elf-comparison-unapproved.json \
+        /wheelhouse/repaired/rasterio-1.5.2-cp314-cp314-musllinux_1_2_x86_64.whl \
+        /wheelhouse/f7-elf-dynamic-observation-unapproved.json
       python3 scripts/f7_correlate_apk_archives.py \
         /wheelhouse/f7-original-elf-comparison-unapproved.json \
         /wheelhouse/f7-official-apks-unapproved.json \
