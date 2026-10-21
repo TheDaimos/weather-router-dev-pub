@@ -16,7 +16,7 @@ from rasterio.warp import reproject,Resampling
 def probe():
     with rasterio.Env() as env:
         drivers=env.drivers()
-    essential=("GTiff","VRT","MEM","PNG")
+    essential=("GTiff","VRT","MEM")
     input_pixels=np.arange(256,dtype="float32").reshape(16,16)
     with MemoryFile() as mem:
         with mem.open(driver="GTiff",width=16,height=16,count=1,
@@ -37,6 +37,7 @@ def probe():
         "registered_driver_count":len(drivers),
         "required_raster_drivers":{d:d in drivers for d in essential},
         "cog_driver_present":"COG" in drivers,
+        "png_driver_present":"PNG" in drivers,
         "synthetic_geotiff_warp_pass":bool(np.array_equal(input_pixels,output)),
         "gdal_driver_minimization_permitted":False,
         "native_dependency_pruning_permitted":False,
