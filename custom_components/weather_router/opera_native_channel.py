@@ -171,16 +171,25 @@ class PassiveNativeShelf:
     @_serialized_mutation
     def revoke(self):
         prior=self.state()
-        self._write({**prior,"staged":None,"revoked":True,"active":None})
+        self._write({**prior,"staged":None,"previous":None,"revoked":True,"active":None})
         return self.status()
 
     @_serialized_mutation
-    def rollback(self):
+    def rollback(self, inspector):
         prior=self.state()
+        if prior["revoked"]:
+            raise ChannelBlocked("revocation_not_reversible")
         old=prior["previous"]
-        # Only previously staged metadata; never an activated/native fallback.
-        if old is not None and not (self.root/old/WHEEL).is_file():
-            old=None
+        # Never restore unverified, deleted, modified or symlinked old bytes.
+        if old is not None:
+            target=self.root/old/WHEEL
+            if not callable(inspector) or target.is_symlink() or not target.is_file():
+                old=None
+            else:
+                try:
+                    inspector(target,old)
+                except (ValueError,OSError):
+                    old=None
         self._write({**prior,"staged":old,"previous":None,"revoked":False,"active":None})
         return self.status()
 
