@@ -203,8 +203,8 @@ PY
         /wheelhouse/f7-elf-dynamic-observation-unapproved.json
       # Separate official Alpine EDGE lookup; NEVER replace v3.24 originals.
       # Compare real ELF bytes; the report stays non-distributable even on match.
-      python3 scripts/f7_probe_official_edge_openssl.py \\
-        /wheelhouse/f7-original-elf-comparison-unapproved.json \\
+      python3 scripts/f7_probe_official_edge_openssl.py \
+        /wheelhouse/f7-original-elf-comparison-unapproved.json \
         /wheelhouse/f7-openssl-edge-cross-branch-unapproved.json
       python3 scripts/f7_correlate_apk_archives.py \
         /wheelhouse/f7-original-elf-comparison-unapproved.json \
