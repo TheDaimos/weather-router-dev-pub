@@ -21,6 +21,7 @@ on:
       - "scripts/f7_compare_installed_elf.py"
       - "scripts/f7_correlate_apk_archives.py"
       - "scripts/f7_apk_license_docs.py"
+      - "scripts/f7_original_binary_release_gate.py"
       - "scripts/f7_apk_multi_gzip.py"
       - "scripts/f7_consolidate_elf_matrix.py"
       - "scripts/f7_generate_sbom.py"
@@ -108,6 +109,7 @@ jobs:
           cp "$ROOT/first/f7-official-apks-unapproved.json" "$ROOT/f7-official-apks-unapproved.json"
           cp "$ROOT/first/f7-original-elf-comparison-unapproved.json" "$ROOT/f7-original-elf-comparison-unapproved.json"
           cp "$ROOT/first/f7-apk-member-correlation-unapproved.json" "$ROOT/f7-apk-member-correlation-unapproved.json"
+          cp "$ROOT/first/f7-original-binary-release-gate-unapproved.json" "$ROOT/f7-original-binary-release-gate-unapproved.json"
           cp "$ROOT/first/f7-apk-license-docs-unapproved.json" "$ROOT/f7-apk-license-docs-unapproved.json"
           cp "$ROOT/first/f7-101-elf-original-origin-license-matrix-unapproved.md" "$ROOT/f7-101-elf-original-origin-license-matrix-unapproved.md"
           # Cross-bind actual 101 native ELF hashes, SPDX-candidate evidence,
@@ -164,6 +166,7 @@ jobs:
             ${{ runner.temp }}/f7-wheelhouse/f7-official-apks-unapproved.json
             ${{ runner.temp }}/f7-wheelhouse/f7-original-elf-comparison-unapproved.json
             ${{ runner.temp }}/f7-wheelhouse/f7-apk-member-correlation-unapproved.json
+            ${{ runner.temp }}/f7-wheelhouse/f7-original-binary-release-gate-unapproved.json
             ${{ runner.temp }}/f7-wheelhouse/f7-apk-license-docs-unapproved.json
             ${{ runner.temp }}/f7-wheelhouse/f7-101-elf-original-origin-license-matrix-unapproved.md
             ${{ runner.temp }}/f7-wheelhouse/runtime-evidence/f7-native-driver-scope-unapproved.json
