@@ -52,6 +52,9 @@ def main(argv):
     if dst.is_symlink():return 1
     dst.write_text(json.dumps(result,indent=2,sort_keys=True)+"\n")
     if not all(result["required_raster_drivers"].values()) or not result["synthetic_geotiff_warp_pass"]:
+        # Diagnostic before returning failure: retain exact failed gate, never
+        # suppress a missing driver or misrepresent CI as an HA real test.
+        print("F7 NATIVE DRIVER SCOPE BLOCKED: drivers="+json.dumps(result["required_raster_drivers"],sort_keys=True)+" warp_pass="+str(result["synthetic_geotiff_warp_pass"]),file=sys.stderr)
         return 1
     print("F7 synthetic GTiff & reproject scope PASS, optimization and HA import BLOCKED")
     return 0
