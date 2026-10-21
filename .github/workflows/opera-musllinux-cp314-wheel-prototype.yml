@@ -23,6 +23,7 @@ on:
       - "scripts/f7_apk_license_docs.py"
       - "scripts/f7_original_binary_release_gate.py"
       - "scripts/f7_observe_elf_dynamic_transform.py"
+      - "scripts/f7_auditwheel_repair_replay.py"
       - "tests/test_f7_observe_elf_dynamic_transform.py"
       - "scripts/f7_apk_multi_gzip.py"
       - "scripts/f7_consolidate_elf_matrix.py"
@@ -103,6 +104,7 @@ jobs:
           cp "$ROOT/first/f7-fixed-source-unapproved.json" "$ROOT/f7-fixed-source-unapproved.json"
           cp "$ROOT/first/f7-raw-elf-drift-unapproved.json" "$ROOT/f7-raw-elf-drift-unapproved.json"
           cp "$ROOT/first/f7-repaired-double-unapproved.json" "$ROOT/f7-repaired-double-unapproved.json"
+          cp "$ROOT/first/f7-auditwheel-replay-unapproved.json" "$ROOT/f7-auditwheel-replay-unapproved.json"
           cp "$ROOT/first/f7-cyclonedx-unapproved.json" "$ROOT/f7-cyclonedx-unapproved.json"
           cp "$ROOT/first/f7-sbom-quality-unapproved.json" "$ROOT/f7-sbom-quality-unapproved.json"
           cp "$ROOT/first/f7-native-size-scope-unapproved.json" "$ROOT/f7-native-size-scope-unapproved.json"
@@ -157,6 +159,7 @@ jobs:
             ${{ runner.temp }}/f7-wheelhouse/f7-raw-elf-drift-unapproved.json
             ${{ runner.temp }}/f7-wheelhouse/f7-fixed-source-unapproved.json
             ${{ runner.temp }}/f7-wheelhouse/f7-repaired-double-unapproved.json
+            ${{ runner.temp }}/f7-wheelhouse/f7-auditwheel-replay-unapproved.json
             ${{ runner.temp }}/f7-wheelhouse/f7-separate-containers-repaired-comparison.json
             ${{ runner.temp }}/f7-wheelhouse/f7-independent-build-evidence.json
             ${{ runner.temp }}/f7-wheelhouse/f7-independent-members-unapproved.json
