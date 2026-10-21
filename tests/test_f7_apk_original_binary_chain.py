@@ -8,6 +8,10 @@ from pathlib import Path
 import tarfile
 import tempfile
 import unittest
+import sys
+_SCRIPTS=str(Path(__file__).resolve().parents[1]/"scripts")
+if _SCRIPTS not in sys.path:
+    sys.path.insert(0,_SCRIPTS)
 from zipfile import ZipFile
 
 BASE=Path(__file__).resolve().parents[1]
