@@ -13,7 +13,11 @@ from pathlib import Path
 
 MAX_DB = 8 * 1024 * 1024
 MAX_INVENTORY = 2 * 1024 * 1024
-MANGLED = re.compile(r"-(?:[0-9a-f]{8})(?=\.so(?:\.|$))")
+# auditwheel inserts the 8-hex digest BEFORE the dotted SONAME suffix:
+# libxerces-c-3-5caca54e.2.so -> libxerces-c-3.2.so,
+# libopenblasp-r0-35434127.3.30.so -> libopenblasp-r0.3.30.so.
+# Mapping is still filename-only until binary/APK hash provenance is proved.
+MANGLED = re.compile(r"-(?:[0-9a-f]{8})(?=\.)")
 SCHEMA = "weather_router.f7.native_apk_license_candidates.v1"
 
 
