@@ -31,7 +31,8 @@ jobs:
             "alpine@sha256:294b683cb724975bec92580e1e685676bd4b50bda910ddb8c51d4cabeaec77e6" \
             sh -eu -c '
               echo "F7 APK PROBE Alpine: $(cat /etc/alpine-release); apk: $(apk --version)"
-              for ref in "gdal=3.13.3-r0" "lerc=4.1.0-r0" "sfcgal=2.2.0-r0"; do
+              apk update
+              for ref in "gdal" "lerc" "sfcgal"; do
                 echo "F7 APK PROBE ref: $ref"
                 apk fetch --url "$ref" || echo "F7 APK PROBE url lookup rejected"
                 if apk fetch --no-cache --output /wheelhouse "$ref"; then
