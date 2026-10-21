@@ -16,6 +16,11 @@ on:
       - "scripts/f7_prepare_fixed_source.py"
       - "scripts/probe_f7_repaired_double.py"
       - "scripts/f7_cross_container_evidence.py"
+      - "scripts/f7_generate_sbom.py"
+      - "scripts/f7_elf_license_matrix.py"
+      - "scripts/f7_native_size_scope.py"
+      - "scripts/f7_alpine_secdb_candidates.py"
+      - "scripts/probe_f7_native_driver_scope.py"
       - "scripts/compare_opera_native_inventories.py"
       - "tests/test_f7_repaired_double.py"
       - "custom_components/weather_router/opera_native_package.py"
@@ -88,6 +93,11 @@ jobs:
           cp "$ROOT/first/f7-fixed-source-unapproved.json" "$ROOT/f7-fixed-source-unapproved.json"
           cp "$ROOT/first/f7-raw-elf-drift-unapproved.json" "$ROOT/f7-raw-elf-drift-unapproved.json"
           cp "$ROOT/first/f7-repaired-double-unapproved.json" "$ROOT/f7-repaired-double-unapproved.json"
+          cp "$ROOT/first/f7-cyclonedx-unapproved.json" "$ROOT/f7-cyclonedx-unapproved.json"
+          cp "$ROOT/first/f7-sbom-quality-unapproved.json" "$ROOT/f7-sbom-quality-unapproved.json"
+          cp "$ROOT/first/f7-native-size-scope-unapproved.json" "$ROOT/f7-native-size-scope-unapproved.json"
+          cp "$ROOT/first/f7-101-elf-license-matrix-unapproved.md" "$ROOT/f7-101-elf-license-matrix-unapproved.md"
+          cp "$ROOT/first/f7-secdb-candidates-unapproved.json" "$ROOT/f7-secdb-candidates-unapproved.json"
           python - "$ROOT/f7-independent-build-evidence.json" <<'PY'
           import json,sys
           r=json.load(open(sys.argv[1]))
@@ -104,11 +114,13 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/f7-wheelhouse/runtime-evidence"
           docker run --rm --pull=always --platform linux/amd64 \
             --cpus=2 --memory=4g --pids-limit=256 \
             -e GITHUB_ACTIONS=true -e WR_OPERA_ISOLATED_CI=1 \
             -v "$PWD:/wr:ro" \
-            -v "$RUNNER_TEMP/f7-wheelhouse/first:/wheelhouse:ro" \
+            -v "$RUNNER_TEMP/f7-wheelhouse/first:/wheelhouse:ro"
+            -v "$RUNNER_TEMP/f7-wheelhouse/runtime-evidence:/runtime-evidence" \
             -w /wr "alpine@sha256:294b683cb724975bec92580e1e685676bd4b50bda910ddb8c51d4cabeaec77e6" \
             sh scripts/ci_opera_musl_wheel_prototype.sh verify
 
@@ -126,6 +138,12 @@ jobs:
             ${{ runner.temp }}/f7-wheelhouse/f7-separate-containers-repaired-comparison.json
             ${{ runner.temp }}/f7-wheelhouse/f7-independent-build-evidence.json
             ${{ runner.temp }}/f7-wheelhouse/f7-independent-members-unapproved.json
+            ${{ runner.temp }}/f7-wheelhouse/f7-cyclonedx-unapproved.json
+            ${{ runner.temp }}/f7-wheelhouse/f7-sbom-quality-unapproved.json
+            ${{ runner.temp }}/f7-wheelhouse/f7-native-size-scope-unapproved.json
+            ${{ runner.temp }}/f7-wheelhouse/f7-101-elf-license-matrix-unapproved.md
+            ${{ runner.temp }}/f7-wheelhouse/f7-secdb-candidates-unapproved.json
+            ${{ runner.temp }}/f7-wheelhouse/runtime-evidence/f7-native-driver-scope-unapproved.json
           if-no-files-found: error
           retention-days: 7
 
