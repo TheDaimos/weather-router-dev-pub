@@ -61,6 +61,11 @@ def fetch(mapping, target, *, runner=subprocess.run):
         if p.is_file() and not p.is_symlink() and p.stat().st_size < 16000:
             keys[p.name]=_sha(p)
     packages=selected(mapping)
+    # apk-tools 3 fetch resolves package names, not exact-version constraints.
+    # Refresh signed indexes and REQUIRE the exact installed filename below.
+    # Never install a package.
+    refresh=runner(["apk","update"],capture_output=True,text=True,timeout=35,check=False)
+    index_available=refresh.returncode==0
     cutoff=time.monotonic()+TIME_BUDGET
     results=[]
     for name,version in packages:
@@ -70,12 +75,16 @@ def fetch(mapping, target, *, runner=subprocess.run):
               "apk_verify_result":"NOT_VERIFIED",
               "trust_anchor_independently_verified":False,
               "status":"NOT_FETCHED"}
+        if not index_available:
+            data["status"]="OFFICIAL_INDEX_REFRESH_FAILED"
+            results.append(data)
+            continue
         if time.monotonic() > cutoff:
             data["status"]="TIME_BUDGET_EXHAUSTED"
             results.append(data)
             continue
         try:
-            reference=f"{name}={version}"
+            reference=name
             # Alpine's own verified index and repository client; never use
             # --allow-untrusted and never invoke apk add/install.
             url=runner(["apk","fetch","--url",reference],
@@ -84,7 +93,7 @@ def fetch(mapping, target, *, runner=subprocess.run):
                 valid=[x.strip() for x in url.stdout.splitlines() if x.strip().startswith("https://")]
                 if len(valid)==1 and valid[0].endswith("/"+target_file.name) and "alpinelinux.org/" in valid[0]:
                     data["repo_url"]=valid[0]
-            result=runner(["apk","fetch","--no-cache","--output",str(target),reference],
+            result=runner(["apk","fetch","--output",str(target),reference],
                           capture_output=True,text=True,timeout=35,check=False)
             if result.returncode:
                 data["status"]="OFFICIAL_APK_FETCH_FAILED"
@@ -99,7 +108,9 @@ def fetch(mapping, target, *, runner=subprocess.run):
                 data["status"]=("INDEXED_AND_SIGNED_BY_CI_KEYS_NOT_INDEPENDENTLY_ATTESTED"
                                 if verified.returncode==0 else "NOT_AUTHENTICATED")
             else:
-                data["status"]="MISSING_OR_OVERSIZE_APK_ARCHIVE"
+                observed=sorted(p.name for p in target.glob(name+"-*.apk") if p.is_file())
+                data["status"]="EXACT_VERSION_NOT_IN_SIGNED_OFFICIAL_INDEX" if observed else "MISSING_OR_OVERSIZE_APK_ARCHIVE"
+                data["observed_archive_names"]=observed[:8]
         except (OSError,subprocess.TimeoutExpired):
             data["status"]="FETCH_OR_VERIFICATION_UNAVAILABLE"
         results.append(data)
@@ -108,6 +119,7 @@ def fetch(mapping, target, *, runner=subprocess.run):
         "status":"CI_INDEX_AND_KEY_CHECK_NOT_INDEPENDENT_PROVENANCE",
         "wheel_sha256":mapping.get("wheel_sha256"),
         "alpine_ci_key_file_sha256":keys,
+        "official_index_refresh_success":index_available,
         "package_requested_count":len(packages),
         "apk_fetched_count":sum(x["archive_sha256"] is not None for x in results),
         "apk_signature_verified_using_ci_keys_count":sum(x["apk_verify_result"]=="VALID_AGAINST_CI_CONTAINER_KEYS" for x in results),
