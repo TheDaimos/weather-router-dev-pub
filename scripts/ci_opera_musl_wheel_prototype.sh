@@ -146,6 +146,13 @@ PY
       /wheelhouse/f7-patchelf-operations-unapproved.jsonl \
       /wheelhouse/f7-auditwheel-replay-unapproved.json \
       /wheelhouse/f7-l13-verified-pass-elf-edges-unapproved.json
+    python3 scripts/f7_l17_verify_zip_elf_bytes.py \
+      /wheelhouse/f7-wheel-zip-operations-unapproved.jsonl \
+      /wheelhouse/f7-auditwheel-replay-unapproved.json \
+      /wheelhouse/f7-l13-verified-pass-elf-edges-unapproved.json \
+      /wheelhouse/repaired/rasterio-1.5.2-cp314-cp314-musllinux_1_2_x86_64.whl \
+      /wheelhouse/repaired-repeat/rasterio-1.5.2-cp314-cp314-musllinux_1_2_x86_64.whl \
+      /wheelhouse/f7-l17-verified-zip-elf-bytes-unapproved.json
     /tmp/f7-build-venv/bin/auditwheel show /wheelhouse/repaired/*.whl
     # Build and inventory in the SAME disposable Alpine job; preserve only
     # an unapproved JSON evidence artifact. Do not publish or upload the wheel.
