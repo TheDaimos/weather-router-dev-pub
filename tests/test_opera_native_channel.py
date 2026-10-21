@@ -85,6 +85,7 @@ class NativeShelfTests(unittest.TestCase):
     def test_digest_mismatch_or_unsigned_claim_never_activates(self):
         p,d,pr=self.candidate("one")
         d["sha256"]="e"*64
+        pr["candidate"]["sha256"]=d["sha256"]
         with self.assertRaises(wheel_gate.NativePackageRejected):
             self.shelf.stage(p,d,pr,wheel_gate.inspect_candidate)
         self.assertIsNone(self.shelf.status()["staged_candidate"])
