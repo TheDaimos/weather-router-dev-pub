@@ -135,6 +135,11 @@ PY
     python3 scripts/f7_verify_auditwheel_python_trace.py \
       /wheelhouse/f7-auditwheel-python-operations-unapproved.jsonl \
       /wheelhouse/f7-auditwheel-python-summary-unapproved.json
+    python3 scripts/f7_l12_correlate_actual_elf_operations.py \
+      /wheelhouse/f7-auditwheel-python-operations-unapproved.jsonl \
+      /wheelhouse/f7-patchelf-operations-unapproved.jsonl \
+      /wheelhouse/f7-auditwheel-replay-unapproved.json \
+      /wheelhouse/f7-l12-observed-elf-chains-unapproved.json
     /tmp/f7-build-venv/bin/auditwheel show /wheelhouse/repaired/*.whl
     # Build and inventory in the SAME disposable Alpine job; preserve only
     # an unapproved JSON evidence artifact. Do not publish or upload the wheel.
