@@ -54,7 +54,7 @@ case "$mode" in
     PACKAGE_DATA=1 GDAL_CONFIG=/usr/bin/gdal-config GDAL_DATA=/usr/share/gdal \
       PROJ_DATA=/usr/share/proj /tmp/f7-build-venv/bin/python -m pip wheel \
       --disable-pip-version-check --no-cache-dir --no-deps --no-build-isolation \
-      --wheel-dir /wheelhouse/raw /tmp/f7-opera-repro-source/rasterio-1.5.2
+      --verbose --wheel-dir /wheelhouse/raw /tmp/f7-opera-repro-source/rasterio-1.5.2
     # Freshly unpack the same Sdist to the SAME fixed source path, restoring
     # a clean tree. Never run pip on a wheel left by the previous build.
     python3 scripts/f7_prepare_fixed_source.py \
@@ -65,7 +65,7 @@ case "$mode" in
     PACKAGE_DATA=1 GDAL_CONFIG=/usr/bin/gdal-config GDAL_DATA=/usr/share/gdal \
       PROJ_DATA=/usr/share/proj /tmp/f7-build-venv/bin/python -m pip wheel \
       --disable-pip-version-check --no-cache-dir --no-deps --no-build-isolation \
-      --wheel-dir /wheelhouse/raw-repeat /tmp/f7-opera-repro-source/rasterio-1.5.2
+      --verbose --wheel-dir /wheelhouse/raw-repeat /tmp/f7-opera-repro-source/rasterio-1.5.2
     python3 scripts/probe_opera_raw_elf_drift.py \
       /wheelhouse/raw/rasterio-1.5.2-cp314-cp314-linux_x86_64.whl \
       /wheelhouse/raw-repeat/rasterio-1.5.2-cp314-cp314-linux_x86_64.whl \
