@@ -193,6 +193,39 @@ class PassiveNativeShelf:
         self._write({**prior,"staged":old,"previous":None,"revoked":False,"active":None})
         return self.status()
 
+    @_serialized_mutation
+    def recover_interrupted(self):
+        """Remove orphan temporary copy files, never touch committed candidates."""
+        self.state()
+        removed=0
+        for bucket in self.root.iterdir():
+            if bucket.is_symlink() or not bucket.is_dir() or not SHA.fullmatch(bucket.name):
+                continue
+            for path in bucket.glob(".wheel-*"):
+                if path.is_symlink() or not path.is_file():
+                    raise ChannelBlocked("unsafe_recovery_entry")
+                path.unlink()
+                removed+=1
+        return {"status":"RECOVERED_CI_ONLY","orphan_temp_files_removed":removed,
+                "ha_installation":"BLOCKED","opera_activation":"BLOCKED"}
+
+    def audit(self, inspector):
+        """Recheck selected on-disk candidate without promoting or importing it."""
+        record=self.state()
+        candidate=record["staged"]
+        if candidate is None:
+            return {"status":"NO_STAGED_CANDIDATE","trusted":False}
+        path=self.root/candidate/WHEEL
+        if not callable(inspector) or path.is_symlink() or not path.is_file():
+            return {"status":"CANDIDATE_MISSING_OR_UNTRUSTED","trusted":False}
+        try:
+            inspector(path,candidate)
+        except (ValueError,OSError):
+            return {"status":"CANDIDATE_HASH_OR_ZIP_REJECTED","trusted":False}
+        return {"status":"UNAPPROVED_CANDIDATE_BYTES_INTACT",
+                "trusted":False,"ha_installation":"BLOCKED",
+                "opera_activation":"BLOCKED"}
+
     def status(self):
         current=self.state()
         return {"schema":SCHEMA,"staged_candidate":current["staged"],
