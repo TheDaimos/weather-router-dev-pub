@@ -125,8 +125,8 @@ PY
       "$(patchelf --version)" \
       /wheelhouse/f7-auditwheel-replay-unapproved.json
     # Capture actual subprocess commands, do not assert complete Python copy trace.
-    python3 scripts/f7_verify_patchelf_trace.py \\
-      /wheelhouse/f7-patchelf-operations-unapproved.jsonl \\
+    python3 scripts/f7_verify_patchelf_trace.py \
+      /wheelhouse/f7-patchelf-operations-unapproved.jsonl \
       /wheelhouse/f7-patchelf-trace-summary-unapproved.json
     /tmp/f7-build-venv/bin/auditwheel show /wheelhouse/repaired/*.whl
     # Build and inventory in the SAME disposable Alpine job; preserve only
