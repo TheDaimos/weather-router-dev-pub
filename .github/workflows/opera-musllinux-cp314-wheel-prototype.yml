@@ -112,6 +112,7 @@ jobs:
           cp "$ROOT/first/f7-repaired-double-unapproved.json" "$ROOT/f7-repaired-double-unapproved.json"
           cp "$ROOT/first/f7-auditwheel-replay-unapproved.json" "$ROOT/f7-auditwheel-replay-unapproved.json"
           cp "$ROOT/first/f7-patchelf-trace-summary-unapproved.json" "$ROOT/f7-patchelf-trace-summary-unapproved.json"
+          cp "$ROOT/first/f7-patchelf-operations-unapproved.jsonl" "$ROOT/f7-patchelf-operations-unapproved.jsonl"
           cp "$ROOT/first/f7-auditwheel-python-operations-unapproved.jsonl" "$ROOT/f7-auditwheel-python-operations-unapproved.jsonl"
           cp "$ROOT/first/f7-auditwheel-python-summary-unapproved.json" "$ROOT/f7-auditwheel-python-summary-unapproved.json"
           cp "$ROOT/first/f7-cyclonedx-unapproved.json" "$ROOT/f7-cyclonedx-unapproved.json"
@@ -171,6 +172,7 @@ jobs:
             ${{ runner.temp }}/f7-wheelhouse/f7-repaired-double-unapproved.json
             ${{ runner.temp }}/f7-wheelhouse/f7-auditwheel-replay-unapproved.json
             ${{ runner.temp }}/f7-wheelhouse/f7-patchelf-trace-summary-unapproved.json
+            ${{ runner.temp }}/f7-wheelhouse/f7-patchelf-operations-unapproved.jsonl
             ${{ runner.temp }}/f7-wheelhouse/f7-auditwheel-python-operations-unapproved.jsonl
             ${{ runner.temp }}/f7-wheelhouse/f7-auditwheel-python-summary-unapproved.json
             ${{ runner.temp }}/f7-wheelhouse/f7-separate-containers-repaired-comparison.json
