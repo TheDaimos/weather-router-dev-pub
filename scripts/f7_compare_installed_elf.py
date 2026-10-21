@@ -70,6 +70,62 @@ def _read_original(root, filename):
         return (str(p.relative_to(root)), str(target.relative_to(root)), p.read_bytes())
     return None
 
+
+def _elf_sections_safely(raw):
+    """Observational bounded ELF64 section hashes, NEVER a provenance proof."""
+    import struct
+    if len(raw) < 64 or raw[:6] != b"\x7fELF\x02\x01":
+        return None
+    try:
+        table=struct.unpack_from("<Q",raw,40)[0]
+        size,count,idx=struct.unpack_from("<HHH",raw,58)
+        if not 0<count<=512 or size<64 or idx>=count or table>len(raw) or count*size>len(raw)-table:
+            return None
+        rows=[]
+        for i in range(count):
+            name,typ,_,_,start,length,_,_,_,_=struct.unpack_from("<IIQQQQIIQQ",raw,table+i*size)
+            if start>len(raw) or (typ!=8 and length>len(raw)-start):
+                return None
+            rows.append((name,typ,start,length))
+        _,typ,start,length=rows[idx]
+        if typ!=3 or not 0<length<=65536:
+            return None
+        strings=raw[start:start+length]
+        result={}
+        for i,(offset,kind,pos,span) in enumerate(rows):
+            if not span or kind==8:
+                continue
+            if offset>=len(strings):
+                return None
+            end=strings.find(b"\0",offset)
+            if end<0:
+                return None
+            label=strings[offset:end].decode("ascii","replace") or "unnamed_"+str(i)
+            if label in result:
+                return None
+            result[label]={"sha256":sha(raw[pos:pos+span]),"bytes":span}
+        return result
+    except (struct.error,UnicodeError):
+        return None
+
+def _measured_section_drift(original,embedded):
+    a=_elf_sections_safely(original)
+    b=_elf_sections_safely(embedded)
+    if a is None or b is None:
+        return {"status":"UNSUPPORTED_ELF_SECTION_FORMAT",
+                "changed_section_names":None,"unchanged_section_names":None,
+                "source_to_wheel_transformation_verified":False}
+    changed=sorted(k for k in set(a)|set(b) if a.get(k)!=b.get(k))
+    unchanged=sorted(k for k in set(a)&set(b) if a[k]==b[k])
+    return {"status":"SECTION_DIGESTS_MEASURED_NO_REPLAY",
+            "changed_section_names":changed,
+            "unchanged_section_names":unchanged,
+            "original_section_count":len(a),"wheel_section_count":len(b),
+            "text_sha_equal":a.get(".text")==b.get(".text") and ".text" in a,
+            "note_build_id_equal":a.get(".note.gnu.build-id")==b.get(".note.gnu.build-id")
+                and ".note.gnu.build-id" in a,
+            "source_to_wheel_transformation_verified":False}
+
 def compare(inv, attribution, db, wheel, *, source_root="/", archive_dir=None):
     if (inv.get("schema") != "weather_router.f7.native_candidate_inventory.v2"
             or inv.get("status") != "UNAPPROVED_NOT_DISTRIBUTABLE"
@@ -158,6 +214,7 @@ def compare(inv, attribution, db, wheel, *, source_root="/", archive_dir=None):
                                else "RASTERIO_SOURCE_BUILD_NEEDS_SDIST_PROVENANCE" if name.startswith("rasterio/")
                                else "INSTALLED_SOURCE_NOT_FOUND"),
                 "auditwheel_renamed_soname":original_name!=Path(name).name,
+                "installed_vs_wheel_elf_section_drift":_measured_section_drift(original,embedded) if original else None,
                 "auditwheel_transform_independently_verified":False,
                 "candidates":apkmatches,"license_review":"REQUIRED"})
     direct=sum(x["origin_class"]=="INSTALLED_ELF_BYTE_IDENTICAL_APK_UNATTESTED" for x in out)
