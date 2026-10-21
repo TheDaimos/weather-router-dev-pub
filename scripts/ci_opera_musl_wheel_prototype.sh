@@ -44,6 +44,10 @@ case "$mode" in
     /tmp/f7-build-venv/bin/python -m pip download \
       --disable-pip-version-check --no-cache-dir --no-deps --no-build-isolation \
       --no-binary=:all: --dest /wheelhouse/source "rasterio==1.5.2"
+    # Independently published Rasterio 1.5.2 Sdist SHA-256 from official
+    # PyPI release https://pypi.org/project/rasterio/1.5.2/ (2026-09-30).
+    # This verifies exact SOURCE bytes, NOT full downstream toolchain trust.
+    echo "e65a15b7bd22ce8f8ce8159856669dc9fafabf66cde6156e8f8e71d55abcd515  /wheelhouse/source/rasterio-1.5.2.tar.gz" | sha256sum -c -
     python3 scripts/f7_prepare_fixed_source.py \
       /wheelhouse/source/rasterio-1.5.2.tar.gz \
       > /wheelhouse/f7-fixed-source-first.json
