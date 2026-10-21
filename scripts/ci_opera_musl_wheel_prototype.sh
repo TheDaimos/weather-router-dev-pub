@@ -180,6 +180,12 @@ PY
         /wheelhouse/f7-official-apks-unapproved.json \
         /wheelhouse/apk-originals \
         /wheelhouse/f7-apk-license-docs-unapproved.json
+      python3 scripts/f7_consolidate_elf_matrix.py \
+        /wheelhouse/f7-original-elf-comparison-unapproved.json \
+        /wheelhouse/f7-apk-member-correlation-unapproved.json \
+        /wheelhouse/f7-apk-license-docs-unapproved.json \
+        /wheelhouse/f7-official-apks-unapproved.json \
+        /wheelhouse/f7-101-elf-original-origin-license-matrix-unapproved.md
     fi
     python3 scripts/f7_build_input_snapshot.py /lib/apk/db/installed "$candidate_sha" "${WR_F7_IMAGE_DIGEST:?pinned_image_digest_required}" > /wheelhouse/f7-build-inputs-unapproved.json
     # Every one of the 101 native ELF files must become a candidate BOM row,
