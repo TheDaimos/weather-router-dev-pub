@@ -1,0 +1,60 @@
+name: "F7 Alpine signed package origin probe (isolated, read-only)"
+on:
+  push:
+    branches:
+      - "feature/p7-010-global-concurrency-2026-10-16"
+    paths:
+      - ".github/workflows/f7-apk-fetch-official-origin-probe.yml"
+      - "scripts/f7_fetch_official_apks.py"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  signed-apk-archives:
+    name: "Pinned Alpine 3.24 original APK archive fetch+signature dry-run"
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - name: "Read-only CI source"
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: "Probe three exact official Alpine APK archive versions, no install"
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/f7-apk-origin-probe"
+          docker run --rm --pull=always --platform linux/amd64 \
+            --cpus=1 --memory=1024m --pids-limit=64 \
+            -e GITHUB_ACTIONS=true -e WR_OPERA_ISOLATED_CI=1 \
+            -v "$RUNNER_TEMP/f7-apk-origin-probe:/wheelhouse" \
+            "alpine@sha256:294b683cb724975bec92580e1e685676bd4b50bda910ddb8c51d4cabeaec77e6" \
+            sh -eu -c '
+              echo "F7 APK PROBE Alpine: $(cat /etc/alpine-release); apk: $(apk --version)"
+              for ref in "gdal=3.13.3-r0" "lerc=4.1.0-r0" "sfcgal=2.2.0-r0"; do
+                echo "F7 APK PROBE ref: $ref"
+                apk fetch --url "$ref" || echo "F7 APK PROBE url lookup rejected"
+                if apk fetch --no-cache --output /wheelhouse "$ref"; then
+                  echo "F7 APK PROBE fetch exact PASS"
+                else
+                  echo "F7 APK PROBE fetch exact FAILED; checking alternative syntax"
+                  apk fetch --output /wheelhouse "$ref" || true
+                fi
+              done
+              for file in /wheelhouse/*.apk; do
+                [ -f "$file" ] || continue
+                echo "F7 APK PROBE ORIGINAL: $(basename "$file")"
+                sha256sum "$file"
+                if apk verify "$file"; then
+                  echo "F7 APK PROBE SIGNATURE PASS USING CI IMAGE KEYS (not independently attested)"
+                else
+                  echo "F7 APK PROBE SIGNATURE FAILED"
+                fi
+              done
+              echo "F7 APK PROBE COMPLETE; never installed nor published"
+            '
+      - name: "Explicit no-install gate"
+        if: always()
+        run: |
+          echo "All operations were disposable Alpine apk fetch and signature checks."
+          echo "No apt/apk/pip install on Home Assistant; no wheel/APK artifacts uploaded."
