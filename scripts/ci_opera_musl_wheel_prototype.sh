@@ -108,6 +108,15 @@ r = json.loads(Path("/wheelhouse/f7-repaired-double-unapproved.json").read_text(
 assert r["distribution"] == "BLOCKED" and r["ha_installation"] == "BLOCKED"
 print("F7 REPAIRED REAL DOUBLE:", r["status"], "changed members=", r["different_member_count"])
 PY
+    /tmp/f7-build-venv/bin/python -m pip show auditwheel | grep '^Version:' > /wheelhouse/f7-auditwheel-version.txt
+    patchelf --version > /wheelhouse/f7-patchelf-version.txt
+    python3 scripts/f7_auditwheel_repair_replay.py \
+      /wheelhouse/raw/rasterio-1.5.2-cp314-cp314-linux_x86_64.whl \
+      /wheelhouse/repaired/rasterio-1.5.2-cp314-cp314-musllinux_1_2_x86_64.whl \
+      /wheelhouse/repaired-repeat/rasterio-1.5.2-cp314-cp314-musllinux_1_2_x86_64.whl \
+      "$(/tmp/f7-build-venv/bin/python -m pip show auditwheel | sed -n 's/^Version: //p')" \
+      "$(patchelf --version)" \
+      /wheelhouse/f7-auditwheel-replay-unapproved.json
     /tmp/f7-build-venv/bin/auditwheel show /wheelhouse/repaired/*.whl
     # Build and inventory in the SAME disposable Alpine job; preserve only
     # an unapproved JSON evidence artifact. Do not publish or upload the wheel.
