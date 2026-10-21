@@ -144,6 +144,29 @@ print("F7 SOURCE CANDIDATES:", r["apk_filename_candidate_count"],
       "unresolved native ELF objects;", "license clearance BLOCKED")
 PY
     python3 scripts/f7_build_input_snapshot.py /lib/apk/db/installed "$candidate_sha" "${WR_F7_IMAGE_DIGEST:?pinned_image_digest_required}" > /wheelhouse/f7-build-inputs-unapproved.json
+    # Every one of the 101 native ELF files must become a candidate BOM row,
+    # including the un-attributed components. No license/security approval.
+    python3 scripts/f7_generate_sbom.py \
+      /wheelhouse/f7-native-inventory.json \
+      /wheelhouse/f7-native-apk-license-candidates.json \
+      /wheelhouse/f7-cyclonedx-unapproved.json \
+      /wheelhouse/f7-sbom-quality-unapproved.json
+    python3 scripts/f7_native_size_scope.py \
+      /wheelhouse/f7-native-inventory.json \
+      /wheelhouse/f7-native-size-scope-unapproved.json
+    python3 - <<'PY'
+import json
+from pathlib import Path
+bom=json.loads(Path("/wheelhouse/f7-cyclonedx-unapproved.json").read_text())
+quality=json.loads(Path("/wheelhouse/f7-sbom-quality-unapproved.json").read_text())
+assert len(bom["components"])==101
+assert quality["elf_included"]==101
+assert quality["elf_unverified_origin"]==101
+assert quality["ha_installation"]=="BLOCKED"
+print("F7 CANDIDATE CYCLONEDX:",len(bom["components"]),
+      "ELF-file components; license/security/distribution not approved")
+PY
+
     echo "F7 BUILD-PROTOTYPE INVENTORIED IN ISOLATED CI; NOT DISTRIBUTABLE"
     ;;
   verify)
