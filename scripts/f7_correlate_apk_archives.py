@@ -91,9 +91,10 @@ def correlate(binary, apks, root):
             raw=path.read_bytes()
             if _sha(raw)!=pkg["archive_sha256"]:
                 raise ValueError("archive_bytes_mismatch")
-            if key not in sha_cache:
-                sha_cache[key]=_candidates(path, names)
-            found=[e for e in sha_cache[key] if e["sha256"]==original_sha]
+            archive_request=(key,tuple(sorted(names)))
+            if archive_request not in sha_cache:
+                sha_cache[archive_request]=_candidates(path, names)
+            found=[e for e in sha_cache[archive_request] if e["sha256"]==original_sha]
             if found:
                 verified.append({"apk_package":key[0],"apk_version":key[1],
                                  "apk_sha256":pkg["archive_sha256"],
