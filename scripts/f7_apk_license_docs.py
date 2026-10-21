@@ -12,6 +12,7 @@ from pathlib import Path, PurePosixPath
 import re
 import sys
 import tarfile
+from f7_apk_multi_gzip import open_apk_tar_segments, UnsafeApkArchive
 
 MAX_ARCHIVE = 100 * 1024 * 1024
 MAX_MEMBER = 1024 * 1024
@@ -26,9 +27,12 @@ def read_doc(archive):
     docs=[]
     metadata={}
     total=0
-    with tarfile.open(archive,"r|gz") as opened:
-        for i,m in enumerate(opened):
-            if i>=MAX_MEMBERS:
+    count=0
+    for segment in open_apk_tar_segments(archive):
+      with tarfile.open(fileobj=segment, mode="r:") as opened:
+        for m in opened:
+            count+=1
+            if count>MAX_MEMBERS:
                 raise ValueError("too_many_apk_members")
             name=m.name.removeprefix("./")
             if not m.isfile() or PurePosixPath(name).is_absolute() or ".." in PurePosixPath(name).parts:
@@ -107,7 +111,7 @@ def main(args):
             raise ValueError("CI_only")
         report=audit(json.loads(Path(args[1]).read_text()),args[2])
         Path(args[3]).write_text(json.dumps(report,indent=2,sort_keys=True)+"\n")
-    except (ValueError,KeyError,TypeError,OSError,tarfile.TarError):
+    except (ValueError,KeyError,TypeError,OSError,tarfile.TarError,UnsafeApkArchive):
         print("F7 original APK license evidence rejected",file=sys.stderr)
         return 1
     print("F7 ORIGINAL APK LICENSE DOCUMENTS:",report["document_hashes_count"],
