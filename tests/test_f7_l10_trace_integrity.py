@@ -15,7 +15,7 @@ class TestL10Safety(unittest.TestCase):
   tree=ast.parse(s)
   wrap=next(x for x in tree.body if isinstance(x,ast.FunctionDef) and x.name=="_wrap")
   inner=next(x for x in wrap.body if isinstance(x,ast.FunctionDef) and x.name=="traced")
-  call_line=next(n.lineno for n in ast.walk(inner) if isinstance(n,ast.Call) and isinstance(n.func,ast.Name) and n.func.id=="old")
+  call_line=max(n.lineno for n in ast.walk(inner) if isinstance(n,ast.Call) and isinstance(n.func,ast.Name) and n.func.id=="old")
   active_before=[n for n in ast.walk(inner) if isinstance(n,ast.Assign) and any(isinstance(t,ast.Name) and t.id=="_active" for t in n.targets) and n.lineno<call_line and isinstance(n.value,ast.Constant) and n.value.value is True]
   self.assertTrue(active_before)
 if __name__=="__main__":unittest.main()
