@@ -143,6 +143,40 @@ print("F7 SOURCE CANDIDATES:", r["apk_filename_candidate_count"],
       "APK name-only matches,", r["unresolved_component_count"],
       "unresolved native ELF objects;", "license clearance BLOCKED")
 PY
+    # Direct, measured origin chain: actual /usr/lib ELF bytes vs the Wheel.
+    # Fetch exact Alpine APK archives only in the FIRST isolated builder.
+    # No APK is installed, uploaded, or copied to the user/HA.
+    if [ "${WR_F7_APK_ORIGIN_FETCH:-0}" = "1" ]; then
+      if ! python3 scripts/f7_fetch_official_apks.py \
+          /wheelhouse/f7-native-apk-license-candidates.json \
+          /wheelhouse/f7-official-apks-unapproved.json; then
+        # External network availability must never become a false approval.
+        python3 - <<'PY'
+import json
+from pathlib import Path
+a=json.loads(Path("/wheelhouse/f7-native-apk-license-candidates.json").read_text())
+Path("/wheelhouse/f7-official-apks-unapproved.json").write_text(json.dumps({
+    "schema":"weather_router.f7.official_apk_archive_candidates.v1",
+    "status":"OFFICIAL_FETCH_UNAVAILABLE_NOT_VERIFIED",
+    "wheel_sha256":a["wheel_sha256"],"packages":[],
+    "apk_fetched_count":0,"apk_signature_verified_using_ci_keys_count":0,
+    "binary_distribution":"BLOCKED","ha_installation":"BLOCKED",
+    "opera_activation":"BLOCKED"},indent=2)+"\n")
+PY
+      fi
+      python3 scripts/f7_compare_installed_elf.py \
+        /wheelhouse/f7-native-inventory.json \
+        /wheelhouse/f7-native-apk-license-candidates.json \
+        /lib/apk/db/installed \
+        /wheelhouse/repaired/rasterio-1.5.2-cp314-cp314-musllinux_1_2_x86_64.whl \
+        /wheelhouse/f7-original-elf-comparison-unapproved.json \
+        /wheelhouse/apk-originals
+      python3 scripts/f7_correlate_apk_archives.py \
+        /wheelhouse/f7-original-elf-comparison-unapproved.json \
+        /wheelhouse/f7-official-apks-unapproved.json \
+        /wheelhouse/apk-originals \
+        /wheelhouse/f7-apk-member-correlation-unapproved.json
+    fi
     python3 scripts/f7_build_input_snapshot.py /lib/apk/db/installed "$candidate_sha" "${WR_F7_IMAGE_DIGEST:?pinned_image_digest_required}" > /wheelhouse/f7-build-inputs-unapproved.json
     # Every one of the 101 native ELF files must become a candidate BOM row,
     # including the un-attributed components. No license/security approval.
