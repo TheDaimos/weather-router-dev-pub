@@ -225,6 +225,11 @@ print("F7 VERIFY: actual native import", rasterio.__version__,
     # Run the existing actual WR tile renderer in an isolated native context.
     /tmp/f7-runtime-venv/bin/python scripts/probe_opera_raster_runtime.py
     /tmp/f7-runtime-venv/bin/python scripts/probe_opera_concurrent_raster.py
+    if [ -d /runtime-evidence ]; then
+      /tmp/f7-runtime-venv/bin/python \
+        scripts/probe_f7_native_driver_scope.py \
+        /runtime-evidence/f7-native-driver-scope-unapproved.json
+    fi
     echo "F7 ISOLATED CP314 MUSL NATIVE-PROBE PASS; HA INSTALLATION BLOCKED"
     ;;
   *)
