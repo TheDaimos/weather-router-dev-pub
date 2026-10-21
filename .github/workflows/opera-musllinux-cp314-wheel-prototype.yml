@@ -26,6 +26,7 @@ on:
       - "scripts/f7_auditwheel_repair_replay.py"
       - "scripts/f7_trace_real_patchelf.py"
       - "scripts/f7_verify_patchelf_trace.py"
+      - "scripts/f7_probe_official_edge_openssl.py"
       - "tests/test_f7_auditwheel_repair_replay.py"
       - "tests/test_f7_observe_elf_dynamic_transform.py"
       - "scripts/f7_apk_multi_gzip.py"
@@ -115,6 +116,7 @@ jobs:
           cp "$ROOT/first/f7-101-elf-license-matrix-unapproved.md" "$ROOT/f7-101-elf-license-matrix-unapproved.md"
           cp "$ROOT/first/f7-secdb-candidates-unapproved.json" "$ROOT/f7-secdb-candidates-unapproved.json"
           cp "$ROOT/first/f7-official-apks-unapproved.json" "$ROOT/f7-official-apks-unapproved.json"
+          cp "$ROOT/first/f7-openssl-edge-cross-branch-unapproved.json" "$ROOT/f7-openssl-edge-cross-branch-unapproved.json"
           cp "$ROOT/first/f7-original-elf-comparison-unapproved.json" "$ROOT/f7-original-elf-comparison-unapproved.json"
           cp "$ROOT/first/f7-elf-dynamic-observation-unapproved.json" "$ROOT/f7-elf-dynamic-observation-unapproved.json"
           cp "$ROOT/first/f7-apk-member-correlation-unapproved.json" "$ROOT/f7-apk-member-correlation-unapproved.json"
@@ -175,6 +177,7 @@ jobs:
             ${{ runner.temp }}/f7-wheelhouse/f7-secdb-candidates-unapproved.json
             ${{ runner.temp }}/f7-wheelhouse/f7-provenance-unapproved.json
             ${{ runner.temp }}/f7-wheelhouse/f7-official-apks-unapproved.json
+            ${{ runner.temp }}/f7-wheelhouse/f7-openssl-edge-cross-branch-unapproved.json
             ${{ runner.temp }}/f7-wheelhouse/f7-original-elf-comparison-unapproved.json
             ${{ runner.temp }}/f7-wheelhouse/f7-elf-dynamic-observation-unapproved.json
             ${{ runner.temp }}/f7-wheelhouse/f7-apk-member-correlation-unapproved.json
