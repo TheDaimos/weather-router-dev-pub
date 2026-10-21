@@ -26,7 +26,7 @@ class TestNamespace(unittest.TestCase):
         copy=(ROOT/"scripts/f7_auditwheel_python_trace.py").read_text()
         zipp=(ROOT/"scripts/f7_l14_zip_api_observer.py").read_text()
         self.assertIn("result = old(*args, **kwargs)",copy)
-        self.assertIn("result=original(self,*args,**kwargs)",zipp)
+        self.assertIn("result = original(self, *args, **kwargs)", zipp)
         self.assertIn("return result",copy)
         self.assertIn("return result",zipp)
 if __name__=="__main__":unittest.main()
