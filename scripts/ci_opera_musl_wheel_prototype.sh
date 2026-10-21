@@ -97,8 +97,7 @@ PY
     export PATH="/tmp/f7-patchelf-trace-bin:$PATH"
     # L09: observe actual Python copy/rename operations in both existing repairs.
     mkdir -p /tmp/f7-auditwheel-python-hook
-    cp scripts/f7_auditwheel_python_trace.py /tmp/f7-auditwheel-python-hook/sitecustomize.py
-    cat scripts/f7_l14_zip_api_observer.py >> /tmp/f7-auditwheel-python-hook/sitecustomize.py
+    cp scripts/f7_l15_sitecustomize.py /tmp/f7-auditwheel-python-hook/sitecustomize.py
     : > /wheelhouse/f7-wheel-zip-operations-unapproved.jsonl
     : > /wheelhouse/f7-auditwheel-python-operations-unapproved.jsonl
     # Repair must actually bundle native GDAL/PROJ dependencies; relabeling
