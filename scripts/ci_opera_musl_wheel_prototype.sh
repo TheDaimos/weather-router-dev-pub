@@ -88,6 +88,13 @@ PY
       exit 94
     fi
     /tmp/f7-build-venv/bin/auditwheel show "$1"
+    # F7-L08: instrument the actual auditwheel-invoked patchelf commands.
+    # This shim lives ONLY in the disposable container; no installed code.
+    mkdir -p /tmp/f7-patchelf-trace-bin
+    printf '#!/bin/sh\\nexec python3 /wr/scripts/f7_trace_real_patchelf.py "$@"\\n' > /tmp/f7-patchelf-trace-bin/patchelf
+    chmod 700 /tmp/f7-patchelf-trace-bin/patchelf
+    : > /wheelhouse/f7-patchelf-operations-unapproved.jsonl
+    export PATH="/tmp/f7-patchelf-trace-bin:$PATH"
     # Repair must actually bundle native GDAL/PROJ dependencies; relabeling
     # alone is insufficient. A clean runtime will check the repaired result.
     /tmp/f7-build-venv/bin/auditwheel repair \
@@ -117,6 +124,10 @@ PY
       "$(/tmp/f7-build-venv/bin/python -m pip show auditwheel | sed -n 's/^Version: //p')" \
       "$(patchelf --version)" \
       /wheelhouse/f7-auditwheel-replay-unapproved.json
+    # Capture actual subprocess commands, do not assert complete Python copy trace.
+    python3 scripts/f7_verify_patchelf_trace.py \\
+      /wheelhouse/f7-patchelf-operations-unapproved.jsonl \\
+      /wheelhouse/f7-patchelf-trace-summary-unapproved.json
     /tmp/f7-build-venv/bin/auditwheel show /wheelhouse/repaired/*.whl
     # Build and inventory in the SAME disposable Alpine job; preserve only
     # an unapproved JSON evidence artifact. Do not publish or upload the wheel.
