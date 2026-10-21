@@ -132,6 +132,21 @@ class NativeShelfTests(unittest.TestCase):
         self.assertIsNone(result["staged_candidate"])
         self.assertFalse(result["active"])
 
+    def test_resume_after_orphan_and_reaudit_without_promotion(self):
+        a=self.candidate("one")
+        self.shelf.stage(*a,wheel_gate.inspect_candidate)
+        orphan=self.root/a[1]["sha256"]/".wheel-orphan"
+        orphan.write_bytes(b"unfinished copy")
+        result=self.shelf.recover_interrupted()
+        self.assertEqual(result["orphan_temp_files_removed"],1)
+        self.assertFalse(orphan.exists())
+        self.assertEqual(self.shelf.audit(wheel_gate.inspect_candidate)["status"],
+                         "UNAPPROVED_CANDIDATE_BYTES_INTACT")
+        self.assertFalse(self.shelf.audit(wheel_gate.inspect_candidate)["trusted"])
+        (self.root/a[1]["sha256"]/m.WHEEL).write_bytes(b"corrupt")
+        self.assertEqual(self.shelf.audit(wheel_gate.inspect_candidate)["status"],
+                         "CANDIDATE_HASH_OR_ZIP_REJECTED")
+
     def test_parallel_transition_rejected_without_waiting(self):
         import fcntl
         lock=self.root/".state.lock"
