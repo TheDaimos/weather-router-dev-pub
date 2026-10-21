@@ -15,6 +15,7 @@ import shutil
 import subprocess
 import sys
 import time
+from urllib.parse import urlsplit
 
 PKG = re.compile(r"[A-Za-z0-9][A-Za-z0-9+_.-]{0,100}\Z")
 VERSION = re.compile(r"[A-Za-z0-9][A-Za-z0-9+_.:~-]{0,100}\Z")
@@ -90,8 +91,22 @@ def fetch(mapping, target, *, runner=subprocess.run):
             url=runner(["apk","fetch","--url",reference],
                        capture_output=True,text=True,timeout=15,check=False)
             if url.returncode==0:
-                valid=[x.strip() for x in url.stdout.splitlines() if x.strip().startswith("https://")]
-                if len(valid)==1 and valid[0].endswith("/"+target_file.name) and "alpinelinux.org/" in valid[0]:
+                # apk-tools 3 writes a URL to stderr on some builds. Reject
+                # arbitrary hosts and versions, retain only official URL.
+                output=url.stdout+"\n"+url.stderr
+                valid=[]
+                for line in output.splitlines():
+                    address=line.strip()
+                    if not address.startswith("https://"):
+                        continue
+                    parsed=urlsplit(address)
+                    if (parsed.hostname in ("dl-cdn.alpinelinux.org","dl-2.alpinelinux.org")
+                            and parsed.path.endswith("/"+target_file.name)
+                            and parsed.path.startswith("/alpine/v3.24/")
+                            and parsed.path.split("/")[-2]=="x86_64"
+                            and not parsed.query and not parsed.fragment):
+                        valid.append(address)
+                if len(set(valid))==1:
                     data["repo_url"]=valid[0]
             result=runner(["apk","fetch","--output",str(target),reference],
                           capture_output=True,text=True,timeout=35,check=False)
