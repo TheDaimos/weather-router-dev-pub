@@ -154,6 +154,29 @@ PY
     python3 scripts/f7_native_size_scope.py \
       /wheelhouse/f7-native-inventory.json \
       /wheelhouse/f7-native-size-scope-unapproved.json
+    python3 scripts/f7_elf_license_matrix.py \
+      /wheelhouse/f7-native-inventory.json \
+      /wheelhouse/f7-native-apk-license-candidates.json \
+      /wheelhouse/f7-101-elf-license-matrix-unapproved.md
+    # Security feeds are external advisory candidates only. If the public
+    # Alpine feed is unavailable, preserve explicit NOT_SCANNED evidence.
+    mkdir -p /wheelhouse/f7-secdb
+    if wget -q -T 12 -O /wheelhouse/f7-secdb/main.json \
+         https://secdb.alpinelinux.org/v3.24/main.json \
+       && wget -q -T 12 -O /wheelhouse/f7-secdb/community.json \
+         https://secdb.alpinelinux.org/v3.24/community.json; then
+      if ! python3 scripts/f7_alpine_secdb_candidates.py \
+           /wheelhouse/f7-build-inputs-unapproved.json \
+           /wheelhouse/f7-secdb/main.json /wheelhouse/f7-secdb/community.json \
+           /wheelhouse/f7-secdb-candidates-unapproved.json; then
+        printf '%s\n' '{"schema":"weather_router.f7.secdb_feed_status.v1","status":"FEED_OR_VERSION_COMPARISON_UNAVAILABLE","vulnerability_review":"REQUIRED","ha_installation":"BLOCKED"}' \
+          > /wheelhouse/f7-secdb-candidates-unapproved.json
+      fi
+    else
+      printf '%s\n' '{"schema":"weather_router.f7.secdb_feed_status.v1","status":"FEED_UNAVAILABLE_NOT_SCANNED","vulnerability_review":"REQUIRED","ha_installation":"BLOCKED"}' \
+        > /wheelhouse/f7-secdb-candidates-unapproved.json
+    fi
+
     python3 - <<'PY'
 import json
 from pathlib import Path
