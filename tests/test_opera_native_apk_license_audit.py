@@ -91,6 +91,32 @@ class ApkSourceAttribution(unittest.TestCase):
         self.assertEqual(len(result["elf_candidates"][0]["apk_source_candidates"]), 2)
         self.assertEqual(result["status"], "UNAPPROVED_NOT_DISTRIBUTABLE")
 
+
+    def test_auditwheel_dotted_soname_suffix_candidates(self):
+        # These formerly unresolved real F7 SONAME spellings contain the
+        # inserted auditwheel hash BEFORE .3.30.so or .2.so.
+        self.assertEqual(
+            mod.MANGLED.sub("", "libopenblasp-r0-35434127.3.30.so"),
+            "libopenblasp-r0.3.30.so")
+        self.assertEqual(
+            mod.MANGLED.sub("", "libxerces-c-3-5caca54e.2.so"),
+            "libxerces-c-3.2.so")
+        # A filename hit remains UNAPPROVED name-only evidence.
+        self.db.write_text(
+            "P:openblas\nV:0.3.30-r1\nL:BSD-3-Clause\n"
+            "F:usr/lib\nR:libopenblasp-r0.3.30.so\n\n"
+            "P:xerces-c\nV:3.2-r1\nL:Apache-2.0\n"
+            "F:usr/lib\nR:libxerces-c-3.2.so\n", encoding="utf-8")
+        source = json.loads(self.inventory.read_text(encoding="utf-8"))
+        source["files"][0]["path"] = "rasterio.libs/libopenblasp-r0-35434127.3.30.so"
+        source["files"][2]["path"] = "rasterio.libs/libxerces-c-3-5caca54e.2.so"
+        self.inventory.write_text(json.dumps(source), encoding="utf-8")
+        result = mod.audit(self.inventory, self.db)
+        self.assertEqual(result["unresolved_component_count"], 0)
+        self.assertEqual(result["apk_filename_candidate_count"], 2)
+        self.assertFalse(result["mapping_is_binary_hash_verified"])
+        self.assertEqual(result["status"], "UNAPPROVED_NOT_DISTRIBUTABLE")
+
     def test_symlink_inputs_rejected(self):
         candidate = self.root / "link.json"
         candidate.symlink_to(self.inventory)
