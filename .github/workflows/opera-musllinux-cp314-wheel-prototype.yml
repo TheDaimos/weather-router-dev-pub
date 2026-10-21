@@ -20,6 +20,7 @@ on:
       - "scripts/f7_fetch_official_apks.py"
       - "scripts/f7_compare_installed_elf.py"
       - "scripts/f7_correlate_apk_archives.py"
+      - "scripts/f7_apk_license_docs.py"
       - "scripts/f7_generate_sbom.py"
       - "scripts/f7_elf_license_matrix.py"
       - "scripts/f7_native_size_scope.py"
@@ -105,6 +106,7 @@ jobs:
           cp "$ROOT/first/f7-official-apks-unapproved.json" "$ROOT/f7-official-apks-unapproved.json"
           cp "$ROOT/first/f7-original-elf-comparison-unapproved.json" "$ROOT/f7-original-elf-comparison-unapproved.json"
           cp "$ROOT/first/f7-apk-member-correlation-unapproved.json" "$ROOT/f7-apk-member-correlation-unapproved.json"
+          cp "$ROOT/first/f7-apk-license-docs-unapproved.json" "$ROOT/f7-apk-license-docs-unapproved.json"
           # Cross-bind actual 101 native ELF hashes, SPDX-candidate evidence,
           # pinned OCI input, secdb status and the one Wheel SHA. Unsigned;
           # this is NEVER a production provenance attestation or an approval.
@@ -159,6 +161,7 @@ jobs:
             ${{ runner.temp }}/f7-wheelhouse/f7-official-apks-unapproved.json
             ${{ runner.temp }}/f7-wheelhouse/f7-original-elf-comparison-unapproved.json
             ${{ runner.temp }}/f7-wheelhouse/f7-apk-member-correlation-unapproved.json
+            ${{ runner.temp }}/f7-wheelhouse/f7-apk-license-docs-unapproved.json
             ${{ runner.temp }}/f7-wheelhouse/runtime-evidence/f7-native-driver-scope-unapproved.json
           if-no-files-found: error
           retention-days: 7
