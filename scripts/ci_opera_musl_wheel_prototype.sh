@@ -140,6 +140,11 @@ PY
       /wheelhouse/f7-patchelf-operations-unapproved.jsonl \
       /wheelhouse/f7-auditwheel-replay-unapproved.json \
       /wheelhouse/f7-l12-observed-elf-chains-unapproved.json
+    python3 scripts/f7_l13_verify_real_repair_passes.py \
+      /wheelhouse/f7-auditwheel-python-operations-unapproved.jsonl \
+      /wheelhouse/f7-patchelf-operations-unapproved.jsonl \
+      /wheelhouse/f7-auditwheel-replay-unapproved.json \
+      /wheelhouse/f7-l13-verified-pass-elf-edges-unapproved.json
     /tmp/f7-build-venv/bin/auditwheel show /wheelhouse/repaired/*.whl
     # Build and inventory in the SAME disposable Alpine job; preserve only
     # an unapproved JSON evidence artifact. Do not publish or upload the wheel.
