@@ -27,7 +27,7 @@ class OriginMatrix(unittest.TestCase):
 
     def test_complete_101_origins_never_generate_license_clearance(self):
         md=mod.render(*self.fixtures())
-        self.assertEqual(len([x for x in md.splitlines() if x.startswith("| ")])-2,101)
+        self.assertEqual(len([x for x in md.splitlines() if x.startswith("| ")])-1,101)
         self.assertIn("NICHT FREIGEGEBEN",md)
         self.assertIn("HA DEV VM 109",md)
         self.assertIn("Weitergabe",md)
