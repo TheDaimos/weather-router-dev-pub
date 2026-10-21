@@ -41,8 +41,12 @@ def _wrap(module, name):
             before_src, before_dst = _hash(src), _hash(dst)
         finally:
             _active = False
-        result = old(*args, **kwargs)
         _active = True
+        try:
+            result = old(*args, **kwargs)
+        except BaseException:
+            _active = False
+            raise
         try:
             after_src, after_dst = _hash(src), _hash(dst)
             entry = {
