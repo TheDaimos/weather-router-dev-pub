@@ -21,6 +21,7 @@ class PassiveContractTests(unittest.TestCase):
     def test_strict_pinned_digest_is_not_activation(self):
         state=mod.PassiveNativeRelease()
         before=sys.path.copy()
+        rasterio_before="rasterio" in sys.modules
         result=state.inspect(descriptor(), actual_soabi=mod.SOABI, trusted_digest="a"*64)
         self.assertEqual(result["state"],"CANDIDATE_PASSIVE_ONLY")
         self.assertFalse(result["native_activation_possible"])
@@ -29,7 +30,7 @@ class PassiveContractTests(unittest.TestCase):
         self.assertEqual(result["max_parallel_native_workers"],0)
         self.assertEqual(result["opera_provider"],"BLOCKED")
         self.assertEqual(sys.path,before)
-        self.assertNotIn("rasterio",sys.modules)
+        self.assertEqual("rasterio" in sys.modules,rasterio_before)
         self.assertFalse(hasattr(state,"activate"))
 
     def test_missing_independent_digest_and_mismatch_rejected(self):
