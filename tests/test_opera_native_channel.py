@@ -68,7 +68,7 @@ class NativeShelfTests(unittest.TestCase):
         self.assertEqual(later["previous_candidate"],a[1]["sha256"])
         self.assertFalse(later["active"])
         again=m.PassiveNativeShelf(self.root)
-        rolled=again.rollback()
+        rolled=again.rollback(wheel_gate.inspect_candidate)
         self.assertEqual(rolled["staged_candidate"],a[1]["sha256"])
         self.assertEqual(rolled["ha_installation"],"BLOCKED")
         self.assertEqual(rolled["runtime_native_import"],"FORBIDDEN")
@@ -98,6 +98,8 @@ class NativeShelfTests(unittest.TestCase):
         item=self.candidate("one")
         self.shelf.stage(*item,wheel_gate.inspect_candidate)
         self.assertIsNone(self.shelf.revoke()["staged_candidate"])
+        with self.assertRaisesRegex(m.ChannelBlocked,"revocation_not_reversible"):
+            self.shelf.rollback(wheel_gate.inspect_candidate)
         state=self.root/"state.json"
         state.write_text('{"schema":"weather_router.f7.offline_shelf.v1","active":"unsafe"}')
         with self.assertRaises(m.ChannelBlocked):
@@ -119,6 +121,16 @@ class NativeShelfTests(unittest.TestCase):
                 m.PassiveNativeShelf(alias)
         finally:
             alias.unlink(missing_ok=True)
+
+    def test_modified_previous_candidate_is_not_restored(self):
+        a=self.candidate("one")
+        b=self.candidate("two")
+        self.shelf.stage(*a,wheel_gate.inspect_candidate)
+        self.shelf.stage(*b,wheel_gate.inspect_candidate)
+        (self.root/a[1]["sha256"]/m.WHEEL).write_bytes(b"broken old wheel")
+        result=self.shelf.rollback(wheel_gate.inspect_candidate)
+        self.assertIsNone(result["staged_candidate"])
+        self.assertFalse(result["active"])
 
     def test_parallel_transition_rejected_without_waiting(self):
         import fcntl
