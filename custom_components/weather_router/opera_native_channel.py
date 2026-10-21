@@ -5,12 +5,14 @@ Never extracts, imports, installs, activates, or writes to HA paths.
 No input, even a self-signed approval, can mark a package installable.
 """
 from __future__ import annotations
+import fcntl
 import hashlib
 import json
 import os
 from pathlib import Path
 import re
 import tempfile
+from functools import wraps
 
 SHA = re.compile(r"[0-9a-f]{64}\Z")
 ROOT = re.compile(r"f7-ci-[A-Za-z0-9_-]{3,60}\Z")
@@ -37,6 +39,24 @@ def _isolated_root(path):
     if root.is_symlink() or root.resolve() != root:
         raise ChannelBlocked("storage_root_moved")
     return root
+
+def _serialized_mutation(func):
+    """No competing state changes; never wait on a locked CI candidate store."""
+    @wraps(func)
+    def guarded(self, *args, **kwargs):
+        lock=self.root/".state.lock"
+        if lock.is_symlink():
+            raise ChannelBlocked("unsafe_lock")
+        fd=os.open(lock,os.O_CREAT|os.O_RDWR|getattr(os,"O_NOFOLLOW",0),0o600)
+        try:
+            try:
+                fcntl.flock(fd,fcntl.LOCK_EX|fcntl.LOCK_NB)
+            except BlockingIOError as exc:
+                raise ChannelBlocked("concurrent_transition") from exc
+            return func(self,*args,**kwargs)
+        finally:
+            os.close(fd)
+    return guarded
 
 class PassiveNativeShelf:
     def __init__(self, root):
@@ -77,6 +97,7 @@ class PassiveNativeShelf:
             if os.path.lexists(name):
                 os.unlink(name)
 
+    @_serialized_mutation
     def stage(self, source, descriptor, provenance, inspector, *, fail_before_commit=False):
         """CI synthetic or unapproved candidate: never production admission.
 
@@ -147,11 +168,13 @@ class PassiveNativeShelf:
                 os.unlink(tmp)
         return self.status()
 
+    @_serialized_mutation
     def revoke(self):
         prior=self.state()
         self._write({**prior,"staged":None,"revoked":True,"active":None})
         return self.status()
 
+    @_serialized_mutation
     def rollback(self):
         prior=self.state()
         old=prior["previous"]
