@@ -21,6 +21,7 @@ on:
       - "scripts/f7_compare_installed_elf.py"
       - "scripts/f7_correlate_apk_archives.py"
       - "scripts/f7_apk_license_docs.py"
+      - "scripts/f7_apk_multi_gzip.py"
       - "scripts/f7_consolidate_elf_matrix.py"
       - "scripts/f7_generate_sbom.py"
       - "scripts/f7_elf_license_matrix.py"
