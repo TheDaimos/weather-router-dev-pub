@@ -7,6 +7,7 @@ against known installed ELF while keeping native distribution blocked.
 from __future__ import annotations
 import hashlib, io, json, os, pathlib, ssl, subprocess, sys, tarfile
 import urllib.request
+import urllib.error
 from urllib.parse import urlparse
 from f7_apk_multi_gzip import open_apk_tar_segments, UnsafeApkArchive
 
@@ -30,7 +31,7 @@ def compare(original_report):
               "url":url,"original_installed_elf_sha256":expected,
               "apk_sha256":None,"package_signature_verified_in_ci":False,
               "extracted_elf_sha256":None,"byte_identical_to_installed_original":False,
-              "status":"NOT_AVAILABLE"}
+              "status":"NOT_AVAILABLE","http_status_code":None}
         try:
             req=urllib.request.Request(url,headers={"User-Agent":"WeatherRouter-F7-ReadOnly-CI/1"})
             with urllib.request.urlopen(req,timeout=14,context=ssl.create_default_context()) as response:
@@ -65,6 +66,9 @@ def compare(original_report):
                     else:item["status"]="ELF_MEMBER_MISSING_OR_AMBIGUOUS"
                 except (UnsafeApkArchive,tarfile.TarError,OSError):
                     item["status"]="V3_OR_UNSUPPORTED_APK_FORMAT_NO_ELF_READ"
+        except urllib.error.HTTPError as exc:
+            item["http_status_code"]=exc.code
+            item["status"]="HTTP_"+str(exc.code)+"_NOT_AUTHENTICATED"
         except (OSError,ValueError,TimeoutError,urllib.error.URLError,subprocess.TimeoutExpired) as exc:
             item["status"]="UNAVAILABLE_OR_UNTRUSTED_"+type(exc).__name__
         results.append(item)
