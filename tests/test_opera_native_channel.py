@@ -120,6 +120,15 @@ class NativeShelfTests(unittest.TestCase):
         finally:
             alias.unlink(missing_ok=True)
 
+    def test_parallel_transition_rejected_without_waiting(self):
+        import fcntl
+        lock=self.root/".state.lock"
+        with lock.open("a+b") as handle:
+            fcntl.flock(handle.fileno(),fcntl.LOCK_EX|fcntl.LOCK_NB)
+            with self.assertRaisesRegex(m.ChannelBlocked,"concurrent_transition"):
+                self.shelf.revoke()
+        self.assertFalse(self.shelf.status()["active"])
+
     def test_zip_path_traversal_and_missing_gdal_rejected(self):
         p,d,pr=self.candidate("one")
         with ZipFile(p,"a") as zip:
