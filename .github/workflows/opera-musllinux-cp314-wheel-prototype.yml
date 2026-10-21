@@ -24,6 +24,7 @@ on:
       - "scripts/f7_original_binary_release_gate.py"
       - "scripts/f7_observe_elf_dynamic_transform.py"
       - "scripts/f7_auditwheel_repair_replay.py"
+      - "scripts/f7_l12_correlate_actual_elf_operations.py"
       - "scripts/f7_auditwheel_python_trace.py"
       - "scripts/f7_verify_auditwheel_python_trace.py"
       - "scripts/f7_trace_real_patchelf.py"
@@ -111,6 +112,7 @@ jobs:
           cp "$ROOT/first/f7-raw-elf-drift-unapproved.json" "$ROOT/f7-raw-elf-drift-unapproved.json"
           cp "$ROOT/first/f7-repaired-double-unapproved.json" "$ROOT/f7-repaired-double-unapproved.json"
           cp "$ROOT/first/f7-auditwheel-replay-unapproved.json" "$ROOT/f7-auditwheel-replay-unapproved.json"
+          cp "$ROOT/first/f7-l12-observed-elf-chains-unapproved.json" "$ROOT/f7-l12-observed-elf-chains-unapproved.json"
           cp "$ROOT/first/f7-patchelf-trace-summary-unapproved.json" "$ROOT/f7-patchelf-trace-summary-unapproved.json"
           cp "$ROOT/first/f7-patchelf-operations-unapproved.jsonl" "$ROOT/f7-patchelf-operations-unapproved.jsonl"
           cp "$ROOT/first/f7-auditwheel-python-operations-unapproved.jsonl" "$ROOT/f7-auditwheel-python-operations-unapproved.jsonl"
@@ -171,6 +173,7 @@ jobs:
             ${{ runner.temp }}/f7-wheelhouse/f7-fixed-source-unapproved.json
             ${{ runner.temp }}/f7-wheelhouse/f7-repaired-double-unapproved.json
             ${{ runner.temp }}/f7-wheelhouse/f7-auditwheel-replay-unapproved.json
+            ${{ runner.temp }}/f7-wheelhouse/f7-l12-observed-elf-chains-unapproved.json
             ${{ runner.temp }}/f7-wheelhouse/f7-patchelf-trace-summary-unapproved.json
             ${{ runner.temp }}/f7-wheelhouse/f7-patchelf-operations-unapproved.jsonl
             ${{ runner.temp }}/f7-wheelhouse/f7-auditwheel-python-operations-unapproved.jsonl
