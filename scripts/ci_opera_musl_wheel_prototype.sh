@@ -91,7 +91,7 @@ PY
     # F7-L08: instrument the actual auditwheel-invoked patchelf commands.
     # This shim lives ONLY in the disposable container; no installed code.
     mkdir -p /tmp/f7-patchelf-trace-bin
-    printf '#!/bin/sh\\nexec python3 /wr/scripts/f7_trace_real_patchelf.py "$@"\\n' > /tmp/f7-patchelf-trace-bin/patchelf
+    printf '#!/bin/sh\nexec python3 /wr/scripts/f7_trace_real_patchelf.py "$@"\n' > /tmp/f7-patchelf-trace-bin/patchelf
     chmod 700 /tmp/f7-patchelf-trace-bin/patchelf
     : > /wheelhouse/f7-patchelf-operations-unapproved.jsonl
     export PATH="/tmp/f7-patchelf-trace-bin:$PATH"
