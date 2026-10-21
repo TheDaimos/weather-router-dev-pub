@@ -17,6 +17,9 @@ on:
       - "scripts/probe_f7_repaired_double.py"
       - "scripts/f7_cross_container_evidence.py"
       - "scripts/f7_provenance_envelope.py"
+      - "scripts/f7_fetch_official_apks.py"
+      - "scripts/f7_compare_installed_elf.py"
+      - "scripts/f7_correlate_apk_archives.py"
       - "scripts/f7_generate_sbom.py"
       - "scripts/f7_elf_license_matrix.py"
       - "scripts/f7_native_size_scope.py"
@@ -50,7 +53,7 @@ jobs:
           mkdir -p "$RUNNER_TEMP/f7-wheelhouse/first" "$RUNNER_TEMP/f7-wheelhouse/second"
           docker run --rm --pull=always --platform linux/amd64 \
             --cpus=2 --memory=4g --pids-limit=256 \
-            -e GITHUB_ACTIONS=true -e WR_OPERA_ISOLATED_CI=1 \
+            -e GITHUB_ACTIONS=true -e WR_OPERA_ISOLATED_CI=1 -e WR_F7_APK_ORIGIN_FETCH=1 \
             -e WR_F7_IMAGE_DIGEST="sha256:294b683cb724975bec92580e1e685676bd4b50bda910ddb8c51d4cabeaec77e6" \
             -v "$PWD:/wr:ro" \
             -v "$RUNNER_TEMP/f7-wheelhouse/first:/wheelhouse" \
@@ -99,6 +102,9 @@ jobs:
           cp "$ROOT/first/f7-native-size-scope-unapproved.json" "$ROOT/f7-native-size-scope-unapproved.json"
           cp "$ROOT/first/f7-101-elf-license-matrix-unapproved.md" "$ROOT/f7-101-elf-license-matrix-unapproved.md"
           cp "$ROOT/first/f7-secdb-candidates-unapproved.json" "$ROOT/f7-secdb-candidates-unapproved.json"
+          cp "$ROOT/first/f7-official-apks-unapproved.json" "$ROOT/f7-official-apks-unapproved.json"
+          cp "$ROOT/first/f7-original-elf-comparison-unapproved.json" "$ROOT/f7-original-elf-comparison-unapproved.json"
+          cp "$ROOT/first/f7-apk-member-correlation-unapproved.json" "$ROOT/f7-apk-member-correlation-unapproved.json"
           # Cross-bind actual 101 native ELF hashes, SPDX-candidate evidence,
           # pinned OCI input, secdb status and the one Wheel SHA. Unsigned;
           # this is NEVER a production provenance attestation or an approval.
@@ -150,6 +156,9 @@ jobs:
             ${{ runner.temp }}/f7-wheelhouse/f7-101-elf-license-matrix-unapproved.md
             ${{ runner.temp }}/f7-wheelhouse/f7-secdb-candidates-unapproved.json
             ${{ runner.temp }}/f7-wheelhouse/f7-provenance-unapproved.json
+            ${{ runner.temp }}/f7-wheelhouse/f7-official-apks-unapproved.json
+            ${{ runner.temp }}/f7-wheelhouse/f7-original-elf-comparison-unapproved.json
+            ${{ runner.temp }}/f7-wheelhouse/f7-apk-member-correlation-unapproved.json
             ${{ runner.temp }}/f7-wheelhouse/runtime-evidence/f7-native-driver-scope-unapproved.json
           if-no-files-found: error
           retention-days: 7
