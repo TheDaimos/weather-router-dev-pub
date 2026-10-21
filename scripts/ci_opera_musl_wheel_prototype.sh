@@ -95,14 +95,18 @@ PY
     chmod 700 /tmp/f7-patchelf-trace-bin/patchelf
     : > /wheelhouse/f7-patchelf-operations-unapproved.jsonl
     export PATH="/tmp/f7-patchelf-trace-bin:$PATH"
+    # L09: observe actual Python copy/rename operations in both existing repairs.
+    mkdir -p /tmp/f7-auditwheel-python-hook
+    cp scripts/f7_auditwheel_python_trace.py /tmp/f7-auditwheel-python-hook/sitecustomize.py
+    : > /wheelhouse/f7-auditwheel-python-operations-unapproved.jsonl
     # Repair must actually bundle native GDAL/PROJ dependencies; relabeling
     # alone is insufficient. A clean runtime will check the repaired result.
-    /tmp/f7-build-venv/bin/auditwheel repair \
+    F7_TRACE_PASS=first PYTHONPATH=/tmp/f7-auditwheel-python-hook /tmp/f7-build-venv/bin/auditwheel repair \
       --plat musllinux_1_2_x86_64 --wheel-dir /wheelhouse/repaired "$1"
     # Second genuine repair of the SAME bit-identical raw wheel, in a separate
     # output directory. The comparator reports both file-level and ZIP metadata
     # drift without modifying the resulting binaries or asserting approval.
-    /tmp/f7-build-venv/bin/auditwheel repair \
+    F7_TRACE_PASS=second PYTHONPATH=/tmp/f7-auditwheel-python-hook /tmp/f7-build-venv/bin/auditwheel repair \
       --plat musllinux_1_2_x86_64 --wheel-dir /wheelhouse/repaired-repeat "$1"
     python3 scripts/probe_f7_repaired_double.py \
       /wheelhouse/repaired/rasterio-1.5.2-cp314-cp314-musllinux_1_2_x86_64.whl \
