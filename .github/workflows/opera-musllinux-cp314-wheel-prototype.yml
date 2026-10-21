@@ -27,6 +27,7 @@ on:
       - "scripts/f7_l12_correlate_actual_elf_operations.py"
       - "scripts/f7_l13_verify_real_repair_passes.py"
       - "scripts/f7_l14_zip_api_observer.py"
+      - "scripts/f7_l17_verify_zip_elf_bytes.py"
       - "scripts/f7_auditwheel_python_trace.py"
       - "scripts/f7_verify_auditwheel_python_trace.py"
       - "scripts/f7_trace_real_patchelf.py"
@@ -117,6 +118,7 @@ jobs:
           cp "$ROOT/first/f7-l12-observed-elf-chains-unapproved.json" "$ROOT/f7-l12-observed-elf-chains-unapproved.json"
           cp "$ROOT/first/f7-l13-verified-pass-elf-edges-unapproved.json" "$ROOT/f7-l13-verified-pass-elf-edges-unapproved.json"
           cp "$ROOT/first/f7-wheel-zip-operations-unapproved.jsonl" "$ROOT/f7-wheel-zip-operations-unapproved.jsonl"
+          cp "$ROOT/first/f7-l17-verified-zip-elf-bytes-unapproved.json" "$ROOT/f7-l17-verified-zip-elf-bytes-unapproved.json"
           cp "$ROOT/first/f7-patchelf-trace-summary-unapproved.json" "$ROOT/f7-patchelf-trace-summary-unapproved.json"
           cp "$ROOT/first/f7-patchelf-operations-unapproved.jsonl" "$ROOT/f7-patchelf-operations-unapproved.jsonl"
           cp "$ROOT/first/f7-auditwheel-python-operations-unapproved.jsonl" "$ROOT/f7-auditwheel-python-operations-unapproved.jsonl"
@@ -180,6 +182,7 @@ jobs:
             ${{ runner.temp }}/f7-wheelhouse/f7-l12-observed-elf-chains-unapproved.json
             ${{ runner.temp }}/f7-wheelhouse/f7-l13-verified-pass-elf-edges-unapproved.json
             ${{ runner.temp }}/f7-wheelhouse/f7-wheel-zip-operations-unapproved.jsonl
+            ${{ runner.temp }}/f7-wheelhouse/f7-l17-verified-zip-elf-bytes-unapproved.json
             ${{ runner.temp }}/f7-wheelhouse/f7-patchelf-trace-summary-unapproved.json
             ${{ runner.temp }}/f7-wheelhouse/f7-patchelf-operations-unapproved.jsonl
             ${{ runner.temp }}/f7-wheelhouse/f7-auditwheel-python-operations-unapproved.jsonl
