@@ -24,6 +24,7 @@ on:
       - "scripts/f7_original_binary_release_gate.py"
       - "scripts/f7_observe_elf_dynamic_transform.py"
       - "scripts/f7_auditwheel_repair_replay.py"
+      - "tests/test_f7_auditwheel_repair_replay.py"
       - "tests/test_f7_observe_elf_dynamic_transform.py"
       - "scripts/f7_apk_multi_gzip.py"
       - "scripts/f7_consolidate_elf_matrix.py"
