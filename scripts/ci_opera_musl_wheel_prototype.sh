@@ -143,7 +143,7 @@ print("F7 SOURCE CANDIDATES:", r["apk_filename_candidate_count"],
       "APK name-only matches,", r["unresolved_component_count"],
       "unresolved native ELF objects;", "license clearance BLOCKED")
 PY
-    python3 scripts/f7_build_input_snapshot.py /lib/apk/db/installed "$candidate_sha" > /wheelhouse/f7-build-inputs-unapproved.json
+    python3 scripts/f7_build_input_snapshot.py /lib/apk/db/installed "$candidate_sha" "${WR_F7_IMAGE_DIGEST:?pinned_image_digest_required}" > /wheelhouse/f7-build-inputs-unapproved.json
     echo "F7 BUILD-PROTOTYPE INVENTORIED IN ISOLATED CI; NOT DISTRIBUTABLE"
     ;;
   verify)
