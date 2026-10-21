@@ -46,6 +46,8 @@ jobs:
                 [ -f "$file" ] || continue
                 echo "F7 APK PROBE ORIGINAL: $(basename "$file")"
                 sha256sum "$file"
+                echo "F7 APK PROBE HEADER: $(head -c 6 "$file" | od -An -tx1)"
+                if tar -tzf "$file" >/dev/null 2>&1; then echo "F7 APK PROBE TAR GZIP readable"; else echo "F7 APK PROBE NOT STANDARD TAR GZIP"; fi
                 if apk verify "$file"; then
                   echo "F7 APK PROBE SIGNATURE PASS USING CI IMAGE KEYS (not independently attested)"
                 else
