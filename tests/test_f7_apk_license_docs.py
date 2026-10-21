@@ -8,6 +8,10 @@ from pathlib import Path
 import tarfile
 import tempfile
 import unittest
+import sys
+_SCRIPTS=str(Path(__file__).resolve().parents[1]/"scripts")
+if _SCRIPTS not in sys.path:
+    sys.path.insert(0,_SCRIPTS)
 
 spec=importlib.util.spec_from_file_location(
     "f7_apk_docs",Path(__file__).resolve().parents[1]/"scripts/f7_apk_license_docs.py")
