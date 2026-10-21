@@ -67,7 +67,7 @@ def _read_original(root, filename):
             continue
         if target.stat().st_size > MAX_ELF:
             continue
-        return (str(p.relative_to(root)), p.read_bytes())
+        return (str(p.relative_to(root)), str(target.relative_to(root)), p.read_bytes())
     return None
 
 def compare(inv, attribution, db, wheel, *, source_root="/", archive_dir=None):
@@ -120,7 +120,7 @@ def compare(inv, attribution, db, wheel, *, source_root="/", archive_dir=None):
             original_name=SONAME_HASH.sub("",Path(name).name)
             candidates=evidence.get("apk_source_candidates",[])
             actual=_read_original(root,original_name) if name.startswith("rasterio.libs/") else None
-            original_path, original=(actual if actual else (None,None))
+            original_path, original_resolved, original=(actual if actual else (None,None,None))
             apkmatches=[]
             for pkg in candidates:
                 pkgname=pkg.get("package")
@@ -131,7 +131,7 @@ def compare(inv, attribution, db, wheel, *, source_root="/", archive_dir=None):
                 # from the candidate's filename or license metadata alone.
                 owned=bool(original_path and any(
                     x["name"]==pkgname and x["version"]==version
-                    for x in owners.get(original_path, [])))
+                    for x in (owners.get(original_path, []) + owners.get(original_resolved, []))))
                 archive_key=f"{pkgname}-{version}.apk"
                 apk=archives.get(archive_key)
                 apkmatches.append({"name":pkgname,"version":version,
@@ -148,6 +148,7 @@ def compare(inv, attribution, db, wheel, *, source_root="/", archive_dir=None):
             out.append({
                 "wheel_path":name,"wheel_sha256":entry["sha256"],
                 "original_installed_path":original_path,
+                "original_resolved_path":original_resolved,
                 "original_installed_sha256":sha(original) if original else None,
                 "original_installed_bytes":len(original) if original else None,
                 "wheel_elf_bytes":len(embedded),
