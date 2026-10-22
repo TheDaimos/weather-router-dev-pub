@@ -937,6 +937,14 @@
       "lightning_density_2_5km": [
         "weather.lightning.observed.density"
       ]
+    },
+    "opera": {
+      "opera_rate_discovery": [
+        "weather.opera.rate_discovery"
+      ],
+      "opera_dbzh_discovery": [
+        "weather.opera.dbzh_discovery"
+      ]
     }
   },
   "semantic_review": [
@@ -4965,6 +4973,28 @@
       "resource_types": [
         "data_file"
       ]
+    },
+    "weather.opera.rate_discovery": {
+      "family": "radar",
+      "phenomena": [
+        "precipitation"
+      ],
+      "strategy": "single",
+      "note": "EUMETNET OPERA original object diagnostic only; no scientific raster, tile or precipitation measurements authorized.",
+      "resource_types": [
+        "value"
+      ]
+    },
+    "weather.opera.dbzh_discovery": {
+      "family": "radar",
+      "phenomena": [
+        "precipitation"
+      ],
+      "strategy": "single",
+      "note": "EUMETNET OPERA original object diagnostic only; no scientific raster, tile or precipitation measurements authorized.",
+      "resource_types": [
+        "value"
+      ]
     }
   },
   "phenomena": {
@@ -5101,6 +5131,20 @@
       "quantity": "precipitation_amount",
       "unit": "mm",
       "routing_note": "Fachlich verwandt, aber Resource-Typ value; kein Raster-Candidate für weather.precipitation.layer."
+    },
+    "opera/opera_rate_discovery": {
+      "data_origin": "official_original_object_catalog",
+      "measurement_method": "metadata_discovery_only",
+      "observation_kind": "observation",
+      "quantity": null,
+      "unit": null
+    },
+    "opera/opera_dbzh_discovery": {
+      "data_origin": "official_original_object_catalog",
+      "measurement_method": "metadata_discovery_only",
+      "observation_kind": "observation",
+      "quantity": null,
+      "unit": null
     }
   },
   "capability_topic_assignments": {
@@ -7244,6 +7288,10 @@
       },
       "eccc_lightning": {
         "lightning_density_2_5km": "raster_tile"
+      },
+      "opera": {
+        "opera_rate_discovery": "value",
+        "opera_dbzh_discovery": "value"
       }
     }
   },
@@ -8729,6 +8777,18 @@
           "quantity": "lightning_density",
           "unit_source": "provider_capability"
         }
+      },
+      "opera": {
+        "opera_rate_discovery": {
+          "numeric": false,
+          "quantity": null,
+          "unit_source": "not_applicable"
+        },
+        "opera_dbzh_discovery": {
+          "numeric": false,
+          "quantity": null,
+          "unit_source": "not_applicable"
+        }
       }
     }
   },
@@ -9930,6 +9990,16 @@
           "data_origin": "lightning_detection_network",
           "measurement_method": "lightning_density_grid"
         }
+      },
+      "opera": {
+        "opera_rate_discovery": {
+          "data_origin": "official_original_object_catalog",
+          "measurement_method": "metadata_discovery_only"
+        },
+        "opera_dbzh_discovery": {
+          "data_origin": "official_original_object_catalog",
+          "measurement_method": "metadata_discovery_only"
+        }
       }
     }
   },
@@ -10859,6 +10929,14 @@
       },
       "eccc_lightning": {
         "lightning_density_2_5km": {
+          "observation_kind": "observation"
+        }
+      },
+      "opera": {
+        "opera_rate_discovery": {
+          "observation_kind": "observation"
+        },
+        "opera_dbzh_discovery": {
           "observation_kind": "observation"
         }
       }
@@ -14034,6 +14112,30 @@
           "frame_cadence": "optional_runtime",
           "freshness_policy": "consumer_max_age_optional"
         }
+      },
+      "opera": {
+        "opera_rate_discovery": {
+          "request_time_mode": "latest",
+          "data_time": "not_applicable",
+          "valid_time": "not_applicable",
+          "forecast_reference_time": "not_applicable",
+          "interval_start": "not_applicable",
+          "interval_end": "not_applicable",
+          "accumulation_period": "not_applicable",
+          "frame_cadence": "not_applicable",
+          "freshness_policy": "not_applicable"
+        },
+        "opera_dbzh_discovery": {
+          "request_time_mode": "latest",
+          "data_time": "not_applicable",
+          "valid_time": "not_applicable",
+          "forecast_reference_time": "not_applicable",
+          "interval_start": "not_applicable",
+          "interval_end": "not_applicable",
+          "accumulation_period": "not_applicable",
+          "frame_cadence": "not_applicable",
+          "freshness_policy": "not_applicable"
+        }
       }
     }
   },
@@ -16094,6 +16196,22 @@
       },
       "eccc_lightning": {
         "lightning_density_2_5km": {
+          "coverage_scope": "unknown",
+          "coverage_evidence": "unknown",
+          "routing_authority": "none",
+          "coordinate_space": "earth",
+          "endpoint_reachability_is_coverage": false
+        }
+      },
+      "opera": {
+        "opera_rate_discovery": {
+          "coverage_scope": "unknown",
+          "coverage_evidence": "unknown",
+          "routing_authority": "none",
+          "coordinate_space": "earth",
+          "endpoint_reachability_is_coverage": false
+        },
+        "opera_dbzh_discovery": {
           "coverage_scope": "unknown",
           "coverage_evidence": "unknown",
           "routing_authority": "none",
