@@ -259,6 +259,10 @@ class UsgsVolcanoProvider:
                     "urgency": "expected",
                     "certainty": "observed",
                     "status": "actual",
+                    # The elevated-status endpoint is the authoritative source
+                    # of currently elevated notices, not proof of an eruption.
+                    "lifecycle_status": "ongoing",
+                    "last_updated_at": sent,
                     "message_type": "status",
                     "sent": sent,
                     "effective": sent,

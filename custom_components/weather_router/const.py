@@ -7,8 +7,8 @@ from homeassistant.const import Platform
 DOMAIN: Final = "weather_router"
 NAME: Final = "WeatherRouter"
 INTEGRATION_VERSION: Final = "0.10.0"
-DEV_BUILD_VERSION: Final = "0.10.148"
-DEV_LOADER_REV: Final = "0.10-loader-151"
+DEV_BUILD_VERSION: Final = "0.10.162"
+DEV_LOADER_REV: Final = "0.10-loader-165"
 
 # Internal Lab/diagnostic API contract.
 API_CONTRACT_VERSION: Final = 1

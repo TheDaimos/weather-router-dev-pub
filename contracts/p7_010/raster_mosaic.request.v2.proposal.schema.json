@@ -108,6 +108,12 @@
         "target_time": {
           "type": "string",
           "format": "date-time"
+        },
+        "max_background_age_seconds": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 86400,
+          "description": "Optional upper age of explicitly degraded global satellite-estimate background; >= max_data_age_seconds. Enforced in Python contract."
         }
       },
       "allOf": [

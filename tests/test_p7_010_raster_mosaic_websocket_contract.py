@@ -24,6 +24,7 @@ if NAME not in sys.modules:
 validator = importlib.import_module(NAME + ".raster_mosaic_contract")
 policy = importlib.import_module(NAME + ".raster_mosaic_policy")
 service = importlib.import_module(NAME + ".raster_mosaic_service")
+spatial = importlib.import_module(NAME + ".spatial_coverage")
 
 
 def real_handler_with_stubs(namespace: dict):
@@ -33,12 +34,15 @@ def real_handler_with_stubs(namespace: dict):
                     and node.name == "websocket_consumer_resolve_mosaic")
     # Decorators require HA; strip only those, not the handler logic.
     function.decorator_list = []
-    function.body = [
-        ast.Pass() if isinstance(node, ast.ImportFrom)
-                      and node.module == "consumer_api" and node.level == 1
-        else node
-        for node in function.body
-    ]
+    # Core imports moved under the V2 deadline; replace imports recursively.
+    class StripCoreImports(ast.NodeTransformer):
+        def visit_ImportFrom(self, node):
+            if node.level == 1 and node.module in (
+                    "consumer_api", "consumer_api_monitor"):
+                return ast.copy_location(ast.Pass(), node)
+            return node
+
+    function = StripCoreImports().visit(function)
     future = ast.ImportFrom(module="__future__", names=[ast.alias(name="annotations")], level=0)
     module = ast.fix_missing_locations(ast.Module(body=[future, function], type_ignores=[]))
     exec(compile(module, str(PKG / "consumer_raster_mosaic_api.py"), "exec"), namespace)
@@ -49,6 +53,7 @@ class FakeConnection:
     def __init__(self):
         self.results = []
         self.errors = []
+        self._ticket = {"monitor": True}
 
     def send_result(self, msg_id, value):
         self.results.append((msg_id, value))
@@ -63,16 +68,19 @@ class FakeCapability:
 
 
 class FakeProvider:
-    def __init__(self, name, coverage, *, enabled=True, crash=False):
+    def __init__(self, name, coverage, *, enabled=True, crash=False, coverage_delay=0):
         self.id = name
         self.coverage = coverage
         self.enabled = enabled
         self.crash = crash
+        self.coverage_delay = coverage_delay
         self.calls = 0
         self.capability = FakeCapability()
 
     async def async_get_coverage(self, hass, capability):
         self.calls += 1
+        if self.coverage_delay:
+            await asyncio.sleep(self.coverage_delay)
         if self.crash:
             raise RuntimeError("simulated missing machine coverage")
         return self.coverage
@@ -149,17 +157,22 @@ class WebsocketHarnessTests(unittest.IsolatedAsyncioTestCase):
         environment = {
             "asyncio": asyncio,
             "_LIVE_REQUEST_SLOTS": asyncio.Semaphore(2),
+            # The handler AST is tested separately from its module globals.
+            "_shared_coverage_slots": lambda: asyncio.Semaphore(3),
+            "monitored_connection": lambda hass, connection, msg, version: connection,
             "validate_raster_mosaic_request": validator.validate_raster_mosaic_request,
             "MosaicContractError": validator.MosaicContractError,
             "viewport_overlap": policy.viewport_overlap,
             "normalize_coverage": lambda raw: raw,
+            "CoverageTemporarilyUnavailable": spatial.CoverageTemporarilyUnavailable,
             "resolve_mosaic_snapshot": deterministic_mosaic,
             "profile_allows_capability": lambda *args: (True, None),
             "profile_allows_provider": lambda *args: True,
             "profile_allows_candidate": lambda *args: (True, None),
             "MAX_COVERAGE_CONTACTS": 12,
             "MAX_COVERAGE_CONCURRENT": 3,
-            "COVERAGE_TIMEOUT_SECONDS": 3.0,
+            "COVERAGE_TIMEOUT_SECONDS": 6.0,
+            "MOSAIC_PROVIDER_DEADLINE_SECONDS": 16.0,
             "CandidateUnavailable": FakeUnavailable,
             "_runtime_state": lambda hass: (
                 True, {"router_enabled": True, "enabled_domains": {"weather"},
@@ -175,6 +188,7 @@ class WebsocketHarnessTests(unittest.IsolatedAsyncioTestCase):
             "_resource_implemented": lambda *args: True,
             "_normalize_raster": normalize,
         }
+        self.environment = environment
         self.handler = real_handler_with_stubs(environment)
 
     async def test_world_plus_regional_from_real_handler_body(self):
@@ -186,6 +200,183 @@ class WebsocketHarnessTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(result["layers"][0]["source_id"], "wide_world/radar_layer")
         self.assertEqual(result["layers"][1]["source_id"], "regional_radar/radar_layer")
         self.assertEqual(result["layers"][1]["coverage"]["west"], 5)
+
+    async def test_transient_coverage_error_does_not_mean_outside_coverage(self):
+        async def transient(*args):
+            raise spatial.CoverageTemporarilyUnavailable(
+                "source metadata is unavailable"
+            )
+        self.regional.async_get_coverage = transient
+        await self.handler(None, self.connection, request())
+        self.assertEqual(self.connection.errors, [])
+        report = self.connection._monitor_routing["coverage_preflight"]
+        statuses = {row["source_id"]: row["result"] for row in report}
+        self.assertEqual(
+            statuses["regional_radar/radar_layer"], "temporarily_unavailable"
+        )
+        self.assertEqual(statuses["wide_world/radar_layer"], "coverage_accepted")
+        self.assertNotIn("source metadata is unavailable", repr(report))
+
+    async def test_v2_exposes_selected_and_outside_coverage_in_response(self):
+        # The consumer must not need private API-Monitor information to
+        # distinguish a genuine bbox miss from delivered layers.
+        self.regional.coverage = {"scope": "bbox", "bbox": {
+            "west": 60, "south": -40, "east": 80, "north": -20}}
+        await self.handler(None, self.connection, request())
+        answer = self.connection.results[0][1]
+        outcome = {v["source_id"]: v["result"]
+                   for v in answer["source_outcomes"]}
+        self.assertEqual(outcome["regional_radar/radar_layer"],
+                         "outside_coverage")
+        self.assertEqual(outcome["wide_world/radar_layer"], "selected")
+        self.assertEqual(answer["layer_order"], "background_to_foreground")
+        self.assertEqual(
+            self.connection._monitor_routing["delivered_sources"],
+            ["wide_world/radar_layer"])
+
+    async def test_v2_transient_reason_available_in_public_response(self):
+        async def temporary(*args):
+            raise spatial.CoverageTemporarilyUnavailable("synthetic WMS issue")
+        self.regional.async_get_coverage = temporary
+        await self.handler(None, self.connection, request())
+        outcome = {v["source_id"]: v["result"]
+                   for v in self.connection.results[0][1]["source_outcomes"]}
+        self.assertEqual(outcome["regional_radar/radar_layer"],
+                         "temporarily_unavailable")
+        self.assertEqual(outcome["wide_world/radar_layer"], "selected")
+        self.assertNotIn("synthetic WMS issue",
+                         repr(self.connection.results[0][1]))
+
+    async def test_v2_timeout_reason_available_in_public_response(self):
+        self.regional.coverage_delay = .06
+        self.environment["COVERAGE_TIMEOUT_SECONDS"] = .005
+        await self.handler(None, self.connection, request())
+        outcome = {v["source_id"]: v["result"]
+                   for v in self.connection.results[0][1]["source_outcomes"]}
+        self.assertEqual(outcome["regional_radar/radar_layer"],
+                         "coverage_timeout")
+        self.assertEqual(outcome["wide_world/radar_layer"], "selected")
+
+    async def test_old_world_satellite_requires_consent_then_draws_below_radar(self):
+        self.rows[1].semantics = {
+            "quantity": "precipitation_rate", "unit": "mm/h",
+            "measurement_method": "satellite_precipitation_estimate",
+            "observation_kind": "estimate",
+        }
+        async def old_world(*args):
+            return {
+                "tile_url": "https://example.invalid/{z}/{x}/{y}.png",
+                "frame_time": "2026-10-14T08:30:00Z",
+                "attribution": "world", "legend": {"title": "world"},
+            }
+        self.world.async_get_map_layer = old_world
+        strict = request()
+        await self.handler(None, self.connection, strict)
+        answer = self.connection.results[0][1]
+        by_source = {r["source_id"]: r["result"]
+                     for r in answer["source_outcomes"]}
+        self.assertEqual(by_source["wide_world/radar_layer"], "consent_required")
+        self.assertEqual(by_source["regional_radar/radar_layer"], "selected")
+        self.assertEqual(len(answer["layers"]), 1)
+
+        approved = request()
+        approved["time"]["max_background_age_seconds"] = 43200
+        self.connection = FakeConnection()
+        await self.handler(None, self.connection, approved)
+        answer = self.connection.results[0][1]
+        self.assertEqual(
+            [x["source_id"] for x in answer["layers"]],
+            ["wide_world/radar_layer", "regional_radar/radar_layer"])
+        self.assertEqual(answer["layers"][0]["freshness_class"],
+                         "older_background")
+        self.assertEqual(answer["layers"][0]["composition"]["draw_order"], 0)
+        self.assertEqual(answer["layers"][1]["composition"]["draw_order"], 1)
+
+    async def test_stale_regional_is_reported_but_world_kept(self):
+        async def old_radar(*args):
+            return {
+                "tile_url": "https://example.invalid/{z}/{x}/{y}.png",
+                "frame_time": "2026-10-14T12:00:00Z",
+                "attribution": "regional", "legend": {"title": "regional"},
+            }
+        self.regional.async_get_map_layer = old_radar
+        await self.handler(None, self.connection, request())
+        answer = self.connection.results[0][1]
+        status = {x["source_id"]: x["result"]
+                  for x in answer["source_outcomes"]}
+        self.assertEqual(status["regional_radar/radar_layer"], "source_stale")
+        self.assertEqual(status["wide_world/radar_layer"], "selected")
+
+    async def test_coverage_timeout_is_visible_even_when_nasa_succeeds(self):
+        # Reproduce HA: working world source and slow regional WMS coverage.
+        self.regional.coverage_delay = .04
+        self.environment["COVERAGE_TIMEOUT_SECONDS"] = .005
+        await self.handler(None, self.connection, request())
+        self.assertEqual(self.connection.errors, [])
+        self.assertEqual([v["source_id"] for v in
+                          self.connection.results[0][1]["layers"]],
+                         ["wide_world/radar_layer"])
+        report = self.connection._monitor_routing["coverage_preflight"]
+        self.assertEqual({v["source_id"]: v["result"] for v in report},
+                         {"regional_radar/radar_layer": "coverage_timeout",
+                          "wide_world/radar_layer": "coverage_accepted"})
+        self.assertTrue(all(isinstance(v["duration_ms"], (int, float)) for v in report))
+        self.assertNotIn("https", repr(report))
+
+    async def test_slower_regional_coverage_survives_bounded_extra_budget(self):
+        self.regional.coverage_delay = .025
+        self.environment["COVERAGE_TIMEOUT_SECONDS"] = .10
+        await self.handler(None, self.connection, request())
+        self.assertEqual(self.connection.errors, [])
+        self.assertEqual(len(self.connection.results[0][1]["layers"]), 2)
+        by_source = {v["source_id"]: v["result"] for v in
+                     self.connection._monitor_routing["coverage_preflight"]}
+        self.assertEqual(by_source["regional_radar/radar_layer"], "coverage_accepted")
+
+    async def test_monitor_separates_slot_wait_from_provider_wait(self):
+        self.regional.coverage_delay = .035
+        self.world.coverage_delay = .035
+        self.environment["_shared_coverage_slots"] = lambda: asyncio.Semaphore(1)
+        await self.handler(None, self.connection, request())
+        self.assertEqual(self.connection.errors, [])
+        report = self.connection._monitor_routing["coverage_preflight"]
+        self.assertEqual(len(report), 2)
+        self.assertTrue(all(isinstance(x["slot_wait_ms"], (int, float))
+                            for x in report))
+        self.assertTrue(all(isinstance(x["provider_wait_ms"], (int, float))
+                            for x in report))
+        self.assertTrue(any(x["slot_wait_ms"] >= 20 for x in report))
+        self.assertTrue(all(x["provider_wait_ms"] >= 25 for x in report))
+        self.assertNotIn("https://", repr(report))
+
+    async def test_timeout_shows_safe_provider_stage_only(self):
+        self.regional.coverage_delay = .030
+        self.environment["COVERAGE_TIMEOUT_SECONDS"] = .006
+        self.regional.coverage_preflight_diagnostics = lambda _: {
+            "cache_valid": False, "refresh_running": True,
+            "lookup_stage": "aggregate_wms",
+            "cache_ttl_remaining_seconds": None,
+            "unexpected_detail": "omit-this-value",
+        }
+        await self.handler(None, self.connection, request())
+        report = {
+            x["source_id"]: x for x in
+            self.connection._monitor_routing["coverage_preflight"]
+        }
+        self.assertEqual(report["regional_radar/radar_layer"]["result"],
+                         "coverage_timeout")
+        state = report["regional_radar/radar_layer"]["provider_state"]
+        self.assertEqual(state["lookup_stage"], "aggregate_wms")
+        self.assertTrue(state["refresh_running"])
+        self.assertNotIn("unexpected_detail", repr(report))
+
+    async def test_coverage_provider_failure_is_safe_and_distinct(self):
+        self.regional.crash = True
+        await self.handler(None, self.connection, request())
+        report = self.connection._monitor_routing["coverage_preflight"]
+        status = {v["source_id"]: v["result"] for v in report}
+        self.assertEqual(status["regional_radar/radar_layer"], "coverage_provider_error")
+        self.assertEqual(status["wide_world/radar_layer"], "coverage_accepted")
 
     async def test_disabled_provider_never_contacts_network(self):
         self.regional.enabled = False
@@ -363,6 +554,26 @@ class WebsocketHarnessTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual([layer["source_id"]
                           for layer in self.connection.results[0][1]["layers"]],
                          ["wide_world/radar_layer"])
+
+    async def test_whole_handler_deadline_covers_catalogue_resolution(self):
+        cancelled = False
+
+        async def slow_mapping(hass):
+            nonlocal cancelled
+            try:
+                await asyncio.sleep(0.1)
+                return {"public_capabilities": {}}
+            except asyncio.CancelledError:
+                cancelled = True
+                raise
+
+        self.handler.__globals__["_async_mapping"] = slow_mapping
+        self.handler.__globals__["MOSAIC_PROVIDER_DEADLINE_SECONDS"] = 0.01
+        await self.handler(None, self.connection, request())
+        self.assertEqual(self.connection.results, [])
+        self.assertEqual(self.connection.errors[0][1], "mosaic_timeout")
+        self.assertTrue(cancelled)
+        self.assertEqual(self.world.calls, 0)
 
     async def test_invalid_version_rejected_before_network(self):
         wrong = request()

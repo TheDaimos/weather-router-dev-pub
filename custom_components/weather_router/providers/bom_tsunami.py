@@ -301,7 +301,7 @@ class BomTsunamiProvider:
                         if level == "canceled"
                         else "alert",
                         "sent": _child_text(item, "pubDate"),
-                        "effective": _child_text(item, "pubDate"),
+                        "effective": None,  # RSS pubDate ist Veröffentlichung, nicht Warnbeginn.
                         "onset": None,
                         "expires": None,
                         "ends": None,

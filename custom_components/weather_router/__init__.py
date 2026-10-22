@@ -29,6 +29,8 @@ from .const import (
     ROUTER_DOMAINS,
 )
 from .consumer_api import async_register as async_register_consumer_api
+from .consumer_raster_mosaic_api import async_register as async_register_consumer_mosaic_api
+from .consumer_api_monitor_ws import async_register as async_register_monitor_api, async_unload as async_unload_monitor
 from .consumer_profiles import validate_consumer_profiles
 from .extensions import async_notify_routing_changed, async_setup_extensions, async_unload_extensions
 from .websocket_api import async_register as async_register_websocket_api
@@ -36,7 +38,7 @@ from .routing_diagnostics import async_register as async_register_routing_diagno
 
 LAB_URL_PATH = "weather-router-lab"
 LAB_STATIC_URL = "/weather_router_static"
-LAB_FRONTEND_REV = "2026-10-04-p3-thunder-1"
+LAB_FRONTEND_REV = "2026-10-16-api-monitor-v2-150"
 
 
 def _validate_options(options: dict[str, Any]) -> None:
@@ -221,6 +223,8 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     )
     async_register_websocket_api(hass)
     async_register_consumer_api(hass)
+    async_register_consumer_mosaic_api(hass)
+    async_register_monitor_api(hass)
     async_register_routing_diagnostics_api(hass)
     return True
 
@@ -247,5 +251,6 @@ async def async_unload_entry(hass: HomeAssistant, entry: WeatherRouterConfigEntr
     unloaded = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
     if unloaded:
         await async_unload_extensions(hass, entry)
+        async_unload_monitor(hass)
         frontend.async_remove_panel(hass, LAB_URL_PATH, warn_if_unknown=False)
     return unloaded
