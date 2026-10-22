@@ -58,7 +58,7 @@ def validate_raster_mosaic_request(raw: Any) -> dict[str, Any]:
     """Normalize one explicit V2 proposal without relaxing existing V1 rules."""
     value = _mapping(raw, "request")
     _keys(value, {"type", "contract_version", "capability", "profile_id", "consumer_id", "correlation_id",
-                  "context", "time", "limits"},
+                  "context", "time", "limits", "source_request"},
           {"type", "contract_version", "capability", "context", "time", "limits"},
           "request")
     if (value["type"] != "weather_router/consumer/resolve_mosaic"
@@ -123,6 +123,14 @@ def validate_raster_mosaic_request(raw: Any) -> dict[str, Any]:
         "capability": value["capability"], "context": viewport,
         "time": time, "limits": bounded_limits,
     }
+    if "source_request" in value:
+        source = _mapping(value["source_request"], "source_request")
+        _keys(source, {"provider_id", "product_id"}, {"provider_id", "product_id"}, "source_request")
+        if source["provider_id"] != "opera" or source["product_id"] != "RATE":
+            raise MosaicContractError("unsupported explicit mosaic source")
+        if time["max_data_age_seconds"] > 900:
+            raise MosaicContractError("OPERA requires max_data_age_seconds <= 900")
+        result["source_request"] = {"provider_id": "opera", "product_id": "RATE"}
     if "profile_id" in value:
         profile_id = value["profile_id"]
         if not isinstance(profile_id, str) or not profile_id.strip():
