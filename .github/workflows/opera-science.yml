@@ -1,0 +1,49 @@
+name: OPERA SCI-05 Originalpruefung
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/opera-science.yml"
+      - "tests/opera_science_ci.py"
+      - "tests/fixtures/opera/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  compare-originals:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - name: Oeffentliche Originalquellen einschliesslich LFS abrufen
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+          persist-credentials: false
+      - name: Git LFS sicherstellen
+        run: |
+          git lfs install --local
+          git lfs pull --include="tests/fixtures/opera/**"
+          git lfs ls-files
+      - name: Python 3.12 einrichten
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Wissenschaftliche Bibliotheken
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install "numpy>=2,<3" "h5py>=3.12,<4" "rasterio>=1.4,<2" "pyproj>=3.6,<4"
+      - name: SHA-256 Originale und neunzehn Rasterpaare vollstaendig pruefen
+        run: python tests/opera_science_ci.py
+      - name: Pruefberichte bereitstellen
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: opera-sci05-original-results
+          path: |
+            opera-science-results.json
+            opera-science-summary.md
+          if-no-files-found: warn
+          retention-days: 30
