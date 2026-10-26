@@ -1,0 +1,79 @@
+{
+  "product": "EUMETNET OPERA-RATE",
+  "date_utc": "2026-10-26",
+  "license": "CC BY 4.0",
+  "source": "EUMETNET OPERA Open Radar Data",
+  "scientific_release": false,
+  "files": [
+    {
+      "filename": "OPERA@20261026T0600@0@RATE.h5",
+      "size_bytes": 1738955,
+      "sha256": "da6bb9d0726106c5310db12f97a38bf004e116f28c766d290c3ab2ce71b81e65"
+    },
+    {
+      "filename": "OPERA@20261026T0600@0@RATE.tiff",
+      "size_bytes": 3539759,
+      "sha256": "ffd816bb08f31373a8828d4365c8a9be85fdd115c2a71e6a51dd22caddc32675"
+    },
+    {
+      "filename": "OPERA@20261026T0615@0@RATE.h5",
+      "size_bytes": 1724859,
+      "sha256": "21a226083854904fbb89a952da35d7cd6063d03ce0c714df9da658bb1026176b"
+    },
+    {
+      "filename": "OPERA@20261026T0615@0@RATE.tiff",
+      "size_bytes": 3516905,
+      "sha256": "a694905db48186941102366509a198ace267d68bd86fd10fca5fbe57ffb82585"
+    },
+    {
+      "filename": "OPERA@20261026T0630@0@RATE.h5",
+      "size_bytes": 1723899,
+      "sha256": "2b12f5af18a78f6796a38d8ea31f1118ea45e08f11b9ea9fcff6afc354430efe"
+    },
+    {
+      "filename": "OPERA@20261026T0630@0@RATE.tiff",
+      "size_bytes": 3526673,
+      "sha256": "ae9b8c9f655b1b7afcb907a3a0ab87a2734ef20b8fed4d6c65a1ff9db2bcba68"
+    },
+    {
+      "filename": "OPERA@20261026T0645@0@RATE.h5",
+      "size_bytes": 1717797,
+      "sha256": "10247027b690c96fb59f7290a72ec5ba7f4b8864359d923bdcf5005e08162ae9"
+    },
+    {
+      "filename": "OPERA@20261026T0645@0@RATE.tiff",
+      "size_bytes": 3513227,
+      "sha256": "68fd00cacdb890f2983290b4fd517c43e1440421e9f67ec6adb350ec9da7818f"
+    },
+    {
+      "filename": "OPERA@20261026T0700@0@RATE.h5",
+      "size_bytes": 1712619,
+      "sha256": "5664f59b71cd43faf7c6ba38ba55b4905591bb5ea341d495393cccf87a1a9ae7"
+    },
+    {
+      "filename": "OPERA@20261026T0700@0@RATE.tiff",
+      "size_bytes": 3514229,
+      "sha256": "cc0b29ef8e5b6c254d5a0ab15ff8286cc75de4755f08eb912c5773bb4365caa4"
+    },
+    {
+      "filename": "OPERA@20261026T0715@0@RATE.h5",
+      "size_bytes": 1693447,
+      "sha256": "28b60991b913ed6374412318b570173f33d339cf3a95f2bd187891ef50610c33"
+    },
+    {
+      "filename": "OPERA@20261026T0715@0@RATE.tiff",
+      "size_bytes": 3473343,
+      "sha256": "0d1ffdacf8271d349bc4b868f18167f67e1233b74d6c68bfd82741e54096bdae"
+    },
+    {
+      "filename": "OPERA@20261026T0730@0@RATE.h5",
+      "size_bytes": 1696339,
+      "sha256": "1d81f20d0eb789886478695ecc63cef27aae37a7b6d3dbdf77e776bc329997c2"
+    },
+    {
+      "filename": "OPERA@20261026T0730@0@RATE.tiff",
+      "size_bytes": 3483008,
+      "sha256": "e58be27c0e74f39557965a6b9e0f0c27608e2493adf421a52b8633379ca3e0eb"
+    }
+  ]
+}
