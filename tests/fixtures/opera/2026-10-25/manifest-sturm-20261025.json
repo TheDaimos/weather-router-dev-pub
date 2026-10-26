@@ -1,0 +1,271 @@
+﻿{
+    "product":  "EUMETNET OPERA-RATE",
+    "date_utc":  "2026-10-25",
+    "time_zone":  "UTC",
+    "metadata_note":  "Unverified historical originals: downloaded bytes and checksums only; no SCI-02 or geographic approval",
+    "source_endpoint":  "https://s3.waw3-1.cloudferro.com",
+    "source_buckets":  [
+                           "openradar-archive",
+                           "openradar-24h"
+                       ],
+    "complete_pair_count":  12,
+    "complete_times_utc":  [
+                               "1500",
+                               "1600",
+                               "1700",
+                               "1800",
+                               "1900",
+                               "1930",
+                               "2000",
+                               "2030",
+                               "2100",
+                               "2130",
+                               "2200",
+                               "2300"
+                           ],
+    "files":  [
+                  {
+                      "filename":  "OPERA@20261025T1500@0@RATE.h5",
+                      "utc":  "2026-10-25T15:00:00Z",
+                      "format":  "h5",
+                      "size_bytes":  1630152,
+                      "sha256":  "931ba88505e351b62920739b046ef419e5ad633b78fb5d4d19b8a6511c0cf9c9",
+                      "status":  "downloaded",
+                      "bucket":  "openradar-archive",
+                      "download_url":  "https://s3.waw3-1.cloudferro.com/openradar-archive/2026/10/25/OPERA/COMP/OPERA@20261025T1500@0@RATE.h5"
+                  },
+                  {
+                      "filename":  "OPERA@20261025T1500@0@RATE.tiff",
+                      "utc":  "2026-10-25T15:00:00Z",
+                      "format":  "tiff",
+                      "size_bytes":  3351031,
+                      "sha256":  "78232238b57c1d80e6a102852f66258a48e871b7c224fa6738da7188559338f5",
+                      "status":  "downloaded",
+                      "bucket":  "openradar-24h",
+                      "download_url":  "https://s3.waw3-1.cloudferro.com/openradar-24h/2026/10/25/OPERA/COMP/OPERA@20261025T1500@0@RATE.tiff"
+                  },
+                  {
+                      "filename":  "OPERA@20261025T1600@0@RATE.h5",
+                      "utc":  "2026-10-25T16:00:00Z",
+                      "format":  "h5",
+                      "size_bytes":  1603724,
+                      "sha256":  "404b562fabe169ce25a208268dff7f9c5ddda6d4d639795fd0045b84ee0fd5e0",
+                      "status":  "downloaded",
+                      "bucket":  "openradar-archive",
+                      "download_url":  "https://s3.waw3-1.cloudferro.com/openradar-archive/2026/10/25/OPERA/COMP/OPERA@20261025T1600@0@RATE.h5"
+                  },
+                  {
+                      "filename":  "OPERA@20261025T1600@0@RATE.tiff",
+                      "utc":  "2026-10-25T16:00:00Z",
+                      "format":  "tiff",
+                      "size_bytes":  3320394,
+                      "sha256":  "279877a6c19284e207b5897d2217bd12ce7eaf2df2cd832dd6510da1a18990b7",
+                      "status":  "downloaded",
+                      "bucket":  "openradar-24h",
+                      "download_url":  "https://s3.waw3-1.cloudferro.com/openradar-24h/2026/10/25/OPERA/COMP/OPERA@20261025T1600@0@RATE.tiff"
+                  },
+                  {
+                      "filename":  "OPERA@20261025T1700@0@RATE.h5",
+                      "utc":  "2026-10-25T17:00:00Z",
+                      "format":  "h5",
+                      "size_bytes":  1602586,
+                      "sha256":  "b740d45fd1124a42699a757580d6aa127556db9010e93d2966bf066dbdf9ee2c",
+                      "status":  "downloaded",
+                      "bucket":  "openradar-archive",
+                      "download_url":  "https://s3.waw3-1.cloudferro.com/openradar-archive/2026/10/25/OPERA/COMP/OPERA@20261025T1700@0@RATE.h5"
+                  },
+                  {
+                      "filename":  "OPERA@20261025T1700@0@RATE.tiff",
+                      "utc":  "2026-10-25T17:00:00Z",
+                      "format":  "tiff",
+                      "size_bytes":  3309052,
+                      "sha256":  "6b61f4c30c90ad44f72a7835b6f09d208215520b6b21aa61ae553ee19221f6d4",
+                      "status":  "downloaded",
+                      "bucket":  "openradar-24h",
+                      "download_url":  "https://s3.waw3-1.cloudferro.com/openradar-24h/2026/10/25/OPERA/COMP/OPERA@20261025T1700@0@RATE.tiff"
+                  },
+                  {
+                      "filename":  "OPERA@20261025T1800@0@RATE.h5",
+                      "utc":  "2026-10-25T18:00:00Z",
+                      "format":  "h5",
+                      "size_bytes":  1609427,
+                      "sha256":  "cacb93e2d94703551e3530eb7772f88dbcd9bb159701b440d67061564c7e5186",
+                      "status":  "downloaded",
+                      "bucket":  "openradar-archive",
+                      "download_url":  "https://s3.waw3-1.cloudferro.com/openradar-archive/2026/10/25/OPERA/COMP/OPERA@20261025T1800@0@RATE.h5"
+                  },
+                  {
+                      "filename":  "OPERA@20261025T1800@0@RATE.tiff",
+                      "utc":  "2026-10-25T18:00:00Z",
+                      "format":  "tiff",
+                      "size_bytes":  3327406,
+                      "sha256":  "bb1a3a74b87b56bd09c11fb28f3c82e8bd0e422bd923d41005a4dc31d8c21c9a",
+                      "status":  "downloaded",
+                      "bucket":  "openradar-24h",
+                      "download_url":  "https://s3.waw3-1.cloudferro.com/openradar-24h/2026/10/25/OPERA/COMP/OPERA@20261025T1800@0@RATE.tiff"
+                  },
+                  {
+                      "filename":  "OPERA@20261025T1900@0@RATE.h5",
+                      "utc":  "2026-10-25T19:00:00Z",
+                      "format":  "h5",
+                      "size_bytes":  1622241,
+                      "sha256":  "88be1918d12ce1eb57d243cdd983a500d1cbe4e0a206f5915dcc0de0757e5fb3",
+                      "status":  "downloaded",
+                      "bucket":  "openradar-archive",
+                      "download_url":  "https://s3.waw3-1.cloudferro.com/openradar-archive/2026/10/25/OPERA/COMP/OPERA@20261025T1900@0@RATE.h5"
+                  },
+                  {
+                      "filename":  "OPERA@20261025T1900@0@RATE.tiff",
+                      "utc":  "2026-10-25T19:00:00Z",
+                      "format":  "tiff",
+                      "size_bytes":  3359283,
+                      "sha256":  "a1111d1005594b34a501caf12c9958aa8b6ac7afdfd39f48a49624cf9646c8ac",
+                      "status":  "downloaded",
+                      "bucket":  "openradar-24h",
+                      "download_url":  "https://s3.waw3-1.cloudferro.com/openradar-24h/2026/10/25/OPERA/COMP/OPERA@20261025T1900@0@RATE.tiff"
+                  },
+                  {
+                      "filename":  "OPERA@20261025T1930@0@RATE.h5",
+                      "utc":  "2026-10-25T19:30:00Z",
+                      "format":  "h5",
+                      "size_bytes":  1614446,
+                      "sha256":  "bfae9046c0fc7f90fdae5793bfb499a8a392c3add882e7fc778da1fc79f5234a",
+                      "status":  "downloaded",
+                      "bucket":  "openradar-archive",
+                      "download_url":  "https://s3.waw3-1.cloudferro.com/openradar-archive/2026/10/25/OPERA/COMP/OPERA@20261025T1930@0@RATE.h5"
+                  },
+                  {
+                      "filename":  "OPERA@20261025T1930@0@RATE.tiff",
+                      "utc":  "2026-10-25T19:30:00Z",
+                      "format":  "tiff",
+                      "size_bytes":  3360814,
+                      "sha256":  "f81ad8b3c530e6cfae9caf93001b653b7df9ce8940551d1cb72a9d4dbc9845ab",
+                      "status":  "downloaded",
+                      "bucket":  "openradar-24h",
+                      "download_url":  "https://s3.waw3-1.cloudferro.com/openradar-24h/2026/10/25/OPERA/COMP/OPERA@20261025T1930@0@RATE.tiff"
+                  },
+                  {
+                      "filename":  "OPERA@20261025T2000@0@RATE.h5",
+                      "utc":  "2026-10-25T20:00:00Z",
+                      "format":  "h5",
+                      "size_bytes":  1601102,
+                      "sha256":  "9a534d1e616542949d5513b8e5103920008d28e45158bc44cb2e61dbad409cdc",
+                      "status":  "downloaded",
+                      "bucket":  "openradar-archive",
+                      "download_url":  "https://s3.waw3-1.cloudferro.com/openradar-archive/2026/10/25/OPERA/COMP/OPERA@20261025T2000@0@RATE.h5"
+                  },
+                  {
+                      "filename":  "OPERA@20261025T2000@0@RATE.tiff",
+                      "utc":  "2026-10-25T20:00:00Z",
+                      "format":  "tiff",
+                      "size_bytes":  3344206,
+                      "sha256":  "695667808109761a5c55fa2a3f3263f626f994ec2ceb42adc3427b11c2e8589a",
+                      "status":  "downloaded",
+                      "bucket":  "openradar-24h",
+                      "download_url":  "https://s3.waw3-1.cloudferro.com/openradar-24h/2026/10/25/OPERA/COMP/OPERA@20261025T2000@0@RATE.tiff"
+                  },
+                  {
+                      "filename":  "OPERA@20261025T2030@0@RATE.h5",
+                      "utc":  "2026-10-25T20:30:00Z",
+                      "format":  "h5",
+                      "size_bytes":  1606331,
+                      "sha256":  "8f026878bdfe9fbbf7f7f9c05d767fe0bd19b71e4f57b51804b1af1e5f3536eb",
+                      "status":  "downloaded",
+                      "bucket":  "openradar-archive",
+                      "download_url":  "https://s3.waw3-1.cloudferro.com/openradar-archive/2026/10/25/OPERA/COMP/OPERA@20261025T2030@0@RATE.h5"
+                  },
+                  {
+                      "filename":  "OPERA@20261025T2030@0@RATE.tiff",
+                      "utc":  "2026-10-25T20:30:00Z",
+                      "format":  "tiff",
+                      "size_bytes":  3359641,
+                      "sha256":  "95b48d88ed0db5b680262256126d8d63e19fe337635cbe6ee5221b42fe2c1496",
+                      "status":  "downloaded",
+                      "bucket":  "openradar-24h",
+                      "download_url":  "https://s3.waw3-1.cloudferro.com/openradar-24h/2026/10/25/OPERA/COMP/OPERA@20261025T2030@0@RATE.tiff"
+                  },
+                  {
+                      "filename":  "OPERA@20261025T2100@0@RATE.h5",
+                      "utc":  "2026-10-25T21:00:00Z",
+                      "format":  "h5",
+                      "size_bytes":  1623999,
+                      "sha256":  "44bbfca4557a897a60f6338b82cc0badf7a65e476ecfe8fc9a6e76df4fe1a621",
+                      "status":  "downloaded",
+                      "bucket":  "openradar-archive",
+                      "download_url":  "https://s3.waw3-1.cloudferro.com/openradar-archive/2026/10/25/OPERA/COMP/OPERA@20261025T2100@0@RATE.h5"
+                  },
+                  {
+                      "filename":  "OPERA@20261025T2100@0@RATE.tiff",
+                      "utc":  "2026-10-25T21:00:00Z",
+                      "format":  "tiff",
+                      "size_bytes":  3370156,
+                      "sha256":  "8888d139f1ff392ae76d3d3fd2bfaf57c2962490bb364735a69b53ac0ba3bb25",
+                      "status":  "downloaded",
+                      "bucket":  "openradar-24h",
+                      "download_url":  "https://s3.waw3-1.cloudferro.com/openradar-24h/2026/10/25/OPERA/COMP/OPERA@20261025T2100@0@RATE.tiff"
+                  },
+                  {
+                      "filename":  "OPERA@20261025T2130@0@RATE.h5",
+                      "utc":  "2026-10-25T21:30:00Z",
+                      "format":  "h5",
+                      "size_bytes":  1624943,
+                      "sha256":  "8c8b9ad40ae6e5979b986404d373e5fc9ba4ccfed75297dc80c79a3c53b9bb36",
+                      "status":  "downloaded",
+                      "bucket":  "openradar-archive",
+                      "download_url":  "https://s3.waw3-1.cloudferro.com/openradar-archive/2026/10/25/OPERA/COMP/OPERA@20261025T2130@0@RATE.h5"
+                  },
+                  {
+                      "filename":  "OPERA@20261025T2130@0@RATE.tiff",
+                      "utc":  "2026-10-25T21:30:00Z",
+                      "format":  "tiff",
+                      "size_bytes":  3375484,
+                      "sha256":  "a1d42b129b22427fe071427b7f8da39ff34f6f0caf2c7a3e6daabb65d32ce578",
+                      "status":  "downloaded",
+                      "bucket":  "openradar-24h",
+                      "download_url":  "https://s3.waw3-1.cloudferro.com/openradar-24h/2026/10/25/OPERA/COMP/OPERA@20261025T2130@0@RATE.tiff"
+                  },
+                  {
+                      "filename":  "OPERA@20261025T2200@0@RATE.h5",
+                      "utc":  "2026-10-25T22:00:00Z",
+                      "format":  "h5",
+                      "size_bytes":  1633622,
+                      "sha256":  "86b46eb6830b26f2c5513ce7ff9c3e7d227516985da0440703b882391f2dbeb0",
+                      "status":  "downloaded",
+                      "bucket":  "openradar-archive",
+                      "download_url":  "https://s3.waw3-1.cloudferro.com/openradar-archive/2026/10/25/OPERA/COMP/OPERA@20261025T2200@0@RATE.h5"
+                  },
+                  {
+                      "filename":  "OPERA@20261025T2200@0@RATE.tiff",
+                      "utc":  "2026-10-25T22:00:00Z",
+                      "format":  "tiff",
+                      "size_bytes":  3386700,
+                      "sha256":  "594ee76d0f3d9f28a76a99f5745f3fde0154454f76c910785a8f6a29a2742259",
+                      "status":  "downloaded",
+                      "bucket":  "openradar-24h",
+                      "download_url":  "https://s3.waw3-1.cloudferro.com/openradar-24h/2026/10/25/OPERA/COMP/OPERA@20261025T2200@0@RATE.tiff"
+                  },
+                  {
+                      "filename":  "OPERA@20261025T2300@0@RATE.h5",
+                      "utc":  "2026-10-25T23:00:00Z",
+                      "format":  "h5",
+                      "size_bytes":  1650592,
+                      "sha256":  "16e9effa7dbcb233628fb35f43f90d8359c830996bf5cae53fe7fd56b975c3eb",
+                      "status":  "downloaded",
+                      "bucket":  "openradar-archive",
+                      "download_url":  "https://s3.waw3-1.cloudferro.com/openradar-archive/2026/10/25/OPERA/COMP/OPERA@20261025T2300@0@RATE.h5"
+                  },
+                  {
+                      "filename":  "OPERA@20261025T2300@0@RATE.tiff",
+                      "utc":  "2026-10-25T23:00:00Z",
+                      "format":  "tiff",
+                      "size_bytes":  3416842,
+                      "sha256":  "633713f351ec65cedfa82ba979c5a489f012f16f25c98a7007f4d1bc0ad783de",
+                      "status":  "downloaded",
+                      "bucket":  "openradar-24h",
+                      "download_url":  "https://s3.waw3-1.cloudferro.com/openradar-24h/2026/10/25/OPERA/COMP/OPERA@20261025T2300@0@RATE.tiff"
+                  }
+              ],
+    "failures":  [
+
+                 ]
+}
