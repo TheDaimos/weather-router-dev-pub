@@ -249,6 +249,22 @@ async def async_setup_entry(hass: HomeAssistant, entry: WeatherRouterConfigEntry
         opera_area["opera_runtime"] = await hass.async_add_executor_job(
             partial(OperaRuntime, journal_root=hass.config.path(
                 ".storage", "weather_router_opera_cycles")))
+    # The EXISTING provider selection controls OPERA intake; there is no
+    # second preview/global enable switch. RATE is the initial safe
+    # source-acquisition path, but cannot become a public pixel service
+    # without independent scientific validation.
+    opera = opera_area["opera_runtime"]
+    opera.enabled = "opera" in options[CONF_ENABLED_PROVIDERS]
+    opera.services["RATE"] = opera.enabled
+    opera.services["DBZH"] = False
+    opera.services["ACRR"] = False
+    if opera.enabled:
+        from homeassistant.helpers.aiohttp_client import async_get_clientsession
+        from .opera_source_monitor import OperaSourceMonitor
+        monitor = OperaSourceMonitor(
+            hass=hass, session=async_get_clientsession(hass), runtime=opera)
+        opera_area["opera_source_monitor"] = monitor
+        monitor.start()
     entry.runtime_data = WeatherRouterRuntimeData(hass=hass, entry=entry)
     await async_setup_extensions(hass, entry)
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
@@ -261,6 +277,9 @@ async def async_unload_entry(hass: HomeAssistant, entry: WeatherRouterConfigEntr
     unloaded = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
     if unloaded:
         opera_area = hass.data.get(DOMAIN, {})
+        monitor = opera_area.pop("opera_source_monitor", None)
+        if monitor is not None:
+            await monitor.stop()
         runtime = opera_area.pop("opera_runtime", None)
         if runtime is not None:
             runtime.close()  # Defers physical cache deletion until last reader lease.
