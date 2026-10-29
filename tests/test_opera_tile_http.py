@@ -422,6 +422,51 @@ class TileRouteTests(unittest.TestCase):
             finally:
                 release.set()
 
+    def test_http_executor_keeps_evicted_frame_until_worker_finished(self):
+        """Run the actual HTTP get path with a real cache lease under eviction."""
+        import threading
+        started = threading.Event()
+        release = threading.Event()
+        old_frame = self.registration.frame
+        old_path = old_frame.path
+
+        def blocked_render(**kwargs):
+            self.assertEqual(kwargs["trusted_path"], old_path)
+            started.set()
+            if not release.wait(timeout=3):
+                raise AssertionError("blocked_http_worker_not_released")
+            self.assertTrue(old_path.is_file())
+            return b"PNG dummy"
+
+        async def exercise():
+            request_task = asyncio.create_task(
+                self.view().get(self.req, "DBZH", self.stamp, "6", "33", "19"))
+            self.assertTrue(await asyncio.to_thread(started.wait, 1))
+            # The public cache has max_frames=3 by default. Fourth distinct
+            # generation evicts the first from the catalog, but not disk.
+            for n in range(4):
+                source = Path(self.tmp.name) / ("generation-" + str(n) + ".tiff")
+                source.write_bytes(("synthetic-generation-" + str(n)).encode())
+                digest = sha256(source.read_bytes()).hexdigest()
+                self.cache.admit(source_path=source, product="DBZH",
+                                 valid_at=self.t, expected_sha256=digest)
+            self.assertIsNone(self.cache.get(product="DBZH",
+                                            valid_at=old_frame.valid_at,
+                                            digest=old_frame.digest))
+            self.assertTrue(old_path.is_file(), "eviction deleted active HTTP reader")
+            release.set()
+            response = await request_task
+            self.assertEqual(response.content_type, "image/png")
+            # Done-callback is responsible for final lease release.
+            await asyncio.sleep(0)
+            self.assertFalse(old_path.exists(), "evicted file not released")
+
+        with patch.object(tile_http, "render_verified_cog", side_effect=blocked_render):
+            try:
+                asyncio.run(exercise())
+            finally:
+                release.set()
+
     def test_invalid_waiting_queue_configuration_fails_closed(self):
         """Prevent accidental unbounded or boolean waiting budgets."""
         for invalid in (0, -1, 65, True, 3.0, "4", None):
