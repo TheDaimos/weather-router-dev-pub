@@ -111,6 +111,26 @@ class JournalTests(unittest.TestCase):
             self.runtime.promote(older)
         self.assertEqual(self.runtime.journal.inspect()["RATE"]["sha256"], newer.digest)
 
+    def test_restart_cannot_replace_newer_persisted_cycle(self):
+        latest = self.candidate("latest", age=60)
+        self.runtime.promote(latest)
+        after_restart = runtime_module.OperaRuntime(journal_root=self.root)
+        try:
+            old_file = self.folder / "older-after-restart.bin"
+            old_file.write_bytes(b"synthetic-older-after-restart")
+            import hashlib
+            old = after_restart.prepare(
+                source_path=old_file, product="RATE",
+                valid_at=self.now - timedelta(seconds=180),
+                digest=hashlib.sha256(old_file.read_bytes()).hexdigest(),
+                attribution="public synthetic source", palette=lambda _: (0, 0, 0, 0))
+            with self.assertRaisesRegex(Exception, "journal_commit_failed"):
+                after_restart.promote(old)
+            self.assertEqual(after_restart.journal.inspect()["RATE"]["sha256"], latest.digest)
+            self.assertIsNone(after_restart.registry.active("RATE"))
+        finally:
+            after_restart.close()
+
     def test_distinct_products_in_same_manifest(self):
         rate = self.candidate("rate", product="RATE")
         dbzh = self.candidate("dbzh", product="DBZH")
