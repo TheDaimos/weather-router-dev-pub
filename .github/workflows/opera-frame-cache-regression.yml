@@ -8,6 +8,8 @@ on:
       - "tests/test_opera_frame_cache.py"
       - "custom_components/weather_router/opera_tile_http.py"
       - "custom_components/weather_router/opera_runtime.py"
+      - "custom_components/weather_router/opera_cycle_store.py"
+      - "tests/test_opera_cycle_journal.py"
       - "tests/test_opera_runtime_atomic.py"
       - "tests/test_opera_http_lease_contract.py"
       - ".github/workflows/opera-frame-cache-regression.yml"
@@ -39,3 +41,5 @@ jobs:
         run: python -m unittest discover -s tests -p 'test_opera_http_lease_contract.py' -v
       - name: Test real public OPERA atomic runtime
         run: python -m unittest discover -s tests -p 'test_opera_runtime_atomic.py' -v
+      - name: Test durable OPERA journal and crash recovery
+        run: python -m unittest discover -s tests -p 'test_opera_cycle_journal.py' -v
