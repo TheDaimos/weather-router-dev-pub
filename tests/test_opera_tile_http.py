@@ -91,7 +91,7 @@ class TileRouteTests(unittest.TestCase):
         allowed=allowed or (lambda _u,_p: True)
         return tile_http.OperaTileView(FakeHass(),
                registry_lookup=lambda product,stamp: self.registration,
-               is_permitted=allowed,is_enabled=lambda:True)
+               is_permitted=allowed,is_enabled=lambda:True,frame_cache=self.cache)
 
     def request(self,view=None,req=None):
         view=view or self.view()
@@ -150,7 +150,7 @@ class TileRouteTests(unittest.TestCase):
         gate=tile_http.OperaTileView(
             FakeHass(),
             registry_lookup=lambda product,stamp:self.registration,
-            is_permitted=permitted,is_enabled=lambda:True,
+            is_permitted=permitted,is_enabled=lambda:True,frame_cache=self.cache,
             max_active=1,wait_seconds=0.5,render_seconds=1.0,
         )
         async def exercise():
@@ -214,7 +214,7 @@ class TileRouteTests(unittest.TestCase):
         # unbounded parallel GDAL work while earlier jobs are incomplete.
         gate=tile_http.OperaTileView(FakeHass(),
             registry_lookup=lambda product,stamp:self.registration,
-            is_permitted=lambda user,product:True,is_enabled=lambda:True,
+            is_permitted=lambda user,product:True,is_enabled=lambda:True,frame_cache=self.cache,
             max_active=1,wait_seconds=0.02,render_seconds=1.0)
         def slow_render(**kwargs):
             time.sleep(0.25)
@@ -243,7 +243,7 @@ class TileRouteTests(unittest.TestCase):
             FakeHass(),
             registry_lookup=lambda product,stamp:self.registration,
             is_permitted=lambda user,product:True,
-            is_enabled=lambda:True,
+            is_enabled=lambda:True,frame_cache=self.cache,
             max_active=1,wait_seconds=0.02,render_seconds=0.05,
         )
         def blocked_render(**kwargs):
@@ -291,7 +291,7 @@ class TileRouteTests(unittest.TestCase):
             FakeHass(),
             registry_lookup=lambda product,stamp:self.registration,
             is_permitted=lambda user,product:True,
-            is_enabled=lambda:True,
+            is_enabled=lambda:True,frame_cache=self.cache,
             max_active=1,wait_seconds=0.02,render_seconds=1.0,
         )
         def blocked_render(**kwargs):
@@ -343,7 +343,7 @@ class TileRouteTests(unittest.TestCase):
             FakeHass(),
             registry_lookup=lambda product, stamp:self.registration,
             is_permitted=lambda user,product:True,
-            is_enabled=lambda:True,
+            is_enabled=lambda:True,frame_cache=self.cache,
             max_active=1, max_waiting=1,
             wait_seconds=0.5, render_seconds=1.0,
         )
@@ -398,7 +398,7 @@ class TileRouteTests(unittest.TestCase):
             FakeHass(),
             registry_lookup=lambda product,stamp:self.registration,
             is_permitted=lambda user,product:True,
-            is_enabled=lambda:True,
+            is_enabled=lambda:True,frame_cache=self.cache,
             max_active=1,max_waiting=1,wait_seconds=0.03,
             render_seconds=1.0,
         )
