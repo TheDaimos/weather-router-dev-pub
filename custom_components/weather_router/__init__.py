@@ -226,6 +226,10 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     async_register_consumer_mosaic_api(hass)
     async_register_monitor_api(hass)
     async_register_routing_diagnostics_api(hass)
+    # Single server-owned dormant OPERA staging runtime. Deliberately no
+    # HTTP view, S3 monitor, Consumer publication or scientific admission.
+    from .opera_runtime import OperaRuntime
+    hass.data.setdefault(DOMAIN, {}).setdefault("opera_runtime", OperaRuntime())
     return True
 
 
