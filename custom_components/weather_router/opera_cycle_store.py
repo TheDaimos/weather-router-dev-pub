@@ -66,6 +66,12 @@ class CycleJournal:
         old = self.inspect()
         if previous is not None and previous != old:
             raise CycleStoreError("journal_changed")
+        prior = old.get(frame.product)
+        if prior is not None:
+            if stamp < prior["generation"]:
+                raise CycleStoreError("persistent_cycle_rollback")
+            if stamp == prior["generation"] and frame.digest != prior["sha256"]:
+                raise CycleStoreError("persistent_cycle_conflict")
         new = dict(old)
         new[frame.product] = {
             "product": frame.product, "valid_at": frame.valid_at.astimezone(timezone.utc).isoformat(),
