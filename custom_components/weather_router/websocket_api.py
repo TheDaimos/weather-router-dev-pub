@@ -381,7 +381,8 @@ async def websocket_routing_settings_update(
         list(settings["enabled_providers"]),
     )
     all_providers = await _async_all_provider_catalog(hass)
-    unknown_providers = sorted(set(enabled_providers) - set(all_providers))
+    # OPERA is a source-acquisition-only opt-in here; not a V1 catalog route.
+    unknown_providers = sorted(set(enabled_providers) - (set(all_providers) | {"opera"}))
     if unknown_providers:
         connection.send_error(
             msg["id"],
@@ -406,6 +407,12 @@ async def websocket_routing_settings_update(
         enabled_domains=enabled_domains,
         enabled_providers=enabled_providers,
     )
+    from .opera_source_monitor import async_apply_opera_provider_selection
+    await async_apply_opera_provider_selection(
+        hass, enabled_providers=enabled_providers,
+        router_enabled=msg.get("router_enabled", settings["router_enabled"]),
+        enabled_domains=enabled_domains)
+
     providers = await _async_provider_catalog(hass)
     connection.send_result(
         msg["id"],
