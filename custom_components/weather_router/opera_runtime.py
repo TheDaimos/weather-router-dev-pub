@@ -8,6 +8,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from threading import RLock
+from pathlib import Path
+from .opera_cycle_store import CycleJournal, CycleStoreError
 
 from .opera_frame_cache import ImmutableFrameCache, VerifiedFrame, FrameCacheError
 from .opera_tile_http import TileRegistration
@@ -90,8 +92,11 @@ class RateTileRegistry:
 
 class OperaRuntime:
     """One shared cache, one atomic registry, server-owned and disabled by default."""
-    def __init__(self):
+    def __init__(self, *, journal_root=None):
         self.cache = ImmutableFrameCache(max_frames=3)
+        self.journal = CycleJournal(journal_root) if journal_root is not None else None
+        self.last_error = None
+        self.last_promotion_utc = None
         self.registry = RateTileRegistry()
         self._lock = RLock()
         self.enabled = False
@@ -132,7 +137,17 @@ class OperaRuntime:
             if self.cache.get(product=frame.product, valid_at=frame.valid_at,
                               digest=frame.digest) is not frame:
                 raise FrameCacheError("staged_frame_evicted")
-            return self.registry.promote(candidate)
+            # Durably commit the verified bytes before switching the live pointer.
+            # Recovery is metadata-only and is never a scientific/HTTP approval.
+            if self.journal is not None:
+                try:
+                    self.journal.commit(frame, candidate.registration.attribution)
+                except (OSError, CycleStoreError) as exc:
+                    self.last_error = "journal_commit_failed"
+                    raise CycleStoreError("journal_commit_failed") from exc
+            stamp = self.registry.promote(candidate)
+            self.last_promotion_utc = datetime.now(timezone.utc)
+            return stamp
 
     def lookup(self, product, stamp):
         # No production tile exposure before explicit provider and scientific release.
@@ -147,8 +162,38 @@ class OperaRuntime:
 
     def close(self):
         with self._lock:
+            self._closed = True
             self.enabled = False
             self.services = {product: False for product in PRODUCTS}
             self.registry.revoke()
             self.cache.close()
             self._closed = True
+
+    def status(self, *, now=None):
+        """Sanitized live operational diagnostics; never exposes source paths."""
+        now = datetime.now(timezone.utc) if now is None else now
+        with self._lock:
+            cycles = {}
+            for product in PRODUCTS:
+                current = self.registry.active(product)
+                valid = current.registration.frame.valid_at if current is not None else None
+                age = (now - valid).total_seconds() if valid is not None else None
+                cycles[product] = {
+                    "service_enabled": self.services.get(product) is True,
+                    "generation": current.stamp if current else None,
+                    "utc_measurement": valid.isoformat() if valid else None,
+                    "age_seconds": round(age, 1) if age is not None else None,
+                    "status": utc_status(valid, now=now),
+                }
+            with self.cache._lock:
+                count = len(self.cache._frames)
+                bytes_used = sum(frame.byte_size for frame in self.cache._frames.values())
+                readers = sum(self.cache._leases.values())
+            return {
+                "provider_enabled": self.enabled is True, "closed": self._closed,
+                "products": cycles, "cached_frames": count,
+                "cached_bytes": bytes_used, "active_readers": readers,
+                "last_promotion_utc": self.last_promotion_utc.isoformat() if self.last_promotion_utc else None,
+                "last_error": self.last_error,
+                "http_enabled": False, "consumer_v2_approved": False,
+            }
