@@ -115,6 +115,7 @@ class WeatherRouterLab extends HTMLElement {
       if (!document.hidden && this.shadowRoot.querySelector('[data-lab-menu-key="api-monitor"]')?.open) this._monitorRefresh();
     }, 2500);
     queueMicrotask(() => this._ensureMap());
+    this.shadowRoot?.getElementById("opera-refresh")?.addEventListener("click", () => this._refreshOperaStatus());
   }
 
   disconnectedCallback() {
@@ -387,6 +388,15 @@ class WeatherRouterLab extends HTMLElement {
             <summary>5 · Ergebnisse</summary>
             <div class="lab-menu-content">
               <div id="results" class="muted">Noch keine Abfrage.</div>
+            </div>
+          </details>
+
+          <details class="card lab-menu" data-lab-menu-key="opera">
+            <summary>6 · OPERA</summary>
+            <div class="lab-menu-content">
+              <p class="muted">Wissenschaftlich UNVERIFIED/BLOCKED · keine Radar-Kachelfreigabe.</p>
+              <button id="opera-refresh" type="button">Live-Status abrufen</button>
+              <pre id="opera-status" style="white-space:pre-wrap;overflow-wrap:anywhere">Noch nicht abgefragt.</pre>
             </div>
           </details>
 
@@ -2226,6 +2236,29 @@ class WeatherRouterLab extends HTMLElement {
       host.appendChild(box);
     }
     this.shadowRoot.getElementById("raw").textContent = JSON.stringify(this._results,null,2);
+  }
+
+  async _refreshOperaStatus() {
+    const output = this.shadowRoot?.getElementById("opera-status");
+    if (!output || !this._hass) return;
+    output.textContent = "Admin-Status wird abgefragt …";
+    try {
+      const state = await this._hass.callWS({type:"weather_router/opera_status"});
+      const rows = [
+        `Provider: ${state.provider_enabled ? "AN" : "AUS"}`,
+        `Wissenschaft: ${state.scientific_status || "UNVERIFIED/BLOCKED"}`,
+        `HTTP: ${state.http_enabled ? "AN" : "AUS"} · Consumer V2: ${state.consumer_v2_approved ? "bereit" : "gesperrt"}`,
+        `Cache: ${state.cached_frames ?? 0} Frames / ${state.cached_bytes ?? 0} Bytes · aktive Leser: ${state.active_readers ?? 0}`,
+        `Letzte Promotion: ${state.last_promotion_utc ?? "—"} · letzter Fehler: ${state.last_error ?? "—"}`,
+      ];
+      for (const product of ["RATE","DBZH","ACRR"]) {
+        const p=state.products?.[product] || {};
+        rows.push(`${product}: ${p.service_enabled ? "AN" : "AUS"} · ${p.status || "UNAVAILABLE"} · UTC ${p.utc_measurement || "—"} · ${p.age_seconds ?? "—"} s · Generation ${p.generation || "—"}`);
+      }
+      output.textContent = rows.join("\\n");
+    } catch (error) {
+      output.textContent = `OPERA-Status nicht verfügbar: ${error?.message || String(error)}`;
+    }
   }
 
   _ensureMap() {
