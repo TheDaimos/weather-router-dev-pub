@@ -201,6 +201,8 @@ class OperaRuntime:
                 "provider_enabled": self.enabled is True, "closed": self._closed,
                 "products": cycles, "cached_frames": count,
                 "cached_bytes": bytes_used, "active_readers": readers,
+                "persistent_bytes": self.journal.disk_usage() if self.journal else None,
+                "journal_present": self.journal is not None,
                 "last_promotion_utc": self.last_promotion_utc.isoformat() if self.last_promotion_utc else None,
                 "last_error": self.last_error,
                 "http_enabled": False, "consumer_v2_approved": False,
