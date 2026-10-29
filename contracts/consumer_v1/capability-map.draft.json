@@ -5101,20 +5101,6 @@
       "quantity": "precipitation_amount",
       "unit": "mm",
       "routing_note": "Fachlich verwandt, aber Resource-Typ value; kein Raster-Candidate für weather.precipitation.layer."
-    },
-    "opera/opera_rate_discovery": {
-      "data_origin": "official_original_object_catalog",
-      "measurement_method": "metadata_discovery_only",
-      "observation_kind": "observation",
-      "quantity": null,
-      "unit": null
-    },
-    "opera/opera_dbzh_discovery": {
-      "data_origin": "official_original_object_catalog",
-      "measurement_method": "metadata_discovery_only",
-      "observation_kind": "observation",
-      "quantity": null,
-      "unit": null
     }
   },
   "capability_topic_assignments": {
