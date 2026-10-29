@@ -2153,6 +2153,14 @@ async def websocket_opera_status(hass, connection, msg):
         })
         return
     status = runtime.status()
+    monitor = hass.data.get(DOMAIN, {}).get("opera_source_monitor")
+    status["source_monitor"] = {
+        "running": bool(monitor and monitor._task is not None and not monitor._task.done()),
+        "last_success_utc": monitor.last_success_utc.isoformat() if monitor and monitor.last_success_utc else None,
+        "last_original": monitor.last_object if monitor else None,
+        "active_downloads": monitor.active_downloads if monitor else 0,
+        "last_reason": monitor.last_reason if monitor else "provider_disabled",
+    }
     status["runtime_present"] = True
     status["scientific_status"] = "UNVERIFIED/BLOCKED"
     connection.send_result(msg["id"], status)
