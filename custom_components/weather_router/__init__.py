@@ -249,22 +249,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: WeatherRouterConfigEntry
         opera_area["opera_runtime"] = await hass.async_add_executor_job(
             partial(OperaRuntime, journal_root=hass.config.path(
                 ".storage", "weather_router_opera_cycles")))
-    # The EXISTING provider selection controls OPERA intake; there is no
-    # second preview/global enable switch. RATE is the initial safe
-    # source-acquisition path, but cannot become a public pixel service
-    # without independent scientific validation.
-    opera = opera_area["opera_runtime"]
-    opera.enabled = "opera" in options[CONF_ENABLED_PROVIDERS]
-    opera.services["RATE"] = opera.enabled
-    opera.services["DBZH"] = False
-    opera.services["ACRR"] = False
-    if opera.enabled:
-        from homeassistant.helpers.aiohttp_client import async_get_clientsession
-        from .opera_source_monitor import OperaSourceMonitor
-        monitor = OperaSourceMonitor(
-            hass=hass, session=async_get_clientsession(hass), runtime=opera)
-        opera_area["opera_source_monitor"] = monitor
-        monitor.start()
+    from .opera_source_monitor import async_apply_opera_provider_selection
+    await async_apply_opera_provider_selection(
+        hass, enabled_providers=options[CONF_ENABLED_PROVIDERS],
+        router_enabled=options[CONF_ROUTER_ENABLED],
+        enabled_domains=options[CONF_ENABLED_DOMAINS])
     entry.runtime_data = WeatherRouterRuntimeData(hass=hass, entry=entry)
     await async_setup_extensions(hass, entry)
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
