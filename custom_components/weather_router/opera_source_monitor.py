@@ -132,3 +132,31 @@ class OperaSourceMonitor:
             except asyncio.CancelledError:
                 pass
             self._task = None
+
+
+async def async_apply_opera_provider_selection(hass, *, enabled_providers,
+                                                router_enabled, enabled_domains):
+    """Use existing router/domain/provider eligibility; no preview switch."""
+    from homeassistant.helpers.aiohttp_client import async_get_clientsession
+    from .const import DOMAIN
+    area = hass.data.get(DOMAIN, {})
+    runtime = area.get("opera_runtime")
+    if runtime is None:
+        return
+    allowed = (router_enabled is True and "weather" in enabled_domains
+               and "opera" in enabled_providers and not runtime._closed)
+    runtime.enabled = allowed
+    runtime.services["RATE"] = allowed
+    runtime.services["DBZH"] = False
+    runtime.services["ACRR"] = False
+    monitor = area.get("opera_source_monitor")
+    if not allowed:
+        if monitor is not None:
+            await monitor.stop()
+            area.pop("opera_source_monitor", None)
+        return
+    if monitor is None:
+        monitor = OperaSourceMonitor(
+            hass=hass, session=async_get_clientsession(hass), runtime=runtime)
+        area["opera_source_monitor"] = monitor
+    monitor.start()
