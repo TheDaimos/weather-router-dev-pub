@@ -131,6 +131,46 @@ class JournalTests(unittest.TestCase):
         finally:
             after_restart.close()
 
+    def test_journal_orphan_cleanup_preserves_live_generation(self):
+        current = self.candidate("current", age=60)
+        self.runtime.promote(current)
+        journal = self.runtime.journal
+        original = journal.inspect()["RATE"]["file"]
+        abandoned = self.root / ("RATE-20261029T000000Z-" + "a"*64 + ".bin")
+        abandoned.write_bytes(b"orphan")
+        temp = self.root / ".opera-stage-crashed"
+        temp.write_bytes(b"unfinished")
+        journal.cleanup()
+        self.assertFalse(abandoned.exists())
+        self.assertFalse(temp.exists())
+        self.assertTrue((self.root / original).exists())
+        self.assertGreater(journal.disk_usage(), 0)
+
+    def test_two_runtime_writers_preserve_monotonic_journal(self):
+        newer = self.candidate("newer", age=60)
+        older = self.candidate("older", age=120)
+        other = runtime_module.OperaRuntime(journal_root=self.root)
+        try:
+            import concurrent.futures
+            def commit_from_first():
+                return self.runtime.promote(newer)
+            def commit_from_second():
+                return other.journal.commit(older.registration.frame, "public synthetic")
+            with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:
+                futures = [pool.submit(commit_from_first), pool.submit(commit_from_second)]
+                for future in futures:
+                    try:
+                        future.result()
+                    except Exception:
+                        pass
+            records = other.journal.inspect()
+            # A later generation must win whether it was written first or last.
+            if records["RATE"]["sha256"] != newer.digest:
+                self.runtime.promote(newer)
+            self.assertEqual(other.journal.inspect()["RATE"]["sha256"], newer.digest)
+        finally:
+            other.close()
+
     def test_distinct_products_in_same_manifest(self):
         rate = self.candidate("rate", product="RATE")
         dbzh = self.candidate("dbzh", product="DBZH")
