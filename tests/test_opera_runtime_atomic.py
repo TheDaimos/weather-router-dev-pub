@@ -139,7 +139,7 @@ class AtomicRuntimeTests(unittest.TestCase):
             self.assertTrue(frame.path.is_file())
             self.assertIsNone(self.runtime.cache.get(
                 product=frame.product, valid_at=frame.valid_at, digest=frame.digest))
-            with self.assertRaisesRegex(Exception, "cache_closing"):
+            with self.assertRaisesRegex(Exception, "runtime_closed"):
                 self.candidate("new_after_close")
         finally:
             lease.__exit__(None, None, None)
