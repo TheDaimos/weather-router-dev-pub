@@ -137,6 +137,14 @@ class OperaRuntime:
             if self.cache.get(product=frame.product, valid_at=frame.valid_at,
                               digest=frame.digest) is not frame:
                 raise FrameCacheError("staged_frame_evicted")
+            existing = self.registry.active(candidate.product)
+            if existing is not None:
+                if candidate.stamp < existing.stamp:
+                    raise ValueError("older_cycle")
+                if candidate.stamp == existing.stamp:
+                    if candidate.digest != existing.digest:
+                        raise ValueError("conflicting_cycle")
+                    return existing.stamp
             # Durably commit the verified bytes before switching the live pointer.
             # Recovery is metadata-only and is never a scientific/HTTP approval.
             if self.journal is not None:
