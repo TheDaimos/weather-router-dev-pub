@@ -422,6 +422,38 @@ class TileRouteTests(unittest.TestCase):
             finally:
                 release.set()
 
+    def test_utc_expiry_during_actual_async_render_is_denied(self):
+        """The final authorization rejects pixels after a UTC deadline passes."""
+        start = self.t + timedelta(seconds=899)
+        expired = self.t + timedelta(seconds=901)
+        import threading
+        rendering_started = threading.Event()
+        allow_finish = threading.Event()
+        class FrozenClock:
+            value = start
+            @classmethod
+            def now(cls, tz=None):
+                return cls.value
+        def blocking_render(**kwargs):
+            rendering_started.set()
+            if not allow_finish.wait(timeout=3):
+                raise AssertionError("test_worker_not_released")
+            return b"PNG dummy"
+        async def exercise():
+            pending = asyncio.create_task(self.view().get(
+                self.req, "DBZH", self.stamp, "6", "33", "19"))
+            self.assertTrue(await asyncio.to_thread(rendering_started.wait, 1))
+            FrozenClock.value = expired
+            allow_finish.set()
+            with self.assertRaises(web.HTTPForbidden):
+                await pending
+        with patch.object(tile_http, "render_verified_cog", side_effect=blocking_render), \
+             patch.object(tile_http, "datetime", FrozenClock):
+            try:
+                asyncio.run(exercise())
+            finally:
+                allow_finish.set()
+
     def test_http_executor_keeps_evicted_frame_until_worker_finished(self):
         """Run the actual HTTP get path with a real cache lease under eviction."""
         import threading
