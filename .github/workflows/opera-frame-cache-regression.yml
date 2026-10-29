@@ -6,6 +6,8 @@ on:
     paths:
       - "custom_components/weather_router/opera_frame_cache.py"
       - "tests/test_opera_frame_cache.py"
+      - "custom_components/weather_router/opera_tile_http.py"
+      - "tests/test_opera_http_lease_contract.py"
       - ".github/workflows/opera-frame-cache-regression.yml"
   workflow_dispatch:
 
@@ -28,6 +30,8 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Compile actual OPERA cache module and tests
-        run: python -m py_compile custom_components/weather_router/opera_frame_cache.py tests/test_opera_frame_cache.py
+        run: python -m py_compile custom_components/weather_router/opera_frame_cache.py tests/test_opera_frame_cache.py custom_components/weather_router/opera_tile_http.py tests/test_opera_http_lease_contract.py
       - name: Test actual OPERA frame cache
         run: python -m unittest discover -s tests -p 'test_opera_frame_cache.py' -v
+      - name: Validate actual HTTP lease-path contract
+        run: python -m unittest discover -s tests -p 'test_opera_http_lease_contract.py' -v
