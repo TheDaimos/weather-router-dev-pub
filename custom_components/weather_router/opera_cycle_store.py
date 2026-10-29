@@ -72,7 +72,7 @@ class CycleJournal:
             if file.is_symlink():
                 continue
             if file.name.startswith(".opera-stage-") or (
-                re.fullmatch(r"(?:RATE|DBZH)-\\d{8}T\\d{6}Z-[0-9a-f]{64}\\.bin", file.name)
+                re.fullmatch(r"(?:RATE|DBZH)-[0-9]{8}T[0-9]{6}Z-[0-9a-f]{64}[.]bin", file.name)
                 and file.name not in live
             ):
                 if file.is_file():
@@ -88,7 +88,7 @@ class CycleJournal:
         return sum(p.stat().st_size for p in self.root.iterdir()
                    if p.is_file() and not p.is_symlink() and
                    (p == self.path or p.name.startswith(".opera-stage-") or
-                    re.fullmatch(r"(?:RATE|DBZH)-\\d{8}T\\d{6}Z-[0-9a-f]{64}\\.bin", p.name)))
+                    re.fullmatch(r"(?:RATE|DBZH)-[0-9]{8}T[0-9]{6}Z-[0-9a-f]{64}[.]bin", p.name)))
 
     def commit(self, frame, attribution, *, previous=None):
         with self._writer_lock():
