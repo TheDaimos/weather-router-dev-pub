@@ -2099,6 +2099,7 @@ async def websocket_log_git_export(hass: HomeAssistant, connection: websocket_ap
             "weather_router.all_provider_diagnostics.v1",
             ROUTING_DIAGNOSTIC_SCHEMA,
             "weather_router.api_monitor.v1",
+            "weather_router.opera_status.v1",
         }
         if schema not in supported_schemas:
             raise WeatherRouterLogExportError("unsupported WeatherRouter diagnostic schema")
@@ -2115,6 +2116,12 @@ async def websocket_log_git_export(hass: HomeAssistant, connection: websocket_ap
             providers = snapshot.get("providers")
             if providers is not None and not isinstance(providers, list):
                 raise WeatherRouterLogExportError("invalid aggregate provider diagnostics")
+        elif schema == "weather_router.opera_status.v1":
+            opera = snapshot.get("opera")
+            if not isinstance(opera, dict) or not isinstance(opera.get("products"), dict):
+                raise WeatherRouterLogExportError("invalid OPERA diagnostic snapshot")
+            if snapshot.get("captured_at_utc") is None:
+                raise WeatherRouterLogExportError("missing OPERA capture timestamp")
         elif schema == "weather_router.api_monitor.v1":
             entries = snapshot.get("entries")
             if not isinstance(entries, list) or len(entries) > 250:
