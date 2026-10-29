@@ -174,7 +174,7 @@ class OperaRuntime:
             self.enabled = False
             self.services = {product: False for product in PRODUCTS}
             self.registry.revoke()
-            self.cache.close()
+            self.cache.close(defer=True)
             self._closed = True
 
     def status(self, *, now=None):
