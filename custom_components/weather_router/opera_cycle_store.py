@@ -99,7 +99,7 @@ class CycleJournal:
                 stamp = item["generation"]
                 date = datetime.fromisoformat(item["valid_at"])
                 if (date.tzinfo is None or date.astimezone(timezone.utc).strftime("%Y%m%dT%H%M%SZ") != stamp
-                        or item["product"] != product or item["file"] != f"{product}-{stamp}-{digest}"):
+                        or item["product"] != product or item["file"] != f"{product}-{stamp}-{digest}.bin"):
                     raise CycleStoreError("invalid_identity")
                 name = item["file"]
                 path = self.root / name
