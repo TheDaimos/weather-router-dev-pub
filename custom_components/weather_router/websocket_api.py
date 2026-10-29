@@ -2166,9 +2166,24 @@ async def websocket_opera_status(hass, connection, msg):
     connection.send_result(msg["id"], status)
 
 
+@websocket_api.require_admin
+@websocket_api.websocket_command({vol.Required("type"): "weather_router/opera_refresh"})
+@websocket_api.async_response
+async def websocket_opera_refresh(hass, connection, msg):
+    """Run the SAME bounded source monitor, never a second test pipeline."""
+    monitor = hass.data.get(DOMAIN, {}).get("opera_source_monitor")
+    if monitor is None or monitor.runtime.enabled is not True:
+        connection.send_error(msg["id"], "opera_disabled", "OPERA provider is disabled.")
+        return
+    await monitor.check_once()
+    connection.send_result(msg["id"], {"status": monitor.last_reason,
+                                       "active_downloads": monitor.active_downloads})
+
+
 def async_register(hass: HomeAssistant) -> None:
     """Register WeatherRouter WebSocket commands."""
     websocket_api.async_register_command(hass, websocket_opera_status)
+    websocket_api.async_register_command(hass, websocket_opera_refresh)
     websocket_api.async_register_command(hass, websocket_routing_settings)
     websocket_api.async_register_command(hass, websocket_routing_settings_update)
     websocket_api.async_register_command(hass, websocket_consumer_profiles)
