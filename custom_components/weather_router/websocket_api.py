@@ -2138,8 +2138,29 @@ async def websocket_log_git_export(hass: HomeAssistant, connection: websocket_ap
     except WeatherRouterLogExportError as err:
         connection.send_error(msg["id"], "git_export_failed", str(err))
 
+@websocket_api.require_admin
+@websocket_api.websocket_command({vol.Required("type"): "weather_router/opera_status"})
+@websocket_api.async_response
+async def websocket_opera_status(hass, connection, msg):
+    """Admin-only live OPERA status; never returns tokens or local paths."""
+    runtime = hass.data.get(DOMAIN, {}).get("opera_runtime")
+    if runtime is None:
+        connection.send_result(msg["id"], {
+            "provider_enabled": False,
+            "scientific_status": "UNVERIFIED/BLOCKED",
+            "http_enabled": False, "consumer_v2_approved": False,
+            "runtime_present": False, "products": {},
+        })
+        return
+    status = runtime.status()
+    status["runtime_present"] = True
+    status["scientific_status"] = "UNVERIFIED/BLOCKED"
+    connection.send_result(msg["id"], status)
+
+
 def async_register(hass: HomeAssistant) -> None:
     """Register WeatherRouter WebSocket commands."""
+    websocket_api.async_register_command(hass, websocket_opera_status)
     websocket_api.async_register_command(hass, websocket_routing_settings)
     websocket_api.async_register_command(hass, websocket_routing_settings_update)
     websocket_api.async_register_command(hass, websocket_consumer_profiles)
