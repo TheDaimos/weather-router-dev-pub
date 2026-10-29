@@ -127,6 +127,24 @@ class AtomicRuntimeTests(unittest.TestCase):
             self.assertTrue(frame.path.exists())
         self.assertFalse(frame.path.exists())
 
+    def test_close_during_lease_preserves_file_until_release(self):
+        c = self.candidate("closing")
+        frame = c.registration.frame
+        lease = self.runtime.cache.lease(
+            product=frame.product, valid_at=frame.valid_at, digest=frame.digest)
+        lease.__enter__()
+        folder = self.runtime.cache._folder
+        try:
+            self.runtime.close()
+            self.assertTrue(frame.path.is_file())
+            self.assertIsNone(self.runtime.cache.get(
+                product=frame.product, valid_at=frame.valid_at, digest=frame.digest))
+            with self.assertRaisesRegex(Exception, "cache_closing"):
+                self.candidate("new_after_close")
+        finally:
+            lease.__exit__(None, None, None)
+        self.assertFalse(folder.exists(), "deferred cache directory not removed")
+
     def test_parallel_promotion_never_rolls_back(self):
         old = self.candidate("old", offset=-100)
         new = self.candidate("new")
