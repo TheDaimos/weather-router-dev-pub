@@ -13,6 +13,8 @@ import json
 import os
 import re
 import tempfile
+import fcntl
+from contextlib import contextmanager
 
 PRODUCTS = {"RATE", "DBZH"}
 DIGEST = re.compile(r"[0-9a-f]{64}\Z")
@@ -25,11 +27,15 @@ class CycleStoreError(ValueError):
 
 
 class CycleJournal:
-    def __init__(self, root):
+    def __init__(self, root, *, max_disk_bytes=32 * 1024 * 1024):
+        if type(max_disk_bytes) is not int or not 2 * MAX_BYTES <= max_disk_bytes <= 256 * 1024 * 1024:
+            raise CycleStoreError('invalid_journal_quota')
+        self.max_disk_bytes = max_disk_bytes
         self.root = Path(root).resolve()
         self.root.mkdir(mode=0o700, parents=True, exist_ok=True)
         os.chmod(self.root, 0o700)
         self.path = self.root / "active.json"
+        self.lock_path = self.root / ".journal.lock"
 
     def _atomic_bytes(self, dest, payload):
         fd, name = tempfile.mkstemp(prefix=".opera-stage-", dir=self.root)
@@ -49,7 +55,46 @@ class CycleJournal:
         finally:
             Path(name).unlink(missing_ok=True)
 
+    @contextmanager
+    def _writer_lock(self):
+        """Advisory cross-process Linux lock for all journal mutations."""
+        fd = os.open(self.lock_path, os.O_CREAT | os.O_RDWR, 0o600)
+        try:
+            fcntl.flock(fd, fcntl.LOCK_EX)
+            yield
+        finally:
+            fcntl.flock(fd, fcntl.LOCK_UN)
+            os.close(fd)
+
+    def _clean_unreferenced_locked(self, live):
+        """Clean only journal-owned files; never touch live frame-reader cache."""
+        for file in self.root.iterdir():
+            if file.is_symlink():
+                continue
+            if file.name.startswith(".opera-stage-") or (
+                re.fullmatch(r"(?:RATE|DBZH)-\\d{8}T\\d{6}Z-[0-9a-f]{64}\\.bin", file.name)
+                and file.name not in live
+            ):
+                if file.is_file():
+                    file.unlink()
+
+    def cleanup(self):
+        with self._writer_lock():
+            records = self.inspect()  # Bad manifest -> no deletion.
+            self._clean_unreferenced_locked({v["file"] for v in records.values()})
+
+    def disk_usage(self):
+        """Journal-owned physical bytes only (no secrets/paths)."""
+        return sum(p.stat().st_size for p in self.root.iterdir()
+                   if p.is_file() and not p.is_symlink() and
+                   (p == self.path or p.name.startswith(".opera-stage-") or
+                    re.fullmatch(r"(?:RATE|DBZH)-\\d{8}T\\d{6}Z-[0-9a-f]{64}\\.bin", p.name)))
+
     def commit(self, frame, attribution, *, previous=None):
+        with self._writer_lock():
+            return self._commit_locked(frame, attribution, previous=previous)
+
+    def _commit_locked(self, frame, attribution, *, previous=None):
         if (frame.product not in PRODUCTS
                 or not isinstance(frame.valid_at, datetime) or frame.valid_at.tzinfo is None
                 or not isinstance(frame.digest, str) or DIGEST.fullmatch(frame.digest) is None
@@ -79,9 +124,17 @@ class CycleJournal:
             "file": name, "attribution": attribution,
             "integrity": "sha256_verified", "publication": "journaled_not_authorized",
         }
+        # Bound even in-flight transactions to at most one new frame beyond
+        # the active committed set. Never evict the active manifest to fit.
+        live_names = {v["file"] for v in old.values()}
+        self._clean_unreferenced_locked(live_names)
+        active_bytes = sum(v["bytes"] for v in old.values())
+        if active_bytes + len(payload) > self.max_disk_bytes:
+            raise CycleStoreError("journal_quota_exceeded")
         self._atomic_bytes(self.root / name, payload)
         document = {"schema": SCHEMA, "cycles": new}
         self._atomic_bytes(self.path, json.dumps(document, sort_keys=True, separators=(",", ":")).encode())
+        self._clean_unreferenced_locked({v["file"] for v in new.values()})
         return new[frame.product]
 
     def inspect(self):
