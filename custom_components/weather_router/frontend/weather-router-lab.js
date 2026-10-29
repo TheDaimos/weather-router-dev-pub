@@ -2255,7 +2255,7 @@ class WeatherRouterLab extends HTMLElement {
         const p=state.products?.[product] || {};
         rows.push(`${product}: ${p.service_enabled ? "AN" : "AUS"} · ${p.status || "UNAVAILABLE"} · UTC ${p.utc_measurement || "—"} · ${p.age_seconds ?? "—"} s · Generation ${p.generation || "—"}`);
       }
-      output.textContent = rows.join("\\n");
+      output.textContent = rows.join("\n");
     } catch (error) {
       output.textContent = `OPERA-Status nicht verfügbar: ${error?.message || String(error)}`;
     }
