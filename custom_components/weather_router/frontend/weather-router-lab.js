@@ -2249,6 +2249,7 @@ class WeatherRouterLab extends HTMLElement {
         `Wissenschaft: ${state.scientific_status || "UNVERIFIED/BLOCKED"}`,
         `HTTP: ${state.http_enabled ? "AN" : "AUS"} · Consumer V2: ${state.consumer_v2_approved ? "bereit" : "gesperrt"}`,
         `Cache: ${state.cached_frames ?? 0} Frames / ${state.cached_bytes ?? 0} Bytes · aktive Leser: ${state.active_readers ?? 0}`,
+        `Persistenter Journal-Speicher: ${state.persistent_bytes ?? "nicht verfügbar"} Bytes · Journal: ${state.journal_present ? "vorhanden" : "nicht verfügbar"}`,
         `Letzte Promotion: ${state.last_promotion_utc ?? "—"} · letzter Fehler: ${state.last_error ?? "—"}`,
       ];
       for (const product of ["RATE","DBZH","ACRR"]) {
