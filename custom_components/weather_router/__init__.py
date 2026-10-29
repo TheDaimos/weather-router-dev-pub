@@ -229,7 +229,9 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     # Single server-owned dormant OPERA staging runtime. Deliberately no
     # HTTP view, S3 monitor, Consumer publication or scientific admission.
     from .opera_runtime import OperaRuntime
-    hass.data.setdefault(DOMAIN, {}).setdefault("opera_runtime", OperaRuntime())
+    opera_area = hass.data.setdefault(DOMAIN, {})
+    if "opera_runtime" not in opera_area:
+        opera_area["opera_runtime"] = OperaRuntime()
     return True
 
 
