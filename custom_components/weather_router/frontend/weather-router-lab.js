@@ -117,6 +117,8 @@ class WeatherRouterLab extends HTMLElement {
     queueMicrotask(() => this._ensureMap());
     this.shadowRoot?.getElementById("opera-refresh")?.addEventListener("click", () => this._refreshOperaStatus());
     this.shadowRoot?.getElementById("opera-poll-now")?.addEventListener("click", () => this._pollOperaNow());
+    this.shadowRoot?.getElementById("opera-enable")?.addEventListener("click", () => this._setOperaProvider(true));
+    this.shadowRoot?.getElementById("opera-disable")?.addEventListener("click", () => this._setOperaProvider(false));
   }
 
   disconnectedCallback() {
@@ -398,6 +400,8 @@ class WeatherRouterLab extends HTMLElement {
               <p class="muted">Wissenschaftlich UNVERIFIED/BLOCKED · keine Radar-Kachelfreigabe.</p>
               <button id="opera-refresh" type="button">Live-Status abrufen</button>
               <button id="opera-poll-now" type="button">Jetzt aktualisieren</button>
+              <button id="opera-enable" type="button">OPERA-Provider aktivieren</button>
+              <button id="opera-disable" type="button">OPERA-Provider deaktivieren</button>
               <pre id="opera-status" style="white-space:pre-wrap;overflow-wrap:anywhere">Noch nicht abgefragt.</pre>
             </div>
           </details>
@@ -2238,6 +2242,22 @@ class WeatherRouterLab extends HTMLElement {
       host.appendChild(box);
     }
     this.shadowRoot.getElementById("raw").textContent = JSON.stringify(this._results,null,2);
+  }
+
+  async _setOperaProvider(enabled) {
+    const output = this.shadowRoot?.getElementById("opera-status");
+    if (!this._hass || !output) return;
+    try {
+      const current = await this._hass.callWS({type:"weather_router/routing_settings"});
+      const providers = current.providers?.filter(p => p.enabled_by_user).map(p => p.id) || [];
+      const requested = new Set(providers);
+      if (enabled) requested.add("opera"); else requested.delete("opera");
+      await this._hass.callWS({type:"weather_router/routing_settings_update",
+                               enabled_providers:[...requested]});
+      await this._refreshOperaStatus();
+    } catch (error) {
+      output.textContent = `OPERA-Providerwechsel fehlgeschlagen: ${error?.message || String(error)}`;
+    }
   }
 
   async _pollOperaNow() {
