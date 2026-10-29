@@ -226,12 +226,6 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     async_register_consumer_mosaic_api(hass)
     async_register_monitor_api(hass)
     async_register_routing_diagnostics_api(hass)
-    # Single server-owned dormant OPERA staging runtime. Deliberately no
-    # HTTP view, S3 monitor, Consumer publication or scientific admission.
-    from .opera_runtime import OperaRuntime
-    opera_area = hass.data.setdefault(DOMAIN, {})
-    if "opera_runtime" not in opera_area:
-        opera_area["opera_runtime"] = OperaRuntime()
     return True
 
 
@@ -245,6 +239,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: WeatherRouterConfigEntry
     if options != entry.options:
         hass.config_entries.async_update_entry(entry, options=options)
 
+    # Config-entry owned lifetime: reload creates a fresh cache only after unload.
+    from .opera_runtime import OperaRuntime
+    opera_area = hass.data.setdefault(DOMAIN, {})
+    if "opera_runtime" not in opera_area:
+        opera_area["opera_runtime"] = OperaRuntime()
     entry.runtime_data = WeatherRouterRuntimeData(hass=hass, entry=entry)
     await async_setup_extensions(hass, entry)
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
@@ -256,6 +255,10 @@ async def async_unload_entry(hass: HomeAssistant, entry: WeatherRouterConfigEntr
     """Unload WeatherRouter cleanly, including its development Lab panel."""
     unloaded = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
     if unloaded:
+        opera_area = hass.data.get(DOMAIN, {})
+        runtime = opera_area.pop("opera_runtime", None)
+        if runtime is not None:
+            runtime.close()  # Defers physical cache deletion until last reader lease.
         await async_unload_extensions(hass, entry)
         async_unload_monitor(hass)
         frontend.async_remove_panel(hass, LAB_URL_PATH, warn_if_unknown=False)
