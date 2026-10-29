@@ -2,7 +2,7 @@ import * as maplibregl from "https://unpkg.com/maplibre-gl@6.9.1/dist/maplibre-g
 
 const SELECT_ENTITY = "select.weather_router_reference_location";
 const MAPLIBRE_CSS = "https://unpkg.com/maplibre-gl@6.9.1/dist/maplibre-gl.css";
-const WR_LAB_BUILD_VERSION = "0.10.163";
+const WR_LAB_BUILD_VERSION = "0.10.164";
 const LAB_MENU_STATE_KEY = "weather_router_lab_menu_state_v1";
 
 const OPENFREEMAP_STYLES = {
@@ -116,6 +116,8 @@ class WeatherRouterLab extends HTMLElement {
     }, 2500);
     queueMicrotask(() => this._ensureMap());
     this.shadowRoot?.getElementById("opera-refresh")?.addEventListener("click", () => this._refreshOperaStatus());
+    this.shadowRoot?.getElementById("opera-json")?.addEventListener("click", () => this._exportOperaJson());
+    this.shadowRoot?.getElementById("opera-git")?.addEventListener("click", () => this._exportOperaGit());
     this.shadowRoot?.getElementById("opera-poll-now")?.addEventListener("click", () => this._pollOperaNow());
     this.shadowRoot?.getElementById("opera-enable")?.addEventListener("click", () => this._setOperaProvider(true));
     this.shadowRoot?.getElementById("opera-disable")?.addEventListener("click", () => this._setOperaProvider(false));
@@ -402,6 +404,7 @@ class WeatherRouterLab extends HTMLElement {
               <button id="opera-poll-now" type="button">Jetzt aktualisieren</button>
               <button id="opera-enable" type="button">OPERA-Provider aktivieren</button>
               <button id="opera-disable" type="button">OPERA-Provider deaktivieren</button>
+              <div class="actions"><button id="opera-json" type="button">JSON exportieren</button><button id="opera-git" type="button">Export2Git</button></div>
               <pre id="opera-status" style="white-space:pre-wrap;overflow-wrap:anywhere">Noch nicht abgefragt.</pre>
             </div>
           </details>
@@ -2269,6 +2272,51 @@ class WeatherRouterLab extends HTMLElement {
       await this._refreshOperaStatus();
     } catch (error) {
       output.textContent = `OPERA-Abruf verweigert: ${error?.message || String(error)}`;
+    }
+  }
+
+  async _operaExportSnapshot() {
+    // Always capture a fresh admin-only live snapshot, not a stale displayed value.
+    if (!this._hass) throw new Error("Home Assistant nicht verbunden");
+    const opera = await this._hass.callWS({type:"weather_router/opera_status"});
+    if (!opera || typeof opera !== "object" || !opera.products || typeof opera.products !== "object") {
+      throw new Error("Ungültiger OPERA-Diagnosestatus");
+    }
+    return {schema:"weather_router.opera_status.v1",
+            captured_at_utc:new Date().toISOString(), opera};
+  }
+
+  async _exportOperaJson() {
+    const status = this.shadowRoot?.getElementById("opera-status");
+    try {
+      const snapshot = await this._operaExportSnapshot();
+      const blob = new Blob([JSON.stringify(snapshot, null, 2)], {type:"application/json"});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "weather-router-opera-" + new Date().toISOString().replace(/[:.]/g,"-") + ".json";
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      if (status) status.textContent = "OPERA-Diagnose als JSON exportiert.\n" + status.textContent;
+    } catch(error) {
+      if (status) status.textContent = "OPERA-JSON-Export fehlgeschlagen: " + String(error?.message || error);
+    }
+  }
+
+  async _exportOperaGit() {
+    const status = this.shadowRoot?.getElementById("opera-status");
+    const button = this.shadowRoot?.getElementById("opera-git");
+    if (button?.disabled) return;
+    if (button) button.disabled = true;
+    try {
+      const snapshot = await this._operaExportSnapshot();
+      const result = await this._hass.callWS({type:"weather_router/log_git_export",target:"archive",snapshot});
+      if (status) status.textContent = "OPERA Export2Git erfolgreich: " +
+          (result.path || result.url || "Project-Log-And-Export") + "\n" + status.textContent;
+    } catch(error) {
+      if (status) status.textContent = "OPERA Export2Git fehlgeschlagen: " + String(error?.message || error);
+    } finally {
+      if (button) button.disabled = false;
     }
   }
 
