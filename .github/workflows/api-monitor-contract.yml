@@ -1,0 +1,21 @@
+name: WR API monitor contract
+on:
+  push:
+    branches:
+      - feature/p7-010-global-concurrency-2026-10-16
+  workflow_dispatch:
+jobs:
+  monitor:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.12', '3.13']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Compile monitor core
+        run: python -m py_compile custom_components/weather_router/consumer_api_monitor.py
+      - name: Run monitor tests
+        run: python -m unittest discover -s tests -p 'test_consumer_api_monitor.py' -v

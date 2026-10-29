@@ -68,6 +68,53 @@ def resolve(sources, user_request=None, **kw):
 
 
 class RasterMosaicServiceTests(unittest.TestCase):
+    def test_opt_in_old_satellite_and_fresh_radar_service_contract(self):
+        old = source("world_old", WORLD, time="2026-10-14T08:30:00Z")
+        old["semantics"] = {**SEM,
+            "measurement_method":"satellite_precipitation_estimate",
+            "observation_kind":"estimate"}
+        fresh = source("dwd_region", REGION_DE, time="2026-10-14T15:06:00Z")
+        query = request()
+        strict = resolve([old, fresh], query)
+        self.assertEqual([x["source_id"] for x in strict["layers"]], ["dwd_region"])
+        query["time"]["max_background_age_seconds"] = 43200
+        extended = resolve([old, fresh], query)
+        self.assertEqual([x["source_id"] for x in extended["layers"]],
+                         ["world_old", "dwd_region"])
+        self.assertEqual(extended["layers"][0]["freshness_class"], "older_background")
+        self.assertEqual(extended["layers"][1]["freshness_class"], "current")
+        self.assertEqual(extended["reference_time"], "2026-10-14T15:06:00Z")
+
+    def test_realistic_direct_wms_world_bbox_opt_in_survives_adapter_to_policy(self):
+        machine = {
+            "scope": "bbox", "bbox": {
+                "west": -180, "east": 180, "south": -90, "north": 90},
+            "source": "wms_get_capabilities",
+            "coverage_metadata_scope": "layer_specific_wms",
+            "bbox_source": "EX_GeographicBoundingBox",
+            "bbox_inherited": False,
+            "layer": "synthetic_precipitation_world",
+        }
+        satellite = source("world_satellite", machine, time="2026-10-14T08:30:00Z")
+        satellite["semantics"] = {**SEM,
+            "measurement_method": "satellite_precipitation_estimate",
+            "observation_kind": "estimate"}
+        radar = source("dwd", REGION_DE, time="2026-10-14T15:06:00Z")
+        req = request()
+        without = resolve([satellite, radar], req)
+        self.assertEqual([v["source_id"] for v in without["layers"]], ["dwd"])
+        req["time"]["max_background_age_seconds"] = 43200
+        with_opt = resolve([satellite, radar], req)
+        self.assertEqual([v["source_id"] for v in with_opt["layers"]],
+                         ["world_satellite", "dwd"])
+        self.assertEqual(with_opt["layers"][0]["coverage_scope"], "bbox")
+        self.assertEqual(with_opt["layers"][0]["freshness_class"], "older_background")
+        inherited = {**machine, "bbox_inherited": True}
+        suspect = source("service_world", inherited, time="2026-10-14T08:30:00Z")
+        suspect["semantics"] = dict(satellite["semantics"])
+        invalid = resolve([suspect], req)
+        self.assertEqual(invalid["layers"], [])
+
     def test_world_survives_tiny_germany_edge(self):
         got = resolve([source("local_germany", REGION_DE),
                        source("world", WORLD)])
@@ -205,6 +252,45 @@ class RasterMosaicServiceTests(unittest.TestCase):
         self.assertLessEqual(len(result["layers"]), 4)
         self.assertTrue(any("Kontaktbegrenzung" in line
                             for line in result["limitations"]))
+
+    def test_parallel_consumers_share_global_contact_slots(self):
+        async def scenario():
+            active = 0
+            peak = 0
+
+            async def fetch():
+                nonlocal active, peak
+                active += 1
+                peak = max(peak, active)
+                try:
+                    await asyncio.sleep(.02)
+                    return {"tile_url": "https://example.invalid/{z}/{x}/{y}.png",
+                            "frame_time": TIME, "attribution": "synthetic",
+                            "legend": {"title": "synthetic"}}
+                finally:
+                    active -= 1
+
+            def inventory(prefix):
+                result = []
+                for n in range(12):
+                    row = source(f"{prefix}_{n}", WORLD if n == 0 else REGION_CUBA)
+                    row["async_fetch"] = fetch
+                    result.append(row)
+                return result
+
+            answers = await asyncio.gather(
+                service.resolve_mosaic_snapshot(
+                    request(12), sources=inventory("a"),
+                    server_now="2026-10-14T15:08:00Z"),
+                service.resolve_mosaic_snapshot(
+                    request(12), sources=inventory("b"),
+                    server_now="2026-10-14T15:08:00Z"))
+            return peak, answers
+
+        peak, answers = asyncio.run(scenario())
+        self.assertLessEqual(peak, service.MAX_PARALLEL_CONTACTS)
+        self.assertEqual(len(answers), 2)
+        self.assertTrue(all(len(answer["layers"]) == 12 for answer in answers))
 
     def test_time_coherent_frame_chosen(self):
         frames = [{"time": "2026-10-14T15:07:00Z",

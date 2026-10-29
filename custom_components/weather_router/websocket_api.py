@@ -381,7 +381,8 @@ async def websocket_routing_settings_update(
         list(settings["enabled_providers"]),
     )
     all_providers = await _async_all_provider_catalog(hass)
-    unknown_providers = sorted(set(enabled_providers) - set(all_providers))
+    # OPERA is a source-acquisition-only opt-in here; not a V1 catalog route.
+    unknown_providers = sorted(set(enabled_providers) - (set(all_providers) | {"opera"}))
     if unknown_providers:
         connection.send_error(
             msg["id"],
@@ -406,6 +407,12 @@ async def websocket_routing_settings_update(
         enabled_domains=enabled_domains,
         enabled_providers=enabled_providers,
     )
+    from .opera_source_monitor import async_apply_opera_provider_selection
+    await async_apply_opera_provider_selection(
+        hass, enabled_providers=enabled_providers,
+        router_enabled=msg.get("router_enabled", settings["router_enabled"]),
+        enabled_domains=enabled_domains)
+
     providers = await _async_provider_catalog(hass)
     connection.send_result(
         msg["id"],
@@ -2091,6 +2098,8 @@ async def websocket_log_git_export(hass: HomeAssistant, connection: websocket_ap
             "weather_router.provider_diagnostics.v1",
             "weather_router.all_provider_diagnostics.v1",
             ROUTING_DIAGNOSTIC_SCHEMA,
+            "weather_router.api_monitor.v1",
+            "weather_router.opera_status.v1",
         }
         if schema not in supported_schemas:
             raise WeatherRouterLogExportError("unsupported WeatherRouter diagnostic schema")
@@ -2107,6 +2116,18 @@ async def websocket_log_git_export(hass: HomeAssistant, connection: websocket_ap
             providers = snapshot.get("providers")
             if providers is not None and not isinstance(providers, list):
                 raise WeatherRouterLogExportError("invalid aggregate provider diagnostics")
+        elif schema == "weather_router.opera_status.v1":
+            opera = snapshot.get("opera")
+            if not isinstance(opera, dict) or not isinstance(opera.get("products"), dict):
+                raise WeatherRouterLogExportError("invalid OPERA diagnostic snapshot")
+            if snapshot.get("captured_at_utc") is None:
+                raise WeatherRouterLogExportError("missing OPERA capture timestamp")
+        elif schema == "weather_router.api_monitor.v1":
+            entries = snapshot.get("entries")
+            if not isinstance(entries, list) or len(entries) > 250:
+                raise WeatherRouterLogExportError("invalid API monitor entries")
+            if any(not isinstance(item, dict) for item in entries):
+                raise WeatherRouterLogExportError("invalid API monitor entry")
         elif schema == ROUTING_DIAGNOSTIC_SCHEMA:
             candidates = snapshot.get("candidates")
             if not isinstance(candidates, list) or len(candidates) > 200:
@@ -2131,8 +2152,52 @@ async def websocket_log_git_export(hass: HomeAssistant, connection: websocket_ap
     except WeatherRouterLogExportError as err:
         connection.send_error(msg["id"], "git_export_failed", str(err))
 
+@websocket_api.require_admin
+@websocket_api.websocket_command({vol.Required("type"): "weather_router/opera_status"})
+@websocket_api.async_response
+async def websocket_opera_status(hass, connection, msg):
+    """Admin-only live OPERA status; never returns tokens or local paths."""
+    runtime = hass.data.get(DOMAIN, {}).get("opera_runtime")
+    if runtime is None:
+        connection.send_result(msg["id"], {
+            "provider_enabled": False,
+            "scientific_status": "UNVERIFIED/BLOCKED",
+            "http_enabled": False, "consumer_v2_approved": False,
+            "runtime_present": False, "products": {},
+        })
+        return
+    status = runtime.status()
+    monitor = hass.data.get(DOMAIN, {}).get("opera_source_monitor")
+    status["source_monitor"] = {
+        "running": bool(monitor and monitor._task is not None and not monitor._task.done()),
+        "last_success_utc": monitor.last_success_utc.isoformat() if monitor and monitor.last_success_utc else None,
+        "last_original": monitor.last_object if monitor else None,
+        "active_downloads": monitor.active_downloads if monitor else 0,
+        "last_reason": monitor.last_reason if monitor else "provider_disabled",
+    }
+    status["runtime_present"] = True
+    status["scientific_status"] = "UNVERIFIED/BLOCKED"
+    connection.send_result(msg["id"], status)
+
+
+@websocket_api.require_admin
+@websocket_api.websocket_command({vol.Required("type"): "weather_router/opera_refresh"})
+@websocket_api.async_response
+async def websocket_opera_refresh(hass, connection, msg):
+    """Run the SAME bounded source monitor, never a second test pipeline."""
+    monitor = hass.data.get(DOMAIN, {}).get("opera_source_monitor")
+    if monitor is None or monitor.runtime.enabled is not True:
+        connection.send_error(msg["id"], "opera_disabled", "OPERA provider is disabled.")
+        return
+    await monitor.check_once()
+    connection.send_result(msg["id"], {"status": monitor.last_reason,
+                                       "active_downloads": monitor.active_downloads})
+
+
 def async_register(hass: HomeAssistant) -> None:
     """Register WeatherRouter WebSocket commands."""
+    websocket_api.async_register_command(hass, websocket_opera_status)
+    websocket_api.async_register_command(hass, websocket_opera_refresh)
     websocket_api.async_register_command(hass, websocket_routing_settings)
     websocket_api.async_register_command(hass, websocket_routing_settings_update)
     websocket_api.async_register_command(hass, websocket_consumer_profiles)

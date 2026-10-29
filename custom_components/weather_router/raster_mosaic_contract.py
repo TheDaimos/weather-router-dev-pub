@@ -5,7 +5,7 @@ No provider selection, network access, image processing or implicit credentials.
 """
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timezone
 from math import isfinite
 from typing import Any, Mapping
 
@@ -51,14 +51,14 @@ def _utc(value: Any, field: str) -> str:
         raise MosaicContractError(f"invalid {field}") from err
     if parsed.tzinfo is None or parsed.utcoffset() is None:
         raise MosaicContractError(f"{field} must contain a timezone")
-    return parsed.isoformat()
+    return parsed.astimezone(timezone.utc).isoformat().replace("+00:00", "Z")
 
 
 def validate_raster_mosaic_request(raw: Any) -> dict[str, Any]:
     """Normalize one explicit V2 proposal without relaxing existing V1 rules."""
     value = _mapping(raw, "request")
-    _keys(value, {"type", "contract_version", "capability", "profile_id",
-                  "context", "time", "limits"},
+    _keys(value, {"type", "contract_version", "capability", "profile_id", "consumer_id", "correlation_id",
+                  "context", "time", "limits", "source_request"},
           {"type", "contract_version", "capability", "context", "time", "limits"},
           "request")
     if (value["type"] != "weather_router/consumer/resolve_mosaic"
@@ -86,7 +86,7 @@ def validate_raster_mosaic_request(raw: Any) -> dict[str, Any]:
         }
     temporal = _mapping(value["time"], "time")
     _keys(temporal, {"mode", "max_data_age_seconds", "max_time_delta_seconds",
-                     "target_time"}, {"mode", "max_data_age_seconds"}, "time")
+                     "target_time", "max_background_age_seconds"}, {"mode", "max_data_age_seconds"}, "time")
     mode = temporal["mode"]
     if mode not in {"latest_coherent", "at_time"}:
         raise MosaicContractError("unsupported temporal mode")
@@ -95,6 +95,12 @@ def validate_raster_mosaic_request(raw: Any) -> dict[str, Any]:
         "max_data_age_seconds": _bounded_int(temporal["max_data_age_seconds"],
                                                1, 86400, "max_data_age_seconds"),
     }
+    if "max_background_age_seconds" in temporal:
+        background = _bounded_int(temporal["max_background_age_seconds"],
+                                  1, 86400, "max_background_age_seconds")
+        if background < time["max_data_age_seconds"]:
+            raise MosaicContractError("background age must not be below live age")
+        time["max_background_age_seconds"] = background
     if "max_time_delta_seconds" in temporal:
         time["max_time_delta_seconds"] = _bounded_int(
             temporal["max_time_delta_seconds"], 0, 86400, "max_time_delta_seconds")
@@ -117,9 +123,23 @@ def validate_raster_mosaic_request(raw: Any) -> dict[str, Any]:
         "capability": value["capability"], "context": viewport,
         "time": time, "limits": bounded_limits,
     }
+    if "source_request" in value:
+        source = _mapping(value["source_request"], "source_request")
+        _keys(source, {"provider_id", "product_id"}, {"provider_id", "product_id"}, "source_request")
+        if source["provider_id"] != "opera" or source["product_id"] != "RATE":
+            raise MosaicContractError("unsupported explicit mosaic source")
+        if time["max_data_age_seconds"] > 900:
+            raise MosaicContractError("OPERA requires max_data_age_seconds <= 900")
+        result["source_request"] = {"provider_id": "opera", "product_id": "RATE"}
     if "profile_id" in value:
         profile_id = value["profile_id"]
         if not isinstance(profile_id, str) or not profile_id.strip():
             raise MosaicContractError("invalid profile_id")
         result["profile_id"] = profile_id
+    for meta_field, max_length in (("consumer_id", 96), ("correlation_id", 128)):
+        if meta_field in value:
+            meta_value = value[meta_field]
+            if not isinstance(meta_value, str) or not meta_value or len(meta_value) > max_length:
+                raise MosaicContractError("invalid " + meta_field)
+            result[meta_field] = meta_value
     return result

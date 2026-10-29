@@ -169,6 +169,7 @@ def plan_raster_mosaic(
     max_data_age_seconds: int,
     max_time_delta_seconds: int,
     max_layers: int = 4,
+    max_background_age_seconds: int | None = None,
     focus: Mapping[str, Any] | None = None,
     reference_time: str | None = None,
 ) -> dict[str, Any]:
@@ -189,6 +190,10 @@ def plan_raster_mosaic(
                              (max_layers, 1, 12)):
         if type(value) is not int or not low <= value <= high:
             raise ValueError("invalid resource or freshness limit")
+    if max_background_age_seconds is not None and (
+            type(max_background_age_seconds) is not int
+            or not max_data_age_seconds <= max_background_age_seconds <= 86400):
+        raise ValueError("invalid background age ceiling")
     if not isinstance(candidates, list):
         raise ValueError("candidates must be a list")
     allowed: list[dict[str, Any]] = []
@@ -220,9 +225,69 @@ def plan_raster_mosaic(
         fraction = viewport_overlap(box, coverage) if not reason else 0.0
         if not reason and fraction <= 0.0:
             reason = "outside_coverage"
-        frames = _usable_frames(candidate, now_dt, max_data_age_seconds)
+        # Older global satellite estimates may serve as explicitly opt-in
+        # background, but never as a fresh local radar observation.
+        world_coverage_for_background = (
+            isinstance(coverage, Mapping)
+            and (
+                coverage.get("scope") == "global"
+                or (
+                    coverage.get("scope") == "bbox"
+                    and candidate.get("verified_world_product_bbox") is True
+                    and _bbox(coverage.get("bbox")) == {
+                        "west": -180.0, "east": 180.0,
+                        "south": -90.0, "north": 90.0,
+                    }
+                )
+            )
+        )
+        is_background = (
+            max_background_age_seconds is not None
+            and world_coverage_for_background
+            and sem is not None
+            and sem.get("measurement_method") in (
+                "satellite_precipitation_estimate", "satellite_estimate")
+            and sem.get("observation_kind") == "estimate"
+        )
+        frames = _usable_frames(candidate, now_dt,
+                                max_background_age_seconds if is_background
+                                else max_data_age_seconds)
         if not reason and not frames:
-            reason = "no_fresh_verified_frame"
+            # Keep source age and explicit background consent distinct. A valid
+            # but old time is stale; a permitted 12h satellite time with
+            # *missing* opt-in has a separate machine-readable reason. Do
+            # not infer missing observation times from the HTTP retrieval.
+            reason = candidate.get("time_normalization_error")
+            if not reason:
+                all_times = [
+                    _time(frame.get("data_time"))
+                    for frame in (candidate.get("frames") or [
+                        {"data_time": candidate.get("data_time")}
+                    ])
+                    if isinstance(frame, Mapping)
+                ]
+                valid_ages = [
+                    (now_dt - value).total_seconds()
+                    for value in all_times if value is not None
+                ]
+                if (
+                    max_background_age_seconds is None
+                    and world_coverage_for_background and sem is not None
+                    and sem.get("measurement_method") in (
+                        "satellite_precipitation_estimate", "satellite_estimate")
+                    and sem.get("observation_kind") == "estimate"
+                    and any(max_data_age_seconds < age <= 43200
+                            for age in valid_ages)
+                ):
+                    reason = "consent_required"
+                elif valid_ages and all(
+                    age > (max_background_age_seconds
+                           if is_background else max_data_age_seconds)
+                    for age in valid_ages
+                ):
+                    reason = "source_stale"
+                else:
+                    reason = "no_fresh_verified_frame"
         timestamp = frames[0]["time"] if frames else None
         if reason:
             rejected.append({"source_id": source_id, "reason": reason})
@@ -237,17 +302,24 @@ def plan_raster_mosaic(
             "tile_url": frames[0]["tile_url"], "frames": frames,
             "fraction": fraction, "focus": _point_inside(focus, coverage),
             "score": score,
+            "is_background": bool(is_background and
+                                  (now_dt - timestamp).total_seconds() > max_data_age_seconds),
         })
     # Pick a demonstrably broad foundation before any regional refinement.
     # Regional candidates are independent, geographically clipped overlays:
     # prefer actual viewer focus, time-coherence with the foundation, then
     # spatial relevance and existing provider-neutral semantic scoring.
-    allowed.sort(key=lambda a: (-a["fraction"], a["score"],
-                                -a["time"].timestamp(),
-                                str(a["candidate"]["source_id"])))
+    allowed.sort(key=lambda a: (
+        not a["is_background"], -a["fraction"], a["score"],
+        -a["time"].timestamp(), str(a["candidate"]["source_id"])))
     if allowed:
         foundation = allowed[0]
-        anchor = target_dt or foundation["time"]
+        # Anchor coherence on the most recent ordinary source, not on a
+        # deliberately older global satellite background.
+        fresh = [item for item in allowed if not item["is_background"]]
+        anchor = target_dt or (
+            max(fresh, key=lambda item: item["time"])["time"]
+            if foundation["is_background"] and fresh else foundation["time"])
         _align_frame(foundation, anchor, max_time_delta_seconds)
         others = allowed[1:]
         for other in others:
@@ -262,15 +334,54 @@ def plan_raster_mosaic(
                 str(a["candidate"]["source_id"]),
             )
         )
-        ordered = [foundation, *others]
+        # latest_coherent and at_time may only combine frames inside
+        # the declared tolerance; do not label an incoherent overlay valid.
+        ordered = []
+        for item in [foundation, *others]:
+            if (item["is_background"] or
+                    abs((item["time"] - anchor).total_seconds()) <= max_time_delta_seconds):
+                ordered.append(item)
+            else:
+                rejected.append({
+                    "source_id": item["candidate"]["source_id"],
+                    "reason": "outside_time_tolerance",
+                })
     else:
         ordered = []
+    # A one-layer request cannot use a satellite foundation and a radar
+    # overlay together. Prefer a verified current local measurement when it
+    # covers the focus and a substantial part of the viewport; otherwise
+    # retain the broad foundation for a geographically wide view. Never let
+    # a tiny regional edge-contact replace a global source.
+    if max_layers == 1 and ordered:
+        local = [item for item in ordered if not item["is_background"]
+                 and item["focus"] and item["fraction"] >= 0.5]
+        if local:
+            local.sort(key=lambda item: (
+                item["score"], -item["fraction"],
+                -item["time"].timestamp(),
+                str(item["candidate"]["source_id"])))
+            best = local[0]
+            ordered = [best, *(item for item in ordered if item is not best)]
     selected = ordered[:max_layers]
+    # Preserve selection budgets and source ranking, but expose a stable
+    # COMPOSITING order: older authorized satellite background first,
+    # qualified higher-ranked radar last. The highest-quality source is
+    # drawn on top; source_id resolves exact scoring ties deterministically.
+    if selected:
+        foundation, *overlays = selected
+        overlays.sort(key=lambda item: (
+            0 if item["is_background"] else 1,
+            tuple(-n for n in item["score"]),
+            item["time"].timestamp(),
+            str(item["candidate"]["source_id"]),
+        ))
+        selected = [foundation, *overlays]
     for item in ordered[max_layers:]:
         rejected.append({"source_id": item["candidate"]["source_id"],
                          "reason": "layer_budget"})
     reference = target_dt if target_dt is not None else (
-        selected[0]["time"] if selected else None)
+        anchor if selected else None)
     layers: list[dict[str, Any]] = []
     for index, item in enumerate(selected):
         candidate = item["candidate"]
@@ -282,6 +393,11 @@ def plan_raster_mosaic(
         layers.append({
             "source_id": candidate["source_id"],
             "resource_type": "raster_tile",
+            "composition": {
+                "draw_order": index,
+                "role": "background" if item["is_background"] else "overlay",
+                "routing_score": list(item["score"]),
+            },
             "render": dict(candidate.get("render") or {
                 "tile_size": 256, "min_zoom": 0.0,
                 "max_zoom": 18.0, "opacity": 1.0,
@@ -300,22 +416,28 @@ def plan_raster_mosaic(
                                  and _time(candidate["retrieved_at"]) is not None
                                  else _iso(now_dt)),
                 "reference_delta_seconds": delta,
+                "age_seconds": round((now_dt - timestamp).total_seconds(), 3),
             },
             "attribution": candidate["attribution"],
             "legend": dict(candidate["legend"]),
-            "quality_note": ("zeitlich_abweichend" if delta is not None
-                             and delta > max_time_delta_seconds
+            "quality_note": ("older_satellite_background" if item["is_background"]
                              else "zeitlich_passend"),
+            "freshness_class": ("older_background" if item["is_background"]
+                                else "current"),
         })
-    full_world_verified = bool(selected and
-                               selected[0]["candidate"]["coverage"]["scope"] == "global")
+    # Direct product-specific world BBOX counts as a world-sized *envelope*
+    # only; this never asserts pixel completeness or changes coverage_scope.
+    full_world_verified = bool(selected and (
+        selected[0]["candidate"]["coverage"]["scope"] == "global"
+        or selected[0]["candidate"].get("verified_world_product_bbox") is True
+    ))
     # Even with global coverage, valid raster pixels are not independently
     # established, so only claim partial until resource masks are validated.
     limitations = ["Rasterpixel und Datenluecken nicht vollstaendig verifiziert"]
     if not full_world_verified:
         limitations.append("Keine belastbare durchgehende Grundversorgung belegt")
-    if any(layer["quality_note"] == "zeitlich_abweichend" for layer in layers):
-        limitations.append("Quellenzeitstaende weichen vom Bezugszeitpunkt ab")
+    if any(layer["freshness_class"] == "older_background" for layer in layers):
+        limitations.append("Aeltere globale Satellitenschaetzung als gekennzeichnete Grundversorgung; nicht aktuelles Radar")
     if any(item["reason"] == "layer_budget" for item in rejected):
         limitations.append("Weitere Quellen wegen Ressourcenbegrenzung ausgelassen")
     return {
@@ -325,5 +447,7 @@ def plan_raster_mosaic(
         "viewport": box,
         "reference_time": _iso(reference) if reference else None,
         "layers": layers,
+        "layer_order": "background_to_foreground",
         "limitations": limitations,
+        "_internal_source_rejections": rejected[:12],
     }
