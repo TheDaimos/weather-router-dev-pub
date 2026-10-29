@@ -243,7 +243,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: WeatherRouterConfigEntry
     from .opera_runtime import OperaRuntime
     opera_area = hass.data.setdefault(DOMAIN, {})
     if "opera_runtime" not in opera_area:
-        opera_area["opera_runtime"] = OperaRuntime()
+        # Persistent metadata and committed private frame copies live on HA's
+        # local .storage volume. Never inside the GitHub repository.
+        from functools import partial
+        opera_area["opera_runtime"] = await hass.async_add_executor_job(
+            partial(OperaRuntime, journal_root=hass.config.path(
+                ".storage", "weather_router_opera_cycles")))
     entry.runtime_data = WeatherRouterRuntimeData(hass=hass, entry=entry)
     await async_setup_extensions(hass, entry)
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
