@@ -16,7 +16,7 @@ from typing import Callable
 from aiohttp import web
 from homeassistant.components.http import HomeAssistantView
 
-from .opera_frame_cache import VerifiedFrame
+from .opera_frame_cache import VerifiedFrame, FrameCacheError
 from .opera_tile_access import TileAccessDenied, assert_authorized, validated_route
 from .opera_cog_tiles import OperaRasterError, render_verified_cog
 
@@ -40,7 +40,7 @@ class OperaTileView(HomeAssistantView):
 
     def __init__(self, hass, *, registry_lookup, is_permitted, is_enabled=None,
                  max_active: int = 2, wait_seconds: float = 0.2,
-                 render_seconds: float = 3.0, max_waiting: int = 16):
+                 render_seconds: float = 3.0, max_waiting: int = 16, frame_cache=None):
         if type(max_active) is not int or not 1 <= max_active <= 3:
             raise ValueError("invalid_parallel_budget")
         if not 0 < wait_seconds <= 1 or not 0 < render_seconds <= 10:
@@ -49,6 +49,7 @@ class OperaTileView(HomeAssistantView):
             raise ValueError("invalid_queue_budget")
         self.hass = hass
         self._registry_lookup = registry_lookup
+        self._frame_cache = frame_cache
         self._is_permitted = is_permitted
         self._is_enabled = is_enabled or (lambda: False)
         self._limit = asyncio.Semaphore(max_active)
@@ -129,19 +130,48 @@ class OperaTileView(HomeAssistantView):
             self._limit.release()
             raise
 
-        # Keep semaphore occupied until the worker is ACTUALLY finished, even
-        # after request cancellation or a response deadline.
+        # Acquire the owned frame lease before the executor can touch its
+        # path. A timed-out/cancelled HTTP request cannot end this lease:
+        # the worker done-callback alone owns its final release.
+        if self._frame_cache is None:
+            self._limit.release()
+            raise web.HTTPServiceUnavailable()
+        lease = self._frame_cache.lease(
+            product=frame.product, valid_at=frame.valid_at, digest=frame.digest)
+        try:
+            pinned = lease.__enter__()
+            if pinned.path != frame.path:
+                raise FrameCacheError("frame_identity_mismatch")
+        except Exception as exc:
+            # A successful __enter__ must be paired even on identity errors.
+            if "pinned" in locals():
+                lease.__exit__(None, None, None)
+            self._limit.release()
+            raise web.HTTPServiceUnavailable() from exc
+
         work = partial(
-            render_verified_cog, trusted_path=frame.path,
-            expected_sha256=frame.digest,z=z_num,x=x_num,y=y_num,
-            palette=entry.palette, verified_frame=frame,
+            render_verified_cog, trusted_path=pinned.path,
+            expected_sha256=pinned.digest, z=z_num, x=x_num, y=y_num,
+            palette=entry.palette, verified_frame=pinned,
         )
         try:
             task = asyncio.ensure_future(self.hass.async_add_executor_job(work))
-        except Exception:
+        except BaseException:
+            lease.__exit__(None, None, None)
             self._limit.release()
             raise
-        task.add_done_callback(lambda completed: self._limit.release())
+
+        def _worker_done(completed):
+            try:
+                if not completed.cancelled():
+                    completed.exception()  # Consume late errors after HTTP timeout.
+            finally:
+                try:
+                    lease.__exit__(None, None, None)
+                finally:
+                    self._limit.release()
+
+        task.add_done_callback(_worker_done)
         try:
             png = await asyncio.wait_for(asyncio.shield(task),timeout=self._render_seconds)
         except asyncio.TimeoutError as exc:
