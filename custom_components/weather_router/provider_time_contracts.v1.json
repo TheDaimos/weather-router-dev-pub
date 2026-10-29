@@ -3787,18 +3787,6 @@
           }
         }
       }
-    },
-    "opera": {
-      "opera_rate_discovery": {
-        "status": "no_absolute_source_time",
-        "fields": {},
-        "evidence": "providers/opera.py: diagnostic returns nominal_filename_utc only, explicitly scientific_valid_at NOT_VERIFIED; no validated observation time and no raster measurements"
-      },
-      "opera_dbzh_discovery": {
-        "status": "no_absolute_source_time",
-        "fields": {},
-        "evidence": "providers/opera.py: DBZH diagnostic returns nominal object metadata only; filenames are not verified measurement instants"
-      }
     }
   }
 }
