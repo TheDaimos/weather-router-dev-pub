@@ -49,6 +49,27 @@ class FrameCacheTests(unittest.TestCase):
         first_digest = hashlib.sha256(b"one").hexdigest()
         self.assertIsNone(self.cache.get(product="DBZH", valid_at=self.t, digest=first_digest))
         self.assertEqual(self.cache.hash_operations, 3)
+    def test_lease_survives_eviction_until_reader_finishes(self):
+        source, digest = self.sample("one")
+        frame = self.cache.admit(source_path=source, product="RATE",
+                                 valid_at=self.t, expected_sha256=digest)
+        with self.cache.lease(product="RATE", valid_at=self.t, digest=digest) as pinned:
+            self.assertEqual(frame.path, pinned.path)
+            for value in ("two", "three"):
+                other, other_digest = self.sample(value)
+                self.cache.admit(source_path=other, product="RATE",
+                                 valid_at=self.t, expected_sha256=other_digest)
+            self.assertIsNone(self.cache.get(product="RATE", valid_at=self.t, digest=digest))
+            self.assertEqual(frame.path.read_bytes(), b"one")
+            with self.assertRaisesRegex(cache_module.FrameCacheError, "active_readers"):
+                self.cache.close()
+        self.assertFalse(frame.path.exists())
+
+    def test_lease_missing_frame_fails_closed(self):
+        with self.assertRaisesRegex(cache_module.FrameCacheError, "frame_unavailable"):
+            with self.cache.lease(product="RATE", valid_at=self.t, digest="0" * 64):
+                self.fail("missing frame leased")
+
     def test_reject_time_and_limits(self):
         source, digest = self.sample("one")
         with self.assertRaises(cache_module.FrameCacheError):
