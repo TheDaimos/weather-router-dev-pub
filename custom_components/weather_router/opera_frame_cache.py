@@ -2,6 +2,7 @@
 from __future__ import annotations
 from collections import OrderedDict
 from dataclasses import dataclass
+from contextlib import contextmanager
 from datetime import datetime, timezone
 from hashlib import sha256
 from pathlib import Path
@@ -39,6 +40,8 @@ class ImmutableFrameCache:
         self._max_frames, self._max_bytes = max_frames, max_bytes
         self._frames = OrderedDict()
         self._lock = RLock()
+        self._leases = {}
+        self._pending_delete = set()
         self.hash_operations = 0
 
     def admit(self, *, source_path, product, valid_at, expected_sha256):
@@ -78,7 +81,10 @@ class ImmutableFrameCache:
                        or sum(v.byte_size for v in self._frames.values()) > self._max_bytes):
                     _, old = self._frames.popitem(last=False)
                     if old.path != dest and not any(v.path == old.path for v in self._frames.values()):
-                        old.path.unlink(missing_ok=True)
+                        if self._leases.get(old.path, 0):
+                            self._pending_delete.add(old.path)
+                        else:
+                            old.path.unlink(missing_ok=True)
                 return frame
             finally:
                 Path(temp).unlink(missing_ok=True)
@@ -93,7 +99,34 @@ class ImmutableFrameCache:
                 self._frames.move_to_end(key)
             return frame
 
+    @contextmanager
+    def lease(self, *, product, valid_at, digest):
+        """Pin an admitted file while a reader uses it, even during eviction.
+
+        This does not authorize freshness, identity or scientific release.
+        """
+        with self._lock:
+            frame = self.get(product=product, valid_at=valid_at, digest=digest)
+            if frame is None or not frame.path.is_file():
+                raise FrameCacheError("frame_unavailable")
+            self._leases[frame.path] = self._leases.get(frame.path, 0) + 1
+        try:
+            yield frame
+        finally:
+            with self._lock:
+                count = self._leases[frame.path] - 1
+                if count:
+                    self._leases[frame.path] = count
+                else:
+                    del self._leases[frame.path]
+                    if frame.path in self._pending_delete:
+                        self._pending_delete.remove(frame.path)
+                        frame.path.unlink(missing_ok=True)
+
     def close(self):
         with self._lock:
+            if self._leases:
+                raise FrameCacheError("active_readers")
             self._frames.clear()
+            self._pending_delete.clear()
             shutil.rmtree(self._folder, ignore_errors=True)
