@@ -42,6 +42,7 @@ class ImmutableFrameCache:
         self._lock = RLock()
         self._leases = {}
         self._pending_delete = set()
+        self._deferred_close = False
         self.hash_operations = 0
 
     def admit(self, *, source_path, product, valid_at, expected_sha256):
@@ -53,6 +54,8 @@ class ImmutableFrameCache:
         t = valid_at.astimezone(timezone.utc)
         key = (product, t.isoformat(), expected_sha256)
         with self._lock:
+            if self._deferred_close:
+                raise FrameCacheError("cache_closing")
             if key in self._frames:
                 self._frames.move_to_end(key)
                 return self._frames[key]
@@ -94,7 +97,7 @@ class ImmutableFrameCache:
             raise FrameCacheError("missing_timezone")
         key = (product, valid_at.astimezone(timezone.utc).isoformat(), digest)
         with self._lock:
-            frame = self._frames.get(key)
+            frame = None if self._deferred_close else self._frames.get(key)
             if frame:
                 self._frames.move_to_end(key)
             return frame
@@ -122,11 +125,20 @@ class ImmutableFrameCache:
                     if frame.path in self._pending_delete:
                         self._pending_delete.remove(frame.path)
                         frame.path.unlink(missing_ok=True)
+                    if self._deferred_close and not self._leases:
+                        self._finish_close_locked()
 
-    def close(self):
+    def _finish_close_locked(self):
+        self._frames.clear()
+        self._pending_delete.clear()
+        shutil.rmtree(self._folder, ignore_errors=True)
+
+    def close(self, *, defer=False):
         with self._lock:
             if self._leases:
+                if defer is True:
+                    self._deferred_close = True
+                    return
                 raise FrameCacheError("active_readers")
-            self._frames.clear()
-            self._pending_delete.clear()
-            shutil.rmtree(self._folder, ignore_errors=True)
+            self._deferred_close = True
+            self._finish_close_locked()
