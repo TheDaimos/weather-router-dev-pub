@@ -116,6 +116,7 @@ class WeatherRouterLab extends HTMLElement {
     }, 2500);
     queueMicrotask(() => this._ensureMap());
     this.shadowRoot?.getElementById("opera-refresh")?.addEventListener("click", () => this._refreshOperaStatus());
+    this.shadowRoot?.getElementById("opera-poll-now")?.addEventListener("click", () => this._pollOperaNow());
   }
 
   disconnectedCallback() {
@@ -396,6 +397,7 @@ class WeatherRouterLab extends HTMLElement {
             <div class="lab-menu-content">
               <p class="muted">Wissenschaftlich UNVERIFIED/BLOCKED · keine Radar-Kachelfreigabe.</p>
               <button id="opera-refresh" type="button">Live-Status abrufen</button>
+              <button id="opera-poll-now" type="button">Jetzt aktualisieren</button>
               <pre id="opera-status" style="white-space:pre-wrap;overflow-wrap:anywhere">Noch nicht abgefragt.</pre>
             </div>
           </details>
@@ -2238,6 +2240,18 @@ class WeatherRouterLab extends HTMLElement {
     this.shadowRoot.getElementById("raw").textContent = JSON.stringify(this._results,null,2);
   }
 
+  async _pollOperaNow() {
+    const output = this.shadowRoot?.getElementById("opera-status");
+    if (!this._hass || !output) return;
+    output.textContent = "OPERA-Quelle wird mit dem normalen Suchprozess geprüft …";
+    try {
+      await this._hass.callWS({type:"weather_router/opera_refresh"});
+      await this._refreshOperaStatus();
+    } catch (error) {
+      output.textContent = `OPERA-Abruf verweigert: ${error?.message || String(error)}`;
+    }
+  }
+
   async _refreshOperaStatus() {
     const output = this.shadowRoot?.getElementById("opera-status");
     if (!output || !this._hass) return;
@@ -2250,6 +2264,7 @@ class WeatherRouterLab extends HTMLElement {
         `HTTP: ${state.http_enabled ? "AN" : "AUS"} · Consumer V2: ${state.consumer_v2_approved ? "bereit" : "gesperrt"}`,
         `Cache: ${state.cached_frames ?? 0} Frames / ${state.cached_bytes ?? 0} Bytes · aktive Leser: ${state.active_readers ?? 0}`,
         `Persistenter Journal-Speicher: ${state.persistent_bytes ?? "nicht verfügbar"} Bytes · Journal: ${state.journal_present ? "vorhanden" : "nicht verfügbar"}`,
+        `S3: ${state.source_monitor?.running ? "Monitor läuft" : "AUS"} · letzter Abruf: ${state.source_monitor?.last_success_utc || "nicht verfügbar"} · Original: ${state.source_monitor?.last_original || "nicht verfügbar"} · Downloads: ${state.source_monitor?.active_downloads ?? 0} · Grund: ${state.source_monitor?.last_reason || "nicht verfügbar"}`,
         `Letzte Promotion: ${state.last_promotion_utc ?? "—"} · letzter Fehler: ${state.last_error ?? "—"}`,
       ];
       for (const product of ["RATE","DBZH","ACRR"]) {
