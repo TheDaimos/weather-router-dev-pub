@@ -26,6 +26,8 @@ CONF_REFERENCE_LOCATION: Final = "reference_location"
 DEFAULT_REFERENCE_LOCATION: Final = "zone.home"
 
 CONF_ROUTER_ENABLED: Final = "router_enabled"
+# E-078 staged master switch; no active provider data-path integration.
+CONF_BUFFER_ENABLED: Final = "buffer_enabled"
 CONF_ENABLED_DOMAINS: Final = "enabled_domains"
 CONF_ENABLED_PROVIDERS: Final = "enabled_providers"
 CONF_CONSUMER_PROFILES: Final = "consumer_profiles"
@@ -212,9 +214,10 @@ LOCATION_DOMAINS: Final = LOCATION_DISCOVERY_DOMAINS
 DEFAULT_OPTIONS: Final = {
     CONF_REFERENCE_LOCATION: DEFAULT_REFERENCE_LOCATION,
     CONF_ROUTER_ENABLED: True,
+    CONF_BUFFER_ENABLED: False,
     CONF_ENABLED_DOMAINS: list(DEFAULT_ENABLED_DOMAINS),
     CONF_ENABLED_PROVIDERS: list(DEFAULT_ENABLED_PROVIDER_IDS),
     CONF_CONSUMER_PROFILES: {},
 }
 
-PLATFORMS: Final = (Platform.SELECT,)
+PLATFORMS: Final = (Platform.SELECT, Platform.SWITCH)

@@ -1,6 +1,7 @@
 import * as maplibregl from "https://unpkg.com/maplibre-gl@6.9.1/dist/maplibre-gl.mjs";
 
 const SELECT_ENTITY = "select.weather_router_reference_location";
+const BUFFER_PREP_ENTITY = "switch.weather_router_e078_buffer_preparation";
 const MAPLIBRE_CSS = "https://unpkg.com/maplibre-gl@6.9.1/dist/maplibre-gl.css";
 const WR_LAB_BUILD_VERSION = "0.10.145";
 const LAB_MENU_STATE_KEY = "weather_router_lab_menu_state_v1";
@@ -99,6 +100,7 @@ class WeatherRouterLab extends HTMLElement {
   set hass(value) {
     this._hass = value;
     this._syncFromHass();
+    this._syncBufferPreparationButton();
     this._ensureProviderCatalog();
   }
 
@@ -292,6 +294,14 @@ class WeatherRouterLab extends HTMLElement {
         <aside class="sidebar">
           <h1>WeatherRouter Lab</h1>
           <div class="subtitle">WR ${WR_LAB_BUILD_VERSION} · DEV · interner Router-/Provider-Prüfstand</div>
+          <details class="card lab-menu" data-lab-menu-key="e078-buffer">
+            <summary>E-078 · Daten- und Ausgabepuffer</summary>
+            <div class="lab-menu-content">
+              <p id="e078-buffer-info">Vorbereitung: noch nicht im Datenfluss verbunden.</p>
+              <button id="e078-buffer-button" type="button" disabled>Puffer-Schalter wird geladen</button>
+              <p class="basemap-note">Die Schaltfläche speichert nur die Freigabe für spätere Tests. Die Providerabfragen bleiben unverändert.</p>
+            </div>
+          </details>
 
           <details class="card lab-menu" data-lab-menu-key="basemap" open>
             <summary>Karte & Basiskarte</summary>
@@ -431,6 +441,21 @@ class WeatherRouterLab extends HTMLElement {
       });
     }
 
+    this.shadowRoot.getElementById("e078-buffer-button").addEventListener("click", async () => {
+      const current = this._hass?.states?.[BUFFER_PREP_ENTITY];
+      if (!current || !["on", "off"].includes(current.state)) return;
+      const button = this.shadowRoot.getElementById("e078-buffer-button");
+      button.disabled = true;
+      try {
+        await this._hass.callService("switch", current.state === "on" ? "turn_off" : "turn_on", {
+          entity_id: BUFFER_PREP_ENTITY,
+        });
+      } catch (error) {
+        console.error("WeatherRouter E-078 preparation switch failed", error);
+      } finally {
+        this._syncBufferPreparationButton();
+      }
+    });
     this.shadowRoot.getElementById("reference").addEventListener("change", e => this._setReference(e.target.value));
     this.shadowRoot.getElementById("diagnostic-test-location").addEventListener("change", e => {
       this._diagnosticTestLocation = e.target.value;
@@ -2044,6 +2069,20 @@ class WeatherRouterLab extends HTMLElement {
     if (!this._hass) return;
     try { await this._hass.callService("select","select_option",{ entity_id:SELECT_ENTITY, option }); }
     catch (error) { console.error("WeatherRouter Lab reference selection failed",error); }
+  }
+
+  _syncBufferPreparationButton() {
+    const button = this.shadowRoot.getElementById("e078-buffer-button");
+    const info = this.shadowRoot.getElementById("e078-buffer-info");
+    if (!button || !info) return;
+    const current = this._hass?.states?.[BUFFER_PREP_ENTITY];
+    const known = current && ["on", "off"].includes(current.state);
+    button.disabled = !known;
+    button.textContent = known
+      ? (current.state === "on" ? "Puffer-Vorbereitung ausschalten" : "Puffer-Vorbereitung einschalten")
+      : "E-078-Schalter derzeit nicht installiert";
+    info.textContent = "Pufferbetrieb: nicht verbunden · Freigabe: "
+      + (known ? (current.state === "on" ? "ein" : "aus") : "nicht verfügbar");
   }
 
   _syncFromHass(force=false) {

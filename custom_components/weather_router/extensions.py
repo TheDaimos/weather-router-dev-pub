@@ -33,6 +33,10 @@ _SAFE_INTERNAL = re.compile(r"^[a-z][a-z0-9_]*$")
 _SAFE_PUBLIC = re.compile(r"^[a-z][a-z0-9_]*(?:\.[a-z0-9_]+)+$")
 
 
+class _DedicatedBufferPolicyManifest(Exception):
+    """Not a provider extension; parsed by the opt-in E-078 loader."""
+
+
 @dataclass(frozen=True, slots=True)
 class ExtensionSpec:
     extension_id: str
@@ -55,6 +59,10 @@ def _extension_spec(directory: Path) -> ExtensionSpec:
     if manifest.stat().st_size > _MAX_MANIFEST_BYTES:
         raise ValueError("extension manifest exceeds size limit")
     payload = json.loads(manifest.read_text(encoding="utf-8"))
+    if (isinstance(payload, dict)
+            and payload.get("schema") == "weather_router.extension.v2"
+            and payload.get("kind") == "buffer_policy"):
+        raise _DedicatedBufferPolicyManifest()
     if not isinstance(payload, dict) or payload.get("schema") != EXTENSION_SCHEMA:
         raise ValueError("unsupported extension manifest")
     extension_id = payload.get("id")
@@ -117,6 +125,8 @@ def extension_specs() -> tuple[ExtensionSpec, ...]:
             continue
         try:
             result.append(_extension_spec(directory))
+        except _DedicatedBufferPolicyManifest:
+            continue
         except (OSError, json.JSONDecodeError, ValueError) as err:
             _LOGGER.error("WeatherRouter extension %s rejected: %s", directory.name, err)
     return tuple(result)
