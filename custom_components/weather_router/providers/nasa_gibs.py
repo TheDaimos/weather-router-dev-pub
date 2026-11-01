@@ -585,13 +585,16 @@ class NasaGibsProvider:
             },
         }
 
+        # Preserve a truthful source/phenomenon title even when this WMS
+        # publishes no GetLegendGraphic URL. This is NOT a fabricated
+        # precipitation colour scale or an assertion of numeric interchange.
         legend_url = styles.get("legend_url")
-        if legend_url:
-            descriptor["legend"] = {
-                "title": f"NASA GIBS · {spec.name}",
-                "url": legend_url,
-                "style": style_name,
-            }
+        descriptor["legend"] = {
+            "title": f"NASA GIBS · {spec.name}",
+            "style": style_name,
+        }
+        if isinstance(legend_url, str) and legend_url:
+            descriptor["legend"]["url"] = legend_url
 
         if frames:
             descriptor["timeline"] = {
