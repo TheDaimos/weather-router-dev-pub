@@ -971,6 +971,8 @@ def _candidates(
     providers: dict[str, Any],
     mapping: dict[str, Any],
     public_id: str,
+    *,
+    capability_maps: dict[str, dict[str, Any]] | None = None,
 ) -> list[Candidate]:
     """Return deterministic provider/capability candidates in registry order."""
     result: list[Candidate] = []
@@ -979,7 +981,11 @@ def _candidates(
         provider_map = mapped.get(provider.id)
         if not isinstance(provider_map, dict):
             continue
-        capability_map = _provider_capability_map(provider)
+        capability_map = (
+            capability_maps[provider.id]
+            if capability_maps is not None
+            else _provider_capability_map(provider)
+        )
         for internal_id, public_ids in provider_map.items():
             if public_id not in public_ids:
                 continue
@@ -1396,6 +1402,7 @@ def _capability_catalog_row(
         for item in candidates
         if _candidate_enabled(state, item.provider, public_id)[0]
         and profile_allows_provider(profile, item.provider.id)
+        and profile_allows_candidate(profile, item.semantics)[0]
     ]
     resolvable = [item for item in eligible if _resource_implemented(item)]
 
@@ -3383,12 +3390,20 @@ async def websocket_consumer_capabilities(
         for public_id in _public_ids(mapping)
         if profile_allows_capability(profile, mapping, public_id)[0]
     ]
+    # One inventory per catalog request, not once per public capability.
+    # No persistent cache: changing provider/extension registries remain visible.
+    capability_maps = {
+        provider.id: _provider_capability_map(provider)
+        for provider in providers.values()
+    }
     all_rows = [
         _capability_catalog_row(
             state,
             mapping,
             hazard_catalog,
-            _candidates(providers, mapping, public_id),
+            _candidates(
+                providers, mapping, public_id, capability_maps=capability_maps,
+            ),
             public_id,
             profile,
         )
@@ -4171,11 +4186,7 @@ async def websocket_consumer_resolve(
             status="ready",
             selected_provider="aggregate",
             selected_capability=public_id,
-            fallback_count=sum(
-                1
-                for item in trace.data["candidates"]
-                if item.get("attempted") and item.get("result") != "selected"
-            ),
+            fallback_count=trace.recorded_fallback_count(),
             reason_code="aggregate_eligible_sources",
         )
         trace.finish(status="ready")
@@ -4260,14 +4271,9 @@ async def websocket_consumer_resolve(
                 )
 
             now = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
-            reason = (
-                "fallback_after_rate_limit"
-                if index > 0 and rate_limited
-                else "fallback_after_failure"
-                if index > 0
-                else "only_eligible_candidate"
-                if len(eligible) == 1
-                else "eligible_candidate"
+            reason = trace.winner_reason(
+                eligible_count=len(eligible),
+                rate_limited=rate_limited,
             )
             freshness = {
                 "data_time": data_time,
@@ -4296,7 +4302,7 @@ async def websocket_consumer_resolve(
                 "routing": {
                     "reason_code": reason,
                     "fallback_available": len(eligible) > 1,
-                    "degraded": index > 0,
+                    "degraded": trace.recorded_fallback_count() > 0,
                     "candidate_count": len(eligible),
                     "selected_index": index,
                     "profile_excluded_candidates": profile_excluded_candidates,
@@ -4315,7 +4321,7 @@ async def websocket_consumer_resolve(
                 selected_provider=candidate.provider.id,
                 selected_capability=candidate.capability.id,
                 selected_index=index,
-                fallback_count=index,
+                fallback_count=trace.recorded_fallback_count(),
                 reason_code=reason,
             )
             trace.stage_end("provider_resolution")

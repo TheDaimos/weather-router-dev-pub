@@ -815,6 +815,25 @@ class RoutingTraceBuilder:
         item["reason"] = reason
         item["duration_ms"] = duration_ms
 
+    def recorded_fallback_count(self) -> int:
+        """Count failed provider attempts, not excluded or unimplemented slots."""
+        return sum(
+            1
+            for item in self.data["candidates"]
+            if item.get("attempted") and item.get("result") in ("rejected", "failed")
+        )
+
+    def winner_reason(self, *, eligible_count: int, rate_limited: bool = False) -> str:
+        """Explain selection from actual failed attempts rather than candidate index."""
+        failures = self.recorded_fallback_count()
+        if failures and rate_limited:
+            return "fallback_after_rate_limit"
+        if failures:
+            return "fallback_after_failure"
+        if eligible_count == 1:
+            return "only_eligible_candidate"
+        return "eligible_candidate"
+
     def set_decision(
         self,
         *,
