@@ -4,7 +4,7 @@ Datum: 04.11.2026. WR public branch `feature/p7-010-global-concurrency-2026-10-1
 
 ## Versionierung
 - Gewitterradar: `manifest.json.version=0.25.44`; Frontend-Versionen `4.11.135`, `integrationVersion=0.25.44`, DRA `dra-deployment-provenance.json.productVersion=4.11.135`, unverändert und übereinstimmend.
-- WeatherRouter Public: vor Korrektur `DEV_BUILD_VERSION=0.10.164`, aber `manifest.json.version=0.10.0` und `INTEGRATION_VERSION=0.10.0`. Beides auf `0.10.164` korrigiert (Commits `657b06090a61597f378c1a054289cf6c65fa7269`, `e7108df23aa1b96fd4a3fe94a61284f5aeaa3186`). Loader weiterhin `0.10-loader-167`.
+- **Korrektur des Versionsbefunds:** `DEV_BUILD_VERSION=0.10.164` ist eine interne Entwicklungskennung; `manifest.json.version=0.10.0` und `INTEGRATION_VERSION=0.10.0` sind laut `scripts/verify_m2_structure.py` die ausdrücklich akzeptierte HA-Integrations-Basisversion. Die voreilige Änderung auf 0.10.164 wurde nach roter Struktur-CI zurückgenommen (Commits `824d81cd692b2e28689c85bac685cbec4f82b548`, `35cd98ec20d89d1087de091873942a2c3df52fcc`). Loader bleibt `0.10-loader-167`. **Kein verdeckter Versionssprung; HA/DRA/DEV sind unterschiedliche Kennungen.**
 - Das Export2Git auf HA DEV meldete `0.10.285`. Diese laufende Installation ist NICHT mit Public-Codeversion `0.10.164` gleichzusetzen. Kein Upgrade/Release ohne eindeutigen Build- und Loader-Nachweis.
 
 ## Technische Korrekturen im öffentlichen WR
@@ -24,3 +24,6 @@ Datum: 04.11.2026. WR public branch `feature/p7-010-global-concurrency-2026-10-1
 Grüne Vertrags-/Audit-CI ist nicht gleich HA DEV OPERA-End-to-End. OPERA-Frame-Promotion, aktiv autorisierte Provider- und Tile-Auslieferung, `valid_until`, installierte Artefaktparität und real sichtbarer Niederschlag weiterhin nicht nachgewiesen. Keine Wiederholung von TEST69. PROD VM101 nicht ändern.
 
 **Keine privaten GitHub Actions** – ausschließlich öffentliche Repositories. Exporte ausschließlich `TheDaimos/Project-Log-And-Export@main`.
+
+## Erratum / Nachtest
+Der ursprüngliche Bericht stellte 0.10.0 irrtümlich als Versionsfehler dar. Das war falsch: Die öffentliche Struktur-CI prüft diese akzeptierte HA-Integrations-Baseline ausdrücklich. Die Rücknahme stellt den beabsichtigten Vertrag wieder her. Neue Python-CI auf HEAD ist abzuwarten.
