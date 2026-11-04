@@ -30,7 +30,7 @@ def validated_route(*, product: str, stamp: str, z: str, x: str, y: str, query_p
     return z_int,x_int,y_int
 
 def assert_authorized(*, authenticated_user: object, profile_and_provider_allowed: bool,
-                      valid_at: datetime, now: datetime) -> None:
+                      valid_at: datetime, now: datetime, max_age_seconds: int) -> None:
     """Run BEFORE lookup, and AGAIN before response even on cached results.
 
     Caller supplies verified current server-side profile/permission decision.
@@ -42,6 +42,8 @@ def assert_authorized(*, authenticated_user: object, profile_and_provider_allowe
         raise TileAccessDenied("invalid_time")
     if valid_at.tzinfo is None or now.tzinfo is None:
         raise TileAccessDenied("invalid_time")
+    if type(max_age_seconds) is not int or not 1 <= max_age_seconds <= 3600:
+        raise TileAccessDenied("invalid_server_validity")
     age=(now.astimezone(timezone.utc)-valid_at.astimezone(timezone.utc)).total_seconds()
-    if not 0 <= age <= 900:
+    if not 0 <= age <= max_age_seconds:
         raise TileAccessDenied("stale_or_future")
