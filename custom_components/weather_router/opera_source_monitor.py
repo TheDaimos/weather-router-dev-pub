@@ -100,7 +100,8 @@ class OperaSourceMonitor:
                         continue
                     self.active_downloads += 1
                     try:
-                        frame = await self.fetcher.fetch(filename=name, valid_at=stamp, now=now)
+                        frame = await self.fetcher.fetch(filename=name, valid_at=stamp, now=now,
+                                                         max_age_seconds=self._server_validity_seconds())
                         self._seen.add(key)
                         self.last_success_utc = datetime.now(timezone.utc)
                         self.last_object = name
