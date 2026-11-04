@@ -49,9 +49,9 @@ class OperaRenderCacheContract(unittest.TestCase):
         a = tiles.immutable_key(source_sha256="a"*64, **key)
         b = tiles.immutable_key(source_sha256="b"*64, **key)
         self.assertNotEqual(a, b)
-        tiles.authorize_current(self.frame_time, self.frame_time+timedelta(seconds=900))
+        tiles.authorize_current(self.frame_time, self.frame_time+timedelta(seconds=1650),max_age_seconds=1650)
         with self.assertRaises(tiles.OperaRasterError):
-            tiles.authorize_current(self.frame_time, self.frame_time+timedelta(seconds=901))
+            tiles.authorize_current(self.frame_time, self.frame_time+timedelta(seconds=1651),max_age_seconds=1650)
         self.assertEqual(a, tiles.immutable_key(source_sha256="a"*64, **key))
 
     def test_verified_frame_type_and_no_second_hash(self):
