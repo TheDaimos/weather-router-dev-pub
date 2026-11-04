@@ -23,6 +23,8 @@ from .raster_mosaic_contract import (
     MosaicContractError,
     validate_raster_mosaic_request,
 )
+from .const import (CONF_OPERA_PREVIEW_VALIDITY_SECONDS,
+                    DEFAULT_OPERA_PREVIEW_VALIDITY_SECONDS)
 from .raster_mosaic_policy import viewport_overlap
 from .raster_mosaic_service import resolve_mosaic_snapshot
 from .spatial_coverage import CoverageTemporarilyUnavailable, normalize_coverage
@@ -137,7 +139,8 @@ async def websocket_consumer_resolve_mosaic(
             # than imposing a hidden 900-second client-side expiry.
             entries = hass.config_entries.async_entries("weather_router")
             options = entries[0].options if entries else {}
-            server_validity = options.get("opera_preview_validity_seconds")
+            server_validity = options.get(CONF_OPERA_PREVIEW_VALIDITY_SECONDS,
+                                          DEFAULT_OPERA_PREVIEW_VALIDITY_SECONDS)
             if (type(server_validity) is not int
                     or not 1 <= server_validity <= 86400):
                 connection.send_error(
