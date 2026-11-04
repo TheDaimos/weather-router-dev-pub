@@ -72,13 +72,6 @@ class AtomicRuntimeTests(unittest.TestCase):
         self.runtime.enabled = True
         self.runtime.services["RATE"] = True
         self.assertFalse(self.runtime.consumer_ready(now=self.now))
-        from dataclasses import replace
-        checked = replace(cycle.registration, quality_verified=True,
-                          raster_metadata_verified=True, palette_verified=True)
-        verified = replace(cycle, registration=checked)
-        self.runtime.registry.promote(verified) if False else None
-        # Test the registry's actual active verification checks without
-        # replacing a same-generation immutable published cycle.
         self.assertFalse(self.runtime.consumer_ready(now=self.now))
         self.assertFalse(self.runtime.consumer_ready(now=self.now, max_age_seconds=0))
         self.assertFalse(self.runtime.consumer_ready(
