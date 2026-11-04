@@ -46,8 +46,10 @@ def validate_object_size(byte_size: Any) -> int:
     return byte_size
 
 def tile_cache_key(*, filename: str, source_time: datetime, now: datetime,
-                   z: int, x: int, y: int, palette_version: str, quality_version: str) -> tuple[str, ...]:
-    product, frame = frame_id(filename, source_time=source_time, now=now)
+                   z: int, x: int, y: int, palette_version: str, quality_version: str,
+                   max_age_seconds: int) -> tuple[str, ...]:
+    product, frame = frame_id(filename, source_time=source_time, now=now,
+                              max_age_seconds=max_age_seconds)
     validate_tile(z, x, y)
     if not all(isinstance(v, str) and re.fullmatch(r"[a-zA-Z0-9_-]{1,32}", v)
                for v in (palette_version, quality_version)):
