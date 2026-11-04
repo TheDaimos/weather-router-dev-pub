@@ -85,11 +85,15 @@ class AtomicRuntimeTests(unittest.TestCase):
         self.assertFalse(self.runtime.consumer_ready(
             now=self.now, max_age_seconds=1650))
         self.runtime.promote(cycle)
+        self.assertIs(self.runtime.consumer_registration("RATE", now=self.now,
+                       max_age_seconds=1650), cycle.registration)
         self.assertTrue(self.runtime.consumer_ready(
             now=self.now + timedelta(seconds=1500), max_age_seconds=1650))
         self.assertTrue(self.runtime.consumer_ready(
             now=self.now + timedelta(seconds=1650), max_age_seconds=1650))
         self.assertFalse(self.runtime.consumer_ready(
+            now=self.now + timedelta(seconds=1651), max_age_seconds=1650))
+        self.assertIsNone(self.runtime.consumer_registration("RATE",
             now=self.now + timedelta(seconds=1651), max_age_seconds=1650))
         self.runtime.services["RATE"] = False
         self.assertFalse(self.runtime.consumer_ready(
