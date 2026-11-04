@@ -29,10 +29,10 @@ class OperaDownloadError(ValueError):
     """A source acquisition failed closed; never include URL/secret in text."""
 
 
-def object_url(*, filename: str, valid_at: datetime, now: datetime) -> str:
+def object_url(*, filename: str, valid_at: datetime, now: datetime, max_age_seconds: int) -> str:
     """Build only the known bucket/date/product key, after trusted UTC checks."""
     try:
-        product, stamp = frame_id(filename, source_time=valid_at, now=now)
+        product, stamp = frame_id(filename, source_time=valid_at, now=now, max_age_seconds=max_age_seconds)
     except (ValueError, TypeError) as exc:
         raise OperaDownloadError("unapproved_source_frame") from exc
     date = normalized_utc(valid_at)
@@ -65,8 +65,8 @@ class OperaCogFetch:
         self._clock = clock or (lambda: datetime.now(timezone.utc))
         self._slots = asyncio.Semaphore(max_active)
 
-    async def fetch(self, *, filename: str, valid_at: datetime, now: datetime):
-        url = object_url(filename=filename, valid_at=valid_at, now=now)
+    async def fetch(self, *, filename: str, valid_at: datetime, now: datetime, max_age_seconds: int):
+        url = object_url(filename=filename, valid_at=valid_at, now=now, max_age_seconds=max_age_seconds)
         product, _ = frame_id(filename, source_time=valid_at, now=now)
         try:
             await asyncio.wait_for(self._slots.acquire(), timeout=0.2)
@@ -114,7 +114,7 @@ class OperaCogFetch:
             ):
                 raise OperaDownloadError("not_a_tiff")
             # Critical: snapshot age is checked again after download activity.
-            frame_id(filename, source_time=valid_at, now=self._clock())
+            frame_id(filename, source_time=valid_at, now=self._clock(), max_age_seconds=max_age_seconds)
             digest = sha256(payload).hexdigest()
             worker = partial(
                 _store_frame, self.cache, bytes(payload), product,
