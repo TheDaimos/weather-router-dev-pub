@@ -22,9 +22,11 @@ class OperaCatalogError(ValueError):
     pass
 
 
-def parse_catalog(payload: bytes, *, now: datetime, product: str):
+def parse_catalog(payload: bytes, *, now: datetime, product: str, max_age_seconds: int):
     """Read strictly bounded public S3 ListObjectsV2 XML, no trust in LastModified."""
-    if len(payload) > MAX_LIST_BYTES or product not in ("RATE", "DBZH"):
+    if (len(payload) > MAX_LIST_BYTES or product not in ("RATE", "DBZH")
+            or type(max_age_seconds) is not int or not 1 <= max_age_seconds <= 3600
+            or now.tzinfo is None):
         raise OperaCatalogError("invalid_listing")
     try:
         root = ET.fromstring(payload)
@@ -45,7 +47,7 @@ def parse_catalog(payload: bytes, *, now: datetime, product: str):
             continue
         stamp = datetime.strptime(match[5] + match[6], "%Y%m%d%H%M").replace(tzinfo=timezone.utc)
         if (stamp.strftime("%Y/%m/%d") != "/".join(match.group(i) for i in (1, 2, 3))
-                or not timedelta() <= now - stamp <= timedelta(seconds=900)):
+                or not timedelta() <= now - stamp <= timedelta(seconds=max_age_seconds)):
             continue
         selected.append((stamp, match[4]))
     return sorted(set(selected), reverse=True)
@@ -53,9 +55,11 @@ def parse_catalog(payload: bytes, *, now: datetime, product: str):
 
 class OperaSourceMonitor:
     """One HA-entry-scoped monitor that attempts real network intake on enable."""
-    def __init__(self, *, hass, session, runtime, interval=60):
+    def __init__(self, *, hass, session, runtime, interval=60,
+                 server_validity_seconds=None):
         self.hass, self.session, self.runtime = hass, session, runtime
         self.interval = interval
+        self._server_validity_seconds = server_validity_seconds or (lambda: None)
         self.fetcher = OperaCogFetch(hass=hass, session=session, cache=runtime.cache)
         self._task = None
         self.last_success_utc = None
@@ -76,7 +80,8 @@ class OperaSourceMonitor:
             if length is not None and length > MAX_LIST_BYTES:
                 raise OperaCatalogError("listing_too_large")
             data = await response.content.read(MAX_LIST_BYTES + 1)
-        return parse_catalog(data, now=now, product=product)
+        return parse_catalog(data, now=now, product=product,
+                             max_age_seconds=self._server_validity_seconds())
 
     async def check_once(self):
         if not self.runtime.enabled:
