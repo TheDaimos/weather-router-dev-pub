@@ -75,7 +75,7 @@ class FetchTests(unittest.IsolatedAsyncioTestCase):
 
     async def test_fixed_public_host_and_executor_only_admission(self):
         client=self.create()
-        frame=await client.fetch(filename=self.file,valid_at=self.at,now=self.now)
+        frame=await client.fetch(filename=self.file,valid_at=self.at,now=self.now,max_age_seconds=1650)
         self.assertEqual(frame.product,"DBZH")
         self.assertEqual(frame.path.read_bytes(),TIFF)
         self.assertEqual(self.cache.hash_operations,1)
@@ -90,11 +90,11 @@ class FetchTests(unittest.IsolatedAsyncioTestCase):
         for name,clock in (
             ("../../bad.tiff",self.now),
             ("OPERA@20261019T1340@0@ACRR.tiff",self.now),
-            (self.file,self.at+timedelta(seconds=901)),
+            (self.file,self.at+timedelta(seconds=1651)),
         ):
             client=self.create()
             with self.assertRaises(fetcher.OperaDownloadError):
-                await client.fetch(filename=name,valid_at=self.at,now=clock)
+                await client.fetch(filename=name,valid_at=self.at,now=clock,max_age_seconds=1650)
             self.assertEqual(self.session.requests,[])
 
     async def test_bounded_network_fail_closed(self):
@@ -122,7 +122,7 @@ class FetchTests(unittest.IsolatedAsyncioTestCase):
         client=self.create(clock=lambda:rate_at+timedelta(minutes=5))
         filename="OPERA@20261019T1315@0@RATE.tiff"
         frame=await client.fetch(filename=filename,valid_at=rate_at,
-                                 now=rate_at+timedelta(minutes=5))
+                                 now=rate_at+timedelta(minutes=5),max_age_seconds=1650)
         self.assertEqual(frame.product,"RATE")
         self.assertNotEqual(frame.product,"DBZH")
 
