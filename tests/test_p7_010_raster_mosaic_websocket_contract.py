@@ -160,6 +160,8 @@ class WebsocketHarnessTests(unittest.IsolatedAsyncioTestCase):
 
         environment = {
             "asyncio": asyncio,
+            "CONF_OPERA_PREVIEW_VALIDITY_SECONDS": "opera_preview_validity_seconds",
+            "DEFAULT_OPERA_PREVIEW_VALIDITY_SECONDS": 1500,
             "_LIVE_REQUEST_SLOTS": asyncio.Semaphore(2),
             # The handler AST is tested separately from its module globals.
             "_shared_coverage_slots": lambda: asyncio.Semaphore(3),
