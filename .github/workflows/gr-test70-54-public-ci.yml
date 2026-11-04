@@ -1,0 +1,41 @@
+name: GR TEST70-54 public DEV-Pub regression
+on:
+  push:
+    branches:
+      - feature/p7-010-global-concurrency-2026-10-16
+    paths:
+      - '.github/workflows/gr-test70-54-public-ci.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  gr-selective-retry:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout public GR code at pinned commit
+        uses: actions/checkout@v4
+        with:
+          repository: TheDaimos/gewitterradar
+          ref: 483ef6a38b90149ce4e34fa83801c27ae4dea2ff
+          path: gr
+          persist-credentials: false
+      - name: Set up Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify precise tested GR revision
+        working-directory: gr
+        run: |
+          test "$(git rev-parse HEAD)" = "483ef6a38b90149ce4e34fa83801c27ae4dea2ff"
+          node --check frontend/modules/weather/p7-010/raster-mosaic-tile-loader.js
+      - name: Verify all delivered frontend copies are identical
+        working-directory: gr
+        run: |
+          cmp frontend/modules/weather/p7-010/raster-mosaic-tile-loader.js custom_components/gewitterradar/frontend/modules/weather/p7-010/raster-mosaic-tile-loader.js
+          cmp frontend/modules/weather/p7-010/raster-mosaic-tile-loader.js dashboard/dist/modules/weather/p7-010/raster-mosaic-tile-loader.js
+      - name: TEST70-54 and existing raster regression
+        working-directory: gr
+        run: node --test tests/test70-54-selective-raster-retry.test.mjs tests/wl02-raster-geometry.test.mjs tests/wl02-coverage-contract.test.mjs
+      - name: Report verified test target
+        run: echo "GR_TEST70_54_TESTED_COMMIT=483ef6a38b90149ce4e34fa83801c27ae4dea2ff"
