@@ -143,7 +143,8 @@ async def async_apply_opera_provider_selection(hass, *, enabled_providers,
                                                 router_enabled, enabled_domains):
     """Use existing router/domain/provider eligibility; no preview switch."""
     from homeassistant.helpers.aiohttp_client import async_get_clientsession
-    from .const import DOMAIN
+    from .const import (DOMAIN, CONF_OPERA_PREVIEW_VALIDITY_SECONDS,
+                        DEFAULT_OPERA_PREVIEW_VALIDITY_SECONDS)
     area = hass.data.get(DOMAIN, {})
     runtime = area.get("opera_runtime")
     if runtime is None:
@@ -160,8 +161,19 @@ async def async_apply_opera_provider_selection(hass, *, enabled_providers,
             await monitor.stop()
             area.pop("opera_source_monitor", None)
         return
+    def wr_validity():
+        entries = hass.config_entries.async_entries(DOMAIN)
+        if not entries:
+            return None
+        return entries[0].options.get(
+            CONF_OPERA_PREVIEW_VALIDITY_SECONDS,
+            DEFAULT_OPERA_PREVIEW_VALIDITY_SECONDS)
+
     if monitor is None:
         monitor = OperaSourceMonitor(
-            hass=hass, session=async_get_clientsession(hass), runtime=runtime)
+            hass=hass, session=async_get_clientsession(hass), runtime=runtime,
+            server_validity_seconds=wr_validity)
+    else:
+        monitor._server_validity_seconds = wr_validity
         area["opera_source_monitor"] = monitor
     monitor.start()
