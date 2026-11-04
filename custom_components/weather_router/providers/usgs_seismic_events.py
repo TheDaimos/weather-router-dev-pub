@@ -169,9 +169,12 @@ def _event(feature: Any) -> dict[str, Any] | None:
         "certainty": "observed",
         "status": str(props.get("status") or "actual").casefold(),
         "message_type": "event",
-        "sent": _iso_from_millis(props.get("time")),
+        # Ein seismisches Ereignis hat keine automatisch belegte
+        # Meldungs-Ausstellungszeit. Ursprung und Quellupdate getrennt halten.
+        "sent": None,
         "effective": _iso_from_millis(props.get("time")),
         "onset": _iso_from_millis(props.get("time")),
+        "last_updated_at": _iso_from_millis(props.get("updated")),
         "expires": None,
         "ends": None,
         "area_desc": place,
@@ -190,7 +193,6 @@ def _event(feature: Any) -> dict[str, Any] | None:
             "significance": props.get("sig"),
             "network": props.get("net"),
             "code": props.get("code"),
-            "updated": _iso_from_millis(props.get("updated")),
             "classification_note": (
                 "USGS seismic catalog classification only; WeatherRouter does not infer "
                 "attack, intent, military origin or criminal cause."
@@ -271,7 +273,7 @@ class UsgsSeismicEventsProvider:
             _FEED_URL,
             headers={
                 "Accept": "application/geo+json,application/json,*/*",
-                "User-Agent": "WeatherRouter/0.10 (+https://github.com/TheDaimos/weather-router-dev-pub)",
+                "User-Agent": "WeatherRouter/0.10 (+https://github.com/TheDaimos/weather-router-dev)",
             },
             timeout=20,
         ) as response:

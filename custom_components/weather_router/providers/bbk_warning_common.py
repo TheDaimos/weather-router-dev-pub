@@ -14,7 +14,7 @@ from .hazard_common import geometry_intersects_bbox, normalize_severity
 _BASE_URL = "https://warnung.bund.de/api31"
 _HEADERS = {
     "Accept": "application/json,application/geo+json,*/*",
-    "User-Agent": "WeatherRouter/0.10 (+https://github.com/TheDaimos/weather-router-dev-pub)",
+    "User-Agent": "WeatherRouter/0.10 (+https://github.com/TheDaimos/weather-router-dev)",
 }
 
 
@@ -207,7 +207,8 @@ async def fetch_bbk_feed(
                 "certainty": "unknown",
                 "status": "actual",
                 "message_type": message_type,
-                "sent": item.get("startDate"),
+                # NINA mapData.startDate ist Warnbeginn, keine belegte Ausstellungszeit.
+                "sent": None,
                 "effective": item.get("startDate"),
                 "onset": item.get("startDate"),
                 "expires": item.get("expiresDate"),

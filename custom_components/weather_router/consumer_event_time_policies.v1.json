@@ -1,0 +1,78 @@
+{
+  "schema": "weather_router.consumer.event_time_policies.v1",
+  "description": "Explicit opt-in event-window capability allowlist; no guessed active sightings or implicit provider privileges.",
+  "public_capabilities": {
+    "weather.warning.official": {
+      "resource_type": "hazard_feed",
+      "time_class": "official_warning"
+    },
+    "natural_hazards.tsunami.warnings": {
+      "resource_type": "hazard_feed",
+      "time_class": "official_warning"
+    },
+    "civil_protection.warning.official": {
+      "resource_type": "hazard_feed",
+      "time_class": "official_warning"
+    },
+    "aviation.airmet.us": {
+      "resource_type": "hazard_feed",
+      "time_class": "official_warning"
+    },
+    "aviation.gairmet.us": {
+      "resource_type": "hazard_feed",
+      "time_class": "official_warning"
+    },
+    "aviation.sigmet.international": {
+      "resource_type": "hazard_feed",
+      "time_class": "official_warning"
+    },
+    "natural_hazards.disaster_awareness.events": {
+      "resource_type": "hazard_feed",
+      "time_class": "official_warning"
+    },
+    "natural_hazards.earthquake.events": {
+      "resource_type": "hazard_feed",
+      "time_class": "point_event"
+    },
+    "natural_hazards.earthquake.significant_events": {
+      "resource_type": "hazard_feed",
+      "time_class": "point_event"
+    },
+    "natural_hazards.flood.warning": {
+      "resource_type": "hazard_feed",
+      "time_class": "official_warning"
+    },
+    "natural_hazards.seismic_non_earthquake.events": {
+      "resource_type": "hazard_feed",
+      "time_class": "point_event"
+    },
+    "natural_hazards.tropical_cyclone.events": {
+      "resource_type": "hazard_feed",
+      "time_class": "long_running_event"
+    },
+    "natural_hazards.tsunami.observations": {
+      "resource_type": "hazard_feed",
+      "time_class": "point_event"
+    },
+    "natural_hazards.tsunami.potential": {
+      "resource_type": "hazard_feed",
+      "time_class": "official_warning"
+    },
+    "natural_hazards.volcano.activity": {
+      "resource_type": "hazard_feed",
+      "time_class": "long_running_event"
+    },
+    "natural_hazards.volcano.warnings": {
+      "resource_type": "hazard_feed",
+      "time_class": "official_warning"
+    },
+    "security.public_warning.official": {
+      "resource_type": "hazard_feed",
+      "time_class": "official_warning"
+    },
+    "weather.lightning.observed.events": {
+      "resource_type": "event_feed",
+      "time_class": "point_event"
+    }
+  }
+}

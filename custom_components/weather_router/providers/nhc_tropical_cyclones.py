@@ -224,7 +224,7 @@ class NhcTropicalCycloneProvider:
                     "certainty": "observed",
                     "status": "actual",
                     "message_type": "update",
-                    "sent": storm.get("lastUpdate"),
+                    "sent": None,  # NHC lastUpdate ist Status-Gültigkeit, kein Bulletin-Ausstellungszeitpunkt.
                     "effective": storm.get("lastUpdate"),
                     "onset": None,
                     "expires": None,

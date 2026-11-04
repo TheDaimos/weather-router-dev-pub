@@ -1,0 +1,51 @@
+name: OPERA Public Frame Cache Regression
+on:
+  push:
+    branches:
+      - feature/p7-010-global-concurrency-2026-10-16
+    paths:
+      - "custom_components/weather_router/opera_frame_cache.py"
+      - "tests/test_opera_frame_cache.py"
+      - "custom_components/weather_router/opera_tile_http.py"
+      - "custom_components/weather_router/opera_runtime.py"
+      - "custom_components/weather_router/opera_cycle_store.py"
+      - "tests/test_opera_cycle_journal.py"
+      - "tests/test_opera_source_monitor.py"
+      - "custom_components/weather_router/opera_source_monitor.py"
+      - "tests/test_opera_runtime_atomic.py"
+      - "tests/test_opera_http_lease_contract.py"
+      - ".github/workflows/opera-frame-cache-regression.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  frame-cache:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install public OPERA source client dependency
+        run: python -m pip install aiohttp
+      - name: Compile actual OPERA cache module and tests
+        run: python -m py_compile custom_components/weather_router/opera_frame_cache.py tests/test_opera_frame_cache.py custom_components/weather_router/opera_tile_http.py tests/test_opera_http_lease_contract.py
+      - name: Test actual OPERA frame cache
+        run: python -m unittest discover -s tests -p 'test_opera_frame_cache.py' -v
+      - name: Validate actual HTTP lease-path contract
+        run: python -m unittest discover -s tests -p 'test_opera_http_lease_contract.py' -v
+      - name: Test real public OPERA atomic runtime
+        run: python -m unittest discover -s tests -p 'test_opera_runtime_atomic.py' -v
+      - name: Test durable OPERA journal and crash recovery
+        run: python -m unittest discover -s tests -p 'test_opera_cycle_journal.py' -v
+      - name: Test real public OPERA S3 source monitor
+        run: python -m unittest discover -s tests -p 'test_opera_source_monitor.py' -v

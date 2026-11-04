@@ -13,6 +13,11 @@ from typing import Any
 from xml.etree import ElementTree as ET
 
 
+class CoverageTemporarilyUnavailable(RuntimeError):
+    """Temporarily missing coverage metadata; never geographic non-coverage."""
+
+
+
 def _local_name(tag: str) -> str:
     return tag.rsplit("}", 1)[-1]
 

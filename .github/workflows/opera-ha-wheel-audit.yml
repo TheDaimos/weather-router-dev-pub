@@ -1,0 +1,130 @@
+name: OPERA Rasterbibliotheken – Home Assistant Wheel-Pruefung
+
+on:
+  push:
+    branches:
+      - "feature/p7-010-global-concurrency-2026-10-16"
+    paths:
+      - ".github/workflows/opera-ha-wheel-audit.yml"
+      - "scripts/probe_opera_concurrent_raster.py"
+      - "custom_components/weather_router/opera_tile_http.py"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  wheel-availability:
+    name: "HA musllinux ${{ matrix.py }} / ${{ matrix.arch }}"
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: ["x86_64", "aarch64"]
+        py: ["3.13", "3.14"]
+    steps:
+      - name: Python installieren – nur Pruefcontainer
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: HA musllinux Python 3.14 Raster-Wheels rein lesend pruefen
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "HA-WHEEL-PROBE: nur oeffentliche PyPI-Wheels, keine HA-Installation."
+          mkdir -p "${RUNNER_TEMP}/opera-ha-wheels"
+          failures=0
+          for dependency in "numpy==2.3.5" "Pillow==12.3.0" "rasterio>=1.5,<2"; do
+            echo "HA-WHEEL-PROBE: pruefe ${dependency} ..."
+            if python -m pip download \
+                --index-url https://pypi.org/simple \
+                --extra-index-url https://wheels.home-assistant.io/musllinux-index/ \
+                --only-binary=:all: \
+                --no-deps \
+                --platform "musllinux_1_2_${{ matrix.arch }}" \
+                --python-version "${{ matrix.py }}" \
+                --implementation cp \
+                --abi "cp${{ matrix.py == '3.13' && '313' || '314' }}" \
+                --dest "${RUNNER_TEMP}/opera-ha-wheels" "${dependency}"; then
+              echo "HA-WHEEL-PROBE PASS: ${dependency}"
+            else
+              echo "::error::HA-WHEEL-PROBE FAIL: kein passendes Fertigpaket fuer ${dependency}"
+              failures=1
+            fi
+          done
+          find "${RUNNER_TEMP}/opera-ha-wheels" -type f -name '*.whl' -printf "%f\\n"
+          if [ "${failures}" -ne 0 ]; then
+            exit 1
+          fi
+          echo "HA-WHEEL-PROBE PASS: alle drei angeforderten PyPI-Wheels fuer dieses Ziel gefunden."
+
+  native-import:
+    name: "glibc Python ${{ matrix.python }} - Import und CoG"
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.13", "3.14"]
+    steps:
+      - name: Code auschecken
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Python einrichten
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Fertigpakete installieren
+        run: |
+          python -m pip install --only-binary=:all: "numpy==2.3.5" "Pillow==12.3.0" "rasterio>=1.5,<2"
+      - name: Native Bibliotheken wirklich importieren
+        run: |
+          python - <<'PY'
+          import json
+          import numpy, rasterio, PIL
+          from rasterio.warp import reproject
+          print(json.dumps({"rasterio": rasterio.__version__,
+              "gdal": rasterio.__gdal_version__, "proj": rasterio.__proj_version__,
+              "numpy": numpy.__version__, "pillow": PIL.__version__}))
+          PY
+      - name: F13 Pixels gegen echte CoG-Renderfunktion
+        run: |
+          python - <<'PY'
+          import unittest
+          suite = unittest.defaultTestLoader.discover("tests", pattern="test_opera_cog_render_pixels.py")
+          result = unittest.TextTestRunner(verbosity=2).run(suite)
+          if result.testsRun < 2 or result.skipped or not result.wasSuccessful():
+              raise SystemExit("F13 fehlgeschlagen oder uebersprungen")
+          PY
+      - name: CoG synthetische CPU- und RSS-Messung
+        run: python scripts/probe_opera_raster_runtime.py
+      - name: Echte native GDAL-Mehrfachrasterarbeit und Schleifenreaktion
+        run: python scripts/probe_opera_concurrent_raster.py
+
+  alpine-apk-investigation:
+    name: "Alpine 3.24 APK Rasterio / ${{ matrix.runner }} - isoliert"
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: ["ubuntu-latest", "ubuntu-24.04-arm"]
+    steps:
+      - name: Oeffentlichen CoG-Code auschecken
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Nur vorgebaute Alpine-Pakete im Wegwerfcontainer
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker run --rm -v "$PWD:/wr:ro" -w /wr alpine:3.24 sh -ec '
+            apk add --no-cache python3 py3-numpy py3-pillow py3-rasterio
+            python3 -c "import sys, numpy, rasterio, PIL; from rasterio.warp import reproject; print(dict(python=sys.version, rasterio=rasterio.__version__, gdal=rasterio.__gdal_version__, proj=rasterio.__proj_version__, numpy=numpy.__version__, pillow=PIL.__version__))"
+            python3 scripts/probe_opera_raster_runtime.py
+            python3 scripts/probe_opera_concurrent_raster.py
+          '
+          echo "Alpine-Containerbeweis ist keine Installation von APK im Home-Assistant-Core."

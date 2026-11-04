@@ -1,0 +1,3792 @@
+{
+  "schema": "weather_router.provider_time_contracts.v1",
+  "policy": "fail_closed_on_undeclared_format",
+  "providers": {
+    "open_meteo": {
+      "temperature": {
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: current.time timezone=auto via provider_local_instant -> aware UTC"
+          },
+          "values[].valid_at": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: local_utc(current/hourly) -> RFC3339 UTC"
+          },
+          "values[].interval_start": {
+            "format": "rfc3339",
+            "role": "interval_start",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: calendar_day_interval UTC start"
+          },
+          "values[].interval_end": {
+            "format": "rfc3339",
+            "role": "interval_end",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: calendar_day_interval UTC end"
+          }
+        }
+      },
+      "cloud_cover": {
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: current.time timezone=auto via provider_local_instant -> aware UTC"
+          },
+          "values[].valid_at": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: local_utc(current/hourly) -> RFC3339 UTC"
+          },
+          "values[].interval_start": {
+            "format": "rfc3339",
+            "role": "interval_start",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: calendar_day_interval UTC start"
+          },
+          "values[].interval_end": {
+            "format": "rfc3339",
+            "role": "interval_end",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: calendar_day_interval UTC end"
+          }
+        }
+      },
+      "cloud_cover_low": {
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: current.time timezone=auto via provider_local_instant -> aware UTC"
+          },
+          "values[].valid_at": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: local_utc(current/hourly) -> RFC3339 UTC"
+          },
+          "values[].interval_start": {
+            "format": "rfc3339",
+            "role": "interval_start",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: calendar_day_interval UTC start"
+          },
+          "values[].interval_end": {
+            "format": "rfc3339",
+            "role": "interval_end",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: calendar_day_interval UTC end"
+          }
+        }
+      },
+      "cloud_cover_mid": {
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: current.time timezone=auto via provider_local_instant -> aware UTC"
+          },
+          "values[].valid_at": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: local_utc(current/hourly) -> RFC3339 UTC"
+          },
+          "values[].interval_start": {
+            "format": "rfc3339",
+            "role": "interval_start",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: calendar_day_interval UTC start"
+          },
+          "values[].interval_end": {
+            "format": "rfc3339",
+            "role": "interval_end",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: calendar_day_interval UTC end"
+          }
+        }
+      },
+      "cloud_cover_high": {
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: current.time timezone=auto via provider_local_instant -> aware UTC"
+          },
+          "values[].valid_at": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: local_utc(current/hourly) -> RFC3339 UTC"
+          },
+          "values[].interval_start": {
+            "format": "rfc3339",
+            "role": "interval_start",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: calendar_day_interval UTC start"
+          },
+          "values[].interval_end": {
+            "format": "rfc3339",
+            "role": "interval_end",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: calendar_day_interval UTC end"
+          }
+        }
+      },
+      "precipitation": {
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: current.time timezone=auto via provider_local_instant -> aware UTC"
+          },
+          "values[].valid_at": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: local_utc(current/hourly) -> RFC3339 UTC"
+          },
+          "values[].interval_start": {
+            "format": "rfc3339",
+            "role": "interval_start",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: calendar_day_interval UTC start"
+          },
+          "values[].interval_end": {
+            "format": "rfc3339",
+            "role": "interval_end",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: calendar_day_interval UTC end"
+          }
+        }
+      },
+      "rain": {
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: current.time timezone=auto via provider_local_instant -> aware UTC"
+          },
+          "values[].valid_at": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: local_utc(current/hourly) -> RFC3339 UTC"
+          },
+          "values[].interval_start": {
+            "format": "rfc3339",
+            "role": "interval_start",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: calendar_day_interval UTC start"
+          },
+          "values[].interval_end": {
+            "format": "rfc3339",
+            "role": "interval_end",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: calendar_day_interval UTC end"
+          }
+        }
+      },
+      "showers": {
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: current.time timezone=auto via provider_local_instant -> aware UTC"
+          },
+          "values[].valid_at": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: local_utc(current/hourly) -> RFC3339 UTC"
+          },
+          "values[].interval_start": {
+            "format": "rfc3339",
+            "role": "interval_start",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: calendar_day_interval UTC start"
+          },
+          "values[].interval_end": {
+            "format": "rfc3339",
+            "role": "interval_end",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: calendar_day_interval UTC end"
+          }
+        }
+      },
+      "snowfall": {
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: current.time timezone=auto via provider_local_instant -> aware UTC"
+          },
+          "values[].valid_at": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: local_utc(current/hourly) -> RFC3339 UTC"
+          },
+          "values[].interval_start": {
+            "format": "rfc3339",
+            "role": "interval_start",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: calendar_day_interval UTC start"
+          },
+          "values[].interval_end": {
+            "format": "rfc3339",
+            "role": "interval_end",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: calendar_day_interval UTC end"
+          }
+        }
+      },
+      "wind_speed": {
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: current.time timezone=auto via provider_local_instant -> aware UTC"
+          },
+          "values[].valid_at": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: local_utc(current/hourly) -> RFC3339 UTC"
+          },
+          "values[].interval_start": {
+            "format": "rfc3339",
+            "role": "interval_start",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: calendar_day_interval UTC start"
+          },
+          "values[].interval_end": {
+            "format": "rfc3339",
+            "role": "interval_end",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: calendar_day_interval UTC end"
+          }
+        }
+      },
+      "wind_direction": {
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: current.time timezone=auto via provider_local_instant -> aware UTC"
+          },
+          "values[].valid_at": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: local_utc(current/hourly) -> RFC3339 UTC"
+          },
+          "values[].interval_start": {
+            "format": "rfc3339",
+            "role": "interval_start",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: calendar_day_interval UTC start"
+          },
+          "values[].interval_end": {
+            "format": "rfc3339",
+            "role": "interval_end",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: calendar_day_interval UTC end"
+          }
+        }
+      },
+      "wind_gusts": {
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: current.time timezone=auto via provider_local_instant -> aware UTC"
+          },
+          "values[].valid_at": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: local_utc(current/hourly) -> RFC3339 UTC"
+          },
+          "values[].interval_start": {
+            "format": "rfc3339",
+            "role": "interval_start",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: calendar_day_interval UTC start"
+          },
+          "values[].interval_end": {
+            "format": "rfc3339",
+            "role": "interval_end",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: calendar_day_interval UTC end"
+          }
+        }
+      },
+      "visibility": {
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: current.time timezone=auto via provider_local_instant -> aware UTC"
+          },
+          "values[].valid_at": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: local_utc(current/hourly) -> RFC3339 UTC"
+          },
+          "values[].interval_start": {
+            "format": "rfc3339",
+            "role": "interval_start",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: calendar_day_interval UTC start"
+          },
+          "values[].interval_end": {
+            "format": "rfc3339",
+            "role": "interval_end",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: calendar_day_interval UTC end"
+          }
+        }
+      },
+      "weather_code": {
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: current.time timezone=auto via provider_local_instant -> aware UTC"
+          },
+          "values[].valid_at": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: local_utc(current/hourly) -> RFC3339 UTC"
+          },
+          "values[].interval_start": {
+            "format": "rfc3339",
+            "role": "interval_start",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: calendar_day_interval UTC start"
+          },
+          "values[].interval_end": {
+            "format": "rfc3339",
+            "role": "interval_end",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: calendar_day_interval UTC end"
+          }
+        }
+      },
+      "uv_index": {
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: current.time timezone=auto via provider_local_instant -> aware UTC"
+          },
+          "values[].valid_at": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: local_utc(current/hourly) -> RFC3339 UTC"
+          },
+          "values[].interval_start": {
+            "format": "rfc3339",
+            "role": "interval_start",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: calendar_day_interval UTC start"
+          },
+          "values[].interval_end": {
+            "format": "rfc3339",
+            "role": "interval_end",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: calendar_day_interval UTC end"
+          }
+        }
+      },
+      "uv_index_clear_sky": {
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: current.time timezone=auto via provider_local_instant -> aware UTC"
+          },
+          "values[].valid_at": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: local_utc(current/hourly) -> RFC3339 UTC"
+          },
+          "values[].interval_start": {
+            "format": "rfc3339",
+            "role": "interval_start",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: calendar_day_interval UTC start"
+          },
+          "values[].interval_end": {
+            "format": "rfc3339",
+            "role": "interval_end",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: calendar_day_interval UTC end"
+          }
+        }
+      },
+      "uv_index_max_today": {
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: current.time timezone=auto via provider_local_instant -> aware UTC"
+          },
+          "values[].valid_at": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: local_utc(current/hourly) -> RFC3339 UTC"
+          },
+          "values[].interval_start": {
+            "format": "rfc3339",
+            "role": "interval_start",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: calendar_day_interval UTC start"
+          },
+          "values[].interval_end": {
+            "format": "rfc3339",
+            "role": "interval_end",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: calendar_day_interval UTC end"
+          }
+        }
+      },
+      "uv_index_clear_sky_max_today": {
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: current.time timezone=auto via provider_local_instant -> aware UTC"
+          },
+          "values[].valid_at": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: local_utc(current/hourly) -> RFC3339 UTC"
+          },
+          "values[].interval_start": {
+            "format": "rfc3339",
+            "role": "interval_start",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: calendar_day_interval UTC start"
+          },
+          "values[].interval_end": {
+            "format": "rfc3339",
+            "role": "interval_end",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo.py: calendar_day_interval UTC end"
+          }
+        }
+      }
+    },
+    "rainviewer": {
+      "radar_reflectivity": {
+        "status": "static_code_evidence",
+        "fields": {
+          "frame_time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/rainviewer.py: async_get_map_layer; Unix epoch seconds"
+          },
+          "timeline.frames[].time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/rainviewer.py: timeline.frames[].time; Unix epoch seconds"
+          }
+        }
+      }
+    },
+    "dwd": {
+      "radar_precipitation": {
+        "status": "static_code_evidence",
+        "fields": {
+          "frame_time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/dwd.py: async_get_map_layer; Unix epoch seconds"
+          },
+          "timeline.frames[].time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/dwd.py: timeline.frames[].time; Unix epoch seconds"
+          }
+        }
+      },
+      "radar_precipitation_quality_checked": {
+        "status": "static_code_evidence",
+        "fields": {
+          "frame_time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/dwd.py: async_get_map_layer; Unix epoch seconds"
+          },
+          "timeline.frames[].time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/dwd.py: timeline.frames[].time; Unix epoch seconds"
+          }
+        }
+      },
+      "satellite_clouds": {
+        "status": "static_code_evidence",
+        "fields": {
+          "frame_time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/dwd.py: async_get_map_layer; Unix epoch seconds"
+          },
+          "timeline.frames[].time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/dwd.py: timeline.frames[].time; Unix epoch seconds"
+          }
+        }
+      },
+      "lightning_density": {
+        "status": "static_code_evidence",
+        "fields": {
+          "frame_time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/dwd.py: async_get_map_layer; Unix epoch seconds"
+          },
+          "timeline.frames[].time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/dwd.py: timeline.frames[].time; Unix epoch seconds"
+          }
+        }
+      },
+      "thunderstorm_cells": {
+        "status": "static_code_evidence",
+        "fields": {
+          "frame_time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/dwd.py: async_get_map_layer; Unix epoch seconds"
+          },
+          "timeline.frames[].time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/dwd.py: timeline.frames[].time; Unix epoch seconds"
+          }
+        }
+      },
+      "icon_eu_precipitation_1h": {
+        "status": "static_code_evidence",
+        "fields": {
+          "frame_time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/dwd.py: async_get_map_layer; Unix epoch seconds"
+          },
+          "timeline.frames[].time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/dwd.py: timeline.frames[].time; Unix epoch seconds"
+          }
+        }
+      },
+      "icon_temperature_2m": {
+        "status": "static_code_evidence",
+        "fields": {
+          "frame_time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/dwd.py: async_get_map_layer; Unix epoch seconds"
+          },
+          "timeline.frames[].time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/dwd.py: timeline.frames[].time; Unix epoch seconds"
+          }
+        }
+      },
+      "icon_wind_10m": {
+        "status": "static_code_evidence",
+        "fields": {
+          "frame_time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/dwd.py: async_get_map_layer; Unix epoch seconds"
+          },
+          "timeline.frames[].time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/dwd.py: timeline.frames[].time; Unix epoch seconds"
+          }
+        }
+      },
+      "official_weather_warnings": {
+        "status": "static_code_evidence",
+        "fields": {
+          "events[].sent": {
+            "format": "rfc3339",
+            "role": "issued_at",
+            "timezone": "offset_in_source",
+            "evidence": "providers/dwd.py: official DWD CAP XML parser extracts standard Common Alerting Protocol root sent and info effective/onset/expires with explicit zone; ends duplicates expires"
+          },
+          "events[].effective": {
+            "format": "rfc3339",
+            "role": "valid_from",
+            "timezone": "offset_in_source",
+            "evidence": "providers/dwd.py: official DWD CAP XML parser extracts standard Common Alerting Protocol root sent and info effective/onset/expires with explicit zone; ends duplicates expires"
+          },
+          "events[].onset": {
+            "format": "rfc3339",
+            "role": "started_at",
+            "timezone": "offset_in_source",
+            "evidence": "providers/dwd.py: official DWD CAP XML parser extracts standard Common Alerting Protocol root sent and info effective/onset/expires with explicit zone; ends duplicates expires"
+          },
+          "events[].expires": {
+            "format": "rfc3339",
+            "role": "valid_until",
+            "timezone": "offset_in_source",
+            "evidence": "providers/dwd.py: official DWD CAP XML parser extracts standard Common Alerting Protocol root sent and info effective/onset/expires with explicit zone; ends duplicates expires"
+          },
+          "events[].ends": {
+            "format": "rfc3339",
+            "role": "valid_until",
+            "timezone": "offset_in_source",
+            "evidence": "providers/dwd.py: official DWD CAP XML parser extracts standard Common Alerting Protocol root sent and info effective/onset/expires with explicit zone; ends duplicates expires"
+          }
+        }
+      }
+    },
+    "nasa_gibs": {
+      "satellite_imagery_true_color": {
+        "status": "static_code_evidence",
+        "fields": {
+          "frame_time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/nasa_gibs.py: async_get_map_layer; Unix epoch seconds"
+          },
+          "timeline.frames[].time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/nasa_gibs.py: timeline.frames[].time; Unix epoch seconds"
+          }
+        }
+      },
+      "satellite_goes_east_geocolor": {
+        "status": "static_code_evidence",
+        "fields": {
+          "frame_time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/nasa_gibs.py: async_get_map_layer; Unix epoch seconds"
+          },
+          "timeline.frames[].time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/nasa_gibs.py: timeline.frames[].time; Unix epoch seconds"
+          }
+        }
+      },
+      "satellite_goes_west_geocolor": {
+        "status": "static_code_evidence",
+        "fields": {
+          "frame_time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/nasa_gibs.py: async_get_map_layer; Unix epoch seconds"
+          },
+          "timeline.frames[].time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/nasa_gibs.py: timeline.frames[].time; Unix epoch seconds"
+          }
+        }
+      },
+      "satellite_goes_east_clean_ir": {
+        "status": "static_code_evidence",
+        "fields": {
+          "frame_time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/nasa_gibs.py: async_get_map_layer; Unix epoch seconds"
+          },
+          "timeline.frames[].time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/nasa_gibs.py: timeline.frames[].time; Unix epoch seconds"
+          }
+        }
+      },
+      "satellite_goes_west_clean_ir": {
+        "status": "static_code_evidence",
+        "fields": {
+          "frame_time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/nasa_gibs.py: async_get_map_layer; Unix epoch seconds"
+          },
+          "timeline.frames[].time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/nasa_gibs.py: timeline.frames[].time; Unix epoch seconds"
+          }
+        }
+      },
+      "satellite_goes_east_visible_red": {
+        "status": "static_code_evidence",
+        "fields": {
+          "frame_time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/nasa_gibs.py: async_get_map_layer; Unix epoch seconds"
+          },
+          "timeline.frames[].time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/nasa_gibs.py: timeline.frames[].time; Unix epoch seconds"
+          }
+        }
+      },
+      "satellite_goes_west_visible_red": {
+        "status": "static_code_evidence",
+        "fields": {
+          "frame_time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/nasa_gibs.py: async_get_map_layer; Unix epoch seconds"
+          },
+          "timeline.frames[].time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/nasa_gibs.py: timeline.frames[].time; Unix epoch seconds"
+          }
+        }
+      },
+      "satellite_goes_east_air_mass": {
+        "status": "static_code_evidence",
+        "fields": {
+          "frame_time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/nasa_gibs.py: async_get_map_layer; Unix epoch seconds"
+          },
+          "timeline.frames[].time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/nasa_gibs.py: timeline.frames[].time; Unix epoch seconds"
+          }
+        }
+      },
+      "satellite_goes_west_air_mass": {
+        "status": "static_code_evidence",
+        "fields": {
+          "frame_time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/nasa_gibs.py: async_get_map_layer; Unix epoch seconds"
+          },
+          "timeline.frames[].time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/nasa_gibs.py: timeline.frames[].time; Unix epoch seconds"
+          }
+        }
+      },
+      "satellite_goes_east_dust": {
+        "status": "static_code_evidence",
+        "fields": {
+          "frame_time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/nasa_gibs.py: async_get_map_layer; Unix epoch seconds"
+          },
+          "timeline.frames[].time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/nasa_gibs.py: timeline.frames[].time; Unix epoch seconds"
+          }
+        }
+      },
+      "satellite_goes_west_dust": {
+        "status": "static_code_evidence",
+        "fields": {
+          "frame_time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/nasa_gibs.py: async_get_map_layer; Unix epoch seconds"
+          },
+          "timeline.frames[].time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/nasa_gibs.py: timeline.frames[].time; Unix epoch seconds"
+          }
+        }
+      },
+      "satellite_goes_east_fire_temperature": {
+        "status": "static_code_evidence",
+        "fields": {
+          "frame_time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/nasa_gibs.py: async_get_map_layer; Unix epoch seconds"
+          },
+          "timeline.frames[].time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/nasa_gibs.py: timeline.frames[].time; Unix epoch seconds"
+          }
+        }
+      },
+      "satellite_goes_west_fire_temperature": {
+        "status": "static_code_evidence",
+        "fields": {
+          "frame_time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/nasa_gibs.py: async_get_map_layer; Unix epoch seconds"
+          },
+          "timeline.frames[].time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/nasa_gibs.py: timeline.frames[].time; Unix epoch seconds"
+          }
+        }
+      },
+      "satellite_himawari_air_mass": {
+        "status": "static_code_evidence",
+        "fields": {
+          "frame_time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/nasa_gibs.py: async_get_map_layer; Unix epoch seconds"
+          },
+          "timeline.frames[].time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/nasa_gibs.py: timeline.frames[].time; Unix epoch seconds"
+          }
+        }
+      },
+      "satellite_himawari_clean_ir": {
+        "status": "static_code_evidence",
+        "fields": {
+          "frame_time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/nasa_gibs.py: async_get_map_layer; Unix epoch seconds"
+          },
+          "timeline.frames[].time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/nasa_gibs.py: timeline.frames[].time; Unix epoch seconds"
+          }
+        }
+      },
+      "satellite_himawari_visible_red": {
+        "status": "static_code_evidence",
+        "fields": {
+          "frame_time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/nasa_gibs.py: async_get_map_layer; Unix epoch seconds"
+          },
+          "timeline.frames[].time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/nasa_gibs.py: timeline.frames[].time; Unix epoch seconds"
+          }
+        }
+      },
+      "satellite_precipitation_imerg_30min": {
+        "status": "static_code_evidence",
+        "fields": {
+          "frame_time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/nasa_gibs.py: async_get_map_layer; Unix epoch seconds"
+          },
+          "timeline.frames[].time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/nasa_gibs.py: timeline.frames[].time; Unix epoch seconds"
+          }
+        }
+      }
+    },
+    "eumetview": {
+      "satellite_clouds": {
+        "status": "static_code_evidence",
+        "fields": {
+          "frame_time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/eumetview.py: async_get_map_layer creates int(value.timestamp())"
+          },
+          "timeline.frames[].time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/eumetview.py: WMS UTC time vector, frames[].time epoch seconds"
+          }
+        }
+      }
+    },
+    "met_norway": {
+      "temperature": {
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/met_norway.py: properties.timeseries[0].time; MET Norway General Forecast JSON UTC time series https://docs.api.met.no/doc/ForecastJSON.html"
+          }
+        }
+      },
+      "cloud_cover": {
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/met_norway.py: properties.timeseries[0].time; MET Norway General Forecast JSON UTC time series https://docs.api.met.no/doc/ForecastJSON.html"
+          }
+        }
+      },
+      "cloud_cover_low": {
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/met_norway.py: properties.timeseries[0].time; MET Norway General Forecast JSON UTC time series https://docs.api.met.no/doc/ForecastJSON.html"
+          }
+        }
+      },
+      "cloud_cover_mid": {
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/met_norway.py: properties.timeseries[0].time; MET Norway General Forecast JSON UTC time series https://docs.api.met.no/doc/ForecastJSON.html"
+          }
+        }
+      },
+      "cloud_cover_high": {
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/met_norway.py: properties.timeseries[0].time; MET Norway General Forecast JSON UTC time series https://docs.api.met.no/doc/ForecastJSON.html"
+          }
+        }
+      },
+      "precipitation": {
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/met_norway.py: properties.timeseries[0].time; MET Norway General Forecast JSON UTC time series https://docs.api.met.no/doc/ForecastJSON.html"
+          }
+        }
+      },
+      "precipitation_probability": {
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/met_norway.py: properties.timeseries[0].time; MET Norway General Forecast JSON UTC time series https://docs.api.met.no/doc/ForecastJSON.html"
+          }
+        }
+      },
+      "thunder_probability": {
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/met_norway.py: properties.timeseries[0].time; MET Norway General Forecast JSON UTC time series https://docs.api.met.no/doc/ForecastJSON.html"
+          }
+        }
+      },
+      "wind_speed": {
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/met_norway.py: properties.timeseries[0].time; MET Norway General Forecast JSON UTC time series https://docs.api.met.no/doc/ForecastJSON.html"
+          }
+        }
+      },
+      "wind_direction": {
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/met_norway.py: properties.timeseries[0].time; MET Norway General Forecast JSON UTC time series https://docs.api.met.no/doc/ForecastJSON.html"
+          }
+        }
+      },
+      "wind_gusts": {
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/met_norway.py: properties.timeseries[0].time; MET Norway General Forecast JSON UTC time series https://docs.api.met.no/doc/ForecastJSON.html"
+          }
+        }
+      },
+      "relative_humidity": {
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/met_norway.py: properties.timeseries[0].time; MET Norway General Forecast JSON UTC time series https://docs.api.met.no/doc/ForecastJSON.html"
+          }
+        }
+      },
+      "air_pressure": {
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/met_norway.py: properties.timeseries[0].time; MET Norway General Forecast JSON UTC time series https://docs.api.met.no/doc/ForecastJSON.html"
+          }
+        }
+      },
+      "dew_point": {
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/met_norway.py: properties.timeseries[0].time; MET Norway General Forecast JSON UTC time series https://docs.api.met.no/doc/ForecastJSON.html"
+          }
+        }
+      },
+      "fog": {
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/met_norway.py: properties.timeseries[0].time; MET Norway General Forecast JSON UTC time series https://docs.api.met.no/doc/ForecastJSON.html"
+          }
+        }
+      },
+      "uv_index": {
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/met_norway.py: properties.timeseries[0].time; MET Norway General Forecast JSON UTC time series https://docs.api.met.no/doc/ForecastJSON.html"
+          }
+        }
+      },
+      "nowcast_temperature": {
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/met_norway.py: properties.timeseries[0].time; MET Norway General Forecast JSON UTC time series https://docs.api.met.no/doc/ForecastJSON.html"
+          }
+        }
+      },
+      "nowcast_precipitation_rate": {
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/met_norway.py: properties.timeseries[0].time; MET Norway General Forecast JSON UTC time series https://docs.api.met.no/doc/ForecastJSON.html"
+          }
+        }
+      },
+      "nowcast_precipitation": {
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/met_norway.py: properties.timeseries[0].time; MET Norway General Forecast JSON UTC time series https://docs.api.met.no/doc/ForecastJSON.html"
+          }
+        }
+      },
+      "nowcast_relative_humidity": {
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/met_norway.py: properties.timeseries[0].time; MET Norway General Forecast JSON UTC time series https://docs.api.met.no/doc/ForecastJSON.html"
+          }
+        }
+      },
+      "nowcast_wind_speed": {
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/met_norway.py: properties.timeseries[0].time; MET Norway General Forecast JSON UTC time series https://docs.api.met.no/doc/ForecastJSON.html"
+          }
+        }
+      },
+      "nowcast_wind_direction": {
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/met_norway.py: properties.timeseries[0].time; MET Norway General Forecast JSON UTC time series https://docs.api.met.no/doc/ForecastJSON.html"
+          }
+        }
+      },
+      "nowcast_wind_gusts": {
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/met_norway.py: properties.timeseries[0].time; MET Norway General Forecast JSON UTC time series https://docs.api.met.no/doc/ForecastJSON.html"
+          }
+        }
+      }
+    },
+    "noaa_nws": {
+      "temperature": {
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "interval_start",
+            "timezone": "UTC",
+            "evidence": "providers/noaa_nws.py: forecastHourly properties.periods[0].startTime; NOAA NWS API forecast period with zone offset https://www.weather.gov/documentation/services-web-api"
+          }
+        }
+      },
+      "dew_point": {
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "interval_start",
+            "timezone": "UTC",
+            "evidence": "providers/noaa_nws.py: forecastHourly properties.periods[0].startTime; NOAA NWS API forecast period with zone offset https://www.weather.gov/documentation/services-web-api"
+          }
+        }
+      },
+      "relative_humidity": {
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "interval_start",
+            "timezone": "UTC",
+            "evidence": "providers/noaa_nws.py: forecastHourly properties.periods[0].startTime; NOAA NWS API forecast period with zone offset https://www.weather.gov/documentation/services-web-api"
+          }
+        }
+      },
+      "precipitation_probability": {
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "interval_start",
+            "timezone": "UTC",
+            "evidence": "providers/noaa_nws.py: forecastHourly properties.periods[0].startTime; NOAA NWS API forecast period with zone offset https://www.weather.gov/documentation/services-web-api"
+          }
+        }
+      },
+      "wind_speed": {
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "interval_start",
+            "timezone": "UTC",
+            "evidence": "providers/noaa_nws.py: forecastHourly properties.periods[0].startTime; NOAA NWS API forecast period with zone offset https://www.weather.gov/documentation/services-web-api"
+          }
+        }
+      },
+      "wind_direction": {
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "interval_start",
+            "timezone": "UTC",
+            "evidence": "providers/noaa_nws.py: forecastHourly properties.periods[0].startTime; NOAA NWS API forecast period with zone offset https://www.weather.gov/documentation/services-web-api"
+          }
+        }
+      },
+      "weather_summary": {
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "interval_start",
+            "timezone": "UTC",
+            "evidence": "providers/noaa_nws.py: forecastHourly properties.periods[0].startTime; NOAA NWS API forecast period with zone offset https://www.weather.gov/documentation/services-web-api"
+          }
+        }
+      },
+      "official_weather_alerts": {
+        "status": "static_code_evidence",
+        "fields": {
+          "events[].sent": {
+            "format": "rfc3339",
+            "role": "issued_at",
+            "timezone": "UTC",
+            "evidence": "providers/noaa_nws.py: NWS alert properties.sent offset-bearing RFC3339"
+          },
+          "events[].effective": {
+            "format": "rfc3339",
+            "role": "valid_from",
+            "timezone": "UTC",
+            "evidence": "providers/noaa_nws.py: NWS alert properties.effective offset-bearing RFC3339"
+          },
+          "events[].onset": {
+            "format": "rfc3339",
+            "role": "started_at",
+            "timezone": "UTC",
+            "evidence": "providers/noaa_nws.py: NWS alert properties.onset offset-bearing RFC3339"
+          },
+          "events[].expires": {
+            "format": "rfc3339",
+            "role": "valid_until",
+            "timezone": "UTC",
+            "evidence": "providers/noaa_nws.py: NWS alert properties.expires offset-bearing RFC3339"
+          },
+          "events[].ends": {
+            "format": "rfc3339",
+            "role": "ended_at",
+            "timezone": "UTC",
+            "evidence": "providers/noaa_nws.py: NWS alert properties.ends offset-bearing RFC3339"
+          }
+        }
+      }
+    },
+    "noaa_swpc": {
+      "solar_suvi_094": {
+        "status": "static_code_evidence",
+        "fields": {
+          "timeline.frames[].time": {
+            "format": "rfc3339",
+            "role": "observed_at",
+            "timezone": "UTC",
+            "evidence": "providers/noaa_swpc.py: _timestamp_from_url parses captured YYYYmmddHHMMSS using datetime(...,tzinfo=timezone.utc)"
+          },
+          "frame_time": {
+            "format": "rfc3339",
+            "role": "observed_at",
+            "timezone": "UTC",
+            "evidence": "providers/noaa_swpc.py: latest frames[-1].time from _timestamp_from_url UTC"
+          }
+        }
+      },
+      "solar_suvi_131": {
+        "status": "static_code_evidence",
+        "fields": {
+          "timeline.frames[].time": {
+            "format": "rfc3339",
+            "role": "observed_at",
+            "timezone": "UTC",
+            "evidence": "providers/noaa_swpc.py: _timestamp_from_url parses captured YYYYmmddHHMMSS using datetime(...,tzinfo=timezone.utc)"
+          },
+          "frame_time": {
+            "format": "rfc3339",
+            "role": "observed_at",
+            "timezone": "UTC",
+            "evidence": "providers/noaa_swpc.py: latest frames[-1].time from _timestamp_from_url UTC"
+          }
+        }
+      },
+      "solar_suvi_171": {
+        "status": "static_code_evidence",
+        "fields": {
+          "timeline.frames[].time": {
+            "format": "rfc3339",
+            "role": "observed_at",
+            "timezone": "UTC",
+            "evidence": "providers/noaa_swpc.py: _timestamp_from_url parses captured YYYYmmddHHMMSS using datetime(...,tzinfo=timezone.utc)"
+          },
+          "frame_time": {
+            "format": "rfc3339",
+            "role": "observed_at",
+            "timezone": "UTC",
+            "evidence": "providers/noaa_swpc.py: latest frames[-1].time from _timestamp_from_url UTC"
+          }
+        }
+      },
+      "solar_suvi_195": {
+        "status": "static_code_evidence",
+        "fields": {
+          "timeline.frames[].time": {
+            "format": "rfc3339",
+            "role": "observed_at",
+            "timezone": "UTC",
+            "evidence": "providers/noaa_swpc.py: _timestamp_from_url parses captured YYYYmmddHHMMSS using datetime(...,tzinfo=timezone.utc)"
+          },
+          "frame_time": {
+            "format": "rfc3339",
+            "role": "observed_at",
+            "timezone": "UTC",
+            "evidence": "providers/noaa_swpc.py: latest frames[-1].time from _timestamp_from_url UTC"
+          }
+        }
+      },
+      "solar_suvi_284": {
+        "status": "static_code_evidence",
+        "fields": {
+          "timeline.frames[].time": {
+            "format": "rfc3339",
+            "role": "observed_at",
+            "timezone": "UTC",
+            "evidence": "providers/noaa_swpc.py: _timestamp_from_url parses captured YYYYmmddHHMMSS using datetime(...,tzinfo=timezone.utc)"
+          },
+          "frame_time": {
+            "format": "rfc3339",
+            "role": "observed_at",
+            "timezone": "UTC",
+            "evidence": "providers/noaa_swpc.py: latest frames[-1].time from _timestamp_from_url UTC"
+          }
+        }
+      },
+      "solar_suvi_304": {
+        "status": "static_code_evidence",
+        "fields": {
+          "timeline.frames[].time": {
+            "format": "rfc3339",
+            "role": "observed_at",
+            "timezone": "UTC",
+            "evidence": "providers/noaa_swpc.py: _timestamp_from_url parses captured YYYYmmddHHMMSS using datetime(...,tzinfo=timezone.utc)"
+          },
+          "frame_time": {
+            "format": "rfc3339",
+            "role": "observed_at",
+            "timezone": "UTC",
+            "evidence": "providers/noaa_swpc.py: latest frames[-1].time from _timestamp_from_url UTC"
+          }
+        }
+      },
+      "aurora_ovation_latest": {
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "observed_at",
+            "timezone": "UTC",
+            "evidence": "providers/noaa_swpc.py: NOAA SWPC OVATION JSON Observation Time; source https://services.swpc.noaa.gov/json/ovation_aurora_latest.json and dated source sample 2026-08-12T22:56:00Z"
+          },
+          "valid_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/noaa_swpc.py: NOAA SWPC OVATION JSON Forecast Time; source https://services.swpc.noaa.gov/json/ovation_aurora_latest.json and dated source sample 2026-08-13T00:04:00Z"
+          }
+        }
+      }
+    },
+    "nasa_iss": {
+      "iss_earth_live": {
+        "status": "no_absolute_source_time",
+        "fields": {},
+        "evidence": "providers/nasa_iss.py: live_stream descriptor has no observation/validity timestamp; video playback time is not a verified source measurement"
+      }
+    },
+    "nasa_moon": {
+      "moon_lro_wac_global": {
+        "status": "no_absolute_source_time",
+        "fields": {},
+        "evidence": "providers/nasa_moon.py: static lunar reference WMTS mosaic, no temporal frame or source observation time"
+      }
+    },
+    "fmi": {
+      "temperature": {
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "utc_compact",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/fmi.py: param=utctime, tz=UTC; data_time=row.utctime; FMI SmartMet Timeseries Examples official code YYYYMMDDTHHMMSS https://github.com/fmidev/smartmet-plugin-timeseries/blob/master/docs/Examples.md"
+          }
+        }
+      },
+      "dew_point": {
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "utc_compact",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/fmi.py: param=utctime, tz=UTC; data_time=row.utctime; FMI SmartMet Timeseries Examples official code YYYYMMDDTHHMMSS https://github.com/fmidev/smartmet-plugin-timeseries/blob/master/docs/Examples.md"
+          }
+        }
+      },
+      "relative_humidity": {
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "utc_compact",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/fmi.py: param=utctime, tz=UTC; data_time=row.utctime; FMI SmartMet Timeseries Examples official code YYYYMMDDTHHMMSS https://github.com/fmidev/smartmet-plugin-timeseries/blob/master/docs/Examples.md"
+          }
+        }
+      },
+      "wind_direction": {
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "utc_compact",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/fmi.py: param=utctime, tz=UTC; data_time=row.utctime; FMI SmartMet Timeseries Examples official code YYYYMMDDTHHMMSS https://github.com/fmidev/smartmet-plugin-timeseries/blob/master/docs/Examples.md"
+          }
+        }
+      },
+      "wind_speed": {
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "utc_compact",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/fmi.py: param=utctime, tz=UTC; data_time=row.utctime; FMI SmartMet Timeseries Examples official code YYYYMMDDTHHMMSS https://github.com/fmidev/smartmet-plugin-timeseries/blob/master/docs/Examples.md"
+          }
+        }
+      },
+      "wind_gusts": {
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "utc_compact",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/fmi.py: param=utctime, tz=UTC; data_time=row.utctime; FMI SmartMet Timeseries Examples official code YYYYMMDDTHHMMSS https://github.com/fmidev/smartmet-plugin-timeseries/blob/master/docs/Examples.md"
+          }
+        }
+      },
+      "air_pressure": {
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "utc_compact",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/fmi.py: param=utctime, tz=UTC; data_time=row.utctime; FMI SmartMet Timeseries Examples official code YYYYMMDDTHHMMSS https://github.com/fmidev/smartmet-plugin-timeseries/blob/master/docs/Examples.md"
+          }
+        }
+      },
+      "precipitation": {
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "utc_compact",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/fmi.py: param=utctime, tz=UTC; data_time=row.utctime; FMI SmartMet Timeseries Examples official code YYYYMMDDTHHMMSS https://github.com/fmidev/smartmet-plugin-timeseries/blob/master/docs/Examples.md"
+          }
+        }
+      },
+      "cloud_cover": {
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "utc_compact",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/fmi.py: param=utctime, tz=UTC; data_time=row.utctime; FMI SmartMet Timeseries Examples official code YYYYMMDDTHHMMSS https://github.com/fmidev/smartmet-plugin-timeseries/blob/master/docs/Examples.md"
+          }
+        }
+      },
+      "visibility": {
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "utc_compact",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/fmi.py: param=utctime, tz=UTC; data_time=row.utctime; FMI SmartMet Timeseries Examples official code YYYYMMDDTHHMMSS https://github.com/fmidev/smartmet-plugin-timeseries/blob/master/docs/Examples.md"
+          }
+        }
+      }
+    },
+    "smhi": {
+      "temperature": {
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/smhi.py: timeSeries[0].time; SMHI SNOW1g UTC point forecast https://opendata.smhi.se/metfcst/snow1gv1/examples"
+          }
+        }
+      },
+      "relative_humidity": {
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/smhi.py: timeSeries[0].time; SMHI SNOW1g UTC point forecast https://opendata.smhi.se/metfcst/snow1gv1/examples"
+          }
+        }
+      },
+      "wind_direction": {
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/smhi.py: timeSeries[0].time; SMHI SNOW1g UTC point forecast https://opendata.smhi.se/metfcst/snow1gv1/examples"
+          }
+        }
+      },
+      "wind_speed": {
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/smhi.py: timeSeries[0].time; SMHI SNOW1g UTC point forecast https://opendata.smhi.se/metfcst/snow1gv1/examples"
+          }
+        }
+      },
+      "wind_gusts": {
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/smhi.py: timeSeries[0].time; SMHI SNOW1g UTC point forecast https://opendata.smhi.se/metfcst/snow1gv1/examples"
+          }
+        }
+      },
+      "air_pressure": {
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/smhi.py: timeSeries[0].time; SMHI SNOW1g UTC point forecast https://opendata.smhi.se/metfcst/snow1gv1/examples"
+          }
+        }
+      },
+      "visibility": {
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/smhi.py: timeSeries[0].time; SMHI SNOW1g UTC point forecast https://opendata.smhi.se/metfcst/snow1gv1/examples"
+          }
+        }
+      },
+      "thunder_probability": {
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/smhi.py: timeSeries[0].time; SMHI SNOW1g UTC point forecast https://opendata.smhi.se/metfcst/snow1gv1/examples"
+          },
+          "values[].interval_start": {
+            "format": "rfc3339",
+            "role": "interval_start",
+            "timezone": "UTC",
+            "evidence": "providers/smhi.py: timeSeries[0].intervalParametersStartTime; official SMHI SNOW1g UTC examples"
+          },
+          "values[].interval_end": {
+            "format": "rfc3339",
+            "role": "interval_end",
+            "timezone": "UTC",
+            "evidence": "providers/smhi.py: timeSeries[0].time; official SMHI SNOW1g UTC examples"
+          }
+        }
+      },
+      "cloud_cover": {
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/smhi.py: timeSeries[0].time; SMHI SNOW1g UTC point forecast https://opendata.smhi.se/metfcst/snow1gv1/examples"
+          }
+        }
+      },
+      "cloud_cover_low": {
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/smhi.py: timeSeries[0].time; SMHI SNOW1g UTC point forecast https://opendata.smhi.se/metfcst/snow1gv1/examples"
+          }
+        }
+      },
+      "cloud_cover_mid": {
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/smhi.py: timeSeries[0].time; SMHI SNOW1g UTC point forecast https://opendata.smhi.se/metfcst/snow1gv1/examples"
+          }
+        }
+      },
+      "cloud_cover_high": {
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/smhi.py: timeSeries[0].time; SMHI SNOW1g UTC point forecast https://opendata.smhi.se/metfcst/snow1gv1/examples"
+          }
+        }
+      },
+      "precipitation": {
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/smhi.py: timeSeries[0].time; SMHI SNOW1g UTC point forecast https://opendata.smhi.se/metfcst/snow1gv1/examples"
+          }
+        }
+      },
+      "precipitation_probability": {
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/smhi.py: timeSeries[0].time; SMHI SNOW1g UTC point forecast https://opendata.smhi.se/metfcst/snow1gv1/examples"
+          }
+        }
+      },
+      "weather_code": {
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/smhi.py: timeSeries[0].time; SMHI SNOW1g UTC point forecast https://opendata.smhi.se/metfcst/snow1gv1/examples"
+          }
+        }
+      }
+    },
+    "eccc_geomet": {
+      "temperature": {
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "observed_at",
+            "timezone": "UTC",
+            "evidence": "providers/eccc_geomet.py: props['date_tm-value'] (or obs_date_tm), MSC GeoMet SWOB realtime ISO UTC observed datetime, 2025-11-20T00:00:00.000Z example https://github.com/rywhale/mscgeometR and official collection https://eccc-msc.github.io/open-data/msc-geomet/ogc_api_en/"
+          }
+        }
+      },
+      "dew_point": {
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "observed_at",
+            "timezone": "UTC",
+            "evidence": "providers/eccc_geomet.py: props['date_tm-value'] (or obs_date_tm), MSC GeoMet SWOB realtime ISO UTC observed datetime, 2025-11-20T00:00:00.000Z example https://github.com/rywhale/mscgeometR and official collection https://eccc-msc.github.io/open-data/msc-geomet/ogc_api_en/"
+          }
+        }
+      },
+      "relative_humidity": {
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "observed_at",
+            "timezone": "UTC",
+            "evidence": "providers/eccc_geomet.py: props['date_tm-value'] (or obs_date_tm), MSC GeoMet SWOB realtime ISO UTC observed datetime, 2025-11-20T00:00:00.000Z example https://github.com/rywhale/mscgeometR and official collection https://eccc-msc.github.io/open-data/msc-geomet/ogc_api_en/"
+          }
+        }
+      },
+      "air_pressure": {
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "observed_at",
+            "timezone": "UTC",
+            "evidence": "providers/eccc_geomet.py: props['date_tm-value'] (or obs_date_tm), MSC GeoMet SWOB realtime ISO UTC observed datetime, 2025-11-20T00:00:00.000Z example https://github.com/rywhale/mscgeometR and official collection https://eccc-msc.github.io/open-data/msc-geomet/ogc_api_en/"
+          }
+        }
+      },
+      "visibility": {
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "observed_at",
+            "timezone": "UTC",
+            "evidence": "providers/eccc_geomet.py: props['date_tm-value'] (or obs_date_tm), MSC GeoMet SWOB realtime ISO UTC observed datetime, 2025-11-20T00:00:00.000Z example https://github.com/rywhale/mscgeometR and official collection https://eccc-msc.github.io/open-data/msc-geomet/ogc_api_en/"
+          }
+        }
+      },
+      "precipitation_1h": {
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "observed_at",
+            "timezone": "UTC",
+            "evidence": "providers/eccc_geomet.py: props['date_tm-value'] (or obs_date_tm), MSC GeoMet SWOB realtime ISO UTC observed datetime, 2025-11-20T00:00:00.000Z example https://github.com/rywhale/mscgeometR and official collection https://eccc-msc.github.io/open-data/msc-geomet/ogc_api_en/"
+          }
+        }
+      },
+      "cloud_cover": {
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "observed_at",
+            "timezone": "UTC",
+            "evidence": "providers/eccc_geomet.py: props['date_tm-value'] (or obs_date_tm), MSC GeoMet SWOB realtime ISO UTC observed datetime, 2025-11-20T00:00:00.000Z example https://github.com/rywhale/mscgeometR and official collection https://eccc-msc.github.io/open-data/msc-geomet/ogc_api_en/"
+          }
+        }
+      },
+      "wind_direction": {
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "observed_at",
+            "timezone": "UTC",
+            "evidence": "providers/eccc_geomet.py: props['date_tm-value'] (or obs_date_tm), MSC GeoMet SWOB realtime ISO UTC observed datetime, 2025-11-20T00:00:00.000Z example https://github.com/rywhale/mscgeometR and official collection https://eccc-msc.github.io/open-data/msc-geomet/ogc_api_en/"
+          }
+        }
+      }
+    },
+    "jma": {
+      "temperature": {
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "offset_in_source",
+            "evidence": "providers/jma.py: _extract_forecast_values timeSeries[].timeDefines selected as when; async_fetch_point returns min(times); JMA forecast times must carry explicit zone"
+          }
+        }
+      },
+      "precipitation_probability": {
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "offset_in_source",
+            "evidence": "providers/jma.py: _extract_forecast_values timeSeries[].timeDefines selected as when; async_fetch_point returns min(times); JMA forecast times must carry explicit zone"
+          }
+        }
+      },
+      "weather_summary": {
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "offset_in_source",
+            "evidence": "providers/jma.py: _extract_forecast_values timeSeries[].timeDefines selected as when; async_fetch_point returns min(times); JMA forecast times must carry explicit zone"
+          }
+        }
+      },
+      "weather_code": {
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "offset_in_source",
+            "evidence": "providers/jma.py: _extract_forecast_values timeSeries[].timeDefines selected as when; async_fetch_point returns min(times); JMA forecast times must carry explicit zone"
+          }
+        }
+      },
+      "wind_summary": {
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "offset_in_source",
+            "evidence": "providers/jma.py: _extract_forecast_values timeSeries[].timeDefines selected as when; async_fetch_point returns min(times); JMA forecast times must carry explicit zone"
+          }
+        }
+      },
+      "official_tsunami_warnings_japan": {
+        "status": "static_code_evidence",
+        "fields": {
+          "events[].sent": {
+            "format": "rfc3339",
+            "role": "issued_at",
+            "timezone": "offset_in_source",
+            "evidence": "providers/jma.py: _jma_report_meta / _parse_jma_warning_report / _parse_jma_observation_report; JMA published XML sample https://www.jma.go.jp/jma/kishou/know/jishin/tsunami/kaizen/denbun_henkou_online_besshi2_2.pdf (ReportDateTime/TargetDateTime +09:00, Control DateTime Z)"
+          },
+          "events[].effective": {
+            "format": "rfc3339",
+            "role": "valid_from",
+            "timezone": "offset_in_source",
+            "evidence": "providers/jma.py: _jma_report_meta / _parse_jma_warning_report / _parse_jma_observation_report; JMA published XML sample https://www.jma.go.jp/jma/kishou/know/jishin/tsunami/kaizen/denbun_henkou_online_besshi2_2.pdf (ReportDateTime/TargetDateTime +09:00, Control DateTime Z)"
+          },
+          "events[].onset": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "offset_in_source",
+            "evidence": "providers/jma.py: _jma_report_meta / _parse_jma_warning_report / _parse_jma_observation_report; JMA published XML sample https://www.jma.go.jp/jma/kishou/know/jishin/tsunami/kaizen/denbun_henkou_online_besshi2_2.pdf (ReportDateTime/TargetDateTime +09:00, Control DateTime Z)"
+          },
+          "events[].parameters.expected_first_wave.arrival_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "offset_in_source",
+            "evidence": "providers/jma.py: _jma_report_meta / _parse_jma_warning_report / _parse_jma_observation_report; JMA published XML sample https://www.jma.go.jp/jma/kishou/know/jishin/tsunami/kaizen/denbun_henkou_online_besshi2_2.pdf (ReportDateTime/TargetDateTime +09:00, Control DateTime Z)"
+          }
+        }
+      },
+      "tsunami_observations_japan": {
+        "status": "static_code_evidence",
+        "fields": {
+          "events[].sent": {
+            "format": "rfc3339",
+            "role": "issued_at",
+            "timezone": "offset_in_source",
+            "evidence": "providers/jma.py: _jma_report_meta / _parse_jma_warning_report / _parse_jma_observation_report; JMA published XML sample https://www.jma.go.jp/jma/kishou/know/jishin/tsunami/kaizen/denbun_henkou_online_besshi2_2.pdf (ReportDateTime/TargetDateTime +09:00, Control DateTime Z)"
+          },
+          "events[].effective": {
+            "format": "rfc3339",
+            "role": "observed_at",
+            "timezone": "offset_in_source",
+            "evidence": "providers/jma.py: _jma_report_meta / _parse_jma_warning_report / _parse_jma_observation_report; JMA published XML sample https://www.jma.go.jp/jma/kishou/know/jishin/tsunami/kaizen/denbun_henkou_online_besshi2_2.pdf (ReportDateTime/TargetDateTime +09:00, Control DateTime Z)"
+          },
+          "events[].onset": {
+            "format": "rfc3339",
+            "role": "observed_at",
+            "timezone": "offset_in_source",
+            "evidence": "providers/jma.py: _jma_report_meta / _parse_jma_warning_report / _parse_jma_observation_report; JMA published XML sample https://www.jma.go.jp/jma/kishou/know/jishin/tsunami/kaizen/denbun_henkou_online_besshi2_2.pdf (ReportDateTime/TargetDateTime +09:00, Control DateTime Z)"
+          },
+          "events[].parameters.first_wave_arrival_time": {
+            "format": "rfc3339",
+            "role": "observed_at",
+            "timezone": "offset_in_source",
+            "evidence": "providers/jma.py: _jma_report_meta / _parse_jma_warning_report / _parse_jma_observation_report; JMA published XML sample https://www.jma.go.jp/jma/kishou/know/jishin/tsunami/kaizen/denbun_henkou_online_besshi2_2.pdf (ReportDateTime/TargetDateTime +09:00, Control DateTime Z)"
+          },
+          "events[].parameters.max_wave_time": {
+            "format": "rfc3339",
+            "role": "observed_at",
+            "timezone": "offset_in_source",
+            "evidence": "providers/jma.py: _jma_report_meta / _parse_jma_warning_report / _parse_jma_observation_report; JMA published XML sample https://www.jma.go.jp/jma/kishou/know/jishin/tsunami/kaizen/denbun_henkou_online_besshi2_2.pdf (ReportDateTime/TargetDateTime +09:00, Control DateTime Z)"
+          }
+        }
+      }
+    },
+    "ecmwf_open_data": {
+      "ifs_open_grib": {
+        "status": "static_code_evidence",
+        "fields": {
+          "forecast_reference_time": {
+            "format": "rfc3339",
+            "role": "forecast_reference_time",
+            "timezone": "UTC",
+            "evidence": "providers/ecmwf_open_data.py: verified run identifier %Y%m%dT%HZ explicitly converted to aware UTC; data_time deliberately None (model run is not an observation)"
+          }
+        }
+      },
+      "aifs_open_grib": {
+        "status": "static_code_evidence",
+        "fields": {
+          "forecast_reference_time": {
+            "format": "rfc3339",
+            "role": "forecast_reference_time",
+            "timezone": "UTC",
+            "evidence": "providers/ecmwf_open_data.py: verified run identifier %Y%m%dT%HZ explicitly converted to aware UTC; data_time deliberately None (model run is not an observation)"
+          }
+        }
+      }
+    },
+    "nhc_tropical_cyclones": {
+      "active_tropical_cyclones": {
+        "status": "static_code_evidence",
+        "fields": {
+          "events[].effective": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/nhc_tropical_cyclones.py: storm.lastUpdate is status validity timestamp 2017-09-09T16:00:00.000Z (NOT advisory issue), official NHC JSON schema https://www.nhc.noaa.gov/productexamples/NHC_Tropical_Cyclone_Status_JSON_File_Reference.pdf"
+          }
+        }
+      }
+    },
+    "noaa_tsunami": {
+      "official_tsunami_alerts": {
+        "status": "static_code_evidence",
+        "fields": {
+          "events[].sent": {
+            "format": "rfc3339",
+            "role": "issued_at",
+            "timezone": "UTC",
+            "evidence": "providers/noaa_tsunami.py: _event_from_cap parses CAP alert.sent/info.effective/info.onset/info.expires; OASIS CAP 1.2 datetimes require zone offsets https://docs.oasis-open.org/emergency/cap/v1.2/cs01/CAP-v1.2-cs01.html"
+          },
+          "events[].effective": {
+            "format": "rfc3339",
+            "role": "valid_from",
+            "timezone": "UTC",
+            "evidence": "providers/noaa_tsunami.py: _event_from_cap parses CAP alert.sent/info.effective/info.onset/info.expires; OASIS CAP 1.2 datetimes require zone offsets https://docs.oasis-open.org/emergency/cap/v1.2/cs01/CAP-v1.2-cs01.html"
+          },
+          "events[].onset": {
+            "format": "rfc3339",
+            "role": "started_at",
+            "timezone": "UTC",
+            "evidence": "providers/noaa_tsunami.py: _event_from_cap parses CAP alert.sent/info.effective/info.onset/info.expires; OASIS CAP 1.2 datetimes require zone offsets https://docs.oasis-open.org/emergency/cap/v1.2/cs01/CAP-v1.2-cs01.html"
+          },
+          "events[].expires": {
+            "format": "rfc3339",
+            "role": "valid_until",
+            "timezone": "UTC",
+            "evidence": "providers/noaa_tsunami.py: _event_from_cap parses CAP alert.sent/info.effective/info.onset/info.expires; OASIS CAP 1.2 datetimes require zone offsets https://docs.oasis-open.org/emergency/cap/v1.2/cs01/CAP-v1.2-cs01.html"
+          }
+        }
+      }
+    },
+    "bmkg_tsunami": {
+      "tsunami_potential_earthquake": {
+        "status": "static_code_evidence",
+        "fields": {
+          "events[].effective": {
+            "format": "rfc3339",
+            "role": "occurred_at",
+            "timezone": "UTC",
+            "evidence": "providers/bmkg_tsunami.py: quake.DateTime is earthquake origin time, ISO8601 UTC (+00:00), official BMKG https://data.bmkg.go.id/gempabumi/"
+          },
+          "events[].onset": {
+            "format": "rfc3339",
+            "role": "started_at",
+            "timezone": "UTC",
+            "evidence": "providers/bmkg_tsunami.py: quake.DateTime denotes observed quake origin, NOT issuance of tsunami warning, official BMKG https://data.bmkg.go.id/gempabumi/"
+          }
+        }
+      }
+    },
+    "bom_tsunami": {
+      "official_tsunami_warnings_australia": {
+        "status": "static_code_evidence",
+        "fields": {
+          "events[].sent": {
+            "format": "rfc2822",
+            "role": "published_at",
+            "timezone": "offset_in_source",
+            "evidence": "providers/bom_tsunami.py: RSS item.pubDate publication time (RFC 822/2822 with timezone), BOM/JATWC RSS is a published bulletin, no separate onset in this adapter"
+          }
+        }
+      }
+    },
+    "usgs_earthquakes": {
+      "earthquakes_past_day": {
+        "status": "static_code_evidence",
+        "fields": {
+          "events[].sent": {
+            "format": "rfc3339",
+            "role": "updated_at",
+            "timezone": "UTC",
+            "evidence": "providers/usgs_earthquakes.py: properties.updated Unix milliseconds -> _iso_from_millis UTC"
+          },
+          "events[].effective": {
+            "format": "rfc3339",
+            "role": "observed_at",
+            "timezone": "UTC",
+            "evidence": "providers/usgs_earthquakes.py: properties.time Unix milliseconds -> UTC"
+          },
+          "events[].onset": {
+            "format": "rfc3339",
+            "role": "observed_at",
+            "timezone": "UTC",
+            "evidence": "providers/usgs_earthquakes.py: properties.time Unix milliseconds -> UTC"
+          }
+        }
+      },
+      "significant_earthquakes_past_month": {
+        "status": "static_code_evidence",
+        "fields": {
+          "events[].sent": {
+            "format": "rfc3339",
+            "role": "updated_at",
+            "timezone": "UTC",
+            "evidence": "providers/usgs_earthquakes.py: properties.updated Unix milliseconds -> _iso_from_millis UTC"
+          },
+          "events[].effective": {
+            "format": "rfc3339",
+            "role": "observed_at",
+            "timezone": "UTC",
+            "evidence": "providers/usgs_earthquakes.py: properties.time Unix milliseconds -> UTC"
+          },
+          "events[].onset": {
+            "format": "rfc3339",
+            "role": "observed_at",
+            "timezone": "UTC",
+            "evidence": "providers/usgs_earthquakes.py: properties.time Unix milliseconds -> UTC"
+          }
+        }
+      }
+    },
+    "smithsonian_volcanoes": {
+      "weekly_volcanic_activity": {
+        "status": "static_code_evidence",
+        "fields": {
+          "events[].sent": {
+            "format": "rfc3339",
+            "role": "published_at",
+            "timezone": "UTC",
+            "evidence": "providers/smithsonian_volcanoes.py: RSS pubDate -> rss_instant UTC"
+          },
+          "events[].effective": {
+            "format": "rfc3339",
+            "role": "published_at",
+            "timezone": "UTC",
+            "evidence": "providers/smithsonian_volcanoes.py: weekly bulletin publication not eruption onset"
+          }
+        }
+      }
+    },
+    "usgs_volcanoes": {
+      "elevated_us_volcanoes": {
+        "status": "static_code_evidence",
+        "fields": {
+          "events[].sent": {
+            "format": "rfc3339",
+            "role": "issued_at",
+            "timezone": "UTC",
+            "evidence": "providers/usgs_volcanoes.py: sent_unixtime declared seconds passed to _iso_from_seconds -> UTC ISO"
+          },
+          "events[].last_updated_at": {
+            "format": "rfc3339",
+            "role": "updated_at",
+            "timezone": "UTC",
+            "evidence": "providers/usgs_volcanoes.py: last_updated_at uses published USGS alert notice sent_unixtime, not an eruption observation"
+          },
+          "events[].effective": {
+            "format": "rfc3339",
+            "role": "valid_from",
+            "timezone": "UTC",
+            "evidence": "providers/usgs_volcanoes.py: status lifecycle notice effective at issue timestamp; does not claim eruption onset"
+          }
+        }
+      }
+    },
+    "gdacs": {
+      "global_disaster_alerts_7d": {
+        "status": "static_code_evidence",
+        "fields": {
+          "events[].sent": {
+            "format": "rfc3339",
+            "role": "published_at",
+            "timezone": "UTC",
+            "evidence": "providers/gdacs.py: RSS pubDate -> rss_instant UTC"
+          },
+          "events[].effective": {
+            "format": "rfc3339",
+            "role": "valid_from",
+            "timezone": "UTC",
+            "evidence": "providers/gdacs.py: RSS fromdate/pubDate -> rss_instant UTC"
+          },
+          "events[].onset": {
+            "format": "rfc3339",
+            "role": "started_at",
+            "timezone": "UTC",
+            "evidence": "providers/gdacs.py: RSS fromdate -> rss_instant UTC"
+          },
+          "events[].expires": {
+            "format": "rfc3339",
+            "role": "valid_until",
+            "timezone": "UTC",
+            "evidence": "providers/gdacs.py: RSS todate -> rss_instant UTC"
+          },
+          "events[].ends": {
+            "format": "rfc3339",
+            "role": "ended_at",
+            "timezone": "UTC",
+            "evidence": "providers/gdacs.py: RSS todate -> rss_instant UTC"
+          }
+        }
+      }
+    },
+    "usgs_seismic_events": {
+      "non_earthquake_seismic_past_day": {
+        "status": "static_code_evidence",
+        "fields": {
+          "events[].effective": {
+            "format": "rfc3339",
+            "role": "occurred_at",
+            "timezone": "UTC",
+            "evidence": "providers/usgs_seismic_events.py: USGS ComCat props.time explicit millisecond epoch -> _iso_from_millis outputs aware UTC ISO"
+          },
+          "events[].onset": {
+            "format": "rfc3339",
+            "role": "started_at",
+            "timezone": "UTC",
+            "evidence": "providers/usgs_seismic_events.py: USGS ComCat props.time -> _iso_from_millis (event origin time)"
+          },
+          "events[].last_updated_at": {
+            "format": "rfc3339",
+            "role": "updated_at",
+            "timezone": "UTC",
+            "evidence": "providers/usgs_seismic_events.py: USGS ComCat props.updated -> _iso_from_millis, separate from origin"
+          }
+        }
+      }
+    },
+    "bbk_mowas": {
+      "civil_protection_warnings_germany": {
+        "status": "static_code_evidence",
+        "fields": {
+          "events[].effective": {
+            "format": "rfc3339",
+            "role": "valid_from",
+            "timezone": "offset_in_source",
+            "evidence": "providers/bbk_warning_common.py: shared warnung.bund.de/api31/{mowas,police,lhp,katwarn,biwapp}/mapData.json startDate/expiresDate, date examples 2024-06-28T19:43:20+02:00 https://thilo-negendanck.de/projekte/warnungen.bbk/nina-api/"
+          },
+          "events[].onset": {
+            "format": "rfc3339",
+            "role": "started_at",
+            "timezone": "offset_in_source",
+            "evidence": "providers/bbk_warning_common.py: shared warnung.bund.de/api31/{mowas,police,lhp,katwarn,biwapp}/mapData.json startDate/expiresDate, date examples 2024-06-28T19:43:20+02:00 https://thilo-negendanck.de/projekte/warnungen.bbk/nina-api/"
+          },
+          "events[].expires": {
+            "format": "rfc3339",
+            "role": "valid_until",
+            "timezone": "offset_in_source",
+            "evidence": "providers/bbk_warning_common.py: shared warnung.bund.de/api31/{mowas,police,lhp,katwarn,biwapp}/mapData.json startDate/expiresDate, date examples 2024-06-28T19:43:20+02:00 https://thilo-negendanck.de/projekte/warnungen.bbk/nina-api/"
+          },
+          "events[].ends": {
+            "format": "rfc3339",
+            "role": "valid_until",
+            "timezone": "offset_in_source",
+            "evidence": "providers/bbk_warning_common.py: shared warnung.bund.de/api31/{mowas,police,lhp,katwarn,biwapp}/mapData.json startDate/expiresDate, date examples 2024-06-28T19:43:20+02:00 https://thilo-negendanck.de/projekte/warnungen.bbk/nina-api/"
+          }
+        }
+      }
+    },
+    "bbk_police": {
+      "police_public_safety_warnings_germany": {
+        "status": "static_code_evidence",
+        "fields": {
+          "events[].effective": {
+            "format": "rfc3339",
+            "role": "valid_from",
+            "timezone": "offset_in_source",
+            "evidence": "providers/bbk_warning_common.py: shared warnung.bund.de/api31/{mowas,police,lhp,katwarn,biwapp}/mapData.json startDate/expiresDate, date examples 2024-06-28T19:43:20+02:00 https://thilo-negendanck.de/projekte/warnungen.bbk/nina-api/"
+          },
+          "events[].onset": {
+            "format": "rfc3339",
+            "role": "started_at",
+            "timezone": "offset_in_source",
+            "evidence": "providers/bbk_warning_common.py: shared warnung.bund.de/api31/{mowas,police,lhp,katwarn,biwapp}/mapData.json startDate/expiresDate, date examples 2024-06-28T19:43:20+02:00 https://thilo-negendanck.de/projekte/warnungen.bbk/nina-api/"
+          },
+          "events[].expires": {
+            "format": "rfc3339",
+            "role": "valid_until",
+            "timezone": "offset_in_source",
+            "evidence": "providers/bbk_warning_common.py: shared warnung.bund.de/api31/{mowas,police,lhp,katwarn,biwapp}/mapData.json startDate/expiresDate, date examples 2024-06-28T19:43:20+02:00 https://thilo-negendanck.de/projekte/warnungen.bbk/nina-api/"
+          },
+          "events[].ends": {
+            "format": "rfc3339",
+            "role": "valid_until",
+            "timezone": "offset_in_source",
+            "evidence": "providers/bbk_warning_common.py: shared warnung.bund.de/api31/{mowas,police,lhp,katwarn,biwapp}/mapData.json startDate/expiresDate, date examples 2024-06-28T19:43:20+02:00 https://thilo-negendanck.de/projekte/warnungen.bbk/nina-api/"
+          }
+        }
+      }
+    },
+    "aviation_weather": {
+      "international_sigmet_worldwide": {
+        "status": "static_code_evidence",
+        "fields": {
+          "events[].effective": {
+            "format": "rfc3339_or_unix_seconds",
+            "role": "valid_from",
+            "timezone": "UTC",
+            "evidence": "providers/aviation_weather.py: all three endpoints explicitly ?format=geojson, AWC schema https://aviationweather.gov/data/api/ and GeoJSON examples https://docs.v360weather.com/guides/aviation-weather (zoned ISO strings) and https://docs.lodol.com/docs/integrations/aviation-weather-center (Unix seconds); two strictly type-declared wire variants, never epoch guess."
+          },
+          "events[].onset": {
+            "format": "rfc3339_or_unix_seconds",
+            "role": "started_at",
+            "timezone": "UTC",
+            "evidence": "providers/aviation_weather.py: all three endpoints explicitly ?format=geojson, AWC schema https://aviationweather.gov/data/api/ and GeoJSON examples https://docs.v360weather.com/guides/aviation-weather (zoned ISO strings) and https://docs.lodol.com/docs/integrations/aviation-weather-center (Unix seconds); two strictly type-declared wire variants, never epoch guess."
+          },
+          "events[].expires": {
+            "format": "rfc3339_or_unix_seconds",
+            "role": "valid_until",
+            "timezone": "UTC",
+            "evidence": "providers/aviation_weather.py: all three endpoints explicitly ?format=geojson, AWC schema https://aviationweather.gov/data/api/ and GeoJSON examples https://docs.v360weather.com/guides/aviation-weather (zoned ISO strings) and https://docs.lodol.com/docs/integrations/aviation-weather-center (Unix seconds); two strictly type-declared wire variants, never epoch guess."
+          },
+          "events[].ends": {
+            "format": "rfc3339_or_unix_seconds",
+            "role": "valid_until",
+            "timezone": "UTC",
+            "evidence": "providers/aviation_weather.py: all three endpoints explicitly ?format=geojson, AWC schema https://aviationweather.gov/data/api/ and GeoJSON examples https://docs.v360weather.com/guides/aviation-weather (zoned ISO strings) and https://docs.lodol.com/docs/integrations/aviation-weather-center (Unix seconds); two strictly type-declared wire variants, never epoch guess."
+          }
+        }
+      },
+      "us_airsigmet_current": {
+        "status": "static_code_evidence",
+        "fields": {
+          "events[].effective": {
+            "format": "rfc3339_or_unix_seconds",
+            "role": "valid_from",
+            "timezone": "UTC",
+            "evidence": "providers/aviation_weather.py: all three endpoints explicitly ?format=geojson, AWC schema https://aviationweather.gov/data/api/ and GeoJSON examples https://docs.v360weather.com/guides/aviation-weather (zoned ISO strings) and https://docs.lodol.com/docs/integrations/aviation-weather-center (Unix seconds); two strictly type-declared wire variants, never epoch guess."
+          },
+          "events[].onset": {
+            "format": "rfc3339_or_unix_seconds",
+            "role": "started_at",
+            "timezone": "UTC",
+            "evidence": "providers/aviation_weather.py: all three endpoints explicitly ?format=geojson, AWC schema https://aviationweather.gov/data/api/ and GeoJSON examples https://docs.v360weather.com/guides/aviation-weather (zoned ISO strings) and https://docs.lodol.com/docs/integrations/aviation-weather-center (Unix seconds); two strictly type-declared wire variants, never epoch guess."
+          },
+          "events[].expires": {
+            "format": "rfc3339_or_unix_seconds",
+            "role": "valid_until",
+            "timezone": "UTC",
+            "evidence": "providers/aviation_weather.py: all three endpoints explicitly ?format=geojson, AWC schema https://aviationweather.gov/data/api/ and GeoJSON examples https://docs.v360weather.com/guides/aviation-weather (zoned ISO strings) and https://docs.lodol.com/docs/integrations/aviation-weather-center (Unix seconds); two strictly type-declared wire variants, never epoch guess."
+          },
+          "events[].ends": {
+            "format": "rfc3339_or_unix_seconds",
+            "role": "valid_until",
+            "timezone": "UTC",
+            "evidence": "providers/aviation_weather.py: all three endpoints explicitly ?format=geojson, AWC schema https://aviationweather.gov/data/api/ and GeoJSON examples https://docs.v360weather.com/guides/aviation-weather (zoned ISO strings) and https://docs.lodol.com/docs/integrations/aviation-weather-center (Unix seconds); two strictly type-declared wire variants, never epoch guess."
+          }
+        }
+      },
+      "us_gairmet_current": {
+        "status": "static_code_evidence",
+        "fields": {
+          "events[].effective": {
+            "format": "rfc3339_or_unix_seconds",
+            "role": "valid_from",
+            "timezone": "UTC",
+            "evidence": "providers/aviation_weather.py: all three endpoints explicitly ?format=geojson, AWC schema https://aviationweather.gov/data/api/ and GeoJSON examples https://docs.v360weather.com/guides/aviation-weather (zoned ISO strings) and https://docs.lodol.com/docs/integrations/aviation-weather-center (Unix seconds); two strictly type-declared wire variants, never epoch guess."
+          },
+          "events[].onset": {
+            "format": "rfc3339_or_unix_seconds",
+            "role": "started_at",
+            "timezone": "UTC",
+            "evidence": "providers/aviation_weather.py: all three endpoints explicitly ?format=geojson, AWC schema https://aviationweather.gov/data/api/ and GeoJSON examples https://docs.v360weather.com/guides/aviation-weather (zoned ISO strings) and https://docs.lodol.com/docs/integrations/aviation-weather-center (Unix seconds); two strictly type-declared wire variants, never epoch guess."
+          },
+          "events[].expires": {
+            "format": "rfc3339_or_unix_seconds",
+            "role": "valid_until",
+            "timezone": "UTC",
+            "evidence": "providers/aviation_weather.py: all three endpoints explicitly ?format=geojson, AWC schema https://aviationweather.gov/data/api/ and GeoJSON examples https://docs.v360weather.com/guides/aviation-weather (zoned ISO strings) and https://docs.lodol.com/docs/integrations/aviation-weather-center (Unix seconds); two strictly type-declared wire variants, never epoch guess."
+          },
+          "events[].ends": {
+            "format": "rfc3339_or_unix_seconds",
+            "role": "valid_until",
+            "timezone": "UTC",
+            "evidence": "providers/aviation_weather.py: all three endpoints explicitly ?format=geojson, AWC schema https://aviationweather.gov/data/api/ and GeoJSON examples https://docs.v360weather.com/guides/aviation-weather (zoned ISO strings) and https://docs.lodol.com/docs/integrations/aviation-weather-center (Unix seconds); two strictly type-declared wire variants, never epoch guess."
+          }
+        }
+      }
+    },
+    "nina_flood": {
+      "flood_information_germany": {
+        "status": "static_code_evidence",
+        "fields": {
+          "events[].effective": {
+            "format": "rfc3339",
+            "role": "valid_from",
+            "timezone": "offset_in_source",
+            "evidence": "providers/bbk_warning_common.py: shared warnung.bund.de/api31/{mowas,police,lhp,katwarn,biwapp}/mapData.json startDate/expiresDate, date examples 2024-06-28T19:43:20+02:00 https://thilo-negendanck.de/projekte/warnungen.bbk/nina-api/"
+          },
+          "events[].onset": {
+            "format": "rfc3339",
+            "role": "started_at",
+            "timezone": "offset_in_source",
+            "evidence": "providers/bbk_warning_common.py: shared warnung.bund.de/api31/{mowas,police,lhp,katwarn,biwapp}/mapData.json startDate/expiresDate, date examples 2024-06-28T19:43:20+02:00 https://thilo-negendanck.de/projekte/warnungen.bbk/nina-api/"
+          },
+          "events[].expires": {
+            "format": "rfc3339",
+            "role": "valid_until",
+            "timezone": "offset_in_source",
+            "evidence": "providers/bbk_warning_common.py: shared warnung.bund.de/api31/{mowas,police,lhp,katwarn,biwapp}/mapData.json startDate/expiresDate, date examples 2024-06-28T19:43:20+02:00 https://thilo-negendanck.de/projekte/warnungen.bbk/nina-api/"
+          },
+          "events[].ends": {
+            "format": "rfc3339",
+            "role": "valid_until",
+            "timezone": "offset_in_source",
+            "evidence": "providers/bbk_warning_common.py: shared warnung.bund.de/api31/{mowas,police,lhp,katwarn,biwapp}/mapData.json startDate/expiresDate, date examples 2024-06-28T19:43:20+02:00 https://thilo-negendanck.de/projekte/warnungen.bbk/nina-api/"
+          }
+        }
+      }
+    },
+    "nina_katwarn": {
+      "katwarn_public_warnings": {
+        "status": "static_code_evidence",
+        "fields": {
+          "events[].effective": {
+            "format": "rfc3339",
+            "role": "valid_from",
+            "timezone": "offset_in_source",
+            "evidence": "providers/bbk_warning_common.py: shared warnung.bund.de/api31/{mowas,police,lhp,katwarn,biwapp}/mapData.json startDate/expiresDate, date examples 2024-06-28T19:43:20+02:00 https://thilo-negendanck.de/projekte/warnungen.bbk/nina-api/"
+          },
+          "events[].onset": {
+            "format": "rfc3339",
+            "role": "started_at",
+            "timezone": "offset_in_source",
+            "evidence": "providers/bbk_warning_common.py: shared warnung.bund.de/api31/{mowas,police,lhp,katwarn,biwapp}/mapData.json startDate/expiresDate, date examples 2024-06-28T19:43:20+02:00 https://thilo-negendanck.de/projekte/warnungen.bbk/nina-api/"
+          },
+          "events[].expires": {
+            "format": "rfc3339",
+            "role": "valid_until",
+            "timezone": "offset_in_source",
+            "evidence": "providers/bbk_warning_common.py: shared warnung.bund.de/api31/{mowas,police,lhp,katwarn,biwapp}/mapData.json startDate/expiresDate, date examples 2024-06-28T19:43:20+02:00 https://thilo-negendanck.de/projekte/warnungen.bbk/nina-api/"
+          },
+          "events[].ends": {
+            "format": "rfc3339",
+            "role": "valid_until",
+            "timezone": "offset_in_source",
+            "evidence": "providers/bbk_warning_common.py: shared warnung.bund.de/api31/{mowas,police,lhp,katwarn,biwapp}/mapData.json startDate/expiresDate, date examples 2024-06-28T19:43:20+02:00 https://thilo-negendanck.de/projekte/warnungen.bbk/nina-api/"
+          }
+        }
+      }
+    },
+    "nina_biwapp": {
+      "biwapp_public_warnings": {
+        "status": "static_code_evidence",
+        "fields": {
+          "events[].effective": {
+            "format": "rfc3339",
+            "role": "valid_from",
+            "timezone": "offset_in_source",
+            "evidence": "providers/bbk_warning_common.py: shared warnung.bund.de/api31/{mowas,police,lhp,katwarn,biwapp}/mapData.json startDate/expiresDate, date examples 2024-06-28T19:43:20+02:00 https://thilo-negendanck.de/projekte/warnungen.bbk/nina-api/"
+          },
+          "events[].onset": {
+            "format": "rfc3339",
+            "role": "started_at",
+            "timezone": "offset_in_source",
+            "evidence": "providers/bbk_warning_common.py: shared warnung.bund.de/api31/{mowas,police,lhp,katwarn,biwapp}/mapData.json startDate/expiresDate, date examples 2024-06-28T19:43:20+02:00 https://thilo-negendanck.de/projekte/warnungen.bbk/nina-api/"
+          },
+          "events[].expires": {
+            "format": "rfc3339",
+            "role": "valid_until",
+            "timezone": "offset_in_source",
+            "evidence": "providers/bbk_warning_common.py: shared warnung.bund.de/api31/{mowas,police,lhp,katwarn,biwapp}/mapData.json startDate/expiresDate, date examples 2024-06-28T19:43:20+02:00 https://thilo-negendanck.de/projekte/warnungen.bbk/nina-api/"
+          },
+          "events[].ends": {
+            "format": "rfc3339",
+            "role": "valid_until",
+            "timezone": "offset_in_source",
+            "evidence": "providers/bbk_warning_common.py: shared warnung.bund.de/api31/{mowas,police,lhp,katwarn,biwapp}/mapData.json startDate/expiresDate, date examples 2024-06-28T19:43:20+02:00 https://thilo-negendanck.de/projekte/warnungen.bbk/nina-api/"
+          }
+        }
+      }
+    },
+    "glofas": {
+      "flood_reporting_points": {
+        "status": "static_code_evidence",
+        "fields": {
+          "frame_time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/glofas.py: frame_time = int(value.timestamp()) from WMS time-dimension aware datetimes (forecast product)"
+          },
+          "timeline.frames[].time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/glofas.py: frames[].time = int(value.timestamp()) for WMS layer_time_dimension values; forecast, not observation"
+          }
+        }
+      },
+      "flood_probability_5y": {
+        "status": "static_code_evidence",
+        "fields": {
+          "frame_time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/glofas.py: frame_time = int(value.timestamp()) from WMS time-dimension aware datetimes (forecast product)"
+          },
+          "timeline.frames[].time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/glofas.py: frames[].time = int(value.timestamp()) for WMS layer_time_dimension values; forecast, not observation"
+          }
+        }
+      },
+      "flood_probability_20y": {
+        "status": "static_code_evidence",
+        "fields": {
+          "frame_time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/glofas.py: frame_time = int(value.timestamp()) from WMS time-dimension aware datetimes (forecast product)"
+          },
+          "timeline.frames[].time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/glofas.py: frames[].time = int(value.timestamp()) for WMS layer_time_dimension values; forecast, not observation"
+          }
+        }
+      },
+      "flood_summary_1_3d": {
+        "status": "static_code_evidence",
+        "fields": {
+          "frame_time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/glofas.py: frame_time = int(value.timestamp()) from WMS time-dimension aware datetimes (forecast product)"
+          },
+          "timeline.frames[].time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/glofas.py: frames[].time = int(value.timestamp()) for WMS layer_time_dimension values; forecast, not observation"
+          }
+        }
+      },
+      "flood_summary_4_10d": {
+        "status": "static_code_evidence",
+        "fields": {
+          "frame_time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/glofas.py: frame_time = int(value.timestamp()) from WMS time-dimension aware datetimes (forecast product)"
+          },
+          "timeline.frames[].time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/glofas.py: frames[].time = int(value.timestamp()) for WMS layer_time_dimension values; forecast, not observation"
+          }
+        }
+      },
+      "flood_summary_11_30d": {
+        "status": "static_code_evidence",
+        "fields": {
+          "frame_time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/glofas.py: frame_time = int(value.timestamp()) from WMS time-dimension aware datetimes (forecast product)"
+          },
+          "timeline.frames[].time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/glofas.py: frames[].time = int(value.timestamp()) for WMS layer_time_dimension values; forecast, not observation"
+          }
+        }
+      },
+      "rapid_flood_mapping": {
+        "status": "static_code_evidence",
+        "fields": {
+          "frame_time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/glofas.py: frame_time = int(value.timestamp()) from WMS time-dimension aware datetimes (forecast product)"
+          },
+          "timeline.frames[].time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/glofas.py: frames[].time = int(value.timestamp()) for WMS layer_time_dimension values; forecast, not observation"
+          }
+        }
+      },
+      "rapid_impact_assessment": {
+        "status": "static_code_evidence",
+        "fields": {
+          "frame_time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/glofas.py: frame_time = int(value.timestamp()) from WMS time-dimension aware datetimes (forecast product)"
+          },
+          "timeline.frames[].time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/glofas.py: frames[].time = int(value.timestamp()) for WMS layer_time_dimension values; forecast, not observation"
+          }
+        }
+      },
+      "flood_hazard_100y": {
+        "status": "static_code_evidence",
+        "fields": {
+          "frame_time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/glofas.py: frame_time = int(value.timestamp()) from WMS time-dimension aware datetimes (forecast product)"
+          },
+          "timeline.frames[].time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/glofas.py: frames[].time = int(value.timestamp()) for WMS layer_time_dimension values; forecast, not observation"
+          }
+        }
+      }
+    },
+    "met_norway_astronomy": {
+      "moon_phase_angle": {
+        "status": "static_code_evidence",
+        "fields": {
+          "values[].interval_start": {
+            "format": "rfc3339",
+            "role": "interval_start",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: when.interval[0] as interval_start; official MET Norway Sunrise 3.0 JSON format https://api.met.no/doc/formats/SunriseJSON"
+          },
+          "values[].interval_end": {
+            "format": "rfc3339",
+            "role": "interval_end",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: when.interval[1] as interval_end; official MET Norway Sunrise 3.0 JSON format https://api.met.no/doc/formats/SunriseJSON"
+          }
+        }
+      },
+      "moon_phase_name": {
+        "status": "static_code_evidence",
+        "fields": {
+          "values[].interval_start": {
+            "format": "rfc3339",
+            "role": "interval_start",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: when.interval[0] as interval_start; official MET Norway Sunrise 3.0 JSON format https://api.met.no/doc/formats/SunriseJSON"
+          },
+          "values[].interval_end": {
+            "format": "rfc3339",
+            "role": "interval_end",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: when.interval[1] as interval_end; official MET Norway Sunrise 3.0 JSON format https://api.met.no/doc/formats/SunriseJSON"
+          }
+        }
+      },
+      "moon_illumination": {
+        "status": "static_code_evidence",
+        "fields": {
+          "values[].interval_start": {
+            "format": "rfc3339",
+            "role": "interval_start",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: when.interval[0] as interval_start; official MET Norway Sunrise 3.0 JSON format https://api.met.no/doc/formats/SunriseJSON"
+          },
+          "values[].interval_end": {
+            "format": "rfc3339",
+            "role": "interval_end",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: when.interval[1] as interval_end; official MET Norway Sunrise 3.0 JSON format https://api.met.no/doc/formats/SunriseJSON"
+          }
+        }
+      },
+      "moon_age_days": {
+        "status": "static_code_evidence",
+        "fields": {
+          "values[].interval_start": {
+            "format": "rfc3339",
+            "role": "interval_start",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: when.interval[0] as interval_start; official MET Norway Sunrise 3.0 JSON format https://api.met.no/doc/formats/SunriseJSON"
+          },
+          "values[].interval_end": {
+            "format": "rfc3339",
+            "role": "interval_end",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: when.interval[1] as interval_end; official MET Norway Sunrise 3.0 JSON format https://api.met.no/doc/formats/SunriseJSON"
+          }
+        }
+      },
+      "moonrise_time": {
+        "status": "static_code_evidence",
+        "fields": {
+          "values[].interval_start": {
+            "format": "rfc3339",
+            "role": "interval_start",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: when.interval[0] as interval_start; official MET Norway Sunrise 3.0 JSON format https://api.met.no/doc/formats/SunriseJSON"
+          },
+          "values[].interval_end": {
+            "format": "rfc3339",
+            "role": "interval_end",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: when.interval[1] as interval_end; official MET Norway Sunrise 3.0 JSON format https://api.met.no/doc/formats/SunriseJSON"
+          },
+          "values[].value": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: properties.*.time; official MET Norway Sunrise 3.0 JSON format has timestamp with UTC Z or explicit offset https://api.met.no/doc/formats/SunriseJSON"
+          }
+        }
+      },
+      "moonrise_azimuth": {
+        "status": "static_code_evidence",
+        "fields": {
+          "values[].interval_start": {
+            "format": "rfc3339",
+            "role": "interval_start",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: when.interval[0] as interval_start; official MET Norway Sunrise 3.0 JSON format https://api.met.no/doc/formats/SunriseJSON"
+          },
+          "values[].interval_end": {
+            "format": "rfc3339",
+            "role": "interval_end",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: when.interval[1] as interval_end; official MET Norway Sunrise 3.0 JSON format https://api.met.no/doc/formats/SunriseJSON"
+          }
+        }
+      },
+      "moonset_time": {
+        "status": "static_code_evidence",
+        "fields": {
+          "values[].interval_start": {
+            "format": "rfc3339",
+            "role": "interval_start",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: when.interval[0] as interval_start; official MET Norway Sunrise 3.0 JSON format https://api.met.no/doc/formats/SunriseJSON"
+          },
+          "values[].interval_end": {
+            "format": "rfc3339",
+            "role": "interval_end",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: when.interval[1] as interval_end; official MET Norway Sunrise 3.0 JSON format https://api.met.no/doc/formats/SunriseJSON"
+          },
+          "values[].value": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: properties.*.time; official MET Norway Sunrise 3.0 JSON format has timestamp with UTC Z or explicit offset https://api.met.no/doc/formats/SunriseJSON"
+          }
+        }
+      },
+      "moonset_azimuth": {
+        "status": "static_code_evidence",
+        "fields": {
+          "values[].interval_start": {
+            "format": "rfc3339",
+            "role": "interval_start",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: when.interval[0] as interval_start; official MET Norway Sunrise 3.0 JSON format https://api.met.no/doc/formats/SunriseJSON"
+          },
+          "values[].interval_end": {
+            "format": "rfc3339",
+            "role": "interval_end",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: when.interval[1] as interval_end; official MET Norway Sunrise 3.0 JSON format https://api.met.no/doc/formats/SunriseJSON"
+          }
+        }
+      },
+      "high_moon_time": {
+        "status": "static_code_evidence",
+        "fields": {
+          "values[].interval_start": {
+            "format": "rfc3339",
+            "role": "interval_start",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: when.interval[0] as interval_start; official MET Norway Sunrise 3.0 JSON format https://api.met.no/doc/formats/SunriseJSON"
+          },
+          "values[].interval_end": {
+            "format": "rfc3339",
+            "role": "interval_end",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: when.interval[1] as interval_end; official MET Norway Sunrise 3.0 JSON format https://api.met.no/doc/formats/SunriseJSON"
+          },
+          "values[].value": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: properties.*.time; official MET Norway Sunrise 3.0 JSON format has timestamp with UTC Z or explicit offset https://api.met.no/doc/formats/SunriseJSON"
+          }
+        }
+      },
+      "high_moon_elevation": {
+        "status": "static_code_evidence",
+        "fields": {
+          "values[].interval_start": {
+            "format": "rfc3339",
+            "role": "interval_start",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: when.interval[0] as interval_start; official MET Norway Sunrise 3.0 JSON format https://api.met.no/doc/formats/SunriseJSON"
+          },
+          "values[].interval_end": {
+            "format": "rfc3339",
+            "role": "interval_end",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: when.interval[1] as interval_end; official MET Norway Sunrise 3.0 JSON format https://api.met.no/doc/formats/SunriseJSON"
+          }
+        }
+      },
+      "high_moon_visible": {
+        "status": "static_code_evidence",
+        "fields": {
+          "values[].interval_start": {
+            "format": "rfc3339",
+            "role": "interval_start",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: when.interval[0] as interval_start; official MET Norway Sunrise 3.0 JSON format https://api.met.no/doc/formats/SunriseJSON"
+          },
+          "values[].interval_end": {
+            "format": "rfc3339",
+            "role": "interval_end",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: when.interval[1] as interval_end; official MET Norway Sunrise 3.0 JSON format https://api.met.no/doc/formats/SunriseJSON"
+          }
+        }
+      },
+      "low_moon_time": {
+        "status": "static_code_evidence",
+        "fields": {
+          "values[].interval_start": {
+            "format": "rfc3339",
+            "role": "interval_start",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: when.interval[0] as interval_start; official MET Norway Sunrise 3.0 JSON format https://api.met.no/doc/formats/SunriseJSON"
+          },
+          "values[].interval_end": {
+            "format": "rfc3339",
+            "role": "interval_end",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: when.interval[1] as interval_end; official MET Norway Sunrise 3.0 JSON format https://api.met.no/doc/formats/SunriseJSON"
+          },
+          "values[].value": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: properties.*.time; official MET Norway Sunrise 3.0 JSON format has timestamp with UTC Z or explicit offset https://api.met.no/doc/formats/SunriseJSON"
+          }
+        }
+      },
+      "low_moon_elevation": {
+        "status": "static_code_evidence",
+        "fields": {
+          "values[].interval_start": {
+            "format": "rfc3339",
+            "role": "interval_start",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: when.interval[0] as interval_start; official MET Norway Sunrise 3.0 JSON format https://api.met.no/doc/formats/SunriseJSON"
+          },
+          "values[].interval_end": {
+            "format": "rfc3339",
+            "role": "interval_end",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: when.interval[1] as interval_end; official MET Norway Sunrise 3.0 JSON format https://api.met.no/doc/formats/SunriseJSON"
+          }
+        }
+      },
+      "low_moon_visible": {
+        "status": "static_code_evidence",
+        "fields": {
+          "values[].interval_start": {
+            "format": "rfc3339",
+            "role": "interval_start",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: when.interval[0] as interval_start; official MET Norway Sunrise 3.0 JSON format https://api.met.no/doc/formats/SunriseJSON"
+          },
+          "values[].interval_end": {
+            "format": "rfc3339",
+            "role": "interval_end",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: when.interval[1] as interval_end; official MET Norway Sunrise 3.0 JSON format https://api.met.no/doc/formats/SunriseJSON"
+          }
+        }
+      },
+      "sunrise_time": {
+        "status": "static_code_evidence",
+        "fields": {
+          "values[].interval_start": {
+            "format": "rfc3339",
+            "role": "interval_start",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: when.interval[0] as interval_start; official MET Norway Sunrise 3.0 JSON format https://api.met.no/doc/formats/SunriseJSON"
+          },
+          "values[].interval_end": {
+            "format": "rfc3339",
+            "role": "interval_end",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: when.interval[1] as interval_end; official MET Norway Sunrise 3.0 JSON format https://api.met.no/doc/formats/SunriseJSON"
+          },
+          "values[].value": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: properties.*.time; official MET Norway Sunrise 3.0 JSON format has timestamp with UTC Z or explicit offset https://api.met.no/doc/formats/SunriseJSON"
+          }
+        }
+      },
+      "sunrise_azimuth": {
+        "status": "static_code_evidence",
+        "fields": {
+          "values[].interval_start": {
+            "format": "rfc3339",
+            "role": "interval_start",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: when.interval[0] as interval_start; official MET Norway Sunrise 3.0 JSON format https://api.met.no/doc/formats/SunriseJSON"
+          },
+          "values[].interval_end": {
+            "format": "rfc3339",
+            "role": "interval_end",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: when.interval[1] as interval_end; official MET Norway Sunrise 3.0 JSON format https://api.met.no/doc/formats/SunriseJSON"
+          }
+        }
+      },
+      "sunset_time": {
+        "status": "static_code_evidence",
+        "fields": {
+          "values[].interval_start": {
+            "format": "rfc3339",
+            "role": "interval_start",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: when.interval[0] as interval_start; official MET Norway Sunrise 3.0 JSON format https://api.met.no/doc/formats/SunriseJSON"
+          },
+          "values[].interval_end": {
+            "format": "rfc3339",
+            "role": "interval_end",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: when.interval[1] as interval_end; official MET Norway Sunrise 3.0 JSON format https://api.met.no/doc/formats/SunriseJSON"
+          },
+          "values[].value": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: properties.*.time; official MET Norway Sunrise 3.0 JSON format has timestamp with UTC Z or explicit offset https://api.met.no/doc/formats/SunriseJSON"
+          }
+        }
+      },
+      "sunset_azimuth": {
+        "status": "static_code_evidence",
+        "fields": {
+          "values[].interval_start": {
+            "format": "rfc3339",
+            "role": "interval_start",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: when.interval[0] as interval_start; official MET Norway Sunrise 3.0 JSON format https://api.met.no/doc/formats/SunriseJSON"
+          },
+          "values[].interval_end": {
+            "format": "rfc3339",
+            "role": "interval_end",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: when.interval[1] as interval_end; official MET Norway Sunrise 3.0 JSON format https://api.met.no/doc/formats/SunriseJSON"
+          }
+        }
+      },
+      "solar_noon_time": {
+        "status": "static_code_evidence",
+        "fields": {
+          "values[].interval_start": {
+            "format": "rfc3339",
+            "role": "interval_start",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: when.interval[0] as interval_start; official MET Norway Sunrise 3.0 JSON format https://api.met.no/doc/formats/SunriseJSON"
+          },
+          "values[].interval_end": {
+            "format": "rfc3339",
+            "role": "interval_end",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: when.interval[1] as interval_end; official MET Norway Sunrise 3.0 JSON format https://api.met.no/doc/formats/SunriseJSON"
+          },
+          "values[].value": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: properties.*.time; official MET Norway Sunrise 3.0 JSON format has timestamp with UTC Z or explicit offset https://api.met.no/doc/formats/SunriseJSON"
+          }
+        }
+      },
+      "solar_noon_elevation": {
+        "status": "static_code_evidence",
+        "fields": {
+          "values[].interval_start": {
+            "format": "rfc3339",
+            "role": "interval_start",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: when.interval[0] as interval_start; official MET Norway Sunrise 3.0 JSON format https://api.met.no/doc/formats/SunriseJSON"
+          },
+          "values[].interval_end": {
+            "format": "rfc3339",
+            "role": "interval_end",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: when.interval[1] as interval_end; official MET Norway Sunrise 3.0 JSON format https://api.met.no/doc/formats/SunriseJSON"
+          }
+        }
+      },
+      "solar_noon_visible": {
+        "status": "static_code_evidence",
+        "fields": {
+          "values[].interval_start": {
+            "format": "rfc3339",
+            "role": "interval_start",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: when.interval[0] as interval_start; official MET Norway Sunrise 3.0 JSON format https://api.met.no/doc/formats/SunriseJSON"
+          },
+          "values[].interval_end": {
+            "format": "rfc3339",
+            "role": "interval_end",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: when.interval[1] as interval_end; official MET Norway Sunrise 3.0 JSON format https://api.met.no/doc/formats/SunriseJSON"
+          }
+        }
+      },
+      "solar_midnight_time": {
+        "status": "static_code_evidence",
+        "fields": {
+          "values[].interval_start": {
+            "format": "rfc3339",
+            "role": "interval_start",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: when.interval[0] as interval_start; official MET Norway Sunrise 3.0 JSON format https://api.met.no/doc/formats/SunriseJSON"
+          },
+          "values[].interval_end": {
+            "format": "rfc3339",
+            "role": "interval_end",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: when.interval[1] as interval_end; official MET Norway Sunrise 3.0 JSON format https://api.met.no/doc/formats/SunriseJSON"
+          },
+          "values[].value": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: properties.*.time; official MET Norway Sunrise 3.0 JSON format has timestamp with UTC Z or explicit offset https://api.met.no/doc/formats/SunriseJSON"
+          }
+        }
+      },
+      "solar_midnight_elevation": {
+        "status": "static_code_evidence",
+        "fields": {
+          "values[].interval_start": {
+            "format": "rfc3339",
+            "role": "interval_start",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: when.interval[0] as interval_start; official MET Norway Sunrise 3.0 JSON format https://api.met.no/doc/formats/SunriseJSON"
+          },
+          "values[].interval_end": {
+            "format": "rfc3339",
+            "role": "interval_end",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: when.interval[1] as interval_end; official MET Norway Sunrise 3.0 JSON format https://api.met.no/doc/formats/SunriseJSON"
+          }
+        }
+      },
+      "solar_midnight_visible": {
+        "status": "static_code_evidence",
+        "fields": {
+          "values[].interval_start": {
+            "format": "rfc3339",
+            "role": "interval_start",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: when.interval[0] as interval_start; official MET Norway Sunrise 3.0 JSON format https://api.met.no/doc/formats/SunriseJSON"
+          },
+          "values[].interval_end": {
+            "format": "rfc3339",
+            "role": "interval_end",
+            "timezone": "offset_in_source",
+            "evidence": "providers/met_norway_astronomy.py: when.interval[1] as interval_end; official MET Norway Sunrise 3.0 JSON format https://api.met.no/doc/formats/SunriseJSON"
+          }
+        }
+      }
+    },
+    "open_meteo_pollen": {
+      "alder_pollen": {
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo_pollen.py: current time converted with provider IANA time zone"
+          },
+          "values[].valid_at": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo_pollen.py: local current/hourly -> aware UTC"
+          }
+        }
+      },
+      "birch_pollen": {
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo_pollen.py: current time converted with provider IANA time zone"
+          },
+          "values[].valid_at": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo_pollen.py: local current/hourly -> aware UTC"
+          }
+        }
+      },
+      "grass_pollen": {
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo_pollen.py: current time converted with provider IANA time zone"
+          },
+          "values[].valid_at": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo_pollen.py: local current/hourly -> aware UTC"
+          }
+        }
+      },
+      "mugwort_pollen": {
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo_pollen.py: current time converted with provider IANA time zone"
+          },
+          "values[].valid_at": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo_pollen.py: local current/hourly -> aware UTC"
+          }
+        }
+      },
+      "olive_pollen": {
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo_pollen.py: current time converted with provider IANA time zone"
+          },
+          "values[].valid_at": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo_pollen.py: local current/hourly -> aware UTC"
+          }
+        }
+      },
+      "ragweed_pollen": {
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo_pollen.py: current time converted with provider IANA time zone"
+          },
+          "values[].valid_at": {
+            "format": "rfc3339",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/open_meteo_pollen.py: local current/hourly -> aware UTC"
+          }
+        }
+      }
+    },
+    "gbif_biodiversity": {
+      "occurrence_density_felidae": {
+        "status": "no_absolute_source_time",
+        "fields": {},
+        "evidence": "providers/gbif_biodiversity.py: async_get_map_layer and its layer variants explicitly emit frame_time=None for year-aggregated GBIF occurrence-density tiles; from_year/to_year are aggregation filters, not observation instants"
+      },
+      "occurrence_density_panthera": {
+        "status": "no_absolute_source_time",
+        "fields": {},
+        "evidence": "providers/gbif_biodiversity.py: async_get_map_layer and its layer variants explicitly emit frame_time=None for year-aggregated GBIF occurrence-density tiles; from_year/to_year are aggregation filters, not observation instants"
+      },
+      "occurrence_density_lion": {
+        "status": "no_absolute_source_time",
+        "fields": {},
+        "evidence": "providers/gbif_biodiversity.py: async_get_map_layer and its layer variants explicitly emit frame_time=None for year-aggregated GBIF occurrence-density tiles; from_year/to_year are aggregation filters, not observation instants"
+      },
+      "occurrence_density_tiger": {
+        "status": "no_absolute_source_time",
+        "fields": {},
+        "evidence": "providers/gbif_biodiversity.py: async_get_map_layer and its layer variants explicitly emit frame_time=None for year-aggregated GBIF occurrence-density tiles; from_year/to_year are aggregation filters, not observation instants"
+      },
+      "occurrence_density_leopard": {
+        "status": "no_absolute_source_time",
+        "fields": {},
+        "evidence": "providers/gbif_biodiversity.py: async_get_map_layer and its layer variants explicitly emit frame_time=None for year-aggregated GBIF occurrence-density tiles; from_year/to_year are aggregation filters, not observation instants"
+      },
+      "occurrence_density_jaguar": {
+        "status": "no_absolute_source_time",
+        "fields": {},
+        "evidence": "providers/gbif_biodiversity.py: async_get_map_layer and its layer variants explicitly emit frame_time=None for year-aggregated GBIF occurrence-density tiles; from_year/to_year are aggregation filters, not observation instants"
+      },
+      "occurrence_density_puma": {
+        "status": "no_absolute_source_time",
+        "fields": {},
+        "evidence": "providers/gbif_biodiversity.py: async_get_map_layer and its layer variants explicitly emit frame_time=None for year-aggregated GBIF occurrence-density tiles; from_year/to_year are aggregation filters, not observation instants"
+      },
+      "occurrence_density_snow_leopard": {
+        "status": "no_absolute_source_time",
+        "fields": {},
+        "evidence": "providers/gbif_biodiversity.py: async_get_map_layer and its layer variants explicitly emit frame_time=None for year-aggregated GBIF occurrence-density tiles; from_year/to_year are aggregation filters, not observation instants"
+      },
+      "occurrence_density_cheetah": {
+        "status": "no_absolute_source_time",
+        "fields": {},
+        "evidence": "providers/gbif_biodiversity.py: async_get_map_layer and its layer variants explicitly emit frame_time=None for year-aggregated GBIF occurrence-density tiles; from_year/to_year are aggregation filters, not observation instants"
+      },
+      "occurrence_density_ursidae": {
+        "status": "no_absolute_source_time",
+        "fields": {},
+        "evidence": "providers/gbif_biodiversity.py: async_get_map_layer and its layer variants explicitly emit frame_time=None for year-aggregated GBIF occurrence-density tiles; from_year/to_year are aggregation filters, not observation instants"
+      },
+      "occurrence_density_brown_bear": {
+        "status": "no_absolute_source_time",
+        "fields": {},
+        "evidence": "providers/gbif_biodiversity.py: async_get_map_layer and its layer variants explicitly emit frame_time=None for year-aggregated GBIF occurrence-density tiles; from_year/to_year are aggregation filters, not observation instants"
+      },
+      "occurrence_density_polar_bear": {
+        "status": "no_absolute_source_time",
+        "fields": {},
+        "evidence": "providers/gbif_biodiversity.py: async_get_map_layer and its layer variants explicitly emit frame_time=None for year-aggregated GBIF occurrence-density tiles; from_year/to_year are aggregation filters, not observation instants"
+      },
+      "occurrence_density_wolf": {
+        "status": "no_absolute_source_time",
+        "fields": {},
+        "evidence": "providers/gbif_biodiversity.py: async_get_map_layer and its layer variants explicitly emit frame_time=None for year-aggregated GBIF occurrence-density tiles; from_year/to_year are aggregation filters, not observation instants"
+      },
+      "occurrence_density_hyaenidae": {
+        "status": "no_absolute_source_time",
+        "fields": {},
+        "evidence": "providers/gbif_biodiversity.py: async_get_map_layer and its layer variants explicitly emit frame_time=None for year-aggregated GBIF occurrence-density tiles; from_year/to_year are aggregation filters, not observation instants"
+      },
+      "occurrence_density_african_wild_dog": {
+        "status": "no_absolute_source_time",
+        "fields": {},
+        "evidence": "providers/gbif_biodiversity.py: async_get_map_layer and its layer variants explicitly emit frame_time=None for year-aggregated GBIF occurrence-density tiles; from_year/to_year are aggregation filters, not observation instants"
+      },
+      "occurrence_density_elephantidae": {
+        "status": "no_absolute_source_time",
+        "fields": {},
+        "evidence": "providers/gbif_biodiversity.py: async_get_map_layer and its layer variants explicitly emit frame_time=None for year-aggregated GBIF occurrence-density tiles; from_year/to_year are aggregation filters, not observation instants"
+      },
+      "occurrence_density_hippopotamus": {
+        "status": "no_absolute_source_time",
+        "fields": {},
+        "evidence": "providers/gbif_biodiversity.py: async_get_map_layer and its layer variants explicitly emit frame_time=None for year-aggregated GBIF occurrence-density tiles; from_year/to_year are aggregation filters, not observation instants"
+      },
+      "occurrence_density_african_buffalo": {
+        "status": "no_absolute_source_time",
+        "fields": {},
+        "evidence": "providers/gbif_biodiversity.py: async_get_map_layer and its layer variants explicitly emit frame_time=None for year-aggregated GBIF occurrence-density tiles; from_year/to_year are aggregation filters, not observation instants"
+      },
+      "occurrence_density_rhinocerotidae": {
+        "status": "no_absolute_source_time",
+        "fields": {},
+        "evidence": "providers/gbif_biodiversity.py: async_get_map_layer and its layer variants explicitly emit frame_time=None for year-aggregated GBIF occurrence-density tiles; from_year/to_year are aggregation filters, not observation instants"
+      },
+      "occurrence_density_crocodylia": {
+        "status": "no_absolute_source_time",
+        "fields": {},
+        "evidence": "providers/gbif_biodiversity.py: async_get_map_layer and its layer variants explicitly emit frame_time=None for year-aggregated GBIF occurrence-density tiles; from_year/to_year are aggregation filters, not observation instants"
+      },
+      "occurrence_density_crocodylus": {
+        "status": "no_absolute_source_time",
+        "fields": {},
+        "evidence": "providers/gbif_biodiversity.py: async_get_map_layer and its layer variants explicitly emit frame_time=None for year-aggregated GBIF occurrence-density tiles; from_year/to_year are aggregation filters, not observation instants"
+      },
+      "occurrence_density_nile_crocodile": {
+        "status": "no_absolute_source_time",
+        "fields": {},
+        "evidence": "providers/gbif_biodiversity.py: async_get_map_layer and its layer variants explicitly emit frame_time=None for year-aggregated GBIF occurrence-density tiles; from_year/to_year are aggregation filters, not observation instants"
+      },
+      "occurrence_density_saltwater_crocodile": {
+        "status": "no_absolute_source_time",
+        "fields": {},
+        "evidence": "providers/gbif_biodiversity.py: async_get_map_layer and its layer variants explicitly emit frame_time=None for year-aggregated GBIF occurrence-density tiles; from_year/to_year are aggregation filters, not observation instants"
+      },
+      "occurrence_density_alligatoridae": {
+        "status": "no_absolute_source_time",
+        "fields": {},
+        "evidence": "providers/gbif_biodiversity.py: async_get_map_layer and its layer variants explicitly emit frame_time=None for year-aggregated GBIF occurrence-density tiles; from_year/to_year are aggregation filters, not observation instants"
+      },
+      "occurrence_density_american_alligator": {
+        "status": "no_absolute_source_time",
+        "fields": {},
+        "evidence": "providers/gbif_biodiversity.py: async_get_map_layer and its layer variants explicitly emit frame_time=None for year-aggregated GBIF occurrence-density tiles; from_year/to_year are aggregation filters, not observation instants"
+      },
+      "occurrence_density_caiman": {
+        "status": "no_absolute_source_time",
+        "fields": {},
+        "evidence": "providers/gbif_biodiversity.py: async_get_map_layer and its layer variants explicitly emit frame_time=None for year-aggregated GBIF occurrence-density tiles; from_year/to_year are aggregation filters, not observation instants"
+      },
+      "occurrence_density_sharks": {
+        "status": "no_absolute_source_time",
+        "fields": {},
+        "evidence": "providers/gbif_biodiversity.py: async_get_map_layer and its layer variants explicitly emit frame_time=None for year-aggregated GBIF occurrence-density tiles; from_year/to_year are aggregation filters, not observation instants"
+      },
+      "occurrence_density_requiem_sharks": {
+        "status": "no_absolute_source_time",
+        "fields": {},
+        "evidence": "providers/gbif_biodiversity.py: async_get_map_layer and its layer variants explicitly emit frame_time=None for year-aggregated GBIF occurrence-density tiles; from_year/to_year are aggregation filters, not observation instants"
+      },
+      "occurrence_density_great_white_shark": {
+        "status": "no_absolute_source_time",
+        "fields": {},
+        "evidence": "providers/gbif_biodiversity.py: async_get_map_layer and its layer variants explicitly emit frame_time=None for year-aggregated GBIF occurrence-density tiles; from_year/to_year are aggregation filters, not observation instants"
+      },
+      "occurrence_density_tiger_shark": {
+        "status": "no_absolute_source_time",
+        "fields": {},
+        "evidence": "providers/gbif_biodiversity.py: async_get_map_layer and its layer variants explicitly emit frame_time=None for year-aggregated GBIF occurrence-density tiles; from_year/to_year are aggregation filters, not observation instants"
+      },
+      "occurrence_density_bull_shark": {
+        "status": "no_absolute_source_time",
+        "fields": {},
+        "evidence": "providers/gbif_biodiversity.py: async_get_map_layer and its layer variants explicitly emit frame_time=None for year-aggregated GBIF occurrence-density tiles; from_year/to_year are aggregation filters, not observation instants"
+      },
+      "occurrence_density_hammerhead_sharks": {
+        "status": "no_absolute_source_time",
+        "fields": {},
+        "evidence": "providers/gbif_biodiversity.py: async_get_map_layer and its layer variants explicitly emit frame_time=None for year-aggregated GBIF occurrence-density tiles; from_year/to_year are aggregation filters, not observation instants"
+      },
+      "occurrence_density_stingrays": {
+        "status": "no_absolute_source_time",
+        "fields": {},
+        "evidence": "providers/gbif_biodiversity.py: async_get_map_layer and its layer variants explicitly emit frame_time=None for year-aggregated GBIF occurrence-density tiles; from_year/to_year are aggregation filters, not observation instants"
+      },
+      "occurrence_density_box_jellyfish": {
+        "status": "no_absolute_source_time",
+        "fields": {},
+        "evidence": "providers/gbif_biodiversity.py: async_get_map_layer and its layer variants explicitly emit frame_time=None for year-aggregated GBIF occurrence-density tiles; from_year/to_year are aggregation filters, not observation instants"
+      },
+      "occurrence_density_chironex_fleckeri": {
+        "status": "no_absolute_source_time",
+        "fields": {},
+        "evidence": "providers/gbif_biodiversity.py: async_get_map_layer and its layer variants explicitly emit frame_time=None for year-aggregated GBIF occurrence-density tiles; from_year/to_year are aggregation filters, not observation instants"
+      },
+      "occurrence_density_portuguese_man_o_war": {
+        "status": "no_absolute_source_time",
+        "fields": {},
+        "evidence": "providers/gbif_biodiversity.py: async_get_map_layer and its layer variants explicitly emit frame_time=None for year-aggregated GBIF occurrence-density tiles; from_year/to_year are aggregation filters, not observation instants"
+      },
+      "occurrence_density_cone_snails": {
+        "status": "no_absolute_source_time",
+        "fields": {},
+        "evidence": "providers/gbif_biodiversity.py: async_get_map_layer and its layer variants explicitly emit frame_time=None for year-aggregated GBIF occurrence-density tiles; from_year/to_year are aggregation filters, not observation instants"
+      },
+      "occurrence_density_stonefish": {
+        "status": "no_absolute_source_time",
+        "fields": {},
+        "evidence": "providers/gbif_biodiversity.py: async_get_map_layer and its layer variants explicitly emit frame_time=None for year-aggregated GBIF occurrence-density tiles; from_year/to_year are aggregation filters, not observation instants"
+      },
+      "occurrence_density_blue_ringed_octopus": {
+        "status": "no_absolute_source_time",
+        "fields": {},
+        "evidence": "providers/gbif_biodiversity.py: async_get_map_layer and its layer variants explicitly emit frame_time=None for year-aggregated GBIF occurrence-density tiles; from_year/to_year are aggregation filters, not observation instants"
+      },
+      "occurrence_density_sea_snakes": {
+        "status": "no_absolute_source_time",
+        "fields": {},
+        "evidence": "providers/gbif_biodiversity.py: async_get_map_layer and its layer variants explicitly emit frame_time=None for year-aggregated GBIF occurrence-density tiles; from_year/to_year are aggregation filters, not observation instants"
+      },
+      "occurrence_density_serpentes": {
+        "status": "no_absolute_source_time",
+        "fields": {},
+        "evidence": "providers/gbif_biodiversity.py: async_get_map_layer and its layer variants explicitly emit frame_time=None for year-aggregated GBIF occurrence-density tiles; from_year/to_year are aggregation filters, not observation instants"
+      },
+      "occurrence_density_elapidae": {
+        "status": "no_absolute_source_time",
+        "fields": {},
+        "evidence": "providers/gbif_biodiversity.py: async_get_map_layer and its layer variants explicitly emit frame_time=None for year-aggregated GBIF occurrence-density tiles; from_year/to_year are aggregation filters, not observation instants"
+      },
+      "occurrence_density_viperidae": {
+        "status": "no_absolute_source_time",
+        "fields": {},
+        "evidence": "providers/gbif_biodiversity.py: async_get_map_layer and its layer variants explicitly emit frame_time=None for year-aggregated GBIF occurrence-density tiles; from_year/to_year are aggregation filters, not observation instants"
+      },
+      "occurrence_density_pit_vipers": {
+        "status": "no_absolute_source_time",
+        "fields": {},
+        "evidence": "providers/gbif_biodiversity.py: async_get_map_layer and its layer variants explicitly emit frame_time=None for year-aggregated GBIF occurrence-density tiles; from_year/to_year are aggregation filters, not observation instants"
+      },
+      "occurrence_density_cobras": {
+        "status": "no_absolute_source_time",
+        "fields": {},
+        "evidence": "providers/gbif_biodiversity.py: async_get_map_layer and its layer variants explicitly emit frame_time=None for year-aggregated GBIF occurrence-density tiles; from_year/to_year are aggregation filters, not observation instants"
+      },
+      "occurrence_density_mambas": {
+        "status": "no_absolute_source_time",
+        "fields": {},
+        "evidence": "providers/gbif_biodiversity.py: async_get_map_layer and its layer variants explicitly emit frame_time=None for year-aggregated GBIF occurrence-density tiles; from_year/to_year are aggregation filters, not observation instants"
+      },
+      "occurrence_density_taipans": {
+        "status": "no_absolute_source_time",
+        "fields": {},
+        "evidence": "providers/gbif_biodiversity.py: async_get_map_layer and its layer variants explicitly emit frame_time=None for year-aggregated GBIF occurrence-density tiles; from_year/to_year are aggregation filters, not observation instants"
+      },
+      "occurrence_density_kraits": {
+        "status": "no_absolute_source_time",
+        "fields": {},
+        "evidence": "providers/gbif_biodiversity.py: async_get_map_layer and its layer variants explicitly emit frame_time=None for year-aggregated GBIF occurrence-density tiles; from_year/to_year are aggregation filters, not observation instants"
+      },
+      "occurrence_density_coral_snakes": {
+        "status": "no_absolute_source_time",
+        "fields": {},
+        "evidence": "providers/gbif_biodiversity.py: async_get_map_layer and its layer variants explicitly emit frame_time=None for year-aggregated GBIF occurrence-density tiles; from_year/to_year are aggregation filters, not observation instants"
+      },
+      "occurrence_density_puff_adders": {
+        "status": "no_absolute_source_time",
+        "fields": {},
+        "evidence": "providers/gbif_biodiversity.py: async_get_map_layer and its layer variants explicitly emit frame_time=None for year-aggregated GBIF occurrence-density tiles; from_year/to_year are aggregation filters, not observation instants"
+      },
+      "occurrence_density_lanceheads": {
+        "status": "no_absolute_source_time",
+        "fields": {},
+        "evidence": "providers/gbif_biodiversity.py: async_get_map_layer and its layer variants explicitly emit frame_time=None for year-aggregated GBIF occurrence-density tiles; from_year/to_year are aggregation filters, not observation instants"
+      },
+      "occurrence_density_rattlesnakes": {
+        "status": "no_absolute_source_time",
+        "fields": {},
+        "evidence": "providers/gbif_biodiversity.py: async_get_map_layer and its layer variants explicitly emit frame_time=None for year-aggregated GBIF occurrence-density tiles; from_year/to_year are aggregation filters, not observation instants"
+      },
+      "occurrence_density_saw_scaled_vipers": {
+        "status": "no_absolute_source_time",
+        "fields": {},
+        "evidence": "providers/gbif_biodiversity.py: async_get_map_layer and its layer variants explicitly emit frame_time=None for year-aggregated GBIF occurrence-density tiles; from_year/to_year are aggregation filters, not observation instants"
+      },
+      "occurrence_density_scorpions": {
+        "status": "no_absolute_source_time",
+        "fields": {},
+        "evidence": "providers/gbif_biodiversity.py: async_get_map_layer and its layer variants explicitly emit frame_time=None for year-aggregated GBIF occurrence-density tiles; from_year/to_year are aggregation filters, not observation instants"
+      },
+      "occurrence_density_buthidae": {
+        "status": "no_absolute_source_time",
+        "fields": {},
+        "evidence": "providers/gbif_biodiversity.py: async_get_map_layer and its layer variants explicitly emit frame_time=None for year-aggregated GBIF occurrence-density tiles; from_year/to_year are aggregation filters, not observation instants"
+      },
+      "occurrence_density_black_widows": {
+        "status": "no_absolute_source_time",
+        "fields": {},
+        "evidence": "providers/gbif_biodiversity.py: async_get_map_layer and its layer variants explicitly emit frame_time=None for year-aggregated GBIF occurrence-density tiles; from_year/to_year are aggregation filters, not observation instants"
+      },
+      "occurrence_density_recluse_spiders": {
+        "status": "no_absolute_source_time",
+        "fields": {},
+        "evidence": "providers/gbif_biodiversity.py: async_get_map_layer and its layer variants explicitly emit frame_time=None for year-aggregated GBIF occurrence-density tiles; from_year/to_year are aggregation filters, not observation instants"
+      },
+      "occurrence_density_wandering_spiders": {
+        "status": "no_absolute_source_time",
+        "fields": {},
+        "evidence": "providers/gbif_biodiversity.py: async_get_map_layer and its layer variants explicitly emit frame_time=None for year-aggregated GBIF occurrence-density tiles; from_year/to_year are aggregation filters, not observation instants"
+      },
+      "occurrence_density_funnel_web_spiders": {
+        "status": "no_absolute_source_time",
+        "fields": {},
+        "evidence": "providers/gbif_biodiversity.py: async_get_map_layer and its layer variants explicitly emit frame_time=None for year-aggregated GBIF occurrence-density tiles; from_year/to_year are aggregation filters, not observation instants"
+      },
+      "occurrence_density_poison_dart_frogs": {
+        "status": "no_absolute_source_time",
+        "fields": {},
+        "evidence": "providers/gbif_biodiversity.py: async_get_map_layer and its layer variants explicitly emit frame_time=None for year-aggregated GBIF occurrence-density tiles; from_year/to_year are aggregation filters, not observation instants"
+      },
+      "occurrence_density_aconite": {
+        "status": "no_absolute_source_time",
+        "fields": {},
+        "evidence": "providers/gbif_biodiversity.py: async_get_map_layer and its layer variants explicitly emit frame_time=None for year-aggregated GBIF occurrence-density tiles; from_year/to_year are aggregation filters, not observation instants"
+      },
+      "occurrence_density_deadly_nightshade": {
+        "status": "no_absolute_source_time",
+        "fields": {},
+        "evidence": "providers/gbif_biodiversity.py: async_get_map_layer and its layer variants explicitly emit frame_time=None for year-aggregated GBIF occurrence-density tiles; from_year/to_year are aggregation filters, not observation instants"
+      },
+      "occurrence_density_foxglove": {
+        "status": "no_absolute_source_time",
+        "fields": {},
+        "evidence": "providers/gbif_biodiversity.py: async_get_map_layer and its layer variants explicitly emit frame_time=None for year-aggregated GBIF occurrence-density tiles; from_year/to_year are aggregation filters, not observation instants"
+      },
+      "occurrence_density_castor_bean": {
+        "status": "no_absolute_source_time",
+        "fields": {},
+        "evidence": "providers/gbif_biodiversity.py: async_get_map_layer and its layer variants explicitly emit frame_time=None for year-aggregated GBIF occurrence-density tiles; from_year/to_year are aggregation filters, not observation instants"
+      },
+      "occurrence_density_oleander": {
+        "status": "no_absolute_source_time",
+        "fields": {},
+        "evidence": "providers/gbif_biodiversity.py: async_get_map_layer and its layer variants explicitly emit frame_time=None for year-aggregated GBIF occurrence-density tiles; from_year/to_year are aggregation filters, not observation instants"
+      },
+      "occurrence_density_yew": {
+        "status": "no_absolute_source_time",
+        "fields": {},
+        "evidence": "providers/gbif_biodiversity.py: async_get_map_layer and its layer variants explicitly emit frame_time=None for year-aggregated GBIF occurrence-density tiles; from_year/to_year are aggregation filters, not observation instants"
+      },
+      "occurrence_density_poison_hemlock": {
+        "status": "no_absolute_source_time",
+        "fields": {},
+        "evidence": "providers/gbif_biodiversity.py: async_get_map_layer and its layer variants explicitly emit frame_time=None for year-aggregated GBIF occurrence-density tiles; from_year/to_year are aggregation filters, not observation instants"
+      },
+      "occurrence_density_datura": {
+        "status": "no_absolute_source_time",
+        "fields": {},
+        "evidence": "providers/gbif_biodiversity.py: async_get_map_layer and its layer variants explicitly emit frame_time=None for year-aggregated GBIF occurrence-density tiles; from_year/to_year are aggregation filters, not observation instants"
+      },
+      "occurrence_density_brugmansia": {
+        "status": "no_absolute_source_time",
+        "fields": {},
+        "evidence": "providers/gbif_biodiversity.py: async_get_map_layer and its layer variants explicitly emit frame_time=None for year-aggregated GBIF occurrence-density tiles; from_year/to_year are aggregation filters, not observation instants"
+      },
+      "occurrence_density_toxicodendron": {
+        "status": "no_absolute_source_time",
+        "fields": {},
+        "evidence": "providers/gbif_biodiversity.py: async_get_map_layer and its layer variants explicitly emit frame_time=None for year-aggregated GBIF occurrence-density tiles; from_year/to_year are aggregation filters, not observation instants"
+      },
+      "occurrence_density_giant_hogweed": {
+        "status": "no_absolute_source_time",
+        "fields": {},
+        "evidence": "providers/gbif_biodiversity.py: async_get_map_layer and its layer variants explicitly emit frame_time=None for year-aggregated GBIF occurrence-density tiles; from_year/to_year are aggregation filters, not observation instants"
+      },
+      "occurrence_density_gympie_gympie": {
+        "status": "no_absolute_source_time",
+        "fields": {},
+        "evidence": "providers/gbif_biodiversity.py: async_get_map_layer and its layer variants explicitly emit frame_time=None for year-aggregated GBIF occurrence-density tiles; from_year/to_year are aggregation filters, not observation instants"
+      },
+      "occurrence_density_manchineel": {
+        "status": "no_absolute_source_time",
+        "fields": {},
+        "evidence": "providers/gbif_biodiversity.py: async_get_map_layer and its layer variants explicitly emit frame_time=None for year-aggregated GBIF occurrence-density tiles; from_year/to_year are aggregation filters, not observation instants"
+      },
+      "occurrence_density_rosary_pea": {
+        "status": "no_absolute_source_time",
+        "fields": {},
+        "evidence": "providers/gbif_biodiversity.py: async_get_map_layer and its layer variants explicitly emit frame_time=None for year-aggregated GBIF occurrence-density tiles; from_year/to_year are aggregation filters, not observation instants"
+      },
+      "occurrence_density_suicide_tree": {
+        "status": "no_absolute_source_time",
+        "fields": {},
+        "evidence": "providers/gbif_biodiversity.py: async_get_map_layer and its layer variants explicitly emit frame_time=None for year-aggregated GBIF occurrence-density tiles; from_year/to_year are aggregation filters, not observation instants"
+      },
+      "occurrence_density_strychnine_tree": {
+        "status": "no_absolute_source_time",
+        "fields": {},
+        "evidence": "providers/gbif_biodiversity.py: async_get_map_layer and its layer variants explicitly emit frame_time=None for year-aggregated GBIF occurrence-density tiles; from_year/to_year are aggregation filters, not observation instants"
+      },
+      "occurrence_density_water_hemlock": {
+        "status": "no_absolute_source_time",
+        "fields": {},
+        "evidence": "providers/gbif_biodiversity.py: async_get_map_layer and its layer variants explicitly emit frame_time=None for year-aggregated GBIF occurrence-density tiles; from_year/to_year are aggregation filters, not observation instants"
+      },
+      "occurrence_density_autumn_crocus": {
+        "status": "no_absolute_source_time",
+        "fields": {},
+        "evidence": "providers/gbif_biodiversity.py: async_get_map_layer and its layer variants explicitly emit frame_time=None for year-aggregated GBIF occurrence-density tiles; from_year/to_year are aggregation filters, not observation instants"
+      },
+      "occurrence_density_golden_chain": {
+        "status": "no_absolute_source_time",
+        "fields": {},
+        "evidence": "providers/gbif_biodiversity.py: async_get_map_layer and its layer variants explicitly emit frame_time=None for year-aggregated GBIF occurrence-density tiles; from_year/to_year are aggregation filters, not observation instants"
+      },
+      "occurrence_density_death_cap": {
+        "status": "no_absolute_source_time",
+        "fields": {},
+        "evidence": "providers/gbif_biodiversity.py: async_get_map_layer and its layer variants explicitly emit frame_time=None for year-aggregated GBIF occurrence-density tiles; from_year/to_year are aggregation filters, not observation instants"
+      },
+      "occurrence_density_destroying_angel": {
+        "status": "no_absolute_source_time",
+        "fields": {},
+        "evidence": "providers/gbif_biodiversity.py: async_get_map_layer and its layer variants explicitly emit frame_time=None for year-aggregated GBIF occurrence-density tiles; from_year/to_year are aggregation filters, not observation instants"
+      },
+      "occurrence_density_galerina_marginata": {
+        "status": "no_absolute_source_time",
+        "fields": {},
+        "evidence": "providers/gbif_biodiversity.py: async_get_map_layer and its layer variants explicitly emit frame_time=None for year-aggregated GBIF occurrence-density tiles; from_year/to_year are aggregation filters, not observation instants"
+      },
+      "occurrence_density_deadly_webcap": {
+        "status": "no_absolute_source_time",
+        "fields": {},
+        "evidence": "providers/gbif_biodiversity.py: async_get_map_layer and its layer variants explicitly emit frame_time=None for year-aggregated GBIF occurrence-density tiles; from_year/to_year are aggregation filters, not observation instants"
+      },
+      "occurrence_density_false_morel": {
+        "status": "no_absolute_source_time",
+        "fields": {},
+        "evidence": "providers/gbif_biodiversity.py: async_get_map_layer and its layer variants explicitly emit frame_time=None for year-aggregated GBIF occurrence-density tiles; from_year/to_year are aggregation filters, not observation instants"
+      },
+      "occurrence_density_ticks": {
+        "status": "no_absolute_source_time",
+        "fields": {},
+        "evidence": "providers/gbif_biodiversity.py: async_get_map_layer and its layer variants explicitly emit frame_time=None for year-aggregated GBIF occurrence-density tiles; from_year/to_year are aggregation filters, not observation instants"
+      },
+      "occurrence_density_aedes_aegypti": {
+        "status": "no_absolute_source_time",
+        "fields": {},
+        "evidence": "providers/gbif_biodiversity.py: async_get_map_layer and its layer variants explicitly emit frame_time=None for year-aggregated GBIF occurrence-density tiles; from_year/to_year are aggregation filters, not observation instants"
+      },
+      "occurrence_density_aedes_albopictus": {
+        "status": "no_absolute_source_time",
+        "fields": {},
+        "evidence": "providers/gbif_biodiversity.py: async_get_map_layer and its layer variants explicitly emit frame_time=None for year-aggregated GBIF occurrence-density tiles; from_year/to_year are aggregation filters, not observation instants"
+      },
+      "occurrence_density_anopheles": {
+        "status": "no_absolute_source_time",
+        "fields": {},
+        "evidence": "providers/gbif_biodiversity.py: async_get_map_layer and its layer variants explicitly emit frame_time=None for year-aggregated GBIF occurrence-density tiles; from_year/to_year are aggregation filters, not observation instants"
+      }
+    },
+    "fmi_lightning": {
+      "lightning_strikes_observed": {
+        "status": "static_code_evidence",
+        "fields": {
+          "events[].observed_at": {
+            "format": "rfc3339",
+            "role": "observed_at",
+            "timezone": "UTC",
+            "evidence": "providers/fmi_lightning.py: FMI WFS positional epoch converted via datetime.fromtimestamp(epoch,tz=timezone.utc) and _iso(observed)"
+          }
+        }
+      },
+      "lightning_nearest_distance": {
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "observed_at",
+            "timezone": "UTC",
+            "evidence": "providers/fmi_lightning.py: nearest observed lightning event's observed_at from WFS epoch converted to UTC ISO"
+          }
+        }
+      },
+      "lightning_nearest_azimuth": {
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "observed_at",
+            "timezone": "UTC",
+            "evidence": "providers/fmi_lightning.py: nearest observed lightning event's observed_at from WFS epoch converted to UTC ISO"
+          }
+        }
+      }
+    },
+    "eumetsat_mtg_li": {
+      "mtg_li_accumulated_flashes": {
+        "status": "static_code_evidence",
+        "fields": {
+          "frame_time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/eumetsat_mtg_li.py: async_get_map_layer creates int(value.timestamp())"
+          },
+          "timeline.frames[].time": {
+            "format": "unix_seconds",
+            "role": "valid_at",
+            "timezone": "UTC",
+            "evidence": "providers/eumetsat_mtg_li.py: WMS UTC time vector, frames[].time epoch seconds"
+          }
+        }
+      }
+    },
+    "noaa_goes_glm": {
+      "glm_east_lcfa": {
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "observed_at",
+            "timezone": "UTC",
+            "evidence": "providers/noaa_goes_glm.py: filename timestamp _data_time_from_key(key) constructs datetime(...tzinfo=timezone.utc); S3 last_modified explicitly no longer used"
+          }
+        }
+      },
+      "glm_west_lcfa": {
+        "status": "static_code_evidence",
+        "fields": {
+          "data_time": {
+            "format": "rfc3339",
+            "role": "observed_at",
+            "timezone": "UTC",
+            "evidence": "providers/noaa_goes_glm.py: filename timestamp _data_time_from_key(key) constructs datetime(...tzinfo=timezone.utc); S3 last_modified explicitly no longer used"
+          }
+        }
+      }
+    },
+    "eccc_lightning": {
+      "lightning_density_2_5km": {
+        "status": "static_code_evidence",
+        "fields": {
+          "frame_time": {
+            "format": "unix_seconds",
+            "role": "observed_at",
+            "timezone": "UTC",
+            "evidence": "providers/eccc_lightning.py: int(value.timestamp()) from WMS observation time vector"
+          },
+          "timeline.frames[].time": {
+            "format": "unix_seconds",
+            "role": "observed_at",
+            "timezone": "UTC",
+            "evidence": "providers/eccc_lightning.py: frames[].time=int(value.timestamp()) from WMS source timestamps"
+          }
+        }
+      }
+    }
+  }
+}

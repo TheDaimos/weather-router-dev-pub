@@ -31,6 +31,7 @@ REQUIRED_FILES = (
     INTEGRATION / "consumer_profiles.py",
     INTEGRATION / "spatial_coverage.py",
     INTEGRATION / "consumer_capability_map.json",
+    INTEGRATION / "provider_time_contracts.v1.json",
     INTEGRATION / "consumer_hazard_event_types.json",
     PROVIDERS / "__init__.py",
     INTEGRATION / "extensions.py",

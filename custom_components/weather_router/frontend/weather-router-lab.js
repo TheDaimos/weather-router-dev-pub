@@ -2,7 +2,7 @@ import * as maplibregl from "https://unpkg.com/maplibre-gl@6.9.1/dist/maplibre-g
 
 const SELECT_ENTITY = "select.weather_router_reference_location";
 const MAPLIBRE_CSS = "https://unpkg.com/maplibre-gl@6.9.1/dist/maplibre-gl.css";
-const WR_LAB_BUILD_VERSION = "0.10.148";
+const WR_LAB_BUILD_VERSION = "0.10.164";
 const LAB_MENU_STATE_KEY = "weather_router_lab_menu_state_v1";
 
 const OPENFREEMAP_STYLES = {
@@ -80,6 +80,9 @@ class WeatherRouterLab extends HTMLElement {
     this._providers = [];
     this._requests = structuredClone(DEFAULT_REQUESTS);
     this._results = null;
+    this._monitorSnapshot = null;
+    this._monitorSelected = null;
+    this._monitorTimer = null;
     this._loading = false;
     this._basemapProvider = "openfreemap";
     this._basemapStyle = "dark";
@@ -108,10 +111,21 @@ class WeatherRouterLab extends HTMLElement {
 
   connectedCallback() {
     document.addEventListener("visibilitychange", this._mediaVisibilityHandler);
+    if (!this._monitorTimer) this._monitorTimer = setInterval(() => {
+      if (!document.hidden && this.shadowRoot.querySelector('[data-lab-menu-key="api-monitor"]')?.open) this._monitorRefresh();
+    }, 2500);
     queueMicrotask(() => this._ensureMap());
+    this.shadowRoot?.getElementById("opera-refresh")?.addEventListener("click", () => this._refreshOperaStatus());
+    this.shadowRoot?.getElementById("opera-json")?.addEventListener("click", () => this._exportOperaJson());
+    this.shadowRoot?.getElementById("opera-git")?.addEventListener("click", () => this._exportOperaGit());
+    this.shadowRoot?.getElementById("opera-poll-now")?.addEventListener("click", () => this._pollOperaNow());
+    this.shadowRoot?.getElementById("opera-enable")?.addEventListener("click", () => this._setOperaProvider(true));
+    this.shadowRoot?.getElementById("opera-disable")?.addEventListener("click", () => this._setOperaProvider(false));
   }
 
   disconnectedCallback() {
+    if (this._monitorTimer) clearInterval(this._monitorTimer);
+    this._monitorTimer = null;
     document.removeEventListener("visibilitychange", this._mediaVisibilityHandler);
     this._stopAllMediaPlayback("disconnect");
     if (this._map) this._map.remove();
@@ -262,6 +276,13 @@ class WeatherRouterLab extends HTMLElement {
         .media-sequence-meta { display:flex; justify-content:space-between; gap:8px; margin-top:4px; font-size:10px; opacity:.62; }
         .media-provider-head { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:10px; padding-top:8px; border-top:1px solid color-mix(in srgb,var(--divider-color,#444) 72%,transparent); }
         .media-provider-head:first-child { margin-top:0; padding-top:0; border-top:0; }
+        .monitor-filters { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;align-items:end; }
+        .monitor-filters label { display:flex;flex-direction:column;justify-content:end;gap:5px;min-width:0;font-size:12px; }
+        .monitor-filters input,.monitor-filters select { width:100%;min-width:0;min-height:38px;padding:7px;box-sizing:border-box; }
+        .monitor-metal { flex:1;min-height:44px;border:1px solid #997a35;border-radius:10px;font-weight:750;color:#191919;background:linear-gradient(165deg,#fff5bd 0%,#e6c66b 28%,#a98137 55%,#f2d98c 80%,#896527 100%);box-shadow:inset 0 2px 1px #fff9cc, inset 0 -3px 3px #735522,0 4px 9px #0005;text-shadow:0 1px #fff7b4;transition:transform .12s,filter .12s,box-shadow .12s; }
+        .monitor-metal:active { transform:translateY(2px);box-shadow:inset 0 3px 6px #0007;filter:brightness(.88); }
+        .monitor-metal.stop { border-color:#8a4147;color:#fff;background:linear-gradient(165deg,#ffa9a7,#bb4648 40%,#781c28 70%,#c55459);text-shadow:0 1px #431118;box-shadow:inset 0 1px #ffc8c8,inset 0 -3px #63151f,0 4px 9px #0005; }
+        .monitor-metal:disabled { opacity:.5;cursor:wait;filter:grayscale(.4); }
         .request-row { display:grid; grid-template-columns:1fr 1.3fr auto; gap:6px; align-items:end; margin-bottom:8px; }
         .request-row button { width:38px; }
         .actions { display:flex; gap:8px; margin-top:10px; }
@@ -375,6 +396,66 @@ class WeatherRouterLab extends HTMLElement {
             </div>
           </details>
 
+          <details class="card lab-menu" data-lab-menu-key="opera">
+            <summary>6 · OPERA</summary>
+            <div class="lab-menu-content">
+              <p class="muted">Wissenschaftlich UNVERIFIED/BLOCKED · keine Radar-Kachelfreigabe.</p>
+              <button id="opera-refresh" type="button">Live-Status abrufen</button>
+              <button id="opera-poll-now" type="button">Jetzt aktualisieren</button>
+              <button id="opera-enable" type="button">OPERA-Provider aktivieren</button>
+              <button id="opera-disable" type="button">OPERA-Provider deaktivieren</button>
+              <div class="actions"><button id="opera-json" type="button">JSON exportieren</button><button id="opera-git" type="button">Export2Git</button></div>
+              <pre id="opera-status" style="white-space:pre-wrap;overflow-wrap:anywhere">Noch nicht abgefragt.</pre>
+            </div>
+          </details>
+
+          <details class="card lab-menu" data-lab-menu-key="api-monitor">
+            <summary>API-Monitor · Consumer V1 / V2</summary>
+            <div class="lab-menu-content">
+              <div id="api-monitor-state" class="muted" role="status">Aufzeichnung AUS · noch nicht geladen</div>
+              <div class="actions">
+                <button id="api-monitor-start" class="monitor-metal" type="button">Aufzeichnung starten</button>
+                <button id="api-monitor-stop" class="monitor-metal stop" type="button">Stopp + löschen</button>
+              </div>
+              <p class="muted" style="font-size:11px">Nur Administratoren. Aufzeichnung standardmäßig AUS, im Speicher begrenzt und nach Neustart AUS. Koordinaten und Zugangsdaten werden nicht aufgezeichnet.</p>
+              <div class="monitor-filters">
+                <label>API <select id="api-monitor-version"><option value="all">Alle</option><option value="V1">V1</option><option value="V2">V2</option></select></label>
+                <label>Ergebnis <select id="api-monitor-result"><option value="all">Alle</option><option value="success">Erfolg</option><option value="no_data">Keine Daten</option><option value="rejected">Abgewiesen</option><option value="error">Fehler</option><option value="timeout">Zeitüberschreitung</option></select></label>
+                <label>Befehl <input id="api-monitor-command" placeholder="alle" /></label>
+                <label>Consumer <input id="api-monitor-consumer" placeholder="alle" /></label>
+                <label>Provider <input id="api-monitor-provider" placeholder="alle" /></label>
+                <label>Capability <input id="api-monitor-capability" placeholder="alle" /></label>
+                <label>Korrelation <input id="api-monitor-correlation" placeholder="alle" /></label>
+                <label>Min. Dauer (ms) <input id="api-monitor-min" type="number" min="0" step="1" /></label>
+                <label>Max. Dauer (ms) <input id="api-monitor-max" type="number" min="0" step="1" /></label>
+                <label>Sitzung <input id="api-monitor-session" placeholder="alle" /></label>
+                <label>Anfragekennung <input id="api-monitor-request" placeholder="alle" /></label>
+                <label>Ab UTC <input id="api-monitor-since" type="datetime-local" /></label>
+                <label>Bis UTC <input id="api-monitor-until" type="datetime-local" /></label>
+              </div>
+              <label>Suche <input id="api-monitor-search" placeholder="Befehl, Kennung, Fehler ..." /></label>
+              <label>Exportumfang <select id="api-monitor-export-scope"><option value="filtered">Alle gefilterten Einträge</option><option value="selected">Nur ausgewählten Eintrag</option></select></label>
+              <div class="actions">
+                <button id="api-monitor-refresh" type="button">Aktualisieren</button>
+                <button id="api-monitor-copy" type="button">Kopieren</button>
+                <button id="api-monitor-json" type="button">JSON</button>
+                <button id="api-monitor-git" type="button">Export2Git</button>
+              </div>
+              <details style="margin:9px 0">
+                <summary>Manuelles API-Prüfwerkzeug (V1 / V2)</summary>
+                <label>API
+                  <select id="api-monitor-manual-version"><option value="V2">Consumer V2</option><option value="V1">Consumer V1</option></select>
+                </label>
+                <label>Anfrage als JSON (ohne Zugangsgeheimnisse)</label>
+                <textarea id="api-monitor-manual-json" rows="7" style="width:100%;font:11px monospace"></textarea>
+                <div class="actions"><button id="api-monitor-manual-run" type="button">Testanfrage senden</button></div>
+                <pre id="api-monitor-manual-result">Noch keine Testabfrage.</pre>
+              </details>
+              <div id="api-monitor-list" class="muted">Keine aufgezeichneten Anfragen.</div>
+              <div id="api-monitor-detail-wrap" hidden><div class="actions"><button id="api-monitor-detail-close" type="button">Details schließen ×</button></div><pre id="api-monitor-details" aria-label="API-Monitor Anfragedetails"></pre></div>
+            </div>
+          </details>
+
           <details class="card lab-menu" data-lab-menu-key="raw-diagnostics">
             <summary>Diagnose-Rohdaten</summary>
             <div class="lab-menu-content">
@@ -431,6 +512,20 @@ class WeatherRouterLab extends HTMLElement {
       });
     }
 
+    this.shadowRoot.getElementById("api-monitor-start").addEventListener("click", () => this._monitorConfigure(true));
+    this.shadowRoot.getElementById("api-monitor-manual-run").addEventListener("click", () => this._monitorManualRun());
+    this.shadowRoot.getElementById("api-monitor-manual-version").addEventListener("change", () => this._monitorManualExample());
+    this._monitorManualExample();
+    this.shadowRoot.getElementById("api-monitor-stop").addEventListener("click", () => this._monitorConfigure(false));
+    this.shadowRoot.getElementById("api-monitor-refresh").addEventListener("click", () => this._monitorRefresh());
+    this.shadowRoot.getElementById("api-monitor-copy").addEventListener("click", () => this._monitorCopy());
+    this.shadowRoot.getElementById("api-monitor-json").addEventListener("click", () => this._monitorJson());
+    this.shadowRoot.getElementById("api-monitor-git").addEventListener("click", () => this._monitorGit());
+    this.shadowRoot.getElementById("api-monitor-detail-close").addEventListener("click", () => this._monitorCloseDetail());
+    for (const id of ["api-monitor-version","api-monitor-result","api-monitor-consumer","api-monitor-provider","api-monitor-capability","api-monitor-correlation","api-monitor-min","api-monitor-max","api-monitor-search"]) {
+      this.shadowRoot.getElementById(id).addEventListener("change", () => this._monitorRefresh());
+    }
+    this.shadowRoot.querySelector('[data-lab-menu-key="api-monitor"]').addEventListener("toggle", () => this._monitorRefresh());
     this.shadowRoot.getElementById("reference").addEventListener("change", e => this._setReference(e.target.value));
     this.shadowRoot.getElementById("diagnostic-test-location").addEventListener("change", e => {
       this._diagnosticTestLocation = e.target.value;
@@ -458,6 +553,169 @@ class WeatherRouterLab extends HTMLElement {
     });
     this.shadowRoot.getElementById("run").addEventListener("click", () => this._runDiagnostics());
     this._renderRequests();
+  }
+
+  _monitorFilters() {
+    const get = id => this.shadowRoot.getElementById("api-monitor-" + id)?.value?.trim() || "";
+    const result = {};
+    for (const [control, key] of [["version","api_version"],["result","result"],["command","command"],["session","session_id"],["request","request_id"],["consumer","consumer"],["provider","provider"],["capability","capability"],["correlation","correlation_id"],["search","search"]]) {
+      const value = get(control);
+      if (value && value !== "all") result[key] = value;
+    }
+    if (get("since")) result.since = get("since") + ":00+00:00";
+    if (get("until")) result.until = get("until") + ":00+00:00";
+    if (get("min")) result.min_duration_ms = Number(get("min"));
+    if (get("max")) result.max_duration_ms = Number(get("max"));
+    return result;
+  }
+
+  _monitorManualExample() {
+    const version = this.shadowRoot.getElementById("api-monitor-manual-version").value;
+    const example = version === "V2" ? {
+      contract_version: 2,
+      capability: "weather.precipitation.layer",
+      context: {type:"bbox",west:-85,south:18,east:-73,north:25},
+      time: {mode:"latest_coherent",max_data_age_seconds:3600},
+      limits: {max_layers:4,max_tile_requests:64}
+    } : {
+      contract_version: 1,
+      capability: "weather.radar.precipitation",
+      context: {type:"bbox",west:-85,south:18,east:-73,north:25},
+      time: {mode:"latest"}
+    };
+    this.shadowRoot.getElementById("api-monitor-manual-json").value = JSON.stringify(example, null, 2);
+  }
+
+  async _monitorManualRun() {
+    const output = this.shadowRoot.getElementById("api-monitor-manual-result");
+    const version = this.shadowRoot.getElementById("api-monitor-manual-version").value;
+    const raw = this.shadowRoot.getElementById("api-monitor-manual-json").value.trim();
+    try {
+      const query = JSON.parse(raw);
+      if (!query || typeof query !== "object" || Array.isArray(query)) throw Error("JSON-Objekt erwartet.");
+      const command = version === "V2" ? "weather_router/consumer/resolve_mosaic" : "weather_router/consumer/resolve";
+      if (query.type && query.type !== command) throw Error("API-Befehl stimmt nicht mit gewählter Version überein.");
+      query.type = command;
+      query.consumer_id = "weather_router_lab";
+      query.correlation_id = query.correlation_id || (crypto.randomUUID?.() || ("lab-" + Date.now().toString(36)));
+      output.textContent = "Anfrage läuft...";
+      const result = await this._hass.callWS(query);
+      output.textContent = JSON.stringify(result, null, 2);
+    } catch(error) {
+      output.textContent = "Anfrage abgewiesen/fehlgeschlagen: " + String(error.message || error);
+    } finally {
+      await this._monitorRefresh();
+    }
+  }
+
+  async _monitorConfigure(enabled) {
+    if (!this._hass) return;
+    try {
+      await this._hass.callWS({type:"weather_router/api_monitor/configure", enabled, clear:!enabled});
+      await this._monitorRefresh();
+    } catch(error) {
+      this.shadowRoot.getElementById("api-monitor-state").textContent = "Monitor-Steuerung fehlgeschlagen: " + String(error.message || error);
+    }
+  }
+
+  async _monitorRefresh() {
+    if (!this._hass || !this.shadowRoot.querySelector('[data-lab-menu-key="api-monitor"]')?.open) return;
+    try {
+      const snapshot = await this._hass.callWS({type:"weather_router/api_monitor/query", ...this._monitorFilters()});
+      this._monitorSnapshot = snapshot;
+      if (this._monitorSelected && !snapshot.entries.some(item => item.request_id === this._monitorSelected.request_id)) this._monitorSelected = null;
+      this.shadowRoot.getElementById("api-monitor-state").textContent =
+        (snapshot.recording ? "● Aufzeichnung AKTIV" : "○ Aufzeichnung AUS") +
+        " · " + snapshot.record_count + " Einträge · " + snapshot.buffer_bytes + " Bytes";
+      const list = this.shadowRoot.getElementById("api-monitor-list");
+      list.replaceChildren();
+      for (const entry of [...snapshot.entries].reverse()) {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.style.cssText = "display:block;width:100%;text-align:left;margin:4px 0;white-space:normal;overflow-wrap:anywhere";
+        b.textContent = entry.started_at + " · " + entry.api_version + " · " +
+          entry.consumer + " · " + entry.capability + " · " + entry.result +
+          " · " + entry.duration_ms + " ms";
+        b.addEventListener("click", () => {
+          if (this._monitorSelected?.request_id === entry.request_id) {
+            this._monitorCloseDetail();
+          } else {
+            this._monitorSelected = entry;
+            this.shadowRoot.getElementById("api-monitor-detail-wrap").hidden = false;
+            this.shadowRoot.getElementById("api-monitor-details").textContent = JSON.stringify(entry, null, 2);
+          }
+        });
+        list.appendChild(b);
+      }
+      if (!snapshot.entries.length) list.textContent = "Keine passenden Einträge.";
+    } catch(error) {
+      this.shadowRoot.getElementById("api-monitor-state").textContent = "API-Monitor nicht erreichbar: " + String(error.message || error);
+    }
+  }
+
+  _monitorCloseDetail() {
+    this._monitorSelected = null;
+    this.shadowRoot.getElementById("api-monitor-detail-wrap").hidden = true;
+  }
+
+  _monitorExportSnapshot() {
+    if (!this._monitorSnapshot) return null;
+    const scope = this.shadowRoot.getElementById("api-monitor-export-scope").value;
+    if (scope !== "selected") return this._monitorSnapshot;
+    if (!this._monitorSelected) {
+      this.shadowRoot.getElementById("api-monitor-state").textContent = "Bitte zuerst eine Anfrage auswählen.";
+      return null;
+    }
+    return {...this._monitorSnapshot, record_count:1, entries:[this._monitorSelected]};
+  }
+
+  async _monitorCopy() {
+    if (!this._monitorSnapshot) await this._monitorRefresh();
+    if (!this._monitorSnapshot) return;
+    if (!this._monitorExportSnapshot()) return;
+    try {
+      await navigator.clipboard.writeText(JSON.stringify(this._monitorExportSnapshot(), null, 2));
+      this.shadowRoot.getElementById("api-monitor-state").textContent = "Gewählter JSON-Export in die Zwischenablage kopiert.";
+    } catch(error) {
+      this.shadowRoot.getElementById("api-monitor-state").textContent = "Zwischenablage nicht verfügbar: " + String(error);
+    }
+  }
+
+  async _monitorJson() {
+    await this._monitorRefresh();
+    if (!this._monitorSnapshot) return;
+    const snapshot = this._monitorExportSnapshot();
+    if (!snapshot) return;
+    const blob = new Blob([JSON.stringify(snapshot, null, 2)], {type:"application/json"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "weather-router-api-monitor-" + new Date().toISOString().replace(/[:.]/g,"-") + ".json";
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+
+  async _monitorGit() {
+    const button = this.shadowRoot.getElementById("api-monitor-git");
+    const status = this.shadowRoot.getElementById("api-monitor-state");
+    if (button.disabled || !this._hass) return;
+    button.disabled = true;
+    button.textContent = "⏳ Export läuft …";
+    status.textContent = "Export2Git: Übertragung läuft …";
+    try {
+      await this._monitorRefresh();
+      const snapshot = this._monitorExportSnapshot();
+      if (!snapshot) return;
+      const result = await this._hass.callWS({type:"weather_router/log_git_export",target:"archive",snapshot});
+      status.textContent = "✓ Export2Git erfolgreich: " + (result.path || result.url || "Privates Archiv");
+      button.textContent = "✓ Export erfolgreich";
+    } catch(error) {
+      status.textContent = "✕ Export2Git fehlgeschlagen: " + String(error.message || error);
+      button.textContent = "✕ Export fehlgeschlagen";
+    } finally {
+      button.disabled = false;
+      button.style.fontWeight = "bold";
+    }
   }
 
   _providerInfoClose() {
@@ -1987,6 +2245,104 @@ class WeatherRouterLab extends HTMLElement {
       host.appendChild(box);
     }
     this.shadowRoot.getElementById("raw").textContent = JSON.stringify(this._results,null,2);
+  }
+
+  async _setOperaProvider(enabled) {
+    const output = this.shadowRoot?.getElementById("opera-status");
+    if (!this._hass || !output) return;
+    try {
+      const current = await this._hass.callWS({type:"weather_router/routing_settings"});
+      const providers = current.providers?.filter(p => p.enabled_by_user).map(p => p.id) || [];
+      const requested = new Set(providers);
+      if (enabled) requested.add("opera"); else requested.delete("opera");
+      await this._hass.callWS({type:"weather_router/routing_settings_update",
+                               enabled_providers:[...requested]});
+      await this._refreshOperaStatus();
+    } catch (error) {
+      output.textContent = `OPERA-Providerwechsel fehlgeschlagen: ${error?.message || String(error)}`;
+    }
+  }
+
+  async _pollOperaNow() {
+    const output = this.shadowRoot?.getElementById("opera-status");
+    if (!this._hass || !output) return;
+    output.textContent = "OPERA-Quelle wird mit dem normalen Suchprozess geprüft …";
+    try {
+      await this._hass.callWS({type:"weather_router/opera_refresh"});
+      await this._refreshOperaStatus();
+    } catch (error) {
+      output.textContent = `OPERA-Abruf verweigert: ${error?.message || String(error)}`;
+    }
+  }
+
+  async _operaExportSnapshot() {
+    // Always capture a fresh admin-only live snapshot, not a stale displayed value.
+    if (!this._hass) throw new Error("Home Assistant nicht verbunden");
+    const opera = await this._hass.callWS({type:"weather_router/opera_status"});
+    if (!opera || typeof opera !== "object" || !opera.products || typeof opera.products !== "object") {
+      throw new Error("Ungültiger OPERA-Diagnosestatus");
+    }
+    return {schema:"weather_router.opera_status.v1",
+            captured_at_utc:new Date().toISOString(), opera};
+  }
+
+  async _exportOperaJson() {
+    const status = this.shadowRoot?.getElementById("opera-status");
+    try {
+      const snapshot = await this._operaExportSnapshot();
+      const blob = new Blob([JSON.stringify(snapshot, null, 2)], {type:"application/json"});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "weather-router-opera-" + new Date().toISOString().replace(/[:.]/g,"-") + ".json";
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      if (status) status.textContent = "OPERA-Diagnose als JSON exportiert.\n" + status.textContent;
+    } catch(error) {
+      if (status) status.textContent = "OPERA-JSON-Export fehlgeschlagen: " + String(error?.message || error);
+    }
+  }
+
+  async _exportOperaGit() {
+    const status = this.shadowRoot?.getElementById("opera-status");
+    const button = this.shadowRoot?.getElementById("opera-git");
+    if (button?.disabled) return;
+    if (button) button.disabled = true;
+    try {
+      const snapshot = await this._operaExportSnapshot();
+      const result = await this._hass.callWS({type:"weather_router/log_git_export",target:"archive",snapshot});
+      if (status) status.textContent = "OPERA Export2Git erfolgreich: " +
+          (result.path || result.url || "Project-Log-And-Export") + "\n" + status.textContent;
+    } catch(error) {
+      if (status) status.textContent = "OPERA Export2Git fehlgeschlagen: " + String(error?.message || error);
+    } finally {
+      if (button) button.disabled = false;
+    }
+  }
+
+  async _refreshOperaStatus() {
+    const output = this.shadowRoot?.getElementById("opera-status");
+    if (!output || !this._hass) return;
+    output.textContent = "Admin-Status wird abgefragt …";
+    try {
+      const state = await this._hass.callWS({type:"weather_router/opera_status"});
+      const rows = [
+        `Provider: ${state.provider_enabled ? "AN" : "AUS"}`,
+        `Wissenschaft: ${state.scientific_status || "UNVERIFIED/BLOCKED"}`,
+        `HTTP: ${state.http_enabled ? "AN" : "AUS"} · Consumer V2: ${state.consumer_v2_approved ? "bereit" : "gesperrt"}`,
+        `Cache: ${state.cached_frames ?? 0} Frames / ${state.cached_bytes ?? 0} Bytes · aktive Leser: ${state.active_readers ?? 0}`,
+        `Persistenter Journal-Speicher: ${state.persistent_bytes ?? "nicht verfügbar"} Bytes · Journal: ${state.journal_present ? "vorhanden" : "nicht verfügbar"}`,
+        `S3: ${state.source_monitor?.running ? "Monitor läuft" : "AUS"} · letzter Abruf: ${state.source_monitor?.last_success_utc || "nicht verfügbar"} · Original: ${state.source_monitor?.last_original || "nicht verfügbar"} · Downloads: ${state.source_monitor?.active_downloads ?? 0} · Grund: ${state.source_monitor?.last_reason || "nicht verfügbar"}`,
+        `Letzte Promotion: ${state.last_promotion_utc ?? "—"} · letzter Fehler: ${state.last_error ?? "—"}`,
+      ];
+      for (const product of ["RATE","DBZH","ACRR"]) {
+        const p=state.products?.[product] || {};
+        rows.push(`${product}: ${p.service_enabled ? "AN" : "AUS"} · ${p.status || "UNAVAILABLE"} · UTC ${p.utc_measurement || "—"} · ${p.age_seconds ?? "—"} s · Generation ${p.generation || "—"}`);
+      }
+      output.textContent = rows.join("\n");
+    } catch (error) {
+      output.textContent = `OPERA-Status nicht verfügbar: ${error?.message || String(error)}`;
+    }
   }
 
   _ensureMap() {

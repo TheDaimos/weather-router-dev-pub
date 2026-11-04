@@ -31,6 +31,38 @@ def _public_tile_url(value: Any) -> bool:
         return False
 
 
+# A whole-world WMS BBOX is not rewritten to scope=global: retain the
+# real product coverage contract. For the opt-in age exception we only trust
+# a direct, named layer's verified GetCapabilities BBOX, never a service-root
+# envelope or inherited parent-group metadata.
+_DIRECT_WMS_BBOX_SOURCES = frozenset({
+    "EX_GeographicBoundingBox", "BoundingBox/CRS:84",
+    "BoundingBox/EPSG:4326", "LatLonBoundingBox",
+})
+
+
+def verified_world_product_bbox(machine_coverage: Mapping[str, Any]) -> bool:
+    if machine_coverage.get("scope") != "bbox":
+        return False
+    box = machine_coverage.get("bbox")
+    if not isinstance(box, Mapping):
+        return False
+    if any(type(box.get(k)) not in (int, float) or not isfinite(box[k])
+           for k in ("west", "east", "south", "north")):
+        return False
+    if not (box["west"] == -180 and box["east"] == 180
+            and box["south"] == -90 and box["north"] == 90):
+        return False
+    return (
+        machine_coverage.get("source") == "wms_get_capabilities"
+        and machine_coverage.get("coverage_metadata_scope") == "layer_specific_wms"
+        and machine_coverage.get("bbox_inherited") is False
+        and machine_coverage.get("bbox_source") in _DIRECT_WMS_BBOX_SOURCES
+        and isinstance(machine_coverage.get("layer"), str)
+        and bool(machine_coverage["layer"].strip())
+    )
+
+
 def make_mosaic_candidate(
     *,
     source_id: str,
@@ -120,6 +152,9 @@ def make_mosaic_candidate(
         "eligible": True,
         "verified_coverage": True,
         "coverage": coverage,
+        # Trusted eligibility for the *age exception*, not a pixel mask and
+        # not a conversion of the output's geographical coverage scope.
+        "verified_world_product_bbox": verified_world_product_bbox(machine_coverage),
         "resource_type": "raster_tile",
         "render": render,
         "tile_url": tile_url,
@@ -130,9 +165,18 @@ def make_mosaic_candidate(
         "semantics": {k: semantics[k] for k in required},
         "routing_score": list(routing_score),
     }
+    source_time_error = payload.get("time_normalization_error")
+    if source_time_error in {
+        "unregistered_capability", "unverified_source_time_contract",
+        "unverified_epoch_unit", "invalid_timestamp",
+        "unknown_time_zone", "ambiguous_local_time", "invalid_interval",
+    }:
+        candidate["time_normalization_error"] = source_time_error
     timeline = payload.get("timeline")
     if isinstance(timeline, Mapping) and isinstance(timeline.get("frames"), list):
-        if len(timeline["frames"]) > 24:
+        # Longer V1 timelines are not invalid: bound work and keep the newest
+        # validated timestamps for V2. The policy still enforces data age.
+        if len(timeline["frames"]) > 256:
             return None
         frames = []
         for raw in timeline["frames"]:
@@ -144,5 +188,17 @@ def make_mosaic_candidate(
                     and isinstance(frame_time, str) and frame_time):
                 frames.append({"tile_url": frame_url, "data_time": frame_time})
         if frames:
-            candidate["frames"] = frames
+            from datetime import datetime, timezone
+            dated = []
+            for frame in frames:
+                try:
+                    stamp = datetime.fromisoformat(
+                        frame["data_time"].replace("Z", "+00:00"))
+                    if stamp.tzinfo is not None:
+                        dated.append((stamp.astimezone(timezone.utc), frame))
+                except ValueError:
+                    continue
+            if dated:
+                dated.sort(key=lambda item: item[0], reverse=True)
+                candidate["frames"] = [frame for _, frame in dated[:24]]
     return candidate

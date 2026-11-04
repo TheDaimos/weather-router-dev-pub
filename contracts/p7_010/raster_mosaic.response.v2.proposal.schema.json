@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "WeatherRouter raster mosaic proposal v2 (P7-010, not a live endpoint)",
+  "title": "WeatherRouter active Consumer API V2 raster mosaic response (P7-010)",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -51,6 +51,35 @@
       "type": "array",
       "items": {
         "type": "string"
+      }
+    },
+    "layer_order": {
+      "type": "string",
+      "enum": [
+        "background_to_foreground"
+      ],
+      "description": "The ordered layers array is drawn bottom-to-top; the final entry is visually on top."
+    },
+    "source_outcomes": {
+      "type": "array",
+      "maxItems": 12,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "source_id",
+          "result"
+        ],
+        "properties": {
+          "source_id": {
+            "type": "string",
+            "maxLength": 128
+          },
+          "result": {
+            "type": "string",
+            "maxLength": 72
+          }
+        }
       }
     }
   },
@@ -178,6 +207,10 @@
                 "null"
               ],
               "minimum": 0
+            },
+            "age_seconds": {
+              "type": "number",
+              "minimum": 0
             }
           }
         },
@@ -238,6 +271,45 @@
               "type": "number",
               "minimum": 0,
               "maximum": 1
+            }
+          }
+        },
+        "freshness_class": {
+          "type": "string",
+          "enum": [
+            "current",
+            "older_background"
+          ]
+        },
+        "composition": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "draw_order",
+            "role",
+            "routing_score"
+          ],
+          "properties": {
+            "draw_order": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 11
+            },
+            "role": {
+              "type": "string",
+              "enum": [
+                "background",
+                "overlay"
+              ]
+            },
+            "routing_score": {
+              "type": "array",
+              "minItems": 3,
+              "maxItems": 3,
+              "items": {
+                "type": "integer",
+                "minimum": 0
+              }
             }
           }
         }

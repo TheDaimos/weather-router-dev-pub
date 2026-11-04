@@ -39,13 +39,14 @@ def _parse_instant(value: str, now: datetime) -> datetime | None:
     if not text:
         return None
     if text.lower() == "current":
-        return now
+        # "current" is an undated provider default, not an observation time.
+        return None
     try:
         parsed = datetime.fromisoformat(text.replace("Z", "+00:00"))
     except ValueError:
         return None
-    if parsed.tzinfo is None:
-        parsed = parsed.replace(tzinfo=timezone.utc)
+    if parsed.tzinfo is None or parsed.utcoffset() is None:
+        return None
     return parsed.astimezone(timezone.utc)
 
 

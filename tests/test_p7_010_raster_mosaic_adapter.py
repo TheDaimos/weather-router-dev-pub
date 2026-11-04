@@ -42,6 +42,33 @@ def candidate(**kwargs):
 
 
 class AdapterTests(unittest.TestCase):
+    def test_direct_product_world_bbox_eligible_without_scope_promotion(self):
+        world = {
+            "scope": "bbox", "bbox": {
+                "west": -180, "east": 180, "south": -90, "north": 90,
+            },
+            "source": "wms_get_capabilities",
+            "coverage_metadata_scope": "layer_specific_wms",
+            "bbox_inherited": False,
+            "bbox_source": "EX_GeographicBoundingBox",
+            "layer": "synthetic_precipitation_product",
+        }
+        result = candidate(machine_coverage=world)
+        self.assertEqual(result["coverage"]["scope"], "bbox")
+        self.assertTrue(result["verified_world_product_bbox"])
+        for variant in (
+            {"bbox_inherited": True},
+            {"coverage_metadata_scope": "service_root"},
+            {"source": "provider_static_guess"},
+            {"layer": ""},
+            {"bbox_source": "uncited_source"},
+            {"bbox": {**world["bbox"], "north": 89}},
+        ):
+            with self.subTest(variant=variant):
+                suspect = candidate(machine_coverage={**world, **variant})
+                self.assertIsNotNone(suspect)
+                self.assertFalse(suspect["verified_world_product_bbox"])
+
     def test_region_preserved_not_expanded(self):
         result = candidate()
         self.assertEqual(result["coverage"]["scope"], "bbox")
@@ -115,15 +142,29 @@ class AdapterTests(unittest.TestCase):
         result = candidate(payload=payload)
         self.assertEqual(len(result["frames"]), 2)
         self.assertEqual(result["frames"][0]["data_time"],
-                         "2026-10-14T15:01:00Z")
+                         "2026-10-14T15:03:00Z")
         self.assertNotEqual(result["frames"][0]["tile_url"], result["frames"][1]["tile_url"])
 
-    def test_frames_budget_fail_closed(self):
-        payload = {**PUBLIC_RESOURCE, "timeline": {
-            "frames": [{"time": "2026-10-14T15:01:00Z",
-                        "tile_url": "https://example.invalid/raster"}] * 25
-        }}
-        self.assertIsNone(candidate(payload=payload))
+    def test_dwd_long_timeline_selects_bounded_newest_frames(self):
+        from datetime import datetime, timedelta, timezone
+        start = datetime(2026, 10, 14, 14, 0, tzinfo=timezone.utc)
+        frames = [
+            {"time": (start + timedelta(minutes=i)).isoformat(),
+             "tile_url": f"https://example.invalid/frame/{i}"} for i in range(48)
+        ]
+        payload = {**PUBLIC_RESOURCE, "timeline": {"frames": frames}}
+        result = candidate(payload=payload)
+        self.assertIsNotNone(result)
+        self.assertEqual(len(result["frames"]), 24)
+        self.assertEqual(result["frames"][0]["tile_url"], "https://example.invalid/frame/47")
+        self.assertEqual(result["frames"][-1]["tile_url"], "https://example.invalid/frame/24")
+
+    def test_excessive_unbounded_timeline_rejected(self):
+        frame = {"time": "2026-10-14T15:01:00Z",
+                 "tile_url": "https://example.invalid/raster"}
+        self.assertIsNone(candidate(payload={
+            **PUBLIC_RESOURCE, "timeline": {"frames": [frame] * 257}
+        }))
 
 
 if __name__ == "__main__":

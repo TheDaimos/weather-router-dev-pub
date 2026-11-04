@@ -18,8 +18,6 @@ LAB_PATH = ROOT / "custom_components" / "weather_router" / "frontend" / "weather
 LOADER_PATH = ROOT / "custom_components" / "weather_router" / "frontend" / "weather-router-lab-dev-loader.js"
 
 
-from wr_public_version_contract import assert_current_version_surfaces
-
 class P5SpaceStaticAcceptanceTest(unittest.TestCase):
     """Accept P5-SPACE independently from the implementation regression."""
 
@@ -104,7 +102,7 @@ class P5SpaceStaticAcceptanceTest(unittest.TestCase):
         self.assertEqual(time["forecast_reference_time"], "optional_runtime")
         self.assertIn('"data_time": observation_time', self.swpc)
         self.assertIn('"valid_time": forecast_time', self.swpc)
-        self.assertIn('valid_time = _iso_time(result.get("valid_time"))', self.consumer_api)
+        self.assertIn('valid_time = _provider_time(candidate, "valid_time"', self.consumer_api)
 
     def test_07_aurora_coverage_is_global_runtime_advisory_earth(self) -> None:
         coverage = self.mapping["capability_coverage_semantics"]["providers"]["noaa_swpc"][
@@ -163,7 +161,17 @@ class P5SpaceStaticAcceptanceTest(unittest.TestCase):
         ]["cross_provider_dedup"])
 
     def test_13_version_surfaces_are_synchronized(self) -> None:
-        assert_current_version_surfaces(self, self.const, self.lab, self.loader)
+        import re
+        def extract(source, name):
+            match = re.search(r"\b" + re.escape(name)
+                              + r'(?:: Final)?\s*=\s*"([^"]+)"', source)
+            self.assertIsNotNone(match, name)
+            return match.group(1)
+        build = extract(self.const, "DEV_BUILD_VERSION")
+        loader_rev = extract(self.const, "DEV_LOADER_REV")
+        self.assertEqual(extract(self.lab, "WR_LAB_BUILD_VERSION"), build)
+        self.assertEqual(extract(self.loader, "WR_LAB_BUILD_VERSION"), build)
+        self.assertEqual(extract(self.loader, "LOADER_REV"), loader_rev)
 
 
 if __name__ == "__main__":

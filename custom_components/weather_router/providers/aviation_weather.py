@@ -174,7 +174,7 @@ def _event_from_feature(feature: Any, *, capability_id: str) -> dict[str, Any] |
         "certainty": "forecast",
         "status": "actual",
         "message_type": "warning" if "SIGMET" in product_type.upper() else "advisory",
-        "sent": props.get("receiptTime"),
+        "sent": None,  # AWC receiptTime bezeichnet Empfang, nicht Ausstellung.
         "effective": props.get("validTimeFrom"),
         "onset": props.get("validTimeFrom"),
         "expires": props.get("validTimeTo"),
@@ -286,7 +286,7 @@ class AviationWeatherProvider:
             endpoint,
             headers={
                 "Accept": "application/geo+json,application/json,*/*",
-                "User-Agent": "WeatherRouter/0.10 (+https://github.com/TheDaimos/weather-router-dev-pub)",
+                "User-Agent": "WeatherRouter/0.10 (+https://github.com/TheDaimos/weather-router-dev)",
             },
             timeout=25,
         ) as response:
