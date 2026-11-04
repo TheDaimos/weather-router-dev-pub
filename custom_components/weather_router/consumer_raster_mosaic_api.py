@@ -174,6 +174,22 @@ async def websocket_consumer_resolve_mosaic(
                        if key != "focus"}
             viewport = {key: context[key] for key in ("west", "east", "south", "north")}
             candidates = _candidates(providers, mapping, query["capability"])
+            # Never silently fall back to DWD/NASA for a consumer's explicit
+            # OPERA request. The public OPERA provider must be registered,
+            # authorized and backed by a verified tile service before use.
+            requested_source = query.get("source_request")
+            if requested_source is not None:
+                provider_id = requested_source["provider_id"]
+                if not any(
+                    row.provider.id == provider_id
+                    and _candidate_enabled(state, row.provider, row.public_id)[0]
+                    and profile_allows_provider(profile, row.provider.id)
+                    for row in candidates
+                ):
+                    connection.send_error(
+                        msg["id"], "requested_provider_unavailable",
+                        "Die ausdrücklich angeforderte Quelle ist derzeit nicht freigegeben.")
+                    return
             authorized = [
                 row for row in candidates
                 if row.capability.render_mode == "raster_tile"
