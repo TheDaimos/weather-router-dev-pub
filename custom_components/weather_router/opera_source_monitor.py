@@ -66,6 +66,8 @@ class OperaSourceMonitor:
         self.last_object = None
         self.active_downloads = 0
         self.last_reason = "not_started"
+        self.last_downloaded_product = None
+        self.downloaded_unverified_count = 0
         self._seen = set()
 
     async def _list(self, product, now):
@@ -105,6 +107,8 @@ class OperaSourceMonitor:
                         self._seen.add(key)
                         self.last_success_utc = datetime.now(timezone.utc)
                         self.last_object = name
+                        self.last_downloaded_product = product
+                        self.downloaded_unverified_count += 1
                         self.last_reason = "downloaded_unverified_raster"
                         any_found = True
                         # FRAME IS IN PRIVATE CACHE ONLY: scientific metadata,
