@@ -15,21 +15,21 @@ class OperaTileSecurityTest(unittest.TestCase):
         self.now = self.when + timedelta(minutes=7)
 
     def test_known_products(self):
-        p, frame = policy.frame_id("OPERA@20261019T1340@0@DBZH.tiff", source_time=self.when, now=self.now)
+        p, frame = policy.frame_id("OPERA@20261019T1340@0@DBZH.tiff", source_time=self.when, now=self.now, max_age_seconds=1650)
         self.assertEqual((p, frame), ("DBZH", "20261019T134000Z"))
         self.assertEqual(policy.frame_id("OPERA@20261019T1315@0@RATE.tiff",
             source_time=self.when-timedelta(minutes=25),
-            now=self.when-timedelta(minutes=18))[0], "RATE")
+            now=self.when-timedelta(minutes=18),max_age_seconds=1650)[0], "RATE")
 
     def test_invalid_time_and_age(self):
         fn = "OPERA@20261019T1340@0@DBZH.tiff"
         for stamp, now in ((self.when-timedelta(minutes=5), self.now),
-                           (self.when, self.when+timedelta(seconds=901)),
+                           (self.when, self.when+timedelta(seconds=1651)),
                            (self.when, self.when-timedelta(seconds=1))):
             with self.assertRaises(policy.TilePolicyError):
-                policy.frame_id(fn, source_time=stamp, now=now)
+                policy.frame_id(fn, source_time=stamp, now=now,max_age_seconds=1650)
         with self.assertRaises(policy.TilePolicyError):
-            policy.frame_id(fn, source_time=self.when.replace(tzinfo=None), now=self.now)
+            policy.frame_id(fn, source_time=self.when.replace(tzinfo=None), now=self.now,max_age_seconds=1650)
 
     def test_bounds(self):
         self.assertEqual(policy.validate_tile(6, 33, 19), (6, 33, 19))
