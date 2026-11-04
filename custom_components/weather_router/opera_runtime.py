@@ -233,7 +233,29 @@ class OperaRuntime:
                 current = self.registry.active(product)
                 valid = current.registration.frame.valid_at if current is not None else None
                 age = (now - valid).total_seconds() if valid is not None else None
+                blockers = []
+                if not self.enabled:
+                    blockers.append("provider_disabled")
+                if self.services.get(product) is not True:
+                    blockers.append("product_service_disabled")
+                if current is None:
+                    blockers.append("no_promoted_frame")
+                else:
+                    reg = current.registration
+                    if reg.quality_verified is not True:
+                        blockers.append("quality_not_verified")
+                    if reg.raster_metadata_verified is not True:
+                        blockers.append("geometry_not_verified")
+                    if reg.palette_verified is not True:
+                        blockers.append("palette_not_verified")
+                    if utc_status(valid, now=now) == "UNAVAILABLE":
+                        blockers.append("frame_not_current")
                 cycles[product] = {
+                    "publication_blockers": blockers,
+                    "frame_verified": current is not None and not any(
+                        item in blockers for item in (
+                            "quality_not_verified", "geometry_not_verified",
+                            "palette_not_verified")),
                     "service_enabled": self.services.get(product) is True,
                     "generation": current.stamp if current else None,
                     "utc_measurement": valid.isoformat() if valid else None,
