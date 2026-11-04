@@ -6,7 +6,6 @@ from typing import Any
 
 FRAME_RE = re.compile(r"^OPERA@(\d{8})T(\d{4})@0@(DBZH|RATE)\.tiff$")
 MAX_ZOOM = 16
-MAX_FRAME_AGE = timedelta(seconds=900)
 MAX_BYTES = 12 * 1024 * 1024
 
 class TilePolicyError(ValueError):
@@ -17,7 +16,7 @@ def normalized_utc(value: datetime) -> datetime:
         raise TilePolicyError("timezone_missing")
     return value.astimezone(timezone.utc)
 
-def frame_id(filename: str, *, source_time: datetime, now: datetime) -> tuple[str, str]:
+def frame_id(filename: str, *, source_time: datetime, now: datetime, max_age_seconds: int) -> tuple[str, str]:
     """Filename is only a consistency check, never evidence of source time."""
     if not isinstance(filename, str) or not (match := FRAME_RE.fullmatch(filename)):
         raise TilePolicyError("invalid_product_filename")
@@ -28,7 +27,9 @@ def frame_id(filename: str, *, source_time: datetime, now: datetime) -> tuple[st
     data_time, clock = normalized_utc(source_time), normalized_utc(now)
     if listed != data_time:
         raise TilePolicyError("source_time_mismatch")
-    if data_time > clock or clock - data_time > MAX_FRAME_AGE:
+    if type(max_age_seconds) is not int or not 1 <= max_age_seconds <= 3600:
+        raise TilePolicyError("invalid_server_validity")
+    if data_time > clock or clock - data_time > timedelta(seconds=max_age_seconds):
         raise TilePolicyError("frame_stale_or_future")
     return match[3], data_time.strftime("%Y%m%dT%H%M%SZ")
 
