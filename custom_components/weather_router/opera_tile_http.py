@@ -38,7 +38,7 @@ class OperaTileView(HomeAssistantView):
     requires_auth = True
     cors_allowed = False
 
-    def __init__(self, hass, *, registry_lookup, is_permitted, is_enabled=None,
+    def __init__(self, hass, *, registry_lookup, is_permitted, is_enabled=None, server_validity_seconds=None,
                  max_active: int = 2, wait_seconds: float = 0.2,
                  render_seconds: float = 3.0, max_waiting: int = 16, frame_cache=None):
         if type(max_active) is not int or not 1 <= max_active <= 3:
@@ -52,6 +52,7 @@ class OperaTileView(HomeAssistantView):
         self._frame_cache = frame_cache
         self._is_permitted = is_permitted
         self._is_enabled = is_enabled or (lambda: False)
+        self._server_validity_seconds = server_validity_seconds or (lambda: None)
         self._limit = asyncio.Semaphore(max_active)
         # Bound concurrent slot-acquisition attempts as well as live workers.
         # Each counter transition is synchronous within the HA event loop;
@@ -96,6 +97,7 @@ class OperaTileView(HomeAssistantView):
             assert_authorized(
                 authenticated_user=user, profile_and_provider_allowed=permitted,
                 valid_at=frame.valid_at,now=datetime.now(timezone.utc),
+                max_age_seconds=self._server_validity_seconds(),
             )
         except TileAccessDenied as exc:
             raise web.HTTPForbidden() from exc
@@ -120,6 +122,7 @@ class OperaTileView(HomeAssistantView):
                 authenticated_user=user,
                 profile_and_provider_allowed=self._is_permitted(user, product),
                 valid_at=frame.valid_at, now=datetime.now(timezone.utc),
+                max_age_seconds=self._server_validity_seconds(),
             )
             if not self._is_enabled() or not request.secure:
                 raise TileAccessDenied("disabled_or_insecure")
@@ -186,6 +189,7 @@ class OperaTileView(HomeAssistantView):
                 authenticated_user=user,
                 profile_and_provider_allowed=self._is_permitted(user,product),
                 valid_at=frame.valid_at,now=datetime.now(timezone.utc),
+                max_age_seconds=self._server_validity_seconds(),
             )
             if not self._is_enabled():
                 raise TileAccessDenied("disabled")
