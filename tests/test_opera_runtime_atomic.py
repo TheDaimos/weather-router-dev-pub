@@ -99,6 +99,20 @@ class AtomicRuntimeTests(unittest.TestCase):
         self.assertFalse(self.runtime.consumer_ready(
             now=self.now, max_age_seconds=1650))
 
+    def test_status_explains_why_opera_pixels_cannot_publish(self):
+        offline = self.runtime.status(now=self.now)["products"]["RATE"]
+        self.assertIn("provider_disabled", offline["publication_blockers"])
+        self.assertIn("no_promoted_frame", offline["publication_blockers"])
+        self.runtime.enabled = True
+        self.runtime.services["RATE"] = True
+        staged = self.candidate("reason")
+        self.runtime.promote(staged)
+        state = self.runtime.status(now=self.now)["products"]["RATE"]
+        self.assertEqual(state["publication_blockers"], [
+            "quality_not_verified", "geometry_not_verified",
+            "palette_not_verified"])
+        self.assertFalse(state["frame_verified"])
+
     def test_dormant_provider_and_services(self):
         c = self.candidate("one")
         self.runtime.promote(c)
