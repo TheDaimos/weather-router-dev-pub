@@ -114,7 +114,7 @@ class FetchTests(unittest.IsolatedAsyncioTestCase):
     async def test_clock_reevaluated_after_network(self):
         client=self.create(clock=lambda: self.at+timedelta(seconds=901))
         with self.assertRaises(ValueError):
-            await client.fetch(filename=self.file,valid_at=self.at,now=self.now)
+            await client.fetch(filename=self.file,valid_at=self.at,now=self.now,max_age_seconds=1650)
         self.assertEqual(self.cache.hash_operations,0)
 
     async def test_rate_is_not_dbzh_and_frame_revision_is_cached(self):
