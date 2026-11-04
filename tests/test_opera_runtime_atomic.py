@@ -53,7 +53,7 @@ class AtomicRuntimeTests(unittest.TestCase):
         self.runtime.close()
         self.tmp.cleanup()
 
-    def candidate(self, name, product="RATE", offset=0):
+    def candidate(self, name, product="RATE", offset=0, verified=False):
         data = name.encode()
         path = Path(self.tmp.name) / (name + ".tiff")
         path.write_bytes(data)
@@ -62,8 +62,8 @@ class AtomicRuntimeTests(unittest.TestCase):
             source_path=path, product=product,
             valid_at=self.now + timedelta(seconds=offset),
             digest=digest, palette=lambda _: (0, 0, 0, 0),
-            attribution="public synthetic", quality_verified=False,
-            raster_metadata_verified=False, palette_verified=False)
+            attribution="public synthetic", quality_verified=verified,
+            raster_metadata_verified=verified, palette_verified=verified)
 
     def test_consumer_gate_requires_all_scientific_and_access_prerequisites(self):
         cycle = self.candidate("gate")
@@ -76,6 +76,24 @@ class AtomicRuntimeTests(unittest.TestCase):
         self.assertFalse(self.runtime.consumer_ready(now=self.now, max_age_seconds=0))
         self.assertFalse(self.runtime.consumer_ready(
             now=self.now + timedelta(seconds=1501), max_age_seconds=1500))
+
+    def test_verified_promoted_rate_cycle_obeys_wr_validity(self):
+        cycle = self.candidate("verified_rate", verified=True)
+        # A staged, even fully verified frame is not yet externally eligible.
+        self.runtime.enabled = True
+        self.runtime.services["RATE"] = True
+        self.assertFalse(self.runtime.consumer_ready(
+            now=self.now, max_age_seconds=1650))
+        self.runtime.promote(cycle)
+        self.assertTrue(self.runtime.consumer_ready(
+            now=self.now + timedelta(seconds=1500), max_age_seconds=1650))
+        self.assertTrue(self.runtime.consumer_ready(
+            now=self.now + timedelta(seconds=1650), max_age_seconds=1650))
+        self.assertFalse(self.runtime.consumer_ready(
+            now=self.now + timedelta(seconds=1651), max_age_seconds=1650))
+        self.runtime.services["RATE"] = False
+        self.assertFalse(self.runtime.consumer_ready(
+            now=self.now, max_age_seconds=1650))
 
     def test_dormant_provider_and_services(self):
         c = self.candidate("one")
