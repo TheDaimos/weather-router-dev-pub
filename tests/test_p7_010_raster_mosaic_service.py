@@ -314,6 +314,25 @@ class RasterMosaicServiceTests(unittest.TestCase):
         got = resolve([src])
         self.assertEqual(got["layers"], [])
 
+    def test_server_config_overrides_client_age_even_for_opera(self):
+        # The caller's age may be absent or misleading: only WR policy wins.
+        from unittest.mock import patch
+        query = request()
+        query["time"]["max_data_age_seconds"] = 2
+        query["source_request"] = {"provider_id": "opera", "product_id": "RATE"}
+        with patch.object(service, "plan_raster_mosaic", wraps=service.plan_raster_mosaic) as plan:
+            resolve([], query, server_max_data_age_seconds=1650)
+            self.assertEqual(plan.call_args.kwargs["max_data_age_seconds"], 1650)
+        query["time"].pop("max_data_age_seconds")
+        with patch.object(service, "plan_raster_mosaic", wraps=service.plan_raster_mosaic) as plan:
+            resolve([], query, server_max_data_age_seconds=1500)
+            self.assertEqual(plan.call_args.kwargs["max_data_age_seconds"], 1500)
+
+    def test_missing_wr_server_validity_fails_closed(self):
+        with self.assertRaisesRegex(ValueError, "wr_server_validity_unavailable"):
+            asyncio.run(service.resolve_mosaic_snapshot(
+                request(), sources=[], server_now="2026-10-14T15:08:00Z"))
+
     def test_invalid_v2_request_fails_before_contact(self):
         calls = []
         bad = request()
