@@ -108,7 +108,7 @@ class FetchTests(unittest.IsolatedAsyncioTestCase):
             with self.subTest(status=response.status,kind=response.headers["Content-Type"]):
                 client=self.create(response=response)
                 with self.assertRaises(fetcher.OperaDownloadError):
-                    await client.fetch(filename=self.file,valid_at=self.at,now=self.now)
+                    await client.fetch(filename=self.file,valid_at=self.at,now=self.now,max_age_seconds=1650)
                 self.assertEqual(self.cache.hash_operations,0)
 
     async def test_clock_reevaluated_after_network(self):
