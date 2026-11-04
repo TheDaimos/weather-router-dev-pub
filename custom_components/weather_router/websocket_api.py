@@ -2174,6 +2174,9 @@ async def websocket_opera_status(hass, connection, msg):
         "last_original": monitor.last_object if monitor else None,
         "active_downloads": monitor.active_downloads if monitor else 0,
         "last_reason": monitor.last_reason if monitor else "provider_disabled",
+        "last_downloaded_product": monitor.last_downloaded_product if monitor else None,
+        "downloaded_unverified_count": monitor.downloaded_unverified_count if monitor else 0,
+        "publication_stage": "download_only_unverified",
     }
     status["runtime_present"] = True
     status["scientific_status"] = "UNVERIFIED/BLOCKED"
