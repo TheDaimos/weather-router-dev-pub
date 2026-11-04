@@ -424,8 +424,8 @@ class TileRouteTests(unittest.TestCase):
 
     def test_utc_expiry_during_actual_async_render_is_denied(self):
         """The final authorization rejects pixels after a UTC deadline passes."""
-        start = self.t + timedelta(seconds=899)
-        expired = self.t + timedelta(seconds=901)
+        start = self.t + timedelta(seconds=1649)
+        expired = self.t + timedelta(seconds=1651)
         import threading
         rendering_started = threading.Event()
         allow_finish = threading.Event()
