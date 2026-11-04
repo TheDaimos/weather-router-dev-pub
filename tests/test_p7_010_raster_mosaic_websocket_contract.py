@@ -135,6 +135,9 @@ class WebsocketHarnessTests(unittest.IsolatedAsyncioTestCase):
         })
         self.rows = [FakeCandidate(self.regional), FakeCandidate(self.world)]
         self.connection = FakeConnection()
+        self.hass = types.SimpleNamespace(config_entries=types.SimpleNamespace(
+            async_entries=lambda domain: [types.SimpleNamespace(
+                options={"opera_preview_validity_seconds": 1650})]))
 
         async def async_mapping(hass):
             return {"public_capabilities": {}}
@@ -148,11 +151,12 @@ class WebsocketHarnessTests(unittest.IsolatedAsyncioTestCase):
         def normalize(raw):
             return (dict(raw), raw.get("frame_time"))
 
-        async def deterministic_mosaic(query, *, sources):
+        async def deterministic_mosaic(query, *, sources, server_max_data_age_seconds):
             # The synthetic October test timestamp must not be compared
             # against the runner's real clock on a later execution day.
             return await service.resolve_mosaic_snapshot(
-                query, sources=sources, server_now="2026-10-14T15:08:00Z")
+                query, sources=sources, server_now="2026-10-14T15:08:00Z",
+                server_max_data_age_seconds=server_max_data_age_seconds)
 
         environment = {
             "asyncio": asyncio,
@@ -192,7 +196,7 @@ class WebsocketHarnessTests(unittest.IsolatedAsyncioTestCase):
         self.handler = real_handler_with_stubs(environment)
 
     async def test_world_plus_regional_from_real_handler_body(self):
-        await self.handler(None, self.connection, request())
+        await self.handler(self.hass, self.connection, request())
         self.assertEqual(self.connection.errors, [])
         self.assertEqual(len(self.connection.results), 1)
         result = self.connection.results[0][1]
@@ -207,7 +211,7 @@ class WebsocketHarnessTests(unittest.IsolatedAsyncioTestCase):
                 "source metadata is unavailable"
             )
         self.regional.async_get_coverage = transient
-        await self.handler(None, self.connection, request())
+        await self.handler(self.hass, self.connection, request())
         self.assertEqual(self.connection.errors, [])
         report = self.connection._monitor_routing["coverage_preflight"]
         statuses = {row["source_id"]: row["result"] for row in report}
@@ -222,7 +226,7 @@ class WebsocketHarnessTests(unittest.IsolatedAsyncioTestCase):
         # distinguish a genuine bbox miss from delivered layers.
         self.regional.coverage = {"scope": "bbox", "bbox": {
             "west": 60, "south": -40, "east": 80, "north": -20}}
-        await self.handler(None, self.connection, request())
+        await self.handler(self.hass, self.connection, request())
         answer = self.connection.results[0][1]
         outcome = {v["source_id"]: v["result"]
                    for v in answer["source_outcomes"]}
@@ -238,7 +242,7 @@ class WebsocketHarnessTests(unittest.IsolatedAsyncioTestCase):
         async def temporary(*args):
             raise spatial.CoverageTemporarilyUnavailable("synthetic WMS issue")
         self.regional.async_get_coverage = temporary
-        await self.handler(None, self.connection, request())
+        await self.handler(self.hass, self.connection, request())
         outcome = {v["source_id"]: v["result"]
                    for v in self.connection.results[0][1]["source_outcomes"]}
         self.assertEqual(outcome["regional_radar/radar_layer"],
@@ -250,7 +254,7 @@ class WebsocketHarnessTests(unittest.IsolatedAsyncioTestCase):
     async def test_v2_timeout_reason_available_in_public_response(self):
         self.regional.coverage_delay = .06
         self.environment["COVERAGE_TIMEOUT_SECONDS"] = .005
-        await self.handler(None, self.connection, request())
+        await self.handler(self.hass, self.connection, request())
         outcome = {v["source_id"]: v["result"]
                    for v in self.connection.results[0][1]["source_outcomes"]}
         self.assertEqual(outcome["regional_radar/radar_layer"],
@@ -271,7 +275,7 @@ class WebsocketHarnessTests(unittest.IsolatedAsyncioTestCase):
             }
         self.world.async_get_map_layer = old_world
         strict = request()
-        await self.handler(None, self.connection, strict)
+        await self.handler(self.hass, self.connection, strict)
         answer = self.connection.results[0][1]
         by_source = {r["source_id"]: r["result"]
                      for r in answer["source_outcomes"]}
@@ -282,7 +286,7 @@ class WebsocketHarnessTests(unittest.IsolatedAsyncioTestCase):
         approved = request()
         approved["time"]["max_background_age_seconds"] = 43200
         self.connection = FakeConnection()
-        await self.handler(None, self.connection, approved)
+        await self.handler(self.hass, self.connection, approved)
         answer = self.connection.results[0][1]
         self.assertEqual(
             [x["source_id"] for x in answer["layers"]],
@@ -300,7 +304,7 @@ class WebsocketHarnessTests(unittest.IsolatedAsyncioTestCase):
                 "attribution": "regional", "legend": {"title": "regional"},
             }
         self.regional.async_get_map_layer = old_radar
-        await self.handler(None, self.connection, request())
+        await self.handler(self.hass, self.connection, request())
         answer = self.connection.results[0][1]
         status = {x["source_id"]: x["result"]
                   for x in answer["source_outcomes"]}
@@ -311,7 +315,7 @@ class WebsocketHarnessTests(unittest.IsolatedAsyncioTestCase):
         # Reproduce HA: working world source and slow regional WMS coverage.
         self.regional.coverage_delay = .04
         self.environment["COVERAGE_TIMEOUT_SECONDS"] = .005
-        await self.handler(None, self.connection, request())
+        await self.handler(self.hass, self.connection, request())
         self.assertEqual(self.connection.errors, [])
         self.assertEqual([v["source_id"] for v in
                           self.connection.results[0][1]["layers"]],
@@ -326,7 +330,7 @@ class WebsocketHarnessTests(unittest.IsolatedAsyncioTestCase):
     async def test_slower_regional_coverage_survives_bounded_extra_budget(self):
         self.regional.coverage_delay = .025
         self.environment["COVERAGE_TIMEOUT_SECONDS"] = .10
-        await self.handler(None, self.connection, request())
+        await self.handler(self.hass, self.connection, request())
         self.assertEqual(self.connection.errors, [])
         self.assertEqual(len(self.connection.results[0][1]["layers"]), 2)
         by_source = {v["source_id"]: v["result"] for v in
@@ -337,7 +341,7 @@ class WebsocketHarnessTests(unittest.IsolatedAsyncioTestCase):
         self.regional.coverage_delay = .035
         self.world.coverage_delay = .035
         self.environment["_shared_coverage_slots"] = lambda: asyncio.Semaphore(1)
-        await self.handler(None, self.connection, request())
+        await self.handler(self.hass, self.connection, request())
         self.assertEqual(self.connection.errors, [])
         report = self.connection._monitor_routing["coverage_preflight"]
         self.assertEqual(len(report), 2)
@@ -358,7 +362,7 @@ class WebsocketHarnessTests(unittest.IsolatedAsyncioTestCase):
             "cache_ttl_remaining_seconds": None,
             "unexpected_detail": "omit-this-value",
         }
-        await self.handler(None, self.connection, request())
+        await self.handler(self.hass, self.connection, request())
         report = {
             x["source_id"]: x for x in
             self.connection._monitor_routing["coverage_preflight"]
@@ -372,7 +376,7 @@ class WebsocketHarnessTests(unittest.IsolatedAsyncioTestCase):
 
     async def test_coverage_provider_failure_is_safe_and_distinct(self):
         self.regional.crash = True
-        await self.handler(None, self.connection, request())
+        await self.handler(self.hass, self.connection, request())
         report = self.connection._monitor_routing["coverage_preflight"]
         status = {v["source_id"]: v["result"] for v in report}
         self.assertEqual(status["regional_radar/radar_layer"], "coverage_provider_error")
@@ -380,14 +384,14 @@ class WebsocketHarnessTests(unittest.IsolatedAsyncioTestCase):
 
     async def test_disabled_provider_never_contacts_network(self):
         self.regional.enabled = False
-        await self.handler(None, self.connection, request())
+        await self.handler(self.hass, self.connection, request())
         self.assertEqual(self.regional.calls, 0)
         self.assertEqual([x["source_id"] for x in self.connection.results[0][1]["layers"]],
                          ["wide_world/radar_layer"])
 
     async def test_failing_regional_coverage_does_not_blank_world(self):
         self.regional.crash = True
-        await self.handler(None, self.connection, request())
+        await self.handler(self.hass, self.connection, request())
         self.assertEqual(len(self.connection.results[0][1]["layers"]), 1)
         self.assertEqual(self.connection.results[0][1]["layers"][0]["source_id"],
                          "wide_world/radar_layer")
@@ -408,7 +412,7 @@ class WebsocketHarnessTests(unittest.IsolatedAsyncioTestCase):
         best.score = (0, 0, 0)
         rows.append(best)
         self.rows[:] = rows
-        await self.handler(None, self.connection, request())
+        await self.handler(self.hass, self.connection, request())
         self.assertEqual(self.connection.errors, [])
         self.assertGreater(self.world.calls, 0)
         result = self.connection.results[0][1]
@@ -423,7 +427,7 @@ class WebsocketHarnessTests(unittest.IsolatedAsyncioTestCase):
         world = FakeCandidate(self.world)
         world.score = (1, 0, 0)
         self.rows[:] = [top, world]
-        await self.handler(None, self.connection, request())
+        await self.handler(self.hass, self.connection, request())
         self.assertEqual(disabled.calls, 0)
         self.assertGreater(self.world.calls, 0)
         self.assertEqual(self.connection.errors, [])
@@ -438,7 +442,7 @@ class WebsocketHarnessTests(unittest.IsolatedAsyncioTestCase):
             candidate.score = (index, 0, 0)
             providers.append(candidate)
         self.rows[:] = providers
-        await self.handler(None, self.connection, request())
+        await self.handler(self.hass, self.connection, request())
         self.assertEqual(self.connection.errors, [])
         contacted = sum(candidate.provider.calls > 0 for candidate in providers)
         self.assertEqual(contacted, 12)
@@ -456,7 +460,7 @@ class WebsocketHarnessTests(unittest.IsolatedAsyncioTestCase):
         world = FakeCandidate(self.world)
         world.score = (12, 0, 0)
         self.rows[:] = duplicates + [world]
-        await self.handler(None, self.connection, request())
+        await self.handler(self.hass, self.connection, request())
         self.assertEqual(self.connection.errors, [])
         self.assertEqual(self.regional.calls, 2)
         self.assertEqual(self.world.calls, 2)
@@ -472,7 +476,7 @@ class WebsocketHarnessTests(unittest.IsolatedAsyncioTestCase):
             candidate.score = (index, 0, 0)
             duplicates.append(candidate)
         self.rows[:] = duplicates
-        await self.handler(None, self.connection, request())
+        await self.handler(self.hass, self.connection, request())
         self.assertEqual(self.connection.errors, [])
         self.assertEqual(self.world.calls, 2)
         limitations = self.connection.results[0][1]["limitations"]
@@ -485,7 +489,7 @@ class WebsocketHarnessTests(unittest.IsolatedAsyncioTestCase):
             "bbox": {"west": 110, "south": -35, "east": 155, "north": -10},
         })
         self.rows[:] = [FakeCandidate(outside), FakeCandidate(self.world)]
-        await self.handler(None, self.connection, request())
+        await self.handler(self.hass, self.connection, request())
         self.assertEqual(self.connection.errors, [])
         self.assertEqual(outside.calls, 1)
         self.assertEqual(self.world.calls, 2)
@@ -510,7 +514,7 @@ class WebsocketHarnessTests(unittest.IsolatedAsyncioTestCase):
         world = FakeCandidate(self.world)
         world.score = (1, 0, 0)
         self.rows[:] = rows + [world]
-        await self.handler(None, self.connection, request())
+        await self.handler(self.hass, self.connection, request())
         self.assertEqual(self.connection.errors, [])
         self.assertEqual(self.world.calls, 2)
         self.assertLessEqual(many.calls, 22)
@@ -539,7 +543,7 @@ class WebsocketHarnessTests(unittest.IsolatedAsyncioTestCase):
             candidate.score = (index, 0, 0)
             rows.append(candidate)
         self.rows[:] = rows
-        await self.handler(None, self.connection, request())
+        await self.handler(self.hass, self.connection, request())
         self.assertEqual(self.connection.errors, [])
         self.assertLessEqual(maximum, 3)
         self.assertEqual(sum(row.provider.calls > 0 for row in rows), 12)
@@ -547,7 +551,7 @@ class WebsocketHarnessTests(unittest.IsolatedAsyncioTestCase):
     async def test_unavailable_coverage_does_not_fetch_raster(self):
         broken = FakeProvider("broken_coverage", {"scope": "global"}, crash=True)
         self.rows[:] = [FakeCandidate(broken), FakeCandidate(self.world)]
-        await self.handler(None, self.connection, request())
+        await self.handler(self.hass, self.connection, request())
         self.assertEqual(self.connection.errors, [])
         self.assertEqual(broken.calls, 1)
         self.assertEqual(self.world.calls, 2)
@@ -569,7 +573,7 @@ class WebsocketHarnessTests(unittest.IsolatedAsyncioTestCase):
 
         self.handler.__globals__["_async_mapping"] = slow_mapping
         self.handler.__globals__["MOSAIC_PROVIDER_DEADLINE_SECONDS"] = 0.01
-        await self.handler(None, self.connection, request())
+        await self.handler(self.hass, self.connection, request())
         self.assertEqual(self.connection.results, [])
         self.assertEqual(self.connection.errors[0][1], "mosaic_timeout")
         self.assertTrue(cancelled)
@@ -578,7 +582,7 @@ class WebsocketHarnessTests(unittest.IsolatedAsyncioTestCase):
     async def test_invalid_version_rejected_before_network(self):
         wrong = request()
         wrong["contract_version"] = 1
-        await self.handler(None, self.connection, wrong)
+        await self.handler(self.hass, self.connection, wrong)
         self.assertEqual(self.connection.errors[0][1], "invalid_mosaic_request")
         self.assertEqual(self.world.calls, 0)
         self.assertEqual(self.regional.calls, 0)
