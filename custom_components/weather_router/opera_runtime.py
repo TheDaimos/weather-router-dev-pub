@@ -24,8 +24,8 @@ def utc_status(observed_at, *, now=None, max_age_seconds=DEFAULT_MAX_AGE_SECONDS
                stale_after_seconds=DEFAULT_MAX_AGE_SECONDS, serve_stale=False):
     """UTC observation age, never download or admission time."""
     if (not isinstance(observed_at, datetime) or observed_at.tzinfo is None
-            or type(max_age_seconds) is not int or not 900 <= max_age_seconds <= 3600
-            or type(stale_after_seconds) is not int or not 900 <= stale_after_seconds <= 3600
+            or type(max_age_seconds) is not int or not 1 <= max_age_seconds <= 3600
+            or type(stale_after_seconds) is not int or not 1 <= stale_after_seconds <= 3600
             or type(serve_stale) is not bool):
         return "UNAVAILABLE"
     now = datetime.now(timezone.utc) if now is None else now
