@@ -1,0 +1,34 @@
+name: TEST70-76 full repository 900-second audit
+on:
+  push:
+    branches:
+      - feature/p7-010-global-concurrency-2026-10-16
+  workflow_dispatch:
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Inventory every 900 occurrence in active source
+        run: |
+          python3 - <<'PY'
+          import pathlib,re
+          exts={'.py','.js','.json','.yaml','.yml','.ts','.tsx'}
+          rows=[]
+          for p in sorted(pathlib.Path('custom_components').rglob('*')):
+              if not p.is_file() or p.suffix not in exts:continue
+              try: lines=p.read_text('utf-8').splitlines()
+              except (UnicodeError,OSError):continue
+              for n,line in enumerate(lines,1):
+                  if re.search(r'(?<!\d)900(?!\d)|900000|15\s*\*\s*60',line):
+                      rows.append((str(p),n,line.strip()[:240]))
+          print(f'EXACT_900_SOURCE_OCCURRENCES={len(rows)}')
+          for p,n,line in rows:print(f'{p}:{n}: {line}')
+          sensitive=[(p,n,line) for p,n,line in rows if re.search(
+              r'(?i)(max_data_age|validity|stale|expiry|freshness|frame_age|source_age|age_seconds|valid_until)',line)
+              and not line.lstrip().startswith('#')]
+          if sensitive:
+              print('ACTIVE_POLICY_REVIEW_REQUIRED:')
+              for p,n,line in sensitive:print(f'{p}:{n}: {line}')
+              raise SystemExit('900-second active source policy found')
+          PY
