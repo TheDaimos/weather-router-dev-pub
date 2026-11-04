@@ -67,7 +67,8 @@ class OperaCogFetch:
 
     async def fetch(self, *, filename: str, valid_at: datetime, now: datetime, max_age_seconds: int):
         url = object_url(filename=filename, valid_at=valid_at, now=now, max_age_seconds=max_age_seconds)
-        product, _ = frame_id(filename, source_time=valid_at, now=now)
+        product, _ = frame_id(filename, source_time=valid_at, now=now,
+                              max_age_seconds=max_age_seconds)
         try:
             await asyncio.wait_for(self._slots.acquire(), timeout=0.2)
         except asyncio.TimeoutError as exc:
