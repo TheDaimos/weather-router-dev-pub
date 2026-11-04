@@ -186,6 +186,24 @@ class OperaRuntime:
                - frame.valid_at.astimezone(timezone.utc)).total_seconds()
         return 0 <= age <= max_age_seconds
 
+    def consumer_registration(self, product, *, now, max_age_seconds):
+        """Return the immutable verified registration; never an unchecked frame.
+
+        This is an internal bridge, not a public URL or access grant.
+        Callers must independently enforce HA user/profile authentication.
+        """
+        if not self.consumer_ready(product, now=now,
+                                   max_age_seconds=max_age_seconds):
+            return None
+        cycle = self.registry.active(product)
+        if cycle is None:
+            return None
+        # A concurrent promotion/revocation must not let an older generation
+        # pass an earlier readiness check.
+        if self.registry.active(product) is not cycle:
+            return None
+        return cycle.registration
+
     def lookup(self, product, stamp):
         # No production tile exposure before explicit provider and scientific release.
         if not self.enabled or self.services.get(product) is not True:
