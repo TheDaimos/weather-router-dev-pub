@@ -68,6 +68,7 @@ class OperaSourceMonitor:
         self.last_reason = "not_started"
         self.last_downloaded_product = None
         self.downloaded_unverified_count = 0
+        self.last_metadata_check = "not_checked"
         self._seen = set()
 
     async def _list(self, product, now):
@@ -84,6 +85,27 @@ class OperaSourceMonitor:
             data = await response.content.read(MAX_LIST_BYTES + 1)
         return parse_catalog(data, now=now, product=product,
                              max_age_seconds=self._server_validity_seconds())
+
+    async def _inspect_raster(self, frame, filename):
+        """Validate physical CoG contract in the HA executor, never grant tile approval."""
+        from .opera_product_contract import check_opera_raster, OperaProductError
+        def inspect():
+            try:
+                import rasterio
+            except ImportError:
+                return "native_raster_reader_unavailable"
+            try:
+                with rasterio.open(frame.path) as dataset:
+                    checked = check_opera_raster(
+                        filename=filename, valid_at=frame.valid_at, dataset=dataset)
+                if checked.ready_for_public_tiles:
+                    # Product metadata alone is not a substitute for quality,
+                    # palette and independent release authorization.
+                    return "metadata_checked_publication_still_blocked"
+                return "metadata_checked_quality_palette_unverified"
+            except (OperaProductError, ValueError, OSError, rasterio.errors.RasterioError):
+                return "raster_metadata_rejected"
+        return await self.hass.async_add_executor_job(inspect)
 
     async def check_once(self):
         if not self.runtime.enabled:
@@ -110,6 +132,7 @@ class OperaSourceMonitor:
                         self.last_downloaded_product = product
                         self.downloaded_unverified_count += 1
                         self.last_reason = "downloaded_unverified_raster"
+                        self.last_metadata_check = await self._inspect_raster(frame, name)
                         any_found = True
                         # FRAME IS IN PRIVATE CACHE ONLY: scientific metadata,
                         # quality1, palette and provenance must still pass.
