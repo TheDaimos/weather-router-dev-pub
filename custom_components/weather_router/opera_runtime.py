@@ -157,6 +157,35 @@ class OperaRuntime:
             self.last_promotion_utc = datetime.now(timezone.utc)
             return stamp
 
+    def consumer_ready(self, product="RATE", *, now=None, max_age_seconds=1500):
+        """Fail closed unless the active cycle is fully verified and WR-valid.
+
+        This does not activate HTTP routes or grant consumer permission.
+        """
+        if (not self.enabled or self._closed or self.services.get(product) is not True
+                or type(max_age_seconds) is not int
+                or not 1 <= max_age_seconds <= 3600):
+            return False
+        cycle = self.registry.active(product)
+        if cycle is None:
+            return False
+        reg = cycle.registration
+        if (reg.quality_verified is not True
+                or reg.raster_metadata_verified is not True
+                or reg.palette_verified is not True
+                or not callable(reg.palette)):
+            return False
+        frame = reg.frame
+        if (self.cache.get(product=frame.product, valid_at=frame.valid_at,
+                           digest=frame.digest) is not frame):
+            return False
+        current = datetime.now(timezone.utc) if now is None else now
+        if not isinstance(current, datetime) or current.tzinfo is None:
+            return False
+        age = (current.astimezone(timezone.utc)
+               - frame.valid_at.astimezone(timezone.utc)).total_seconds()
+        return 0 <= age <= max_age_seconds
+
     def lookup(self, product, stamp):
         # No production tile exposure before explicit provider and scientific release.
         if not self.enabled or self.services.get(product) is not True:
