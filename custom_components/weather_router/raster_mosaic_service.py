@@ -55,6 +55,7 @@ async def resolve_mosaic_snapshot(
     sources: Sequence[Mapping[str, Any]],
     server_now: str | None = None,
     fetch_timeout_seconds: float = 5.0,
+    server_max_data_age_seconds: int | None = None,
 ) -> dict[str, Any]:
     """Resolve trusted provider descriptors to a non-operational V2 plan.
 
@@ -69,6 +70,13 @@ async def resolve_mosaic_snapshot(
     independently enforce it when wired. Fail closed on provider errors.
     """
     query = validate_raster_mosaic_request(request)
+    # The client must never be the authority for OPERA/radar freshness.
+    # A trusted WR resolver supplies the user-configured validity. Fail
+    # closed when that policy is unavailable instead of silently using 900s.
+    if (type(server_max_data_age_seconds) is not int
+            or not 1 <= server_max_data_age_seconds <= 86400):
+        raise ValueError("wr_server_validity_unavailable")
+    query["time"]["max_data_age_seconds"] = server_max_data_age_seconds
     now = server_now if server_now is not None else _utc_now()
     if not isinstance(sources, Sequence) or isinstance(sources, (str, bytes)):
         raise TypeError("Trusted source inventory must be a sequence")
