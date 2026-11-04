@@ -85,8 +85,7 @@
       "type": "object",
       "additionalProperties": false,
       "required": [
-        "mode",
-        "max_data_age_seconds"
+        "mode"
       ],
       "properties": {
         "mode": {
@@ -114,6 +113,10 @@
           "minimum": 1,
           "maximum": 86400,
           "description": "Optional upper age of explicitly degraded global satellite-estimate background; >= max_data_age_seconds. Enforced in Python contract."
+        },
+        "allow_older_satellite_background": {
+          "type": "boolean",
+          "description": "User preference; WR authorizes resulting sources and validity."
         }
       },
       "allOf": [
