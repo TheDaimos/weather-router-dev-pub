@@ -207,6 +207,19 @@ class WebsocketHarnessTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(self.world.calls, 0)
         self.assertEqual(self.regional.calls, 0)
 
+    async def test_explicit_opera_uses_only_authorized_opera_candidates(self):
+        opera = FakeProvider("opera", {"scope": "global"})
+        self.rows = [FakeCandidate(self.world), FakeCandidate(opera)]
+        raw = request()
+        raw["source_request"] = {"provider_id": "opera", "product_id": "RATE"}
+        await self.handler(self.hass, self.connection, raw)
+        self.assertEqual(self.connection.errors, [])
+        self.assertEqual(len(self.connection.results), 1)
+        layers = self.connection.results[0][1]["layers"]
+        self.assertTrue(layers)
+        self.assertTrue(all(row["source_id"].startswith("opera/") for row in layers))
+        self.assertEqual(self.world.calls, 0, "explicit OPERA must not fetch DWD/NASA substitutes")
+
     async def test_world_plus_regional_from_real_handler_body(self):
         await self.handler(self.hass, self.connection, request())
         self.assertEqual(self.connection.errors, [])
