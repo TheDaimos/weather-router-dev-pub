@@ -192,7 +192,9 @@ async def websocket_consumer_resolve_mosaic(
                     return
             authorized = [
                 row for row in candidates
-                if row.capability.render_mode == "raster_tile"
+                if (requested_source is None
+                    or row.provider.id == requested_source["provider_id"])
+                and row.capability.render_mode == "raster_tile"
                 and _candidate_enabled(state, row.provider, row.public_id)[0]
                 and profile_allows_provider(profile, row.provider.id)
                 and profile_allows_candidate(profile, row.semantics)[0]
@@ -201,6 +203,12 @@ async def websocket_consumer_resolve_mosaic(
                 and _resource_implemented(row)
                 and callable(getattr(row.provider, "async_get_coverage", None))
             ]
+
+            if requested_source is not None and not authorized:
+                connection.send_error(
+                    msg["id"], "requested_provider_unavailable",
+                    "Die angeforderte Quelle besitzt keine freigegebene Raster-Capability.")
+                return
 
             # Explicit bounded metadata preflight, before any raster provider contact.
             # Machine coverage is never guessed from a provider's name or country.
