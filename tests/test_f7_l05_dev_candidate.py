@@ -29,10 +29,10 @@ class TestF7L05DevCandidate(unittest.TestCase):
         lab=(PACKAGE/"frontend/weather-router-lab.js").read_text()
         loader=(PACKAGE/"frontend/weather-router-lab-dev-loader.js").read_text()
         self.assertIn('DEV_BUILD_VERSION: Final = "0.10.164"', constants)
-        self.assertIn('DEV_LOADER_REV: Final = "0.10-loader-166"', constants)
+        self.assertIn('DEV_LOADER_REV: Final = "0.10-loader-167"', constants)
         self.assertIn('WR_LAB_BUILD_VERSION = "0.10.164"',lab)
         self.assertIn('WR_LAB_BUILD_VERSION = "0.10.164"',loader)
-        self.assertIn('LOADER_REV = "0.10-loader-166"',loader)
+        self.assertIn('LOADER_REV = "0.10-loader-167"',loader)
 
     def test_setup_never_imports_optional_native_code(self):
         setup=(PACKAGE/"__init__.py").read_text()
