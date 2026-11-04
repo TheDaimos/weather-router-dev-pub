@@ -76,6 +76,9 @@ class S3DiscoveryTests(unittest.TestCase):
             monitor.fetcher.fetch.assert_awaited_once()
             self.assertIsNone(runtime.registry.active("RATE"))
             self.assertEqual(monitor.last_reason, "downloaded_unverified_raster")
+            self.assertEqual(monitor.last_downloaded_product, "RATE")
+            self.assertEqual(monitor.downloaded_unverified_count, 1)
+            self.assertIsNone(runtime.registry.active("RATE"))
         finally:
             runtime.close()
 
