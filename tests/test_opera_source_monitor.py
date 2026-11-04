@@ -18,29 +18,41 @@ class S3DiscoveryTests(unittest.TestCase):
         data = listing(
             "2026/10/29/OPERA/COMP/OPERA@20261029T1815@0@RATE.tiff",
             "2026/10/29/OPERA/COMP/OPERA@20261029T1810@0@DBZH.tiff")
-        found = monitor_module.parse_catalog(data, now=NOW, product="RATE")
+        found = monitor_module.parse_catalog(data, now=NOW, product="RATE", max_age_seconds=1500)
         self.assertEqual(len(found), 1)
         self.assertEqual(found[0][1], "OPERA@20261029T1815@0@RATE.tiff")
 
     def test_catalog_rejects_incomplete_and_wrong_day(self):
         data = listing("2026/10/28/OPERA/COMP/OPERA@20261029T1815@0@RATE.tiff")
-        self.assertEqual(monitor_module.parse_catalog(data, now=NOW, product="RATE"), [])
+        self.assertEqual(monitor_module.parse_catalog(data, now=NOW, product="RATE", max_age_seconds=1500), [])
         # The preceding list was complete; explicit truncated response blocks.
         with self.assertRaisesRegex(ValueError, "incomplete_listing"):
-            monitor_module.parse_catalog(listing(truncated="true"), now=NOW, product="RATE")
+            monitor_module.parse_catalog(listing(truncated="true"), now=NOW, product="RATE", max_age_seconds=1500)
 
     def test_rejects_old_files_and_untrusted_keys(self):
         keys = ["2026/10/29/OPERA/COMP/OPERA@20261029T1715@0@RATE.tiff",
                 "2026/10/29/OPERA/COMP/../../credentials",
                 "2026/10/29/OPERA/COMP/OPERA@20261029T1845@0@RATE.tiff"]
-        self.assertEqual(monitor_module.parse_catalog(listing(*keys), now=NOW, product="RATE"), [])
+        self.assertEqual(monitor_module.parse_catalog(listing(*keys), now=NOW, product="RATE", max_age_seconds=1500), [])
+
+    def test_wr_configured_catalog_age_over_900(self):
+        key = "2026/10/29/OPERA/COMP/OPERA@20261029T1810@0@RATE.tiff"
+        data = listing(key)
+        self.assertEqual(monitor_module.parse_catalog(
+            data, now=NOW, product="RATE", max_age_seconds=900), [])
+        self.assertEqual(len(monitor_module.parse_catalog(
+            data, now=NOW, product="RATE", max_age_seconds=1500)), 1)
+        with self.assertRaisesRegex(ValueError, "invalid_listing"):
+            monitor_module.parse_catalog(
+                data, now=NOW, product="RATE", max_age_seconds=None)
 
     def test_discovery_is_dormant_when_provider_off(self):
         class DummyHass: pass
         runtime = runtime_module.OperaRuntime()
         try:
             monitor = monitor_module.OperaSourceMonitor(
-                hass=DummyHass(), session=None, runtime=runtime)
+                hass=DummyHass(), session=None, runtime=runtime,
+                server_validity_seconds=lambda:1500)
             monitor._list = AsyncMock()
             asyncio.run(monitor.check_once())
             monitor._list.assert_not_called()
