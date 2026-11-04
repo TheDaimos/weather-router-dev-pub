@@ -197,6 +197,16 @@ class WebsocketHarnessTests(unittest.IsolatedAsyncioTestCase):
         self.environment = environment
         self.handler = real_handler_with_stubs(environment)
 
+    async def test_explicit_opera_never_falls_back_to_another_provider(self):
+        raw = request()
+        raw["source_request"] = {"provider_id": "opera", "product_id": "RATE"}
+        await self.handler(self.hass, self.connection, raw)
+        self.assertEqual(self.connection.results, [])
+        self.assertEqual(len(self.connection.errors), 1)
+        self.assertEqual(self.connection.errors[0][1], "requested_provider_unavailable")
+        self.assertEqual(self.world.calls, 0)
+        self.assertEqual(self.regional.calls, 0)
+
     async def test_world_plus_regional_from_real_handler_body(self):
         await self.handler(self.hass, self.connection, request())
         self.assertEqual(self.connection.errors, [])
