@@ -64,7 +64,8 @@ def source(name, coverage=WORLD, *, enabled=True, calls=None,
 def resolve(sources, user_request=None, **kw):
     return asyncio.run(service.resolve_mosaic_snapshot(
         request() if user_request is None else user_request,
-        sources=sources, server_now="2026-10-14T15:08:00Z", **kw))
+        sources=sources, server_now="2026-10-14T15:08:00Z",
+        server_max_data_age_seconds=kw.pop("server_max_data_age_seconds", 1650), **kw))
 
 
 class RasterMosaicServiceTests(unittest.TestCase):
@@ -281,10 +282,10 @@ class RasterMosaicServiceTests(unittest.TestCase):
             answers = await asyncio.gather(
                 service.resolve_mosaic_snapshot(
                     request(12), sources=inventory("a"),
-                    server_now="2026-10-14T15:08:00Z"),
+                    server_now="2026-10-14T15:08:00Z", server_max_data_age_seconds=1650),
                 service.resolve_mosaic_snapshot(
                     request(12), sources=inventory("b"),
-                    server_now="2026-10-14T15:08:00Z"))
+                    server_now="2026-10-14T15:08:00Z", server_max_data_age_seconds=1650))
             return peak, answers
 
         peak, answers = asyncio.run(scenario())
