@@ -31,24 +31,33 @@ class OperaTileAccessTest(unittest.TestCase):
 
     def test_reauthorization_requires_session_and_permission(self):
         base=dict(authenticated_user=object(),profile_and_provider_allowed=True,
-                  valid_at=self.now-timedelta(seconds=900),now=self.now)
+                  valid_at=self.now-timedelta(seconds=1650),now=self.now,
+                  max_age_seconds=1650)
         access.assert_authorized(**base)
         for changes in (dict(authenticated_user=None),
                         dict(profile_and_provider_allowed=False),
                         dict(profile_and_provider_allowed=1),
-                        dict(valid_at=self.now-timedelta(seconds=901)),
+                        dict(valid_at=self.now-timedelta(seconds=1651)),
                         dict(valid_at=self.now+timedelta(seconds=1)),
                         dict(valid_at=self.now.replace(tzinfo=None))):
             with self.assertRaises(access.TileAccessDenied):
                 access.assert_authorized(**dict(base,**changes))
 
+    def test_server_validity_must_be_explicit_bounded_and_not_boolean(self):
+        base=dict(authenticated_user=object(),profile_and_provider_allowed=True,
+                  valid_at=self.now,now=self.now)
+        for value in (None, 0, True, 3601, 1500.0):
+            with self.subTest(value=value), self.assertRaises(access.TileAccessDenied):
+                access.assert_authorized(**base,max_age_seconds=value)
+        access.assert_authorized(**base,max_age_seconds=3600)
+
     def test_immutable_frame_not_current_permission(self):
-        old=self.now-timedelta(seconds=899)
+        old=self.now-timedelta(seconds=1649)
         access.assert_authorized(authenticated_user=object(),profile_and_provider_allowed=True,
-                                 valid_at=old,now=self.now)
+                                 valid_at=old,now=self.now,max_age_seconds=1650)
         with self.assertRaises(access.TileAccessDenied):
             access.assert_authorized(authenticated_user=object(),profile_and_provider_allowed=True,
-                                     valid_at=old,now=self.now+timedelta(seconds=2))
+                                     valid_at=old,now=self.now+timedelta(seconds=2),max_age_seconds=1650)
 
 if __name__=="__main__":
     unittest.main()
