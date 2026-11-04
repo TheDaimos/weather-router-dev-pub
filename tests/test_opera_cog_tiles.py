@@ -19,16 +19,16 @@ class OperaCogTileTests(unittest.TestCase):
         self.assertNotEqual(base,module.immutable_key(**dict(self.k,palette_rev="v2")))
     def test_cache_identity_does_not_grant_freshness(self):
         key=module.immutable_key(**self.k)
-        module.authorize_current(self.t,self.t+timedelta(seconds=900))
+        module.authorize_current(self.t,self.t+timedelta(seconds=1650),max_age_seconds=1650)
         self.assertEqual(key,module.immutable_key(**self.k))
         with self.assertRaises(module.OperaRasterError):
-            module.authorize_current(self.t,self.t+timedelta(seconds=901))
+            module.authorize_current(self.t,self.t+timedelta(seconds=1651),max_age_seconds=1650)
     def test_invalid_coordinates_and_clock(self):
         for changes in (dict(z=17),dict(x=64),dict(quality_rev="../bad"),dict(source_sha256="a"*63)):
             with self.assertRaises(module.OperaRasterError):
                 module.immutable_key(**dict(self.k,**changes))
         with self.assertRaises(module.OperaRasterError):
-            module.authorize_current(self.t.replace(tzinfo=None),self.t)
+            module.authorize_current(self.t.replace(tzinfo=None),self.t,max_age_seconds=1500)
     def test_filename_policy_preserved(self):
         other=Path(__file__).resolve().parents[1]/"custom_components/weather_router/opera_tile_security.py"
         self.assertTrue(other.is_file())
