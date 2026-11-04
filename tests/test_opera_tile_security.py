@@ -41,14 +41,14 @@ class OperaTileSecurityTest(unittest.TestCase):
         for name in ("../x.tiff", "https://example.net/evil.tiff",
                      "OPERA@20261019T1340@0@RATE.tiff?token=x"):
             with self.assertRaises(policy.TilePolicyError):
-                policy.frame_id(name, source_time=self.when, now=self.now)
+                policy.frame_id(name, source_time=self.when, now=self.now,max_age_seconds=1650)
         with self.assertRaises(policy.TilePolicyError):
             policy.validate_object_size(15*1024*1024)
 
     def test_time_and_style_bound_cache(self):
         name = "OPERA@20261019T1340@0@DBZH.tiff"
         params = dict(filename=name, source_time=self.when, now=self.now,
-                      z=6, x=33, y=19, quality_version="unknown")
+                      z=6, x=33, y=19, quality_version="unknown",max_age_seconds=1650)
         first = policy.tile_cache_key(**params, palette_version="v1")
         self.assertEqual(first, ("DBZH", "20261019T134000Z", "6", "33", "19", "v1", "unknown"))
         self.assertNotEqual(first, policy.tile_cache_key(**params, palette_version="v2"))
