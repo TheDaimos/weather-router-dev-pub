@@ -71,6 +71,7 @@ class S3DiscoveryTests(unittest.TestCase):
             stamp = datetime.now(timezone.utc).replace(second=0, microsecond=0)
             monitor._list = AsyncMock(return_value=[(stamp, stamp.strftime("OPERA@%Y%m%dT%H%M@0@RATE.tiff"))])
             monitor.fetcher.fetch = AsyncMock(return_value=object())
+            monitor._inspect_raster = AsyncMock(return_value="metadata_checked_quality_palette_unverified")
             asyncio.run(monitor.check_once())
             asyncio.run(monitor.check_once())
             monitor.fetcher.fetch.assert_awaited_once()
@@ -78,6 +79,9 @@ class S3DiscoveryTests(unittest.TestCase):
             self.assertEqual(monitor.last_reason, "downloaded_unverified_raster")
             self.assertEqual(monitor.last_downloaded_product, "RATE")
             self.assertEqual(monitor.downloaded_unverified_count, 1)
+            self.assertEqual(monitor.last_metadata_check,
+                             "metadata_checked_quality_palette_unverified")
+            monitor._inspect_raster.assert_awaited_once()
             self.assertIsNone(runtime.registry.active("RATE"))
         finally:
             runtime.close()
