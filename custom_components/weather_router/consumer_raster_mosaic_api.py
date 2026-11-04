@@ -132,6 +132,18 @@ async def websocket_consumer_resolve_mosaic(
                 connection.send_error(msg["id"], "router_not_ready",
                                       "WeatherRouter ist nicht betriebsbereit.")
                 return
+            # The configured duration belongs to WR, never the V2 client.
+            # Until public WR settings expose this value, reject safely rather
+            # than imposing a hidden 900-second client-side expiry.
+            entries = hass.config_entries.async_entries("weather_router")
+            options = entries[0].options if entries else {}
+            server_validity = options.get("opera_preview_validity_seconds")
+            if (type(server_validity) is not int
+                    or not 1 <= server_validity <= 86400):
+                connection.send_error(
+                    msg["id"], "wr_server_validity_unavailable",
+                    "Die OPERA-Gültigkeit muss zuerst in WeatherRouter konfiguriert werden.")
+                return
             if "weather" not in state["enabled_domains"]:
                 connection.send_error(msg["id"], "domain_disabled",
                                       "Wetterdaten sind im Router deaktiviert.")
@@ -315,7 +327,8 @@ async def websocket_consumer_resolve_mosaic(
                 scanned = await asyncio.gather(*(_source(row) for row in preflight))
                 sources = [row for row in scanned if row is not None]
                 try:
-                    result = await resolve_mosaic_snapshot(query, sources=sources)
+                    result = await resolve_mosaic_snapshot(query, sources=sources,
+                        server_max_data_age_seconds=server_validity)
                 except Exception:  # noqa: BLE001 - fail closed without provider details
                     connection.send_error(msg["id"], "mosaic_temporarily_unavailable",
                                           "Die mehrteilige Rasterauflösung ist derzeit nicht verfügbar.")
