@@ -6,7 +6,7 @@ from homeassistant.const import Platform
 
 DOMAIN: Final = "weather_router"
 NAME: Final = "WeatherRouter"
-INTEGRATION_VERSION: Final = "0.10.164"
+INTEGRATION_VERSION: Final = "0.10.0"
 # WR-owned, user-configurable preview validity. Never a GR/client limit.
 CONF_OPERA_PREVIEW_VALIDITY_SECONDS: Final = "opera_preview_validity_seconds"
 DEFAULT_OPERA_PREVIEW_VALIDITY_SECONDS: Final = 1500
