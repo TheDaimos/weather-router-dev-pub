@@ -2175,6 +2175,7 @@ async def websocket_opera_status(hass, connection, msg):
         "active_downloads": monitor.active_downloads if monitor else 0,
         "last_reason": monitor.last_reason if monitor else "provider_disabled",
         "last_downloaded_product": monitor.last_downloaded_product if monitor else None,
+        "last_metadata_check": monitor.last_metadata_check if monitor else "not_checked",
         "downloaded_unverified_count": monitor.downloaded_unverified_count if monitor else 0,
         "publication_stage": "download_only_unverified",
     }
