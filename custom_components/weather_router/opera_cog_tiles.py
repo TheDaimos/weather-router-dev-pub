@@ -21,12 +21,14 @@ def immutable_key(*, product, source_time, source_sha256, z, x, y, palette_rev, 
         raise OperaRasterError("invalid_style")
     return (product,source_time.astimezone(timezone.utc).isoformat(),source_sha256,z,x,y,palette_rev,quality_rev)
 
-def authorize_current(source_time, now):
+def authorize_current(source_time, now, *, max_age_seconds):
     """Muss auch bei einem Cachetreffer nach der Sitzungsfreigabe erfolgen."""
     if not all(isinstance(t,datetime) and t.tzinfo is not None for t in (source_time,now)):
         raise OperaRasterError("invalid_clock")
+    if type(max_age_seconds) is not int or not 1 <= max_age_seconds <= 3600:
+        raise OperaRasterError("invalid_server_validity")
     age=(now.astimezone(timezone.utc)-source_time.astimezone(timezone.utc)).total_seconds()
-    if not 0 <= age <= 900:
+    if not 0 <= age <= max_age_seconds:
         raise OperaRasterError("stale_or_future")
 
 def render_verified_cog(*, trusted_path, expected_sha256, z, x, y, palette, verified_frame=None):
