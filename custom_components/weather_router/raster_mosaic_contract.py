@@ -86,19 +86,21 @@ def validate_raster_mosaic_request(raw: Any) -> dict[str, Any]:
         }
     temporal = _mapping(value["time"], "time")
     _keys(temporal, {"mode", "max_data_age_seconds", "max_time_delta_seconds",
-                     "target_time", "max_background_age_seconds"}, {"mode", "max_data_age_seconds"}, "time")
+                     "target_time", "max_background_age_seconds", "allow_older_satellite_background"}, {"mode"}, "time")
     mode = temporal["mode"]
     if mode not in {"latest_coherent", "at_time"}:
         raise MosaicContractError("unsupported temporal mode")
-    time: dict[str, Any] = {
-        "mode": mode,
-        "max_data_age_seconds": _bounded_int(temporal["max_data_age_seconds"],
-                                               1, 86400, "max_data_age_seconds"),
-    }
+    time: dict[str, Any] = {"mode": mode}
+    if "allow_older_satellite_background" in temporal:
+        if type(temporal["allow_older_satellite_background"]) is not bool:
+            raise MosaicContractError("invalid satellite preference")
+        time["allow_older_satellite_background"] = temporal["allow_older_satellite_background"]
+    if "max_data_age_seconds" in temporal:
+        time["max_data_age_seconds"] = _bounded_int(temporal["max_data_age_seconds"], 1, 86400, "max_data_age_seconds")
     if "max_background_age_seconds" in temporal:
         background = _bounded_int(temporal["max_background_age_seconds"],
                                   1, 86400, "max_background_age_seconds")
-        if background < time["max_data_age_seconds"]:
+        if "max_data_age_seconds" in time and background < time["max_data_age_seconds"]:
             raise MosaicContractError("background age must not be below live age")
         time["max_background_age_seconds"] = background
     if "max_time_delta_seconds" in temporal:
@@ -128,8 +130,6 @@ def validate_raster_mosaic_request(raw: Any) -> dict[str, Any]:
         _keys(source, {"provider_id", "product_id"}, {"provider_id", "product_id"}, "source_request")
         if source["provider_id"] != "opera" or source["product_id"] != "RATE":
             raise MosaicContractError("unsupported explicit mosaic source")
-        if time["max_data_age_seconds"] > 900:
-            raise MosaicContractError("OPERA requires max_data_age_seconds <= 900")
         result["source_request"] = {"provider_id": "opera", "product_id": "RATE"}
     if "profile_id" in value:
         profile_id = value["profile_id"]
