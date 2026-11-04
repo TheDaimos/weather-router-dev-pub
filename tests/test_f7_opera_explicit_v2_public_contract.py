@@ -51,12 +51,11 @@ class ExplicitOperaContractTests(unittest.TestCase):
         with self.assertRaises(contract.MosaicContractError):
             contract.validate_raster_mosaic_request(raw)
 
-    def test_opera_900_second_limit_only(self):
+    def test_opera_age_is_not_client_capped_at_900(self):
         raw=request()
         raw["source_request"]={"provider_id":"opera","product_id":"RATE"}
         raw["time"]["max_data_age_seconds"]=901
-        with self.assertRaises(contract.MosaicContractError):
-            contract.validate_raster_mosaic_request(raw)
+        self.assertEqual(contract.validate_raster_mosaic_request(raw)["time"]["max_data_age_seconds"],901)
         del raw["source_request"]
         self.assertEqual(contract.validate_raster_mosaic_request(raw)["time"]["max_data_age_seconds"],901)
 
