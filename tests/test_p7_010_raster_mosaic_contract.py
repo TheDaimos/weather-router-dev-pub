@@ -22,7 +22,8 @@ class MosaicSchemaTests(unittest.TestCase):
         self.assertIn("focus", fields["context"]["properties"])
         self.assertEqual(fields["context"]["properties"]["focus"]["type"], "object")
         time_fields = fields["time"]["properties"]
-        self.assertIn("max_data_age_seconds", fields["time"]["required"])
+        self.assertNotIn("max_data_age_seconds", fields["time"]["required"])
+        self.assertEqual(time_fields["allow_older_satellite_background"]["type"], "boolean")
         self.assertIn("latest_coherent", time_fields["mode"]["enum"])
         self.assertIn("target_time", time_fields)
         self.assertGreater(fields["limits"]["properties"]["max_layers"]["maximum"], 3)
