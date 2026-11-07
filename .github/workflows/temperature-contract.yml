@@ -1,0 +1,20 @@
+name: Temperature V2 public synthetic contract
+on:
+  push:
+    branches: [deploy/dev]
+    paths: ['tests/temperature_contract/**', '.github/workflows/temperature-contract.yml']
+permissions:
+  contents: read
+jobs:
+  temperature-contract:
+    if: github.repository == 'TheDaimos/weather-router-dev-pub'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.14'
+      - name: Public synthetic V2 boundary, dimensions, units and gradient outputs
+        run: python -m unittest discover -s tests/temperature_contract -p 'test_*.py' -v
