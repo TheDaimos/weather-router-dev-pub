@@ -28,7 +28,7 @@ WeatherRouter steht unter einer eigenen
 - Kostenlose Weitergabe: erlaubt unter Lizenzbedingungen
 - Quellcode weitergegebener Fassungen: kostenlos verfügbar
 - Originalentwicklung: Christian Köhler
-- Urhebernennung: prominent und dauerhaft erhalten
+- Urhebernennung: Christian Köhler verbindlich an erster Stelle, auch in Forks und Weiterentwicklungen
 - Änderungen: kenntlich machen
 - Kommerzielle und berufliche Nutzung: nur mit Genehmigung
 - Logos und Projektkennzeichen: gesondert geschützt
