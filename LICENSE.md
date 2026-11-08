@@ -36,15 +36,25 @@ muss folgender Herkunftshinweis deutlich sichtbar
 erhalten bleiben:
 
 **Originalentwicklung und ursprünglicher Urheber:
-Christian Köhler / TheDaimos**
+Christian Köhler**
 
 Dieser Hinweis muss am Anfang der README-Datei, in
 der Projektbeschreibung und in einem vorhandenen
 Informations- oder Über-Dialog gut sichtbar erscheinen.
 
 Die ursprüngliche Urhebernennung darf nicht entfernt,
-versteckt oder gegenüber der Nennung späterer
-Weiterentwickler deutlich nachrangig dargestellt werden.
+versteckt oder nachrangig dargestellt werden.
+
+In sämtlichen projektbezogenen Urheber-, Gründer-,
+Entwickler- und Mitwirkendenlisten muss **Christian Köhler**
+als ursprünglicher Schöpfer und Projektgründer
+**ausnahmslos an erster Stelle** aufgeführt werden.
+Dies gilt für alle unter dieser Lizenz weitergegebenen
+Fassungen, einschließlich Forks, Bearbeitungen,
+Umbenennungen, Erweiterungen und Weiterentwicklungen.
+Nachfolgende Entwickler dürfen danach mit ihren
+jeweiligen Beiträgen genannt werden. Rechte und
+Urhebervermerke Dritter bleiben unberührt.
 
 Weiterentwickler dürfen zusätzlich genannt werden.
 Ihre Änderungen müssen als solche kenntlich gemacht
