@@ -3,15 +3,17 @@
 Copyright (c) 2026 Christian Köhler.
 
 **Originalentwicklung und ursprünglicher Urheber:
-Christian Köhler / TheDaimos**
+Christian Köhler**
 
 Kostenlose private Nutzung, Weiterentwicklung
 und kostenlose Weitergabe sind im Rahmen der
 WeatherRouter-Gemeinschaftslizenz erlaubt.
 
 Jede weitergegebene Fassung muss die ursprüngliche
-Urhebernennung prominent erhalten und ihre
-Änderungen kenntlich machen.
+Urhebernennung **an erster Stelle** in sämtlichen
+projektbezogenen Credits und Mitwirkendenlisten erhalten;
+dies gilt auch für Forks und Weiterentwicklungen.
+Änderungen müssen als solche kenntlich gemacht werden.
 
 Kommerzielle oder berufliche Nutzung erfordert
 eine vorherige ausdrückliche schriftliche Genehmigung.
