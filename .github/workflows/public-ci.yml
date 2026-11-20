@@ -38,19 +38,45 @@ jobs:
           node-version: "22"
 
       - name: Oeffentlichen Dateibestand pruefen
-        run: python tests/wr_public_distribution_guard.py
+        if: always()
+        run: |
+          mkdir -p ci-results
+          set -o pipefail
+          python tests/wr_public_distribution_guard.py 2>&1 | tee ci-results/distribution-guard.log
 
       - name: Python-Tests
-        run: python -m unittest discover -s tests -p 'test_*.py' -v
+        if: always()
+        run: |
+          mkdir -p ci-results
+          set -o pipefail
+          python -m unittest discover -s tests -p 'test_*.py' -v 2>&1 | tee ci-results/unittest.log
 
       - name: WeatherRouter-Struktur pruefen
-        run: python scripts/verify_m2_structure.py
+        if: always()
+        run: |
+          mkdir -p ci-results
+          set -o pipefail
+          python scripts/verify_m2_structure.py 2>&1 | tee ci-results/structure.log
 
       - name: JavaScript-Syntax pruefen
+        if: always()
         shell: bash
         run: |
           find custom_components/weather_router/frontend -type f -name '*.js' -print0 |
             xargs -0 -r -n1 node --check
 
       - name: Git-Export-Oberflaeche pruefen
-        run: node tests/test_git_export_frontend.cjs
+        if: always()
+        run: |
+          mkdir -p ci-results
+          set -o pipefail
+          node tests/test_git_export_frontend.cjs 2>&1 | tee ci-results/git-export-frontend.log
+
+      - name: CI-Protokolle archivieren
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: weather-router-public-ci-${{ matrix.python-version }}
+          path: ci-results/
+          if-no-files-found: warn
+          retention-days: 30

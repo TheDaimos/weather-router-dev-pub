@@ -10,9 +10,9 @@
     "http",
     "websocket_api"
   ],
-  "documentation": "https://github.com/TheDaimos/weather-router-dev",
+  "documentation": "https://github.com/TheDaimos/weather-router-pub",
   "integration_type": "service",
-  "issue_tracker": "https://github.com/TheDaimos/weather-router-dev/issues",
+  "issue_tracker": "https://github.com/TheDaimos/weather-router-pub/issues",
   "requirements": [
     "h5py==3.16.0",
     "pyproj==3.8.0"
