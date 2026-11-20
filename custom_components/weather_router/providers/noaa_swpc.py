@@ -15,7 +15,7 @@ from . import CapabilityInfo, NetworkTargetInfo, ProviderInfo
 
 _BASE = "https://services.swpc.noaa.gov"
 _OVATION_URL = f"{_BASE}/json/ovation_aurora_latest.json"
-_USER_AGENT = "WeatherRouter/0.10 (+https://github.com/TheDaimos/weather-router-dev-pub)"
+_USER_AGENT = "WeatherRouter/0.10 (+https://github.com/TheDaimos/weather-router-dev)"
 _FRAME_LIMIT = 72
 _TIMESTAMP_RE = re.compile(
     r"_s(?P<year>\d{4})(?P<month>\d{2})(?P<day>\d{2})"
@@ -248,7 +248,8 @@ class NoaaSwpcProvider:
         if capability_id != "aurora_ovation_latest":
             raise ValueError(f"Unsupported NOAA SWPC data-file capability: {capability_id}")
 
-        session = async_get_clientsession(hass)
+        from ..diagnostic_center import observed_clientsession
+        session = observed_clientsession(hass, "noaa_swpc", async_get_clientsession(hass))
         async with session.get(
             _OVATION_URL,
             headers={
@@ -321,7 +322,8 @@ class NoaaSwpcProvider:
         if spec is None:
             raise ValueError(f"Unsupported NOAA SWPC capability: {capability_id}")
 
-        session = async_get_clientsession(hass)
+        from ..diagnostic_center import observed_clientsession
+        session = observed_clientsession(hass, "noaa_swpc", async_get_clientsession(hass))
         source_kind = "primary"
         payload: Any = None
         last_error: Exception | None = None

@@ -1,0 +1,200 @@
+"""P7-010: bounded, opt-in asynchronous V2 raster orchestration (isolated).
+
+No Home Assistant imports, no registered websocket endpoint, no provider
+secrets, no network implementation and no change to Consumer API V1.
+The caller MUST supply trusted, already globally/profile/health-authorized
+provider descriptors, never authorization flags from consumer request data.
+"""
+from __future__ import annotations
+
+import asyncio
+from datetime import datetime, timezone
+from math import isfinite
+from typing import Any, Awaitable, Callable, Mapping, Sequence
+
+from .raster_mosaic_adapter import make_mosaic_candidate
+from .raster_mosaic_contract import validate_raster_mosaic_request
+from .raster_mosaic_policy import plan_raster_mosaic, viewport_overlap
+
+MAX_CANDIDATE_CONTACTS = 12
+MAX_PARALLEL_CONTACTS = 3
+# Shared across simultaneous consumer calls on the same Home Assistant event loop.
+# Per-request semaphores alone can multiply provider load under parallel clients.
+_GLOBAL_CONTACT_LOOP = None
+_GLOBAL_CONTACT_SLOTS = None
+
+
+def _shared_contact_slots():
+    """Reuse slots on the HA event loop; isolate independent test loops."""
+    global _GLOBAL_CONTACT_LOOP, _GLOBAL_CONTACT_SLOTS
+    loop = asyncio.get_running_loop()
+    if loop is not _GLOBAL_CONTACT_LOOP:
+        _GLOBAL_CONTACT_LOOP = loop
+        _GLOBAL_CONTACT_SLOTS = asyncio.Semaphore(MAX_PARALLEL_CONTACTS)
+    return _GLOBAL_CONTACT_SLOTS
+
+
+def _utc_now() -> str:
+    return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+
+
+def _contact_priority(source: Mapping[str, Any],
+                      viewport: Mapping[str, Any]) -> tuple[float, str]:
+    """Approximate geographic usefulness without any provider contact."""
+    coverage = source.get("machine_coverage")
+    try:
+        overlap = viewport_overlap(viewport, coverage)
+    except (TypeError, ValueError):
+        overlap = 0
+    return (-overlap, str(source.get("source_id") or ""))
+
+
+async def resolve_mosaic_snapshot(
+    request: Mapping[str, Any],
+    *,
+    sources: Sequence[Mapping[str, Any]],
+    server_now: str | None = None,
+    fetch_timeout_seconds: float = 5.0,
+    nasa_complement: bool = False,
+    nasa_parallelism: int = 6,
+    nasa_transport_revision: int = 0,
+    nasa_coverage_uncertain: bool = False,
+    dwd_validity_cache=None,
+) -> dict[str, Any]:
+    """Resolve trusted provider descriptors to a non-operational V2 plan.
+
+    Descriptor:
+      source_id, eligible (trusted core policy), machine_coverage
+      (trusted provider capability or freshly resolved), semantics,
+      routing_score, async_fetch(): already V1-public-sanitized raster payload.
+
+    The user never controls source lists, authorization flags, URLs or fetchers.
+    No external tile requests are made here. The request max_tile_requests is
+    only passed through as a later rendering budget; the active renderer must
+    independently enforce it when wired. Fail closed on provider errors.
+    """
+    query = validate_raster_mosaic_request(request)
+    now = server_now if server_now is not None else _utc_now()
+    if not isinstance(sources, Sequence) or isinstance(sources, (str, bytes)):
+        raise TypeError("Trusted source inventory must be a sequence")
+    if (isinstance(fetch_timeout_seconds, bool)
+            or not isinstance(fetch_timeout_seconds, (int, float))
+            or not isfinite(fetch_timeout_seconds)
+            or not 0 < fetch_timeout_seconds <= 15):
+        raise ValueError("Invalid per-provider timeout")
+    viewport = {name: query["context"][name]
+                for name in ("west", "south", "east", "north")}
+    limits = query["limits"]
+    # V2 layer descriptors are whole-viewport planning metadata, NOT
+    # tile-fetch operations. A 12-source mosaic may cost just one source
+    # per tile when the envelopes do not overlap.
+    # The later consumer renderer MUST enforce its own independent
+    # max_tile_requests total and per-tile visual overlap limits.
+    # Provider contacts use their separate concurrency/contact caps below.
+    active_layer_budget = min(limits["max_layers"], 12)
+    # Provider contacts and composited layers are separate resource budgets.
+    # A low layer limit must not silently reduce discovery of geographically
+    # suitable sources; the hard request contact and concurrency caps remain.
+    contact_budget = MAX_CANDIDATE_CONTACTS
+    eligible: list[Mapping[str, Any]] = []
+    for source in sources:
+        if (not isinstance(source, Mapping) or source.get("eligible") is not True
+                or not callable(source.get("async_fetch"))):
+            continue
+        coverage = source.get("machine_coverage")
+        if not isinstance(coverage, Mapping):
+            continue
+        if _contact_priority(source, viewport)[0] >= 0:
+            continue
+        eligible.append(source)
+    eligible.sort(key=lambda row: _contact_priority(row, viewport))
+    limited = eligible[:contact_budget]
+    omitted_for_budget = max(0, len(eligible) - len(limited))
+
+    shared_slots = _shared_contact_slots()
+
+    fetch_rejections: list[dict[str, str]] = []
+
+    async def _fetch(source: Mapping[str, Any]) -> dict[str, Any] | None:
+        try:
+            async with shared_slots:
+                payload = await asyncio.wait_for(
+                    source["async_fetch"](), timeout=fetch_timeout_seconds)
+            if not isinstance(payload, Mapping):
+                fetch_rejections.append({"source_id": str(source["source_id"])[:120],
+                                         "reason": "invalid_provider_payload"})
+                return None
+            candidate = make_mosaic_candidate(
+                source_id=source["source_id"],
+                eligible=True,
+                machine_coverage=source["machine_coverage"],
+                payload=payload,
+                semantics=source["semantics"],
+                data_time=(payload.get("frame_time")
+                           or payload.get("data_time")),
+                retrieved_at=source.get("retrieved_at") or now,
+                routing_score=tuple(source.get("routing_score") or (999, 999, 999)),
+                trusted_internal_opera=(
+                    source.get("internal_authentication_required") is True
+                    and source.get("source_id") == "opera/opera_rate_raster"
+                ),
+            )
+            if candidate is not None and source.get("internal_authentication_required") is True and source.get("source_id") == "opera/opera_rate_raster":
+                for key in ("wr_max_age_seconds", "wr_stale_after_seconds"):
+                    value = source.get(key)
+                    if type(value) is int and 1 <= value <= 3600:
+                        candidate[key] = value
+            if candidate is None:
+                fetch_rejections.append({"source_id": str(source["source_id"])[:120],
+                                         "reason": "raster_candidate_invalid"})
+            return candidate
+        except Exception:  # noqa: BLE001 - isolated provider failure
+            fetch_rejections.append({"source_id": str(source["source_id"])[:120],
+                                     "reason": "provider_contact_failed"})
+            return None
+
+    # Gather bounded provider calls. No background jobs survive this call.
+    resolved = await asyncio.gather(*(_fetch(row) for row in limited))
+    accepted = [row for row in resolved if row is not None]
+    from .nasa_mosaic import NASA, complement_snapshot
+    spatial = nasa_complement and "tile_zoom" in query["context"]
+    ordinary = [row for row in accepted if row["source_id"] != NASA] if spatial else accepted
+    temporal = query["time"]
+    answer = plan_raster_mosaic(
+        ordinary,
+        viewport=viewport,
+        focus=query["context"].get("focus"),
+        now=now,
+        max_data_age_seconds=temporal["max_data_age_seconds"],
+        max_background_age_seconds=temporal.get("max_background_age_seconds"),
+        max_time_delta_seconds=temporal.get("max_time_delta_seconds", 180),
+        max_layers=active_layer_budget,
+        reference_time=(temporal.get("target_time")
+                        if temporal["mode"] == "at_time" else None),
+    )
+    if query["context"].get("raster_contract") == 2:
+        from time import perf_counter
+        from .raster_mosaic_spatial import complete_spatial_plan
+        plan_started = perf_counter()
+        answer = await asyncio.to_thread(complete_spatial_plan, query, sources, answer, accepted, now,
+            nasa_enabled=spatial, parallelism=nasa_parallelism, revision=nasa_transport_revision,
+            uncertain=nasa_coverage_uncertain,dwd_validity_cache=dwd_validity_cache)
+        answer["spatial_planning"]["plan_ms"] = round((perf_counter()-plan_started)*1000, 3)
+    elif spatial:
+        answer = await complement_snapshot(query,sources,answer,accepted,now,uncertain=nasa_coverage_uncertain,parallelism=nasa_parallelism,transport_revision=nasa_transport_revision)
+    answer["_internal_source_rejections"] = (
+        answer.pop("_internal_source_rejections", []) + fetch_rejections
+    )[:12]
+    answer["limitations"].append(
+        "Kachelbudget muss durch spaeteren aktiven Renderer erzwungen werden")
+    if limits["max_tile_requests"] < len(answer["layers"]):
+        answer["limitations"].append(
+            "Kachelanfragebudget ist getrennt vom Quellenbudget und muss "
+            "im spaeteren Consumer-Renderer erzwungen werden")
+    if omitted_for_budget:
+        answer["limitations"].append(
+            f"{omitted_for_budget} weitere Quellen wegen Kontaktbegrenzung nicht abgefragt")
+    if len(accepted) < len(limited):
+        answer["limitations"].append(
+            f"{len(limited) - len(accepted)} Quellen nicht auswertbar oder nicht erreichbar")
+    return answer

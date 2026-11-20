@@ -36,6 +36,7 @@ from .providers import provider_catalog
 from .routing_diagnostic_core import (
     ROUTING_DIAGNOSTIC_SCHEMA,
     diagnostic_value as _diagnostic_value,
+    diagnostic_manual_synoptic_snapshot as _manual_synoptic_snapshot,
     redact_text as _redact_text,
 )
 from .routing_diagnostics import provider_runtime_summary
@@ -1319,12 +1320,19 @@ async def _async_aggregate_provider_report(
                     "duration_ms": round((monotonic() - started) * 1000, 1),
                     "data": _diagnostic_value(probe_result),
                 }
+                if isinstance(probe_result, dict):
+                    from .diagnostic_center import summarize_stations
+                    report["diagnostic_stations"] = summarize_stations(probe_result)
             except Exception as err:  # noqa: BLE001 - explicit diagnostics must capture failure
                 report["provider_probe"] = {
                     "ok": False,
                     "duration_ms": round((monotonic() - started) * 1000, 1),
                     "exception": _exception_report(err),
+                    "http_status": getattr(err, "status", None)
+                    if isinstance(getattr(err, "status", None), int)
+                    and 100 <= getattr(err, "status") <= 599 else None,
                 }
+
 
     for capability in disabled_capabilities:
         report["tests"].append(
@@ -1557,6 +1565,26 @@ async def _async_aggregate_provider_report(
         "tests_skipped": len(skipped),
         "routing_skipped": False,
     }
+    # A single source-of-truth event for either individual or aggregate
+    # diagnostics: never double-count the same provider probe.
+    from .diagnostic_center import record as d2_record
+    probe = report.get("provider_probe")
+    data = probe.get("data") if isinstance(probe, dict) else None
+    if not isinstance(data, dict):
+        data = {}
+    d2_record(
+        hass, category="provider",
+        outcome="success" if report["summary"]["ok"] else "failed",
+        correlation_id=provider.id,
+        details={
+            "duration_ms": probe.get("duration_ms") if isinstance(probe, dict) else None,
+            "http_status": data.get("listing_http_status", data.get("http_status",
+                           probe.get("http_status") if isinstance(probe, dict) else None)),
+            "listing_response_bytes": data.get("listing_response_bytes"),
+            "listing_pages": data.get("listing_pages"),
+            "listing_retry_count": data.get("listing_retry_count"),
+        },
+    )
     return report
 
 
@@ -1738,6 +1766,11 @@ async def websocket_provider_diagnostics(
                 "duration_ms": round((monotonic() - started) * 1000, 1),
                 "data": _diagnostic_value(probe_result),
             }
+            from .diagnostic_center import record, summarize_stations
+            record(hass, category="provider",
+                   outcome="success" if report["provider_probe"]["ok"] else "failed",
+                   details={"duration_ms": report["provider_probe"]["duration_ms"]})
+            report["diagnostic_stations"] = summarize_stations(probe_result if isinstance(probe_result, dict) else {})
         except Exception as err:  # noqa: BLE001 - diagnostics must capture provider failures
             report["provider_probe"] = {
                 "ok": False,
@@ -2084,16 +2117,80 @@ async def websocket_log_git_export(hass: HomeAssistant, connection: websocket_ap
         if not token or not branch:
             raise WeatherRouterLogExportError("Configure this Git export target first")
 
-        snapshot = _diagnostic_value(msg["snapshot"])
+        raw_snapshot = msg["snapshot"]
+        # Manual SYNOPTIC vectors have a dedicated, fail-closed numeric GeoJSON
+        # serialization path; generic depth-7 diagnostics remain unchanged.
+        if str(raw_snapshot.get("schema") or "").startswith("weather_router.manual_test."):
+            try:
+                snapshot = _manual_synoptic_snapshot(raw_snapshot)
+            except ValueError as err:
+                raise WeatherRouterLogExportError(str(err)) from err
+        else:
+            snapshot = _diagnostic_value(raw_snapshot)
         schema = snapshot.get("schema")
         supported_schemas = {
             "weather_router.event_log.v1",
             "weather_router.provider_diagnostics.v1",
             "weather_router.all_provider_diagnostics.v1",
             ROUTING_DIAGNOSTIC_SCHEMA,
+            "weather_router.api_monitor.v1",
+            "weather_router.diagnostic_center.v1",
+            "weather_router.opera.diagnostic_export.v1",
+            "weather_router.opera.test68_d.historical.v1",
+            "weather_router.manual_test.v1",
+            "weather_router.manual_test.v2",
+            "weather_router.manual_test.combined.v1",
+            "weather_router.manual_test.special.v1",
         }
         if schema not in supported_schemas:
             raise WeatherRouterLogExportError("unsupported WeatherRouter diagnostic schema")
+
+        # Manual tests are real operator-triggered results, never a substitute for
+        # scientific certification. Accept only the four explicit, bounded shapes.
+        if schema in {
+            "weather_router.manual_test.v1",
+            "weather_router.manual_test.v2",
+            "weather_router.manual_test.combined.v1",
+            "weather_router.manual_test.special.v1",
+        }:
+            import re
+            test_id = snapshot.get("test_id")
+            if not isinstance(test_id, str) or not re.fullmatch(r"(?:0?[0-9]{1,3}|P0-0(?:60|70))", test_id):
+                raise WeatherRouterLogExportError("invalid manual test identifier")
+            if not isinstance(snapshot.get("captured_at"), str) or len(snapshot["captured_at"]) > 45:
+                raise WeatherRouterLogExportError("invalid manual test capture time")
+            if len(json.dumps(snapshot, ensure_ascii=False)) > 1_500_000:
+                raise WeatherRouterLogExportError("manual test result exceeds size limit")
+            if schema == "weather_router.manual_test.combined.v1":
+                if snapshot.get("contract_mode") != "V1+V2" or not isinstance(snapshot.get("capability"), str):
+                    raise WeatherRouterLogExportError("invalid combined manual test contract")
+                for key in ("v1", "v2"):
+                    section = snapshot.get(key)
+                    if not isinstance(section, dict) or not isinstance(section.get("status"), str):
+                        raise WeatherRouterLogExportError("invalid combined manual test section")
+            elif schema == "weather_router.manual_test.special.v1":
+                if test_id not in ("P0-060", "P0-070") or snapshot.get("contract_version") != (None if test_id == "P0-060" else 1):
+                    raise WeatherRouterLogExportError("invalid historical special test")
+                if not isinstance(snapshot.get("status"), str):
+                    raise WeatherRouterLogExportError("missing historical test status")
+            else:
+                expected = 2 if schema == "weather_router.manual_test.v2" else 1
+                if snapshot.get("contract_version") != expected:
+                    raise WeatherRouterLogExportError("invalid manual consumer contract")
+                if not isinstance(snapshot.get("selected_capability"), str):
+                    raise WeatherRouterLogExportError("invalid manual capability")
+                if snapshot.get("request") is not None and not isinstance(snapshot.get("request"), dict):
+                    raise WeatherRouterLogExportError("invalid manual request")
+                if snapshot.get("response") is not None and not isinstance(snapshot.get("response"), dict):
+                    raise WeatherRouterLogExportError("invalid manual response")
+                if "response" not in snapshot and "error" not in snapshot and snapshot.get("status") != "not_supported":
+                    raise WeatherRouterLogExportError("manual test has no result")
+
+        if schema == "weather_router.opera.test68_d.historical.v1":
+            # TEST68-D: explicitly bounded, metadata-only historical export.
+            # Do not accept client-supplied PNG/base64, paths, URLs or approval.
+            from .opera_historical_export import validate_historical_export
+            snapshot = validate_historical_export(snapshot)
 
         if schema == "weather_router.event_log.v1":
             events = snapshot.get("events")
@@ -2105,14 +2202,210 @@ async def websocket_log_git_export(hass: HomeAssistant, connection: websocket_ap
                 raise WeatherRouterLogExportError("invalid provider diagnostic tests")
         elif schema == "weather_router.all_provider_diagnostics.v1":
             providers = snapshot.get("providers")
-            if providers is not None and not isinstance(providers, list):
-                raise WeatherRouterLogExportError("invalid aggregate provider diagnostics")
+            if (not isinstance(providers, list) or len(providers) > 128
+                    or any(not isinstance(item, dict) for item in providers)):
+                raise WeatherRouterLogExportError("invalid bounded aggregate provider diagnostics")
+            stations = snapshot.get("diagnostic_stations", [])
+            if (not isinstance(stations, list) or len(stations) > 128
+                    or any(not isinstance(item, dict) for item in stations)):
+                raise WeatherRouterLogExportError("invalid bounded diagnostic stations")
+            system = snapshot.get("system_diagnostic")
+            if system is not None:
+                if (not isinstance(system, dict)
+                        or system.get("schema") != "weather_router.diagnostic_center.v1"
+                        or system.get("scientific_raster_approved") is not False
+                        or not isinstance(system.get("trace"), list)
+                        or len(system["trace"]) > 120
+                        or not isinstance(system.get("providers"), list)
+                        or len(system["providers"]) > 128):
+                    raise WeatherRouterLogExportError("invalid aggregate system diagnostic")
+            omitted = snapshot.get("not_executed", [])
+            if not isinstance(omitted, list) or len(omitted) > 128:
+                raise WeatherRouterLogExportError("invalid bounded skipped checks")
+        elif schema == "weather_router.diagnostic_center.v1":
+            events = snapshot.get("events")
+            if not isinstance(events, list) or len(events) > 120:
+                raise WeatherRouterLogExportError("invalid bounded diagnostic center timeline")
+            providers = snapshot.get("providers")
+            if not isinstance(providers, list) or len(providers) > 128:
+                raise WeatherRouterLogExportError("invalid bounded diagnostic center providers")
+            trace = snapshot.get("trace", [])
+            if (not isinstance(trace, list) or len(trace) > 120
+                    or any(not isinstance(item, dict) for item in trace)):
+                raise WeatherRouterLogExportError("invalid bounded diagnostic center trace")
+            consumer_history = snapshot.get("consumer_history", [])
+            if (not isinstance(consumer_history, list) or len(consumer_history) > 80
+                    or any(not isinstance(item, dict) for item in consumer_history)):
+                raise WeatherRouterLogExportError("invalid bounded consumer history")
+            if snapshot.get("scientific_raster_approved") is not False:
+                raise WeatherRouterLogExportError("invalid scientific diagnostic guard")
+        elif schema == "weather_router.opera.diagnostic_export.v1":
+            if snapshot.get("scientific_raster_approved") is not False:
+                raise WeatherRouterLogExportError("OPERA diagnostic must not claim scientific approval")
+            if not isinstance(snapshot.get("services"), dict):
+                raise WeatherRouterLogExportError("invalid OPERA services")
+            if set(snapshot["services"]) != {"RATE", "DBZH", "ACRR"} or any(
+                type(v) is not bool for v in snapshot["services"].values()
+            ):
+                raise WeatherRouterLogExportError("invalid OPERA product flags")
+            if not isinstance(snapshot.get("ring_status"), dict):
+                raise WeatherRouterLogExportError("invalid OPERA ring status")
+            if not isinstance(snapshot.get("captured_at_utc"), str):
+                raise WeatherRouterLogExportError("invalid OPERA snapshot time")
+        elif schema == "weather_router.api_monitor.v1":
+            entries = snapshot.get("entries")
+            if not isinstance(entries, list) or len(entries) > 250:
+                raise WeatherRouterLogExportError("invalid API monitor entries")
+            if any(not isinstance(item, dict) for item in entries):
+                raise WeatherRouterLogExportError("invalid API monitor entry")
         elif schema == ROUTING_DIAGNOSTIC_SCHEMA:
             candidates = snapshot.get("candidates")
             if not isinstance(candidates, list) or len(candidates) > 200:
                 raise WeatherRouterLogExportError("invalid routing diagnostic candidates")
             if not isinstance(snapshot.get("decision"), dict):
                 raise WeatherRouterLogExportError("invalid routing diagnostic decision")
+
+        # Server-authoritative opt-in OPERA diagnostic section. Do not trust
+        # client-composed ring values or raw network / filesystem metadata.
+        from .const import DOMAIN, DEV_BUILD_VERSION, DEV_LOADER_REV
+        ring_area = hass.data.get(DOMAIN, {}).get("opera_ring_buffer", {})
+        store = ring_area.get("store") if isinstance(ring_area, dict) else None
+        ring_export = {
+            "schema": "weather_router.opera.ring_export.v2",
+            "version": DEV_BUILD_VERSION, "loader": DEV_LOADER_REV,
+            "storage_available": False, "scientific_status": "UNVERIFIED",
+            "historical_tile_authorized": False,
+        }
+        if store is not None:
+            from datetime import datetime
+            from math import isfinite
+            def nonnegative(value):
+                return value if type(value) in (int, float) and isfinite(value) and 0 <= value < 1e12 else None
+            def safe_utc(value):
+                if not isinstance(value, str) or len(value) > 40 or not value.endswith("Z"):
+                    return None
+                try:
+                    parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+                    if parsed.utcoffset().total_seconds() == 0:
+                        return value
+                except (ValueError, AttributeError):
+                    pass
+                return None
+            try:
+                storage = await hass.async_add_executor_job(store.snapshot)
+                monitor = ring_area.get("monitor")
+                observed = monitor.snapshot() if monitor is not None else {}
+                ring_export.update({
+                    "storage_available": True,
+                    "monitor_enabled": observed.get("enabled") is True,
+                    "interval_seconds": nonnegative(observed.get("interval_seconds")),
+                    "check_count": nonnegative(observed.get("check_count")),
+                    "failed_check_count": nonnegative(observed.get("failed_check_count")),
+                    "last_check_utc": safe_utc(observed.get("last_check_utc")),
+                    "last_automatic_download_utc": safe_utc(observed.get("last_download_utc")),
+                    "last_manual_download_utc": safe_utc(ring_area.get("manual_last_download_utc")),
+                    "last_stored_stamp": observed.get("last_stored_stamp") if isinstance(observed.get("last_stored_stamp"), str) and len(observed["last_stored_stamp"]) == 16 else None,
+                    "original_count": nonnegative(storage.get("count")),
+                    "original_bytes": nonnegative(storage.get("original_bytes")),
+                    "original_mib": nonnegative(storage.get("original_mib")),
+                    "capacity_bytes": nonnegative(storage.get("capacity_bytes")),
+                    "utilization_percent": nonnegative(storage.get("utilization_percent")),
+                    "retention_hours": nonnegative(storage.get("retention_hours")),
+                    "automatic_cleanup_enabled": storage.get("automatic_cleanup_enabled") is True,
+                    "oldest_utc": safe_utc(storage.get("oldest_utc")),
+                    "newest_utc": safe_utc(storage.get("newest_utc")),
+                    "observation_count": nonnegative(observed.get("delay_count")),
+                    "delay_min_seconds": nonnegative(observed.get("delay_min_seconds")),
+                    "delay_mean_seconds": nonnegative(observed.get("delay_mean_seconds")),
+                    "delay_max_seconds": nonnegative(observed.get("delay_max_seconds")),
+                    "last_error_class": observed.get("last_error_class") if isinstance(observed.get("last_error_class"), str) and observed["last_error_class"].isidentifier() and len(observed["last_error_class"]) <= 40 else None,
+                    "last_download_error_code": (
+                        observed.get("last_error_code")
+                        if observed.get("last_error_phase") == "download"
+                        and observed.get("last_error_code") in (
+                            "download_failed", "unexpected_content_encoding",
+                            "download_body_incomplete", "invalid_original")
+                        else None
+                    ),
+                    "last_odim_error_code": (
+                        observed.get("last_error_code")
+                        if observed.get("last_error_phase") == "odim_validation"
+                        and observed.get("last_error_code") in (
+                            "unsupported_product", "unsafe_file", "file_size_invalid",
+                            "not_hdf5", "hdf5_dependency_unavailable",
+                            "missing_odim_groups", "not_composite", "invalid_odim_utc",
+                            "invalid_grid_dimensions", "oversized_grid",
+                            "missing_projection", "incomplete_projected_extent",
+                            "invalid_projected_extent", "incomplete_geographic_corners",
+                            "invalid_geographic_corners", "invalid_data_node",
+                            "grid_shape_mismatch", "invalid_calibration",
+                            "quantity_missing_or_ambiguous", "hdf5_read_error")
+                        else None
+                    ),
+                    "last_error_phase": observed.get("last_error_phase") if observed.get("last_error_phase") in ("s3_listing", "download", "odim_validation", "journal") else None,
+                    "last_attempt_stamp": observed.get("last_attempt_stamp") if isinstance(observed.get("last_attempt_stamp"), str) and len(observed["last_attempt_stamp"]) == 16 else None,
+                    "historical_frame_count": nonnegative(storage.get("count")),
+                    "observations": [{
+                        "stamp": item.get("stamp") if isinstance(item.get("stamp"), str) and len(item["stamp"]) == 16 else None,
+                        "first_seen_utc": safe_utc(item.get("first_seen_utc")),
+                        "download_completed_utc": safe_utc(item.get("download_completed_utc")),
+                        "observed_delay_seconds": nonnegative(item.get("observed_delay_seconds")),
+                        "bytes": nonnegative(item.get("bytes")),
+                        "storage_status": item.get("storage_status") if item.get("storage_status") in ("stored", "duplicate", "expired_by_policy") else None,
+                    } for item in (observed.get("observations") if isinstance(observed.get("observations"), list) else [])[-24:]
+                        if isinstance(item, dict)],
+                })
+            except Exception:
+                # Diagnostic enrichment must never break another provider export.
+                ring_export = {
+                    "schema": "weather_router.opera.ring_export.v2",
+                    "version": DEV_BUILD_VERSION, "loader": DEV_LOADER_REV,
+                    "storage_available": False, "scientific_status": "UNVERIFIED",
+                    "historical_tile_authorized": False,
+                    "error": "ring_snapshot_unavailable",
+                }
+        bridge = ring_area.get("rate_bridge") if isinstance(ring_area, dict) else None
+        current = getattr(getattr(bridge, "delivery", None), "current_stamp", None)
+        result = ring_area.get("last_rate_stage") if isinstance(ring_area, dict) else None
+        status = result.get("status") if isinstance(result, dict) else None
+        statuses = ("registered_approved", "registered_diagnostic", "no_eligible_rate_generation", "no_newer_generation",
+                    "provider_or_rate_disabled", "rate_stage_failed")
+        safe_status = status if status in statuses else "not_attempted"
+        error = getattr(bridge, "last_error", None)
+        safe_error = error if error in ("native_rate_runtime_unavailable", "rate_stage_failed",
+            "odim_grid_metadata_missing", "ring_frame_digest_mismatch",
+            "stale_or_future_source", "non_monotonic_radar_cycle") else None
+        rate_delivery = {"registration_automated": bridge is not None,
+                         "delivery_status": safe_status,
+                         "registered_stamp": current if isinstance(current, str) and len(current) == 16 else None,
+                         "last_error_code": safe_error,
+                         "scientific_tile_approved": False}
+        from .opera_config import service_allowed
+        from .opera_preview_age_policy import preview_continuity_from_entries
+        from .const import CONF_ENABLED_PROVIDERS, CONF_ROUTER_ENABLED
+        entries = hass.config_entries.async_entries(DOMAIN)
+        options = entries[0].options if entries else {}
+        stage = hass.data.get(DOMAIN, {}).get("opera_rate_delivery", {})
+        registry = stage.get("registry")
+        if registry is not None:
+            rate_delivery.update(registry.delivery_state(
+                enabled=(options.get(CONF_ROUTER_ENABLED, True) is True
+                         and "opera" in options.get(CONF_ENABLED_PROVIDERS, ())
+                         and service_allowed(options, "RATE") and stage.get("enabled") is True),
+                max_age_seconds=preview_continuity_from_entries(entries)["delivery_limit_seconds"]))
+        rate_delivery["consumer_v2"] = hass.data.get(DOMAIN, {}).get("opera_rate_routing")
+        snapshot["scientific_raster_approved"] = rate_delivery["scientific_tile_approved"]
+        snapshot["regular_rate_available"] = rate_delivery.get("production_tiles_authorized", False)
+        ring_export["rate_delivery"] = rate_delivery
+        ring_export["scientific_scope"] = "raw_original_storage_only"
+        if schema == "weather_router.opera.diagnostic_export.v1":
+            snapshot["ring_status"] = {
+                "monitor_enabled": ring_export.get("monitor_enabled") is True,
+                "original_count": ring_export.get("original_count"),
+                "original_bytes": ring_export.get("original_bytes"),
+                **rate_delivery,
+            }
+        snapshot["opera_ring_buffer"] = ring_export
 
         encoded_size = len(
             json.dumps(snapshot, ensure_ascii=False, separators=(",", ":")).encode(
@@ -2130,6 +2423,286 @@ async def websocket_log_git_export(hass: HomeAssistant, connection: websocket_ap
         connection.send_result(msg["id"], result)
     except WeatherRouterLogExportError as err:
         connection.send_error(msg["id"], "git_export_failed", str(err))
+
+
+
+@websocket_api.require_admin
+@websocket_api.websocket_command({
+    vol.Required("type"): "weather_router/diagnostic_center/snapshot",
+    vol.Optional("deep", default=False): bool,
+})
+@websocket_api.async_response
+async def websocket_diagnostic_center_snapshot(hass: HomeAssistant, connection: websocket_api.ActiveConnection, msg: dict[str, Any]) -> None:
+    """Read-only, bounded snapshot from the real HA-Core interpreter."""
+    from .diagnostic_center import record, runtime_snapshot, snapshot
+    from .const import DOMAIN
+    try:
+        start = __import__("time").monotonic()
+        import asyncio
+        loop_started = __import__("time").monotonic()
+        await asyncio.sleep(0)
+        loop_delay_ms = round((__import__("time").monotonic() - loop_started) * 1000, 3)
+        executor_started = __import__("time").monotonic()
+        runtime = await hass.async_add_executor_job(runtime_snapshot)
+        executor_turnaround_ms = round(
+            (__import__("time").monotonic() - executor_started) * 1000, 3
+        )
+        runtime["event_loop_yield_ms"] = loop_delay_ms
+        runtime["executor_turnaround_ms"] = executor_turnaround_ms
+        area = hass.data.get(DOMAIN, {})
+        entry_count = len(hass.config_entries.async_entries(DOMAIN))
+        record(hass, category="runtime", outcome="success",
+               details={"ready": entry_count > 0, "event_loop_yield_ms": loop_delay_ms,
+                        "executor_turnaround_ms": executor_turnaround_ms})
+        from .providers import provider_catalog
+        catalog = await hass.async_add_executor_job(provider_catalog)
+        entries = hass.config_entries.async_entries(DOMAIN)
+        enabled = set(entries[0].options.get("enabled_providers", ())) if entries else set()
+        summaries = [{"id": str(provider_id), "status": "enabled" if provider_id in enabled else "disabled",
+                      "diagnostic": {"available": None}}
+                     for provider_id in list(catalog)[:128]]
+        from .diagnostic_center import summarize_stations
+        payload = snapshot(hass, runtime=runtime, provider_summaries=summaries)
+        from .consumer_api_monitor import get_monitor
+        monitor = get_monitor(hass)
+        # Only explicitly enabled monitor measurements; default location export denied.
+        if monitor.enabled:
+            monitor_state = monitor.query()
+            payload["consumer_history"] = [{
+                "version": str(item.get("api_version", ""))[:12],
+                "correlation_id": str(item.get("correlation_id") or "")[:80]
+                  if str(item.get("correlation_id") or "").replace("-", "").replace("_","").isalnum() else None,
+                "started_at": item.get("started_at"),
+                "duration_ms": item.get("duration_ms"),
+                "result": item.get("result"),
+                "provider_count": len(item.get("providers") or []),
+            } for item in monitor_state.get("entries", [])[-80:]]
+        else:
+            payload["not_executed"].append("consumer_api_monitor_not_enabled")
+        from .routing_diagnostics import routing_diagnostic_summary
+        routing_state = routing_diagnostic_summary(hass)
+        payload["routing_history"] = {
+            "stored_trace_count": routing_state.get("stored_trace_count"),
+            "ring_limit": routing_state.get("ring_limit"),
+            "status_counts": routing_state.get("status_counts"),
+        }
+        payload["diagnostic_stations"] = []
+        payload["not_executed"].append("provider_network_checks_require_explicit_deep_test")
+        import asyncio
+        if msg.get("deep") is True:
+            from .opera_runtime_dependencies import inspect_rate_runtime
+            # Native import workers can continue after a WebSocket timeout:
+            # retain the actual task until completion, preventing overlapping
+            # requests from multiplying HA-Core executor work.
+            native_key = "weather_router_d2_native_probe_task"
+            pending = hass.data.get(native_key)
+            if pending is not None and not pending.done():
+                payload["native_runtime"] = {
+                    "status": "already_running", "scientific_raster_approved": False,
+                }
+                payload["not_executed"].append("native_probe_running_elsewhere")
+            else:
+                try:
+                    pending = asyncio.ensure_future(
+                        hass.async_add_executor_job(inspect_rate_runtime)
+                    )
+                    hass.data[native_key] = pending
+                    def _native_probe_finished(done):
+                        # Consume errors also when the WebSocket request timed
+                        # out; no unhandled task warning or retained task state.
+                        if hass.data.get(native_key) is done:
+                            hass.data.pop(native_key, None)
+                        try:
+                            done.result()
+                        except asyncio.CancelledError:
+                            pass
+                        except Exception:
+                            pass  # The requesting snapshot reports failure.
+                    pending.add_done_callback(_native_probe_finished)
+                    native = await asyncio.wait_for(asyncio.shield(pending), timeout=8)
+                    payload["native_runtime"] = {
+                        "dependencies": native.get("dependencies"),
+                        "runtime_importable": native.get("runtime_importable"),
+                        "blockers": native.get("blockers", [])[:8],
+                        "scientific_raster_approved": False,
+                    }
+                    payload["not_executed"] = [
+                        reason for reason in payload["not_executed"]
+                        if reason != "native_packages_not_imported"
+                    ]
+                except Exception:
+                    payload["native_runtime"] = {
+                        "status": "probe_unavailable",
+                        "scientific_raster_approved": False,
+                    }
+        else:
+            payload["not_executed"].append("native_library_import_probe_not_requested")
+        # Generic extension lifecycle only; never export concrete extension
+        # package names, paths, entry points or enablement mechanisms.
+        extensions = hass.data.get("weather_router_extension_modules", {})
+        payload["extension_runtime"] = {
+            "loaded_count": len(extensions) if isinstance(extensions, dict) else 0,
+            "source_health_checked": False,
+            "status": "lifecycle_only",
+        }
+        payload["home_assistant"] = {
+            "core_version": str(hass.config.version)[:40],
+            "active_tasks": len(asyncio.all_tasks()),
+            "snapshot_utc": payload["generated_at"],
+        }
+        payload["integration"] = {"configured_entries": entry_count,
+                                  "diagnostic_tile_route_registered": bool(area.get("opera_rate_delivery", {}).get("http_route_active")),
+                                  "diagnostic_tile_enabled": bool(area.get("opera_rate_delivery", {}).get("enabled"))}
+        payload["duration_ms"] = round((__import__("time").monotonic() - start) * 1000, 2)
+        connection.send_result(msg["id"], payload)
+    except Exception:
+        try:
+            from .diagnostic_center import record as d2_record
+            d2_record(hass, category="runtime", outcome="failed", details={"ready":False})
+        except Exception:
+            pass
+        connection.send_error(msg["id"], "diagnostic_center_unavailable", "Read-only snapshot failed")
+
+@websocket_api.require_admin
+@websocket_api.websocket_command({
+    vol.Required("type"): "weather_router/opera/scientific_selfcheck",
+})
+@websocket_api.async_response
+async def websocket_opera_scientific_selfcheck(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict[str, Any],
+) -> None:
+    """Explicit offline preflight; never admit scientific raster delivery."""
+    from .opera_scientific_selfcheck import run_scientific_selfcheck
+    import asyncio
+    key = "weather_router_opera_scientific_selfcheck_task"
+    existing = hass.data.get(key)
+    if existing is not None and not existing.done():
+        connection.send_error(msg["id"], "scientific_test_busy", "A scientific preflight is already running")
+        return
+    task = asyncio.ensure_future(hass.async_add_executor_job(run_scientific_selfcheck))
+    hass.data[key] = task
+    def _finished(done):
+        if hass.data.get(key) is done:
+            hass.data.pop(key, None)
+        try:
+            done.result()
+        except BaseException:
+            pass
+    task.add_done_callback(_finished)
+    try:
+        result = await asyncio.wait_for(asyncio.shield(task), timeout=10)
+        connection.send_result(msg["id"], result)
+    except asyncio.TimeoutError:
+        connection.send_error(msg["id"], "scientific_test_timeout", "Preflight exceeded time budget")
+    except Exception:
+        connection.send_error(msg["id"], "scientific_test_failed", "Preflight could not complete")
+
+
+@websocket_api.require_admin
+@websocket_api.websocket_command({
+    vol.Required("type"): "weather_router/opera/functiontests",
+    vol.Optional("suite", default="all"): vol.In(("all", "decoder", "geometry", "security")),
+})
+@websocket_api.async_response
+async def websocket_opera_functiontests(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict[str, Any],
+) -> None:
+    """Fixed SCI-09 test vectors, strictly off the event loop, no arbitrary code."""
+    from .opera_scientific_functiontests import run_opera_functiontests
+    import asyncio
+    key = "weather_router_opera_functiontests_task"
+    active = hass.data.get(key)
+    if active is not None and not active.done():
+        connection.send_error(msg["id"], "scientific_test_busy", "OPERA test already running")
+        return
+    task = asyncio.ensure_future(
+        hass.async_add_executor_job(run_opera_functiontests, msg.get("suite", "all"))
+    )
+    hass.data[key] = task
+    def _finished(done):
+        if hass.data.get(key) is done:
+            hass.data.pop(key, None)
+        try:
+            done.result()
+        except BaseException:
+            pass
+    task.add_done_callback(_finished)
+    try:
+        result = await asyncio.wait_for(asyncio.shield(task), timeout=9)
+        connection.send_result(msg["id"], result)
+    except asyncio.TimeoutError:
+        connection.send_error(msg["id"], "scientific_test_timeout", "SCI-09 time budget exceeded")
+    except Exception:
+        connection.send_error(msg["id"], "scientific_test_failed", "SCI-09 function tests failed")
+
+
+@websocket_api.require_admin
+@websocket_api.websocket_command({
+    vol.Required("type"): "weather_router/opera/preview_control",
+    vol.Optional("enabled"): bool,
+    vol.Optional("max_age_seconds"): vol.All(vol.Coerce(int), vol.Range(min=900, max=3600)),
+    vol.Optional("stale_after_seconds"): vol.All(vol.Coerce(int), vol.Range(min=900, max=3600)),
+    vol.Optional("serve_stale"): bool,
+    vol.Required("acknowledgement"): vol.In(("UNVERIFIED_DEV_VM109",)),
+})
+@websocket_api.async_response
+async def websocket_opera_preview_control(hass, connection, msg):
+    """Explicit administrator action only. Never authorizes scientific images."""
+    from .const import DOMAIN
+    area = hass.data.get(DOMAIN, {})
+    state = area.get("opera_preview") if isinstance(area, dict) else None
+    if not isinstance(state, dict):
+        connection.send_error(msg["id"], "preview_unavailable", "Preview route is unavailable")
+        return
+    # Administrator-only explicit opt-in via HA UI. No local marker file.
+    # Consent persists through Config Entry options, including HA restarts;\n    # it never grants scientific raster approval.
+    entries = hass.config_entries.async_entries(DOMAIN)
+    if not entries:
+        connection.send_error(msg["id"], "preview_unavailable",
+                              "WeatherRouter config entry is unavailable")
+        return
+    entry = entries[0]
+    from .opera_preview_age_policy import (
+        OPTION_PREVIEW_MAX_AGE_SECONDS, validated_preview_age, preview_age_from_entries,
+        OPTION_PREVIEW_STALE_AFTER_SECONDS, OPTION_PREVIEW_SERVE_STALE,
+        preview_continuity_from_entries,
+    )
+    updated = dict(entry.options)
+    if "max_age_seconds" in msg:
+        updated[OPTION_PREVIEW_MAX_AGE_SECONDS] = validated_preview_age(msg["max_age_seconds"])
+    if "stale_after_seconds" in msg:
+        updated[OPTION_PREVIEW_STALE_AFTER_SECONDS] = validated_preview_age(msg["stale_after_seconds"])
+    if "serve_stale" in msg:
+        updated[OPTION_PREVIEW_SERVE_STALE] = msg["serve_stale"] is True
+    if "enabled" in msg:
+        updated["opera_dev_preview_enabled"] = msg["enabled"] is True
+    if updated != dict(entry.options):
+        hass.config_entries.async_update_entry(entry, options=updated)
+    if msg.get("enabled") is False:
+        staged = area.get("opera_rate_delivery", {})
+        if isinstance(staged, dict):
+            delivery = staged.get("delivery")
+            if delivery is not None:
+                delivery.revoke()
+    # Config Entry option is the only authoritative preview gate.
+    # A navigation or entry reload cannot revoke it through stale hass.data.
+    enabled = updated.get("opera_dev_preview_enabled") is True
+    reply_entry = type("PreviewOptions", (), {"options": updated})()
+    connection.send_result(msg["id"], {
+        "preview_enabled": enabled,
+        "max_age_seconds": preview_age_from_entries([reply_entry]),
+        "recommended_max_age_seconds": 1500,
+        "stale_after_seconds": preview_continuity_from_entries([reply_entry])["stale_after_seconds"],
+        "serve_stale": preview_continuity_from_entries([reply_entry])["serve_stale"],
+        "delivery_limit_seconds": preview_continuity_from_entries([reply_entry])["delivery_limit_seconds"],
+        "scientific_raster_approved": False,
+        "status": "UNVERIFIED / ENTWICKLUNGSVORSCHAU",
+    })
+
 
 def async_register(hass: HomeAssistant) -> None:
     """Register WeatherRouter WebSocket commands."""
@@ -2149,3 +2722,7 @@ def async_register(hass: HomeAssistant) -> None:
     websocket_api.async_register_command(hass, websocket_log_git_configure)
     websocket_api.async_register_command(hass, websocket_log_git_set_default)
     websocket_api.async_register_command(hass, websocket_log_git_export)
+    websocket_api.async_register_command(hass, websocket_diagnostic_center_snapshot)
+    websocket_api.async_register_command(hass, websocket_opera_scientific_selfcheck)
+    websocket_api.async_register_command(hass, websocket_opera_functiontests)
+    websocket_api.async_register_command(hass, websocket_opera_preview_control)

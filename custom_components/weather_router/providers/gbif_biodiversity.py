@@ -217,7 +217,8 @@ class GbifBiodiversityProvider:
         hass: HomeAssistant,
         item: _TaxonLayer,
     ) -> dict[str, Any]:
-        session = async_get_clientsession(hass)
+        from ..diagnostic_center import observed_clientsession
+        session = observed_clientsession(hass, "gbif_biodiversity", async_get_clientsession(hass))
         match_params = {
             "scientificName": item.scientific_name,
             "checklistKey": _COL_XR_CHECKLIST_KEY,
@@ -234,7 +235,7 @@ class GbifBiodiversityProvider:
             params=match_params,
             headers={
                 "Accept": "application/json",
-                "User-Agent": "WeatherRouter/0.10 (+https://github.com/TheDaimos/weather-router-dev-pub)",
+                "User-Agent": "WeatherRouter/0.10 (+https://github.com/TheDaimos/weather-router-dev)",
             },
             timeout=20,
         ) as response:

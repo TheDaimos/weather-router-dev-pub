@@ -27,7 +27,7 @@ from .hazard_common import (
 )
 
 _API = "https://api.weather.gov"
-_USER_AGENT = "WeatherRouter/0.10 (+https://github.com/TheDaimos/weather-router-dev-pub)"
+_USER_AGENT = "WeatherRouter/0.10 (+https://github.com/TheDaimos/weather-router-dev)"
 _HEADERS = {
     "User-Agent": _USER_AGENT,
     "Accept": "application/geo+json",
@@ -240,6 +240,65 @@ class NoaaNwsProvider:
     def capabilities(self) -> tuple[CapabilityInfo, ...]:
         return _CAPABILITIES
 
+    def synoptic_centers_info(self) -> dict:
+        """Optional independently modeled fallback to official H/T GeoJSON."""
+        return {"capability": "weather.synoptic.pressure_centers",
+                "coverage": "global",
+                "data_kind": "derived_numeric_grid",
+                "confidence": "provisional_model_extrema"}
+
+    async def async_fetch_synoptic_centers(self, hass: HomeAssistant, bbox: dict) -> dict:
+        """Prefer genuine regional NOAA/WPC analyst H/L; GFS covers the globe."""
+        from ..synoptic_wpc import WpcUnavailable, async_fetch_centers as wpc_centers
+        from ..synoptic_gfs import async_fetch_centers as gfs_centers
+        try:
+            return await wpc_centers(hass, bbox)
+        except (WpcUnavailable, TimeoutError, OSError, ValueError):
+            # A regional coded bulletin can never replace global coverage.
+            return await gfs_centers(hass, bbox)
+
+    def synoptic_fronts_info(self) -> dict:
+        """Regional official human surface-analysis front geometries only."""
+        from ..synoptic_wpc_fronts import COVERAGE
+        return {"capability": "weather.synoptic.fronts",
+                "coverage": "regional",
+                "coverage_bbox": dict(COVERAGE),
+                "data_kind": "precomputed_vector",
+                "synoptic_priority": 5,
+                "source": "NOAA WPC coded surface analysis"}
+
+    async def async_fetch_synoptic_fronts(self, hass: HomeAssistant, bbox: dict) -> dict:
+        from ..synoptic_wpc_fronts import async_fetch_fronts
+        return await async_fetch_fronts(hass, bbox)
+
+    def synoptic_isobars_info(self) -> dict:
+        """Global numeric GFS PMSL contours, separate from regional NWS forecasts."""
+        return {"capability": "weather.synoptic.isobars", "coverage": "global",
+                "model": "NOAA GFS", "unit": "hPa", "delivery": "Unidata NCSS"}
+
+    async def async_fetch_synoptic_isobars(self, hass: HomeAssistant, bbox: dict) -> dict:
+        from ..synoptic_gfs import async_fetch_isobars
+        return await async_fetch_isobars(hass, bbox)
+
+    def temperature_field_info(self) -> dict:
+        return {"capability": "weather.temperature.field_2m", "coverage": "global",
+                "model": "NOAA GFS", "height_m": 2, "unit": "K", "native_resolution_degrees": .25,
+                "optional_advection": "weather.temperature.advection_850hpa", "advection_level_hpa": 850}
+
+    async def async_fetch_temperature_field(self, hass, bbox, *, include_advection=False, target=None):
+        from ..temperature_field_source import async_fetch_temperature
+        return await async_fetch_temperature(hass, bbox, include_advection=include_advection, target=target)
+
+    def wind_field_info(self) -> dict:
+        """Optional V2 field, distinct from the regional NWS point capabilities."""
+        return {"capability": "weather.wind.field_10m", "coverage": "global",
+                "model": "NOAA GFS", "height_m": 10, "unit": "m/s",
+                "native_resolution_degrees": .25, "delivery": "Unidata NCSS"}
+
+    async def async_fetch_wind_field(self, hass: HomeAssistant, bbox: dict) -> dict:
+        from ..wind_field_source import async_fetch_native
+        return await async_fetch_native(hass, bbox)
+
     def provider_info(self) -> ProviderInfo:
         return ProviderInfo(
             summary=(
@@ -254,13 +313,20 @@ class NoaaNwsProvider:
                 "separate Warnungs- und Beobachtungsdienste verfügbar",
             ),
             limitations=(
-                "kein globaler Wetteranbieter",
+                "NWS-Punktvorhersagen sind regional; das optionale GFS-Windfeld ist global",
                 "User-Agent ist verpflichtend",
                 "angemessene, nicht öffentlich bezifferte Ratenbegrenzung",
             ),
             documentation_url="https://www.weather.gov/documentation/services-web-api",
             attribution="NOAA / National Weather Service",
             services=(
+                {"name": "NOAA GFS · Temperatur 2 m / Advektion 850 hPa · Consumer V2", "status": "integriert",
+                 "note": "globales numerisches Kelvin-Feld; kohärente 850-hPa-Temperatur-/Windebene mit Bodenmaske, K/h; Forschungsdienst"},
+                {
+                    "name": "NOAA GFS · Windfeld 10 m · Consumer V2",
+                    "status": "integriert",
+                    "note": "globales numerisches U/V-Gitter, 0,25° nativ; Unidata-Forschungsdienst ohne Verfügbarkeitsgarantie",
+                },
                 {
                     "name": "NWS API · Hourly Forecast",
                     "status": "integriert",
@@ -281,6 +347,11 @@ class NoaaNwsProvider:
 
     def network_targets(self) -> tuple[NetworkTargetInfo, ...]:
         return (
+            NetworkTargetInfo(
+                purpose="numeric_wind_field", scheme="https", host="thredds.ucar.edu", port=443,
+                target_type="api", required=False, capabilities=("weather.wind.field_10m", "weather.temperature.field_2m", "weather.temperature.advection_850hpa", "weather.synoptic.isobars"),
+                note="Optionale globale NOAA-GFS-Subsets: Wind 10 m, Temperatur 2 m, Advektion 850 hPa und Meereshöhendruck-Isobaren über Unidata NCSS; kein API-Schlüssel.",
+            ),
             NetworkTargetInfo(
                 purpose="point_weather_forecast",
                 scheme="https",
@@ -314,7 +385,8 @@ class NoaaNwsProvider:
                 "values": {},
             }
 
-        session = async_get_clientsession(hass)
+        from ..diagnostic_center import observed_clientsession
+        session = observed_clientsession(hass, "noaa_nws", async_get_clientsession(hass))
         point_url = f"{_API}/points/{float(latitude):.4f},{float(longitude):.4f}"
         async with session.get(point_url, headers=_HEADERS, timeout=20) as response:
             if response.status == 404:
@@ -414,7 +486,8 @@ class NoaaNwsProvider:
         if latitude is not None and longitude is not None:
             params["point"] = f"{float(latitude):.4f},{float(longitude):.4f}"
 
-        session = async_get_clientsession(hass)
+        from ..diagnostic_center import observed_clientsession
+        session = observed_clientsession(hass, "noaa_nws", async_get_clientsession(hass))
         async with session.get(
             f"{_API}/alerts/active",
             params=params,
@@ -663,3 +736,4 @@ class NoaaNwsProvider:
                 ),
             },
         }
+

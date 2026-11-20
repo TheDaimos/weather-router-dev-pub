@@ -15,7 +15,7 @@
       "domains": [
         "pollen"
       ],
-      "default_enabled": false
+      "default_enabled": true
     },
     {
       "module": "rainviewer",
@@ -109,7 +109,7 @@
       "domains": [
         "space"
       ],
-      "default_enabled": false
+      "default_enabled": true
     },
     {
       "module": "fmi",
@@ -214,7 +214,7 @@
       "domains": [
         "natural_hazards"
       ],
-      "default_enabled": false
+      "default_enabled": true
     },
     {
       "module": "glofas",
@@ -222,7 +222,7 @@
       "domains": [
         "natural_hazards"
       ],
-      "default_enabled": false
+      "default_enabled": true
     },
     {
       "module": "usgs_seismic_events",
@@ -230,7 +230,7 @@
       "domains": [
         "natural_hazards"
       ],
-      "default_enabled": false
+      "default_enabled": true
     },
     {
       "module": "bbk_mowas",
@@ -238,7 +238,7 @@
       "domains": [
         "civil_protection"
       ],
-      "default_enabled": false
+      "default_enabled": true
     },
     {
       "module": "bbk_police",
@@ -246,7 +246,7 @@
       "domains": [
         "security"
       ],
-      "default_enabled": false
+      "default_enabled": true
     },
     {
       "module": "aviation_weather",
@@ -254,7 +254,7 @@
       "domains": [
         "aviation"
       ],
-      "default_enabled": false
+      "default_enabled": true
     },
     {
       "module": "nina_supplementary",
@@ -263,7 +263,7 @@
         "natural_hazards",
         "civil_protection"
       ],
-      "default_enabled": false
+      "default_enabled": true
     },
     {
       "module": "nina_supplementary",
@@ -271,7 +271,7 @@
       "domains": [
         "civil_protection"
       ],
-      "default_enabled": false
+      "default_enabled": true
     },
     {
       "module": "nina_supplementary",
@@ -279,7 +279,7 @@
       "domains": [
         "civil_protection"
       ],
-      "default_enabled": false
+      "default_enabled": true
     },
     {
       "module": "gbif_biodiversity",
@@ -287,7 +287,7 @@
       "domains": [
         "biological_hazards"
       ],
-      "default_enabled": false
+      "default_enabled": true
     },
     {
       "module": "fmi_lightning",
@@ -295,7 +295,7 @@
       "domains": [
         "weather"
       ],
-      "default_enabled": false
+      "default_enabled": true
     },
     {
       "module": "eumetsat_mtg_li",
@@ -303,7 +303,7 @@
       "domains": [
         "weather"
       ],
-      "default_enabled": false
+      "default_enabled": true
     },
     {
       "module": "noaa_goes_glm",
@@ -311,7 +311,7 @@
       "domains": [
         "weather"
       ],
-      "default_enabled": false
+      "default_enabled": true
     },
     {
       "module": "eccc_lightning",
@@ -319,7 +319,18 @@
       "domains": [
         "weather"
       ],
-      "default_enabled": false
+      "default_enabled": true
+    },
+    {
+      "module": "opera",
+      "class": "OperaProvider",
+      "domains": [
+        "weather"
+      ],
+      "topics": [
+        "precipitation"
+      ],
+      "default_enabled": true
     }
   ]
 }

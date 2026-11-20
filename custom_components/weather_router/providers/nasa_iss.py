@@ -11,7 +11,7 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from . import CapabilityInfo, NetworkTargetInfo, ProviderInfo
 
 _SOURCE_PAGE = "https://eol.jsc.nasa.gov/esrs/HDEV/"
-_USER_AGENT = "WeatherRouter/0.10 (+https://github.com/TheDaimos/weather-router-dev-pub)"
+_USER_AGENT = "WeatherRouter/0.10 (+https://github.com/TheDaimos/weather-router-dev)"
 _YOUTUBE_EMBED_RE = re.compile(
     r"https://(?:www\.)?youtube\.com/embed/(?P<video>[A-Za-z0-9_-]{6,})"
 )
@@ -114,7 +114,8 @@ class NasaIssProvider:
         if capability_id != "iss_earth_live":
             raise ValueError(f"Unsupported NASA ISS capability: {capability_id}")
 
-        session = async_get_clientsession(hass)
+        from ..diagnostic_center import observed_clientsession
+        session = observed_clientsession(hass, "nasa_iss", async_get_clientsession(hass))
         async with session.get(
             _SOURCE_PAGE,
             headers={

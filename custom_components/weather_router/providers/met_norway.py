@@ -92,7 +92,7 @@ _CAPABILITIES = (
     CapabilityInfo("uv_index", "UV-Index klarer Himmel", "1", "model", "value",
         "UV-Index bei wolkenfreiem Himmel.", "regional unterschiedlich", "Kurzfristbereich",
         None, (), ("nicht überall und nicht im gesamten Prognosehorizont verfügbar",)),
-)
+) 
 
 _NOWCAST_CAPABILITIES = (
     CapabilityInfo(
@@ -171,6 +171,24 @@ class MetNorwayProvider:
         """Return directly integrated Locationforecast capabilities."""
         return _CAPABILITIES
 
+    def synoptic_isobars_info(self) -> dict[str, Any]:
+        """V2 optional regional numeric MSLP, never a global layer."""
+        return {
+            "capability": "weather.synoptic.isobars",
+            "coverage": "regional",
+            "data_kind": "derived_numeric_grid",
+            "synoptic_priority": 12,
+            "model": "MET Norway Nordic / MEPS",
+            "unit": "hPa",
+        }
+
+    async def async_fetch_synoptic_isobars(
+        self, hass: HomeAssistant, bbox: dict,
+    ) -> dict[str, Any]:
+        """Delegate provider policy to WR and numerical decoding to worker."""
+        from ..synoptic_met import async_fetch_isobars
+        return await async_fetch_isobars(hass, bbox)
+
     def provider_info(self) -> ProviderInfo:
         """Return service strengths, restrictions and related MET products."""
         return ProviderInfo(
@@ -222,6 +240,16 @@ class MetNorwayProvider:
         capability_ids = tuple(item.id for item in _CAPABILITIES)
         return (
             NetworkTargetInfo(
+                purpose="synoptic_pressure_regional",
+                scheme="https",
+                host="thredds.met.no",
+                port=443,
+                target_type="data_file",
+                required=False,
+                capabilities=("weather.synoptic.isobars",),
+                note="Optionales regionales Druckraster MET Norway Nordic / MEPS; MSLP, Koordinaten und Zeit im WR-Decoder verifiziert.",
+            ),
+            NetworkTargetInfo(
                 purpose="point_weather_forecast",
                 scheme="https",
                 host="api.met.no",
@@ -259,7 +287,8 @@ class MetNorwayProvider:
 
         location_requested = [item for item in requested if item in _LOCATION_CAPABILITY_IDS]
         nowcast_requested = [item for item in requested if item in _NOWCAST_CAPABILITY_IDS]
-        session = async_get_clientsession(hass)
+        from ..diagnostic_center import observed_clientsession
+        session = observed_clientsession(hass, "met_norway", async_get_clientsession(hass))
         values: dict[str, Any] = {}
         data_times: list[str] = []
         updated_times: list[str] = []

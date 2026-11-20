@@ -19,7 +19,7 @@ _CAPABILITIES_URL = (
     "https://trek.nasa.gov/tiles/Moon/EQ/"
     f"{_LAYER_ID}/1.0.0/WMTSCapabilities.xml"
 )
-_USER_AGENT = "WeatherRouter/0.10 (+https://github.com/TheDaimos/weather-router-dev-pub)"
+_USER_AGENT = "WeatherRouter/0.10 (+https://github.com/TheDaimos/weather-router-dev)"
 
 _CAPABILITIES = (
     CapabilityInfo(
@@ -120,7 +120,8 @@ class NasaMoonProvider:
                 },
             }
 
-        session = async_get_clientsession(hass)
+        from ..diagnostic_center import observed_clientsession
+        session = observed_clientsession(hass, "nasa_moon", async_get_clientsession(hass))
         try:
             async with session.get(
                 _CAPABILITIES_URL,

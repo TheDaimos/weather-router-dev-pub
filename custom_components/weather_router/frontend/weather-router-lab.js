@@ -2,7 +2,7 @@ import * as maplibregl from "https://unpkg.com/maplibre-gl@6.9.1/dist/maplibre-g
 
 const SELECT_ENTITY = "select.weather_router_reference_location";
 const MAPLIBRE_CSS = "https://unpkg.com/maplibre-gl@6.9.1/dist/maplibre-gl.css";
-const WR_LAB_BUILD_VERSION = "0.10.145";
+const WR_LAB_BUILD_VERSION = "0.10.327";
 const LAB_MENU_STATE_KEY = "weather_router_lab_menu_state_v1";
 
 const OPENFREEMAP_STYLES = {
@@ -80,6 +80,9 @@ class WeatherRouterLab extends HTMLElement {
     this._providers = [];
     this._requests = structuredClone(DEFAULT_REQUESTS);
     this._results = null;
+    this._monitorSnapshot = null;
+    this._monitorSelected = null;
+    this._monitorTimer = null;
     this._loading = false;
     this._basemapProvider = "openfreemap";
     this._basemapStyle = "dark";
@@ -108,15 +111,341 @@ class WeatherRouterLab extends HTMLElement {
 
   connectedCallback() {
     document.addEventListener("visibilitychange", this._mediaVisibilityHandler);
+    if (!this._monitorTimer) this._monitorTimer = setInterval(() => {
+      if (!document.hidden && this.shadowRoot.querySelector('[data-lab-menu-key="api-monitor"]')?.open) this._monitorRefresh();
+    }, 2500);
     queueMicrotask(() => this._ensureMap());
   }
 
   disconnectedCallback() {
+    if (this._monitorTimer) clearInterval(this._monitorTimer);
+    this._monitorTimer = null;
     document.removeEventListener("visibilitychange", this._mediaVisibilityHandler);
     this._stopAllMediaPlayback("disconnect");
+    this._operaHistoryPause();
     if (this._map) this._map.remove();
     this._map = null;
     this._marker = null;
+  }
+
+  async _operaPreviewEnable() {
+    const state = this.shadowRoot.getElementById("opera-png-result");
+    try {
+      if (!window.confirm("Isolierte Originaldiagnose auf HA DEV aktivieren? Für die reguläre RATE-Nutzung nicht erforderlich.")) return;
+      const response = await this._hass.callWS({
+        type:"weather_router/opera/preview_control",
+        enabled:true,
+        acknowledgement:"UNVERIFIED_DEV_VM109"
+      });
+      state.textContent = "Entwicklungsvorschau angefordert · "+
+        (response?.preview_enabled === true ? "aktiv" : "Status über Ringpuffer/Export prüfen")+
+        " · isolierte Diagnose, keine Warnfreigabe.";
+    } catch (error) {
+      state.textContent = "Entwicklungsvorschau gesperrt: "+(error?.message || String(error));
+    }
+  }
+
+  async _operaPngTest() {
+    const state = this.shadowRoot.getElementById("opera-png-result");
+    const gallery = this.shadowRoot.getElementById("opera-png-gallery");
+    const button = this.shadowRoot.getElementById("opera-png-test");
+    if (button.disabled) return;
+    button.disabled = true;
+    gallery.replaceChildren();
+    state.textContent = "TEST67: registrierten RATE-Frame prüfen …";
+    try {
+      const ring = await this._hass.callWS({type:"weather_router/opera/ring", action:"status"});
+      const stamp = ring.rate_delivery?.registered_stamp;
+      if (!/^\d{8}T\d{6}Z$/.test(stamp || "")) throw new Error(
+        "Kein RATE-Frame registriert: " + (ring.rate_delivery?.last_stage?.status || ring.rate_delivery?.last_error_code || "unbekannt"));
+      if (typeof this._hass.fetchWithAuth !== "function") throw new Error("Authentifizierter HA-Fetch ist nicht verfügbar");
+      // Development-only European comparison tile. Both hypotheses remain unverified.
+      const z=4, x=8, y=5;
+      let passed=0, results=[];
+      for (const hypothesis of ["north_first","south_first"]) {
+        const path = `/api/weather_router/opera_preview/RATE/${stamp}/${hypothesis}/${z}/${x}/${y}.png`;
+        const response = await this._hass.fetchWithAuth(path, {cache:"no-store"});
+        if (!response.ok) {
+          results.push(hypothesis+": HTTP "+response.status);
+          continue;
+        }
+        const blob = await response.blob();
+        if (blob.type !== "image/png" || !blob.size) {
+          results.push(hypothesis+": ungültige PNG-Antwort");
+          continue;
+        }
+        const url = URL.createObjectURL(blob);
+        const figure = document.createElement("figure");
+        const img = document.createElement("img");
+        const caption = document.createElement("figcaption");
+        img.src = url; img.alt = "OPERA RATE · "+hypothesis+" · UNVERIFIED";
+        img.width=256; img.height=256;
+        caption.textContent = hypothesis+" · "+stamp+" · z4/8/5 · UNVERIFIED";
+        figure.append(img,caption);
+        gallery.append(figure);
+        passed++;
+        results.push(hypothesis+": PNG "+blob.size+" Bytes");
+        img.addEventListener("load",()=>URL.revokeObjectURL(url),{once:true});
+        img.addEventListener("error",()=>URL.revokeObjectURL(url),{once:true});
+      }
+      state.textContent = "TEST67: "+passed+"/2 PNG-Antworten · "+results.join(" · ")+
+        " · isolierte Diagnose; keine Freigabe für Warnungen.";
+    } catch (error) {
+      state.textContent = "TEST67 gesperrt/fehlgeschlagen: "+(error?.message || String(error));
+    } finally { button.disabled = false; }
+  }
+
+  async _operaDiagnosticSnapshot() {
+    // Capture real server-side OPERA state; the backend also attaches its own ring snapshot.
+    const settings = await this._hass.callWS({type:"weather_router/opera/settings"});
+    const ring = await this._hass.callWS({type:"weather_router/opera/ring", action:"status"});
+    return {
+      schema:"weather_router.opera.diagnostic_export.v1",
+      captured_at_utc:new Date().toISOString(),
+      scientific_raster_approved:false,
+      preview_settings:ring.preview_settings ?? null,
+      provider_enabled:settings.provider_enabled === true,
+      services:Object.fromEntries(["RATE","DBZH","ACRR"].map(p=>[p, settings.services?.[p] === true])),
+      max_age_seconds:settings.max_age_seconds,
+      stale_after_seconds:settings.stale_after_seconds,
+      serve_stale:settings.serve_stale === true,
+      ring_status: {
+        monitor_enabled:ring.monitor?.enabled === true,
+        interval_seconds:ring.monitor?.interval_seconds ?? null,
+        original_count:ring.storage?.count ?? null,
+        original_bytes:ring.storage?.original_bytes ?? null,
+        registration_automated:ring.rate_delivery != null,
+        delivery_status:ring.rate_delivery?.last_stage?.status ?? "not_attempted",
+        registered_stamp:ring.rate_delivery?.registered_stamp ?? null,
+        rate_stage_error:ring.rate_delivery?.last_error_code ?? null,
+        scientific_tile_approved:false,
+        last_error_code:ring.monitor?.last_error_code ?? null,
+        last_error_phase:ring.monitor?.last_error_phase ?? null
+      }
+    };
+  }
+
+  async _exportOperaSnapshot(toGit) {
+    const status = this.shadowRoot?.getElementById("opera-export-result");
+    const button = this.shadowRoot?.getElementById(toGit ? "opera-git-export" : "opera-json-export");
+    if (button?.disabled || !this._hass) return;
+    if (button) button.disabled = true;
+    if (status) status.textContent = "OPERA-Diagnose wird erfasst …";
+    try {
+      const snapshot = await this._operaDiagnosticSnapshot();
+      if (toGit) {
+        const result = await this._hass.callWS({type:"weather_router/log_git_export",target:"archive",snapshot});
+        if (status) status.textContent = "✓ OPERA Export2Git: " + (result.path || result.url || "Project-Log-And-Export");
+      } else {
+        const blob = new Blob([JSON.stringify(snapshot, null, 2)], {type:"application/json"});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "weather-router-opera-" + new Date().toISOString().replace(/[:.]/g,"-") + ".json";
+        a.click();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+        if (status) status.textContent = "✓ OPERA-JSON heruntergeladen.";
+      }
+    } catch (error) {
+      if (status) status.textContent = "✕ OPERA-Export fehlgeschlagen: " + (error?.message || String(error));
+    } finally {
+      if (button) button.disabled = false;
+    }
+  }
+
+  async _nasaMosaicSettings(save=false){
+    const status=this.shadowRoot.getElementById("nasa-mosaic-settings-status"),input=this.shadowRoot.getElementById("nasa-mosaic-complement");
+    try{const value=await this._hass.callWS({type:"weather_router/precipitation/settings",...(save?{nasa_imerg_complement:input.checked,nasa_max_parallel_downloads:Number(this.shadowRoot.getElementById("nasa-mosaic-parallel").value)}:{})});input.checked=value.nasa_imerg_complement===true;this.shadowRoot.getElementById("nasa-mosaic-parallel").value=String(value.nasa_max_parallel_downloads??6);status.textContent=value.nasa_imerg_complement?"Ein · sichere exklusive Quellkacheln · 130 % Viewport":"Aus · bisherige Mosaikpolitik unverändert";}catch(_){status.textContent="Einstellungen konnten nicht geladen/gespeichert werden.";}
+  }
+
+  async _operaSettingsLoad() {
+    const status = this.shadowRoot.getElementById("opera-settings-status");
+    if (!this._hass) return;
+    try {
+      const s = await this._hass.callWS({type:"weather_router/opera/settings"});
+      for (const p of ["rate", "dbzh", "acrr"]) this.shadowRoot.getElementById("opera-service-" + p).checked = s.services?.[p.toUpperCase()] === true;
+      this.shadowRoot.getElementById("opera-settings-age").value = String(s.max_age_seconds);
+      this.shadowRoot.getElementById("opera-settings-stale").value = String(s.stale_after_seconds);
+      this.shadowRoot.getElementById("opera-settings-max-stale").value = String(s.max_stale_age_seconds);
+      this.shadowRoot.getElementById("opera-settings-serve-stale").checked = s.serve_stale === true;
+      status.textContent = "OPERA-Provider: " + (s.provider_enabled ? "aktiv" : "deaktiviert") + (s.production_tiles_authorized ? " · RATE-Kacheln verfügbar" : " · RATE wartet auf gültige Daten gemäß WR-Zeitpolitik");
+    } catch (error) { status.textContent = "OPERA-Einstellungen konnten nicht geladen werden: " + (error?.code || "unbekannt"); }
+  }
+
+  async _operaSettingsSave() {
+    const status = this.shadowRoot.getElementById("opera-settings-status");
+    const payload = {type:"weather_router/opera/settings", settings:{
+      services: Object.fromEntries(["RATE","DBZH","ACRR"].map(p => [p, this.shadowRoot.getElementById("opera-service-" + p.toLowerCase()).checked])),
+      max_age_seconds: Number(this.shadowRoot.getElementById("opera-settings-age").value),
+      stale_after_seconds: Number(this.shadowRoot.getElementById("opera-settings-stale").value),
+      max_stale_age_seconds: Number(this.shadowRoot.getElementById("opera-settings-max-stale").value),
+      serve_stale: this.shadowRoot.getElementById("opera-settings-serve-stale").checked,
+    }};
+    try {
+      await this._hass.callWS(payload);
+      await this._operaSettingsLoad();
+      status.textContent += " · Gespeichert";
+    } catch (error) { status.textContent = "Speichern fehlgeschlagen: " + (error?.code || "unbekannt"); }
+  }
+
+  _operaHistoryPause() {
+    if (this._operaPlayback != null) clearInterval(this._operaPlayback);
+    this._operaPlayback = null;
+  }
+
+  _operaHistoryStep(delta) {
+    this._operaHistoryPause();
+    if (!this._operaFrames?.length) {
+      this.shadowRoot.getElementById("opera-history-state").textContent = "Keine historischen Originale gespeichert.";
+      return;
+    }
+    this._operaFrameIndex = Math.max(0, Math.min(
+      this._operaFrames.length - 1, this._operaFrameIndex + delta));
+    this._operaHistoryShow();
+  }
+
+  async _operaHistoryShow() {
+    const output = this.shadowRoot.getElementById("opera-history-state");
+    const frame = this._operaFrames[this._operaFrameIndex];
+    if (!frame) return;
+    try {
+      const result = await this._hass.callWS({
+        type: "weather_router/opera/ring",
+        action: "historical_select", stamp: frame.stamp,
+      });
+      output.textContent = "Raster " + (this._operaFrameIndex + 1) + "/" +
+        this._operaFrames.length + " · UTC " + frame.stamp +
+        " · " + (frame.bytes ?? "?") + " Bytes · " +
+        result.scientific_status +
+        " · Historische Originalauswahl; reguläre RATE-Darstellung erfolgt über Consumer V2.";
+    } catch (error) {
+      this._operaHistoryPause();
+      output.textContent = "Historischer Rasterstand nicht verfügbar oder gesperrt: " +
+        (error?.code || "Unbekannter Fehler");
+    }
+  }
+
+  async _test68Action(action) {
+    const status = this.shadowRoot.getElementById("test68-status");
+    const pictures = this.shadowRoot.getElementById("test68-pictures");
+    const stamp = this.shadowRoot.getElementById("test68-stamp").value;
+    try {
+      if (action === "list") {
+        const result = await this._hass.callWS({type:"weather_router/opera/ring",action:"verified_catalog"});
+        const frames = result.frames || result.catalog || [];
+        const select = this.shadowRoot.getElementById("test68-stamp");
+        select.replaceChildren();
+        frames.forEach(f => {const option=document.createElement("option");option.value=f.stamp;option.textContent=f.stamp + " · " + (f.bytes ?? "?") + " Bytes · UNVERIFIED";select.append(option);});
+        status.textContent = frames.length + " integritätsprüfbare Originale geladen.";
+      } else if (action === "pin") {
+        const result=await this._hass.callWS({type:"weather_router/opera/ring",action:"historical_select",stamp});
+        this._test68Pinned = {stamp,sha256:result.frame?.sha256};
+        this._test68Result = null;
+        pictures.replaceChildren();
+        status.textContent = "HISTORISCH fixiert: " + stamp + " · SHA-256 " + (this._test68Pinned.sha256 || "unbekannt");
+      } else if (action === "compare") {
+        if (!this._test68Pinned) throw new Error("Zuerst Frame fixieren");
+        const z=Number(this.shadowRoot.getElementById("test68-z").value);
+        const x=Number(this.shadowRoot.getElementById("test68-x").value);
+        const y=Number(this.shadowRoot.getElementById("test68-y").value);
+        const result=await this._hass.callWS({type:"weather_router/opera/ring",action:"historical_compare",stamp:this._test68Pinned.stamp,z,x,y});
+        this._test68Result=result;
+        pictures.replaceChildren();
+        for (const h of ["north_first","south_first"]) {
+          const box=document.createElement("div");const title=document.createElement("strong");title.textContent=h+" · "+result.selected_observation_utc;
+          const img=document.createElement("img");img.alt="OPERA HISTORISCH "+h;img.width=256;img.height=256;
+          img.src="data:image/png;base64,"+result[h].png_base64;box.append(title,img);pictures.append(box);
+        }
+        status.textContent="Beide Ansichten aus SHA-256 "+result.selected_frame_sha256+" · rein historische Diagnose · keine Warnfreigabe.\\n"+["north_first","south_first"].map(h=>h+": "+JSON.stringify(result[h].pixel_statistics||{})).join("\\n");
+      } else if (action === "reset") {
+        await this._hass.callWS({type:"weather_router/opera/ring",action:"historical_reset"});
+        this._test68Pinned=null;this._test68Result=null;pictures.replaceChildren();
+        status.textContent="Historischer Modus beendet. Live-Vorschau unverändert.";
+      } else if (action === "export") {
+        if (!this._test68Result) throw new Error("Zuerst Nord/Süd vergleichen");
+        const {north_first,south_first,...rest}=this._test68Result;
+        const snapshot={...rest,north_first:{status:north_first.status,png_bytes:north_first.png_bytes,pixel_statistics:north_first.pixel_statistics},south_first:{status:south_first.status,png_bytes:south_first.png_bytes,pixel_statistics:south_first.pixel_statistics},scientific_approval:false};
+        const output=await this._hass.callWS({type:"weather_router/log_git_export",target:"archive",snapshot});
+        status.textContent="TEST68-D Export2Git: "+(output.path||"gespeichert");
+      }
+    } catch(error) {status.textContent="TEST68-D gesperrt: "+(error?.code||error?.message||"Unbekannter Fehler");}
+  }
+
+  async _operaHistoryList() {
+    this._operaHistoryPause();
+    const output = this.shadowRoot.getElementById("opera-history-state");
+    try {
+      const response = await this._hass.callWS({
+        type: "weather_router/opera/ring", action: "historical_list",
+      });
+      this._operaFrames = (response.frames || []).slice().sort(
+        (a, b) => a.stamp.localeCompare(b.stamp));
+      this._operaFrameIndex = this._operaFrames.length - 1;
+      if (this._operaFrameIndex >= 0) await this._operaHistoryShow();
+      else output.textContent = "Keine gespeicherten historischen Originale.";
+    } catch (error) {
+      output.textContent = "Historische Liste gesperrt: " + (error?.code || "Unbekannter Fehler");
+    }
+  }
+
+  _operaHistoryPlay() {
+    this._operaHistoryPause();
+    if (!this._operaFrames?.length) return;
+    const delay = Number(this.shadowRoot.getElementById("opera-history-speed").value);
+    if (![500, 1000, 2000].includes(delay)) return;
+    this._operaPlayback = setInterval(() => {
+      if (this._operaFrameIndex >= this._operaFrames.length - 1) {
+        this._operaHistoryPause();
+        return;
+      }
+      this._operaFrameIndex++;
+      this._operaHistoryShow();
+    }, delay);
+  }
+
+  async _operaRingAction(action, triggerId) {
+    const output = this.shadowRoot.getElementById("opera-ring-status");
+    const controls = [...["opera-ring-refresh", "opera-ring-start", "opera-ring-stop", "opera-ring-check", "opera-ring-clean", "opera-ring-clear"].map(id => this.shadowRoot.getElementById(id))];
+    if (action === "clear" && !confirm("Alle OPERA-Ringpuffer-Originale wirklich löschen? Aktive Diagnosezugriffe können betroffen sein.")) return;
+    controls.forEach(button => button.disabled = true);
+    output.textContent = "OPERA-Ringpuffer wird abgefragt …";
+    try {
+      const payload = {type:"weather_router/opera/ring", action};
+      if (action === "set_monitor") {
+        payload.enabled = triggerId === "opera-ring-start";
+        payload.interval = Number(this.shadowRoot.getElementById("opera-ring-interval").value);
+      }
+      if (action === "clear") payload.confirm = true;
+      const result = await this._hass.callWS(payload);
+      const st = result.storage || {};
+      const mon = result.monitor || {};
+      this.shadowRoot.getElementById("opera-ring-interval").value = String(mon.interval_seconds || 30);
+      output.textContent = [
+        "Überwachung: " + (mon.enabled ? "AKTIV" : "AUS"),
+        "Originaldateien: " + (st.count ?? "unbekannt"),
+        "Speicher: " + (st.original_mib ?? "unbekannt") + " / " + ((st.capacity_bytes || 0) / 1048576).toFixed(1) + " MiB",
+        "Auslastung: " + (st.utilization_percent ?? "unbekannt") + " %",
+        "Ältester UTC-Stand: " + (st.oldest_utc || "—"),
+        "Neuester UTC-Stand: " + (st.newest_utc || "—"),
+        "Letzte Prüfung: " + (mon.last_check_utc || "—"),
+        "Letzter Download: " + (mon.last_download_utc || "—"),
+        "Letzter manueller Download: " + (result.manual_last_download_utc || "—"),
+        "Automatische Prüfungen seit Start: " + (mon.check_count ?? "—"),
+        "Letzter Abfragefehler: " + (mon.last_error_class || "—"),
+        "Beobachtete Verzögerung (min/mittel/max): " +
+          [mon.delay_min_seconds, mon.delay_mean_seconds, mon.delay_max_seconds].map(v=> v == null ? "—" : v+" s").join(" / "),
+        "Rasterzeitpunkte: " + (result.frames || []).map(f => f.stamp).join(", "),
+        "RATE-Verarbeitung: TEST69 abgeschlossen",
+        "RATE-Registrierung: " + (result.rate_delivery?.scientific_tile_approved ? "BESTÄTIGT" : "kein zugelassener Frame"),
+        "Aktiver RATE-Frame: " + (result.rate_delivery?.approved_rate_stamp || "—"),
+        "Consumer V2 verfügbar: " + (result.rate_delivery?.production_tiles_authorized ? "JA" : "NEIN"),
+        "Letzte V2-Auswahl: " + (result.rate_delivery?.consumer_v2?.result || "noch keine reguläre Anfrage"),
+      ].join("\n");
+    } catch (error) {
+      output.textContent = "OPERA-Ringpuffer: Aktion fehlgeschlagen (" + (error?.code || "unbekannt") + ").";
+    } finally {
+      controls.forEach(button => button.disabled = false);
+    }
   }
 
   _renderShell() {
@@ -262,6 +591,41 @@ class WeatherRouterLab extends HTMLElement {
         .media-sequence-meta { display:flex; justify-content:space-between; gap:8px; margin-top:4px; font-size:10px; opacity:.62; }
         .media-provider-head { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:10px; padding-top:8px; border-top:1px solid color-mix(in srgb,var(--divider-color,#444) 72%,transparent); }
         .media-provider-head:first-child { margin-top:0; padding-top:0; border-top:0; }
+        /* API monitor must not force the mobile sidebar or grid tracks wider. */
+        .layout,.sidebar,.card,.lab-menu,.lab-menu-content { min-width:0; max-width:100%; }
+        .layout { grid-template-columns:minmax(0,430px) minmax(0,1fr); }
+        [data-lab-menu-key="api-monitor"] .lab-menu-content,
+        [data-lab-menu-key="api-monitor"] .monitor-filters,
+        [data-lab-menu-key="api-monitor"] label,
+        [data-lab-menu-key="api-monitor"] .actions,
+        [data-lab-menu-key="api-monitor"] details { min-width:0; max-width:100%; }
+        [data-lab-menu-key="api-monitor"] input,
+        [data-lab-menu-key="api-monitor"] select,
+        [data-lab-menu-key="api-monitor"] textarea,
+        [data-lab-menu-key="api-monitor"] button { box-sizing:border-box; max-width:100%; min-width:0; }
+        [data-lab-menu-key="api-monitor"] label { display:block; overflow-wrap:anywhere; }
+        [data-lab-menu-key="api-monitor"] label > input,
+        [data-lab-menu-key="api-monitor"] label > select,
+        [data-lab-menu-key="api-monitor"] textarea { display:block; width:100%; }
+        [data-lab-menu-key="api-monitor"] .actions { flex-wrap:wrap; }
+        [data-lab-menu-key="api-monitor"] .actions > button { flex:1 1 120px; white-space:normal; overflow-wrap:anywhere; }
+        [data-lab-menu-key="api-monitor"] pre { min-width:0; max-width:100%; overflow:auto; overflow-wrap:anywhere; }
+        @media(max-width:850px) {
+          .layout { grid-template-columns:minmax(0,1fr); }
+          .sidebar { width:100%; min-width:0; padding:clamp(8px,3vw,18px); }
+        }
+        @media(max-width:620px) {
+          [data-lab-menu-key="api-monitor"] .monitor-filters { grid-template-columns:minmax(0,1fr); }
+          [data-lab-menu-key="api-monitor"] .actions { display:grid; grid-template-columns:minmax(0,1fr); }
+          [data-lab-menu-key="api-monitor"] .actions > button { width:100%; min-width:0; }
+        }
+        .monitor-filters { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;align-items:end; }
+        .monitor-filters label { display:flex;flex-direction:column;justify-content:end;gap:5px;min-width:0;font-size:12px; }
+        .monitor-filters input,.monitor-filters select { width:100%;min-width:0;min-height:38px;padding:7px;box-sizing:border-box; }
+        .monitor-metal { flex:1;min-height:44px;border:1px solid #997a35;border-radius:10px;font-weight:750;color:#191919;background:linear-gradient(165deg,#fff5bd 0%,#e6c66b 28%,#a98137 55%,#f2d98c 80%,#896527 100%);box-shadow:inset 0 2px 1px #fff9cc, inset 0 -3px 3px #735522,0 4px 9px #0005;text-shadow:0 1px #fff7b4;transition:transform .12s,filter .12s,box-shadow .12s; }
+        .monitor-metal:active { transform:translateY(2px);box-shadow:inset 0 3px 6px #0007;filter:brightness(.88); }
+        .monitor-metal.stop { border-color:#8a4147;color:#fff;background:linear-gradient(165deg,#ffa9a7,#bb4648 40%,#781c28 70%,#c55459);text-shadow:0 1px #431118;box-shadow:inset 0 1px #ffc8c8,inset 0 -3px #63151f,0 4px 9px #0005; }
+        .monitor-metal:disabled { opacity:.5;cursor:wait;filter:grayscale(.4); }
         .request-row { display:grid; grid-template-columns:1fr 1.3fr auto; gap:6px; align-items:end; margin-bottom:8px; }
         .request-row button { width:38px; }
         .actions { display:flex; gap:8px; margin-top:10px; }
@@ -369,9 +733,143 @@ class WeatherRouterLab extends HTMLElement {
           </details>
 
           <details class="card lab-menu" data-lab-menu-key="results">
-            <summary>5 · Ergebnisse</summary>
+            <summary>5 · OPERA / Ergebnisse</summary>
             <div class="lab-menu-content">
               <div id="results" class="muted">Noch keine Abfrage.</div>
+              <div class="actions" style="margin-top:12px"><button id="opera-rate-run" type="button">OPERA-RATE prüfen (DEV)</button><button id="opera-history-run" type="button">Historische HDF5-Prüfung (DEV)</button><button id="opera-rate-export" type="button" disabled>Export2Git · RATE-Diagnose</button></div>
+              <p class="muted" style="font-size:11px">Nur für Administratoren. Lädt nach Bestätigung ein aktuelles HDF5-Original zur geschützten Diagnose; keine wissenschaftliche Freigabe.</p>
+              <pre id="opera-rate-result" role="status" style="white-space:pre-wrap">Noch kein OPERA-RATE-Test gestartet.</pre>
+            </div>
+          </details>
+
+          <details class="card lab-menu" data-lab-menu-key="opera">
+            <summary>7 · OPERA</summary>
+            <div class="lab-menu-content">
+              <p class="muted">Provider- und Dienstwahl. RATE verwendet die mit TEST69 validierte Verarbeitung; aktuelle Frames werden serverseitig geprüft.</p>
+              <section class="card"><h3>Niederschlagsmosaik · NASA IMERG</h3><label><input id="nasa-mosaic-complement" type="checkbox"> NASA IMERG als ergänzende Niederschlagsquelle</label><p class="muted">Standard: Aus. Nur freie Quellkacheln außerhalb reservierter Radarhüllen; keine Aussage über Lücken innerhalb dieser Hüllen. NASA-GIBS muss im Router freigegeben sein.</p><button id="nasa-mosaic-load" type="button">NASA-Einstellung laden</button><button id="nasa-mosaic-save" type="button">NASA-Einstellung speichern</button><label>Maximale parallele NASA-Downloads <input id="nasa-mosaic-parallel" type="number" min="2" max="32" step="1" value="6"></label><div id="nasa-mosaic-settings-status" role="status">Noch nicht geladen.</div></section>
+              <div id="opera-settings-status" role="status">Einstellungen noch nicht geladen.</div>
+              <p>RATE wird nach Provider- und Dienstaktivierung automatisch über Consumer V2 bereitgestellt. Originaldiagnosen sind optional.</p>
+              <div class="actions"><button id="opera-settings-load" type="button">1 · Einstellungen laden</button></div>
+              <label><input id="opera-service-rate" type="checkbox"> RATE – Niederschlagsintensität</label>
+              <label><input id="opera-service-dbzh" type="checkbox"> DBZH – Radarreflektivität</label>
+              <label><input id="opera-service-acrr" type="checkbox"> ACRR – Akkumulierter Niederschlag</label>
+              <label>Gültigkeitsdauer (900–3600 s)<input id="opera-settings-age" type="number" min="900" max="3600" step="1"></label>
+              <label>Als veraltet kennzeichnen ab (900–3600 s)<input id="opera-settings-stale" type="number" min="900" max="3600" step="1"></label>
+              <label><input id="opera-settings-serve-stale" type="checkbox"> Veraltete Daten weiter bereitstellen</label>
+              <label>Maximale Weiterbereitstellung (900–3600 s)<input id="opera-settings-max-stale" type="number" min="900" max="3600" step="1"></label>
+              <div class="actions"><button id="opera-settings-save" type="button">2 · Einstellungen speichern</button></div>
+              <p class="muted">Provider-Aktivierung, Dienstwahl und Verfügbarkeit gültiger Frames werden von WR geprüft. Die Originaldiagnose ist für die reguläre RATE-Bereitstellung nicht erforderlich.</p>
+              <section style="padding:12px;border:1px solid #777;border-radius:10px;margin:12px 0">
+                <strong>OPERA · Original-Ringpuffer und RATE-Bereitstellung</strong>
+                <div class="actions" style="margin-top:8px">
+                  <button id="opera-ring-refresh" type="button">3a · Ringpufferstatus laden</button>
+                  <button id="opera-ring-start" type="button">3b · Überwachung einschalten</button>
+                  <select id="opera-ring-interval"><option value="15">15 Sekunden</option><option value="20">20 Sekunden</option><option value="30" selected>30 Sekunden</option><option value="60">60 Sekunden</option></select>
+                  <button id="opera-ring-check" type="button">3c · Jetzt prüfen</button>
+                  <button id="opera-preview-enable" type="button">4a · DEV-Vorschau freischalten</button>
+                </div>
+                <details><summary>Wartung / Überwachung stoppen</summary>
+                  <div class="actions">
+                    <button id="opera-ring-stop" type="button">Überwachung ausschalten</button>
+                    <button id="opera-ring-clean" type="button">Bereinigen</button>
+                    <button id="opera-ring-clear" type="button">Ringpuffer leeren</button>
+                  </div>
+                </details>
+                <pre id="opera-ring-status" role="status" style="white-space:pre-wrap">Status noch nicht geladen</pre>
+                <div class="actions"><button id="opera-png-test" type="button">4b · OPERA-PNG testen (Nord/Süd)</button></div>
+                <div id="opera-png-result" role="status">PNG-Test noch nicht gestartet.</div>
+                <div id="opera-png-gallery" style="display:flex;flex-wrap:wrap;gap:12px"></div>
+                <div class="actions"><button id="opera-json-export" type="button">5 · JSON exportieren</button><button id="opera-git-export" type="button">5 · Export2Git</button></div>
+                <div id="opera-export-result" role="status" class="muted">OPERA-Diagnose noch nicht exportiert.</div>
+                <section style="border:1px solid #888;padding:10px;margin:10px 0">
+                  <strong>Historische Originaldiagnose (nur Admin, keine Warnfreigabe)</strong>
+                  <div class="actions"><button id="test68-list">1 · Verfügbare Frames laden</button></div>
+                  <label>2 · Beobachtungszeit (UTC) <select id="test68-stamp"></select></label>
+                  <div class="actions"><button id="test68-pin">3 · Frame fixieren</button></div>
+                  <label>Referenzgebiet <select id="test68-region"><option value="33,20">Hamburg / Norddeutschland</option><option value="34,20">Dänemark / Südschweden</option><option value="free">Freie Tile-Koordinaten</option></select></label>
+                  <label>Zoom <input id="test68-z" type="number" value="6" min="0" max="12"></label>
+                  <label>Tile X <input id="test68-x" type="number" value="33" min="0"></label>
+                  <label>Tile Y <input id="test68-y" type="number" value="20" min="0"></label>
+                  <div class="actions"><button id="test68-compare">4 · Nord/Süd vergleichen</button><button id="test68-reset">5 · Vergleich zurücksetzen</button><button id="test68-export">6 · Export2Git – Rastervergleich</button></div>
+                  <pre id="test68-status" role="status">Kein historischer Frame fixiert.</pre>
+                  <div id="test68-pictures" style="display:flex;gap:12px;flex-wrap:wrap"></div>
+                </section>
+                <details><summary>Historischer Original-Zeitverlauf (nur Zeitstempel)</summary>
+                  <div class="actions">
+                    <button id="opera-history-list" type="button">Rasterzeitpunkte laden</button>
+                    <button id="opera-history-prev" type="button">Vorheriges</button>
+                    <button id="opera-history-next" type="button">Nächstes</button>
+                    <button id="opera-history-play" type="button">Wiedergabe</button>
+                    <button id="opera-history-pause" type="button">Pause</button>
+                    <label>Tempo <select id="opera-history-speed"><option value="2000">Langsam</option><option value="1000" selected>Normal</option><option value="500">Schnell</option></select></label>
+                  </div>
+                  <pre id="opera-history-state" role="status">Noch keine historischen Raster geladen; PNG-Auslieferung gesperrt.</pre>
+                </details>
+              </section>
+            </div>
+          </details>
+
+          <details class="card lab-menu" data-lab-menu-key="api-monitor">
+            <summary>API-Monitor · Consumer V1 / V2</summary>
+            <div class="lab-menu-content">
+              <div id="api-monitor-state" class="muted" role="status">Aufzeichnung AUS · noch nicht geladen</div>
+              <div class="actions">
+                <button id="api-monitor-start" class="monitor-metal" type="button">Aufzeichnung starten</button>
+                <button id="api-monitor-stop" class="monitor-metal stop" type="button">Stopp + löschen</button>
+              </div>
+              <p class="muted" style="font-size:11px">Nur Administratoren. Aufzeichnung und letzte Einstellung bleiben nach Neustart erhalten; der dauerhaft gespeicherte Verlauf ist zeitlich und mengenmäßig begrenzt. Koordinaten und Zugangsdaten werden nicht aufgezeichnet.</p>
+              <div class="monitor-filters">
+                <label>API <select id="api-monitor-version"><option value="all">Alle</option><option value="V1">V1</option><option value="V2">V2</option></select></label>
+                <label>Ergebnis <select id="api-monitor-result"><option value="all">Alle</option><option value="success">Erfolg</option><option value="no_data">Keine Daten</option><option value="rejected">Abgewiesen</option><option value="error">Fehler</option><option value="timeout">Zeitüberschreitung</option></select></label>
+                <label>Befehl <input id="api-monitor-command" placeholder="alle" /></label>
+                <label>Consumer <input id="api-monitor-consumer" placeholder="alle" /></label>
+                <label>Provider <input id="api-monitor-provider" placeholder="alle" /></label>
+                <label>Capability <input id="api-monitor-capability" placeholder="alle" /></label>
+                <label>Korrelation <input id="api-monitor-correlation" placeholder="alle" /></label>
+                <label>Min. Dauer (ms) <input id="api-monitor-min" type="number" min="0" step="1" /></label>
+                <label>Max. Dauer (ms) <input id="api-monitor-max" type="number" min="0" step="1" /></label>
+                <label>Sitzung <input id="api-monitor-session" placeholder="alle" /></label>
+                <label>Anfragekennung <input id="api-monitor-request" placeholder="alle" /></label>
+                <label>Ab UTC <input id="api-monitor-since" type="datetime-local" /></label>
+                <label>Bis UTC <input id="api-monitor-until" type="datetime-local" /></label>
+              </div>
+              <label>Suche <input id="api-monitor-search" placeholder="Befehl, Kennung, Fehler ..." /></label>
+              <label>Exportumfang <select id="api-monitor-export-scope"><option value="filtered">Alle gefilterten Einträge</option><option value="selected">Nur ausgewählten Eintrag</option></select></label>
+              <div class="actions">
+                <button id="api-monitor-refresh" type="button">Aktualisieren</button>
+                <button id="api-monitor-copy" type="button">Kopieren</button>
+                <button id="api-monitor-json" type="button">JSON</button>
+                <button id="api-monitor-git" type="button">Export2Git</button>
+              </div>
+              <details style="margin:9px 0">
+                <summary>Manuelles API-Prüfwerkzeug (V1 / V2)</summary>
+                <label>API
+                  <select id="api-monitor-manual-version"><option value="V2">Consumer V2</option><option value="V1">Consumer V1</option></select>
+                </label>
+                <label>Anfrage als JSON (ohne Zugangsgeheimnisse)</label>
+                <textarea id="api-monitor-manual-json" rows="7" style="width:100%;font:11px monospace"></textarea>
+                <div class="actions"><button id="api-monitor-manual-run" type="button">Testanfrage senden</button></div>
+                <pre id="api-monitor-manual-result">Noch keine Testabfrage.</pre>
+              </details>
+              <div id="api-monitor-list" class="muted">Keine aufgezeichneten Anfragen.</div>
+              <div id="api-monitor-detail-wrap" hidden><div class="actions"><button id="api-monitor-detail-close" type="button">Details schließen ×</button></div><pre id="api-monitor-details" aria-label="API-Monitor Anfragedetails"></pre></div>
+            </div>
+          </details>
+
+          <details class="card lab-menu" data-lab-menu-key="manual-tests">
+            <summary>Manuelle Tests · Testregister</summary>
+            <div class="lab-menu-content">
+              <p class="muted">Historisch festes Testregister 001–237 für Consumer V1, V2 und V1 + V2. Eigenständige P0-060-/P0-070-Sondertests und die bisherigen TEST67/TEST68-Prüfungen öffnen die Originalwerkzeuge.</p>
+              <div class="actions"><button type="button" id="manual-tests-catalog-open" class="primary">Komplette nummerierte Capability-Liste öffnen</button></div>
+              <div class="actions">
+                <button type="button" id="manual-test67">TEST67 · OPERA-PNG</button>
+                <button type="button" id="manual-test68">TEST68 · Historischer Vergleich</button>
+                <button type="button" id="manual-test-api">Consumer V1/V2 · API-Test</button>
+                <button type="button" id="manual-test-p0060">P0-060 · Profile / Ausschlüsse</button>
+                <button type="button" id="manual-test-p0070">P0-070 · Fehler-/Ausfall-Fallback</button>
+              </div>
+              <p class="muted" style="font-size:11px">Alle Capability-Einträge stammen live aus der vorhandenen Consumer-V1-Discovery. Der gesamte Katalog wird sichtbar, nicht nur drei Beispieltests. Die ursprüngliche nummerierte wissenschaftliche Testreihe ist hiervon getrennt und wird nicht umnummeriert.</p>
+              <pre id="manual-test-status" role="status">Test auswählen – noch keine Testausführung.</pre>
             </div>
           </details>
 
@@ -431,6 +929,75 @@ class WeatherRouterLab extends HTMLElement {
       });
     }
 
+    this.shadowRoot.getElementById("nasa-mosaic-load").addEventListener("click",()=>this._nasaMosaicSettings());
+    this.shadowRoot.getElementById("nasa-mosaic-save").addEventListener("click",()=>this._nasaMosaicSettings(true));
+    this.shadowRoot.getElementById("opera-settings-load").addEventListener("click", () => this._operaSettingsLoad());
+    this.shadowRoot.getElementById("opera-preview-enable").addEventListener("click", () => this._operaPreviewEnable());
+    this.shadowRoot.getElementById("opera-png-test").addEventListener("click", () => this._operaPngTest());
+    this.shadowRoot.getElementById("test68-region").addEventListener("change", event => {
+      if (event.target.value === "free") return;
+      const [x,y]=event.target.value.split(",").map(Number);
+      this.shadowRoot.getElementById("test68-z").value="6";
+      this.shadowRoot.getElementById("test68-x").value=String(x);
+      this.shadowRoot.getElementById("test68-y").value=String(y);
+    });
+    for (const [id, action] of [["test68-list","list"],["test68-pin","pin"],["test68-compare","compare"],["test68-reset","reset"],["test68-export","export"]]) {
+      this.shadowRoot.getElementById(id).addEventListener("click", () => this._test68Action(action));
+    }
+    this.shadowRoot.getElementById("opera-json-export").addEventListener("click", () => this._exportOperaSnapshot(false));
+    this.shadowRoot.getElementById("opera-git-export").addEventListener("click", () => this._exportOperaSnapshot(true));
+    this.shadowRoot.getElementById("opera-settings-save").addEventListener("click", () => this._operaSettingsSave());
+    this.shadowRoot.querySelector('[data-lab-menu-key="opera"]').addEventListener("toggle", e => {
+      if (e.target.open) {this._operaSettingsLoad();this._nasaMosaicSettings();}
+    });
+    // Additive historical test entrypoint: retain original runner implementations and IDs.
+    const openManualTool = (menuKey, status) => {
+      const target = this.shadowRoot.querySelector('[data-lab-menu-key="' + menuKey + '"]');
+      if (!target) {
+        this.shadowRoot.getElementById("manual-test-status").textContent = "Originaltest nicht verfügbar: " + status;
+        return;
+      }
+      target.open = true;
+      target.scrollIntoView({block:"start",behavior:"smooth"});
+      this.shadowRoot.getElementById("manual-test-status").textContent =
+        status + " geöffnet. Test erst über das Originalwerkzeug starten.";
+    };
+    this.shadowRoot.getElementById("manual-tests-catalog-open").addEventListener("click", () => {
+      if (typeof this._rdOpenManualTests === "function") void this._rdOpenManualTests();
+      else this.shadowRoot.getElementById("manual-test-status").textContent = "Routing-Diagnosemodul nicht geladen.";
+    });
+    this.shadowRoot.getElementById("manual-test67").addEventListener("click", () => openManualTool("opera", "TEST67 · OPERA-PNG"));
+    this.shadowRoot.getElementById("manual-test68").addEventListener("click", () => openManualTool("opera", "TEST68 · Historischer Vergleich"));
+    this.shadowRoot.getElementById("manual-test-api").addEventListener("click", () => openManualTool("api-monitor", "Consumer V1/V2 · API-Test"));
+    for (const [buttonId, specialId] of [["manual-test-p0060", "P0-060"], ["manual-test-p0070", "P0-070"]]) {
+      this.shadowRoot.getElementById(buttonId).addEventListener("click", async () => {
+        const status = this.shadowRoot.getElementById("manual-test-status");
+        try {
+          if (typeof this._rdOpenManualSpecial !== "function") throw Error("Originales Routing-Diagnosemodul nicht geladen");
+          await this._rdOpenManualSpecial(specialId);
+          status.textContent = specialId + " im Originalwerkzeug geöffnet. Ausführung erst nach ausdrücklicher Betätigung.";
+        } catch (error) { status.textContent = specialId + ": " + String(error?.message || error); }
+      });
+    }
+    this.shadowRoot.getElementById("api-monitor-start").addEventListener("click", () => this._monitorConfigure(true));
+    this.shadowRoot.getElementById("api-monitor-manual-run").addEventListener("click", () => this._monitorManualRun());
+    this.shadowRoot.getElementById("api-monitor-manual-version").addEventListener("change", () => this._monitorManualExample());
+    this._monitorManualExample();
+    this.shadowRoot.getElementById("api-monitor-stop").addEventListener("click", () => this._monitorConfigure(false));
+    this.shadowRoot.getElementById("api-monitor-refresh").addEventListener("click", () => this._monitorRefresh());
+    this.shadowRoot.getElementById("api-monitor-copy").addEventListener("click", () => this._monitorCopy());
+    this.shadowRoot.getElementById("api-monitor-json").addEventListener("click", () => this._monitorJson());
+    this.shadowRoot.getElementById("api-monitor-git").addEventListener("click", () => this._monitorGit());
+    this.shadowRoot.getElementById("api-monitor-detail-close").addEventListener("click", () => this._monitorCloseDetail());
+    this._monitorRestorePreferences();
+    for (const id of this._monitorPreferenceIds()) {
+      const field = this.shadowRoot.getElementById("api-monitor-" + id);
+      field?.addEventListener("change", () => {
+        this._monitorSavePreferences();
+        if (id !== "export-scope") this._monitorRefresh();
+      });
+    }
+    this.shadowRoot.querySelector('[data-lab-menu-key="api-monitor"]').addEventListener("toggle", () => this._monitorRefresh());
     this.shadowRoot.getElementById("reference").addEventListener("change", e => this._setReference(e.target.value));
     this.shadowRoot.getElementById("diagnostic-test-location").addEventListener("change", e => {
       this._diagnosticTestLocation = e.target.value;
@@ -457,7 +1024,226 @@ class WeatherRouterLab extends HTMLElement {
       this._renderRequests();
     });
     this.shadowRoot.getElementById("run").addEventListener("click", () => this._runDiagnostics());
+    for (const [id, action] of [
+      ["opera-ring-refresh", "status"], ["opera-ring-start", "set_monitor"],
+      ["opera-ring-stop", "set_monitor"], ["opera-ring-check", "check_now"],
+      ["opera-ring-clean", "cleanup"], ["opera-ring-clear", "clear"],
+    ]) this.shadowRoot.getElementById(id).addEventListener("click", () => this._operaRingAction(action, id));
+    this._operaFrames = [];
+    this._operaFrameIndex = -1;
+    this._operaPlayback = null;
+    for (const [id, fn] of [
+      ["opera-history-list", () => this._operaHistoryList()],
+      ["opera-history-prev", () => this._operaHistoryStep(-1)],
+      ["opera-history-next", () => this._operaHistoryStep(1)],
+      ["opera-history-play", () => this._operaHistoryPlay()],
+      ["opera-history-pause", () => this._operaHistoryPause()],
+    ]) this.shadowRoot.getElementById(id).addEventListener("click", fn);
+    this.shadowRoot.getElementById("opera-rate-run").addEventListener("click", () => this._runOperaRateDiagnostic());
+    this.shadowRoot.getElementById("opera-history-run").addEventListener("click", () => this._runOperaHistoryDiagnostic());
+    this.shadowRoot.getElementById("opera-rate-export").addEventListener("click", () => this._exportOperaRateDiagnostic());
     this._renderRequests();
+  }
+
+  _monitorPreferenceIds() {
+    return ["version","result","command","consumer","provider","capability",
+            "correlation","min","max","session","request","since","until",
+            "search","export-scope"];
+  }
+
+  _monitorRestorePreferences() {
+    // Only browser-local display filters; recording state always comes from HA.
+    try {
+      const stored = JSON.parse(localStorage.getItem("weather-router.api-monitor.filters.v1") || "null");
+      if (!stored || stored.schema !== 1 || typeof stored.values !== "object" ||
+          !stored.values || Array.isArray(stored.values)) return;
+      for (const id of this._monitorPreferenceIds()) {
+        const field = this.shadowRoot.getElementById("api-monitor-" + id);
+        const value = stored.values[id];
+        if (!field || typeof value !== "string" || value.length > 96) continue;
+        if (field.tagName === "SELECT" &&
+            !Array.from(field.options).some(option => option.value === value)) continue;
+        field.value = value;
+      }
+    } catch (_) { /* Missing/invalid browser storage must not affect the API monitor. */ }
+  }
+
+  _monitorSavePreferences() {
+    try {
+      const values = {};
+      for (const id of this._monitorPreferenceIds()) {
+        const field = this.shadowRoot.getElementById("api-monitor-" + id);
+        const value = field?.value;
+        if (typeof value === "string" && value.length <= 96 &&
+            !/(token|secret|password|authorization|cookie|api[_-]?key)[=:]/i.test(value))
+          values[id] = value;
+      }
+      localStorage.setItem("weather-router.api-monitor.filters.v1",
+                           JSON.stringify({schema:1, values}));
+    } catch (_) { /* UI is still usable if storage is disabled. */ }
+  }
+
+  _monitorFilters() {
+    const get = id => this.shadowRoot.getElementById("api-monitor-" + id)?.value?.trim() || "";
+    const result = {};
+    for (const [control, key] of [["version","api_version"],["result","result"],["command","command"],["session","session_id"],["request","request_id"],["consumer","consumer"],["provider","provider"],["capability","capability"],["correlation","correlation_id"],["search","search"]]) {
+      const value = get(control);
+      if (value && value !== "all") result[key] = value;
+    }
+    if (get("since")) result.since = get("since") + ":00+00:00";
+    if (get("until")) result.until = get("until") + ":00+00:00";
+    if (get("min")) result.min_duration_ms = Number(get("min"));
+    if (get("max")) result.max_duration_ms = Number(get("max"));
+    return result;
+  }
+
+  _monitorManualExample() {
+    const version = this.shadowRoot.getElementById("api-monitor-manual-version").value;
+    const example = version === "V2" ? {
+      contract_version: 2,
+      capability: "weather.precipitation.layer",
+      context: {type:"bbox",west:-85,south:18,east:-73,north:25},
+      time: {mode:"latest_coherent",max_data_age_seconds:3600},
+      limits: {max_layers:4,max_tile_requests:64}
+    } : {
+      contract_version: 1,
+      capability: "weather.radar.precipitation",
+      context: {type:"bbox",west:-85,south:18,east:-73,north:25},
+      time: {mode:"latest"}
+    };
+    this.shadowRoot.getElementById("api-monitor-manual-json").value = JSON.stringify(example, null, 2);
+  }
+
+  async _monitorManualRun() {
+    const output = this.shadowRoot.getElementById("api-monitor-manual-result");
+    const version = this.shadowRoot.getElementById("api-monitor-manual-version").value;
+    const raw = this.shadowRoot.getElementById("api-monitor-manual-json").value.trim();
+    try {
+      const query = JSON.parse(raw);
+      if (!query || typeof query !== "object" || Array.isArray(query)) throw Error("JSON-Objekt erwartet.");
+      const command = version === "V2" ? "weather_router/consumer/resolve_mosaic" : "weather_router/consumer/resolve";
+      if (query.type && query.type !== command) throw Error("API-Befehl stimmt nicht mit gewählter Version überein.");
+      query.type = command;
+      query.consumer_id = "weather_router_lab";
+      query.correlation_id = query.correlation_id || (crypto.randomUUID?.() || ("lab-" + Date.now().toString(36)));
+      output.textContent = "Anfrage läuft...";
+      const result = await this._hass.callWS(query);
+      output.textContent = JSON.stringify(result, null, 2);
+    } catch(error) {
+      output.textContent = "Anfrage abgewiesen/fehlgeschlagen: " + String(error.message || error);
+    } finally {
+      await this._monitorRefresh();
+    }
+  }
+
+  async _monitorConfigure(enabled) {
+    if (!this._hass) return;
+    try {
+      await this._hass.callWS({type:"weather_router/api_monitor/configure", enabled, clear:!enabled});
+      await this._monitorRefresh();
+    } catch(error) {
+      this.shadowRoot.getElementById("api-monitor-state").textContent = "Monitor-Steuerung fehlgeschlagen: " + String(error.message || error);
+    }
+  }
+
+  async _monitorRefresh() {
+    if (!this._hass || !this.shadowRoot.querySelector('[data-lab-menu-key="api-monitor"]')?.open) return;
+    try {
+      const snapshot = await this._hass.callWS({type:"weather_router/api_monitor/query", ...this._monitorFilters()});
+      this._monitorSnapshot = snapshot;
+      if (this._monitorSelected && !snapshot.entries.some(item => item.request_id === this._monitorSelected.request_id)) this._monitorSelected = null;
+      this.shadowRoot.getElementById("api-monitor-state").textContent =
+        (snapshot.recording ? "● Aufzeichnung AKTIV" : "○ Aufzeichnung AUS") +
+        " · " + snapshot.record_count + " Einträge · " + snapshot.buffer_bytes + " Bytes";
+      const list = this.shadowRoot.getElementById("api-monitor-list");
+      list.replaceChildren();
+      for (const entry of [...snapshot.entries].reverse()) {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.style.cssText = "display:block;width:100%;text-align:left;margin:4px 0;white-space:normal;overflow-wrap:anywhere";
+        b.textContent = entry.started_at + " · " + entry.api_version + " · " +
+          entry.consumer + " · " + entry.capability + " · " + entry.result +
+          " · " + entry.duration_ms + " ms";
+        b.addEventListener("click", () => {
+          if (this._monitorSelected?.request_id === entry.request_id) {
+            this._monitorCloseDetail();
+          } else {
+            this._monitorSelected = entry;
+            this.shadowRoot.getElementById("api-monitor-detail-wrap").hidden = false;
+            this.shadowRoot.getElementById("api-monitor-details").textContent = JSON.stringify(entry, null, 2);
+          }
+        });
+        list.appendChild(b);
+      }
+      if (!snapshot.entries.length) list.textContent = "Keine passenden Einträge.";
+    } catch(error) {
+      this.shadowRoot.getElementById("api-monitor-state").textContent = "API-Monitor nicht erreichbar: " + String(error.message || error);
+    }
+  }
+
+  _monitorCloseDetail() {
+    this._monitorSelected = null;
+    this.shadowRoot.getElementById("api-monitor-detail-wrap").hidden = true;
+  }
+
+  _monitorExportSnapshot() {
+    if (!this._monitorSnapshot) return null;
+    const scope = this.shadowRoot.getElementById("api-monitor-export-scope").value;
+    if (scope !== "selected") return this._monitorSnapshot;
+    if (!this._monitorSelected) {
+      this.shadowRoot.getElementById("api-monitor-state").textContent = "Bitte zuerst eine Anfrage auswählen.";
+      return null;
+    }
+    return {...this._monitorSnapshot, record_count:1, entries:[this._monitorSelected]};
+  }
+
+  async _monitorCopy() {
+    if (!this._monitorSnapshot) await this._monitorRefresh();
+    if (!this._monitorSnapshot) return;
+    if (!this._monitorExportSnapshot()) return;
+    try {
+      await navigator.clipboard.writeText(JSON.stringify(this._monitorExportSnapshot(), null, 2));
+      this.shadowRoot.getElementById("api-monitor-state").textContent = "Gewählter JSON-Export in die Zwischenablage kopiert.";
+    } catch(error) {
+      this.shadowRoot.getElementById("api-monitor-state").textContent = "Zwischenablage nicht verfügbar: " + String(error);
+    }
+  }
+
+  async _monitorJson() {
+    await this._monitorRefresh();
+    if (!this._monitorSnapshot) return;
+    const snapshot = this._monitorExportSnapshot();
+    if (!snapshot) return;
+    const blob = new Blob([JSON.stringify(snapshot, null, 2)], {type:"application/json"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "weather-router-api-monitor-" + new Date().toISOString().replace(/[:.]/g,"-") + ".json";
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+
+  async _monitorGit() {
+    const button = this.shadowRoot.getElementById("api-monitor-git");
+    const status = this.shadowRoot.getElementById("api-monitor-state");
+    if (button.disabled || !this._hass) return;
+    button.disabled = true;
+    button.textContent = "⏳ Export läuft …";
+    status.textContent = "Export2Git: Übertragung läuft …";
+    try {
+      await this._monitorRefresh();
+      const snapshot = this._monitorExportSnapshot();
+      if (!snapshot) return;
+      const result = await this._hass.callWS({type:"weather_router/log_git_export",target:"archive",snapshot});
+      status.textContent = "✓ Export2Git erfolgreich: " + (result.path || result.url || "Privates Archiv");
+      button.textContent = "✓ Export erfolgreich";
+    } catch(error) {
+      status.textContent = "✕ Export2Git fehlgeschlagen: " + String(error.message || error);
+      button.textContent = "✕ Export fehlgeschlagen";
+    } finally {
+      button.disabled = false;
+      button.style.fontWeight = "bold";
+    }
   }
 
   _providerInfoClose() {
@@ -1938,6 +2724,135 @@ class WeatherRouterLab extends HTMLElement {
       row.querySelector("button").addEventListener("click", () => { this._requests.splice(index,1); this._renderRequests(); });
       host.appendChild(row);
     });
+  }
+
+  _resetOperaExportStatus() {
+    const exportButton = this.shadowRoot.getElementById("opera-rate-export");
+    if (!exportButton) return;
+    exportButton.disabled = true;
+    exportButton.textContent = "Export2Git · RATE-Diagnose";
+    exportButton.style.color = "";
+    exportButton.style.borderColor = "";
+    this._operaRateSnapshot = null;
+  }
+
+  async _runOperaHistoryDiagnostic() {
+    if (!this._hass || this._operaRateRunning) return;
+    if (!window.confirm("Historisches OPERA-RATE-HDF5 ausschließlich zur ODIM-Metadatenprüfung laden? Die Datei wird nach der Prüfung gelöscht; weder Live-Raster noch Consumer V2 werden freigegeben.")) return;
+    const button = this.shadowRoot.getElementById("opera-history-run");
+    const output = this.shadowRoot.getElementById("opera-rate-result");
+    const exportButton = this.shadowRoot.getElementById("opera-rate-export");
+    this._operaRateRunning = true;
+    this._resetOperaExportStatus();
+    button.disabled = true;
+    button.textContent = "Historisches HDF5 wird geprüft …";
+    try {
+      const response = await this._hass.callWS({
+        type: "weather_router/provider_diagnostics",
+        provider: "opera",
+        capability: "opera_rate_history"
+      });
+      const result = response?.provider_probe?.data || {};
+      if (response?.schema === "weather_router.provider_diagnostics.v1" &&
+          response?.provider?.id === "opera" && response?.scope?.capability === "opera_rate_history") {
+        this._operaRateSnapshot = response;
+        exportButton.disabled = false;
+      }
+      output.textContent = JSON.stringify({
+        status: result.download?.status || result.error || result.status,
+        historisch: true,
+        datei_entfernt: result.download?.cleanup === "deleted",
+        bereinigte_altdateien: result.cleanup_orphans_removed ?? null,
+        odim_utc: result.download?.odim_utc || null,
+        dateiname_passt_zu_odim: result.download?.filename_utc_matches_odim ?? null,
+        breite: result.download?.width ?? null,
+        hoehe: result.download?.height ?? null,
+        sha256: result.download?.sha256 || null,
+        originale_pixelproben: result.download?.pixel_samples || [],
+        rastergeometrie: result.download?.geometry || null,
+        sperrgrund: result.stage_failure_code || null,
+        consumer_v2: "BLOCKED",
+        wissenschaftliche_freigabe: false
+      }, null, 2);
+    } catch (error) {
+      output.textContent = "Historische OPERA-Diagnose fehlgeschlagen; keine Freigabe.";
+    } finally {
+      button.disabled = false;
+      button.textContent = "Historische HDF5-Prüfung (DEV)";
+      this._operaRateRunning = false;
+    }
+  }
+
+  async _runOperaRateDiagnostic() {
+    if (!this._hass || this._operaRateRunning) return;
+    if (!window.confirm("OPERA-RATE-HDF5 auf dieser DEV-Instanz diagnostisch abrufen und prüfen? Dies ist keine wissenschaftliche Freigabe.")) return;
+    const button = this.shadowRoot.getElementById("opera-rate-run");
+    const output = this.shadowRoot.getElementById("opera-rate-result");
+    this._operaRateRunning = true;
+    this._resetOperaExportStatus();
+    button.disabled = true;
+    button.textContent = "OPERA-RATE wird geprüft …";
+    output.textContent = "Authentifizierte RATE-Diagnose läuft …";
+    try {
+      const response = await this._hass.callWS({
+        type: "weather_router/provider_diagnostics",
+        provider: "opera",
+        capability: "opera_rate_discovery"
+      });
+      const result = response?.provider_probe?.data || {};
+      if (response?.schema === "weather_router.provider_diagnostics.v1" && response?.provider?.id === "opera" && response?.scope?.capability === "opera_rate_discovery") {
+        this._operaRateSnapshot = response;
+        this.shadowRoot.getElementById("opera-rate-export").disabled = false;
+      }
+      const selected = result.latest_rate_hdf5 || {};
+      const details = {
+        status: result.status || result.error || "Keine Statusangabe",
+        sperrgrund: result.error || null,
+        hdf5_sperrgrund: result.stage_failure_code || null,
+        fehlende_laufzeitpakete: Array.isArray(result.runtime_blockers) ? result.runtime_blockers : [],
+        verarbeitungsschritt: result.stage || null,
+        quelle_vollstaendig: result.listing_complete === true,
+        rate_kandidaten: result.rate_matches ?? null,
+        hdf5_kandidaten: result.rate_hdf5_eligible ?? null,
+        objektschluessel: selected.key || null,
+        objektzeit_utc: selected.nominal_filename_utc || null,
+        hdf5_download: result.download ?? "Nicht ausgeführt",
+        odim_geprueft: result.odim_structure_verified === true,
+        diagnose_raster_registriert: result.diagnostic_frame_registered === true,
+        wissenschaftliche_freigabe: false
+      };
+      output.textContent = JSON.stringify(details, null, 2);
+    } catch (error) {
+      output.textContent = "OPERA-RATE-Diagnose fehlgeschlagen: " + (error?.message || String(error));
+    } finally {
+      this._operaRateRunning = false;
+      button.disabled = false;
+      button.textContent = "OPERA-RATE prüfen (DEV)";
+    }
+  }
+
+  async _exportOperaRateDiagnostic() {
+    const button = this.shadowRoot.getElementById("opera-rate-export");
+    const snapshot = this._operaRateSnapshot;
+    if (!this._hass || button.disabled || !snapshot || this._operaRateRunning) return;
+    button.disabled = true;
+    button.textContent = "Export2Git läuft …";
+    button.style.color = "";
+    button.style.borderColor = "";
+    try {
+      const result = await this._hass.callWS({type:"weather_router/log_git_export", target:"archive", snapshot});
+      button.textContent = "Export2Git erfolgreich";
+      button.style.color = "#22c55e";
+      button.style.borderColor = "#22c55e";
+      this.shadowRoot.getElementById("opera-rate-result").textContent += "\n\nExport2Git: " + (result?.path || result?.url || "Privates Archiv");
+    } catch (error) {
+      button.textContent = "Export2Git fehlgeschlagen";
+      button.style.color = "#ef4444";
+      button.style.borderColor = "#ef4444";
+      this.shadowRoot.getElementById("opera-rate-result").textContent += "\n\nExportfehler: " + (error?.message || String(error));
+    } finally {
+      button.disabled = false;
+    }
   }
 
   async _runDiagnostics() {

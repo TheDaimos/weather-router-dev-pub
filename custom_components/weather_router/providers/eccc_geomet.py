@@ -112,6 +112,16 @@ class EcccGeometProvider:
     def capabilities(self) -> tuple[CapabilityInfo, ...]:
         return _CAPABILITIES
 
+    def synoptic_centers_info(self) -> dict:
+        """Additive global GDPS source; separate from SWOB observations."""
+        return {"capability": "weather.synoptic.pressure_centers", "coverage": "global",
+                "data_kind": "precomputed_vector",
+                "model": "ECCC GDPS", "unit": "hPa", "delivery": "MSC Datamart GeoJSON"}
+
+    async def async_fetch_synoptic_centers(self, hass: HomeAssistant, bbox: dict) -> dict:
+        from ..synoptic_eccc import async_fetch_centers
+        return await async_fetch_centers(hass, bbox)
+
     def provider_info(self) -> ProviderInfo:
         return ProviderInfo(
             summary=(
@@ -158,6 +168,12 @@ class EcccGeometProvider:
                 note="MSC GeoMet OGC API · swob-realtime.",
             ),
             NetworkTargetInfo(
+                purpose="synoptic_centres_gdps", scheme="https", host="dd.weather.gc.ca",
+                port=443, target_type="data_file", required=False,
+                capabilities=("weather.synoptic.pressure_centers",),
+                note="GDPS globale vorab berechnete High/Low-GeoJSON aus MSC Datamart, nutzbar nach gültiger Daten-/Schemaprüfung.",
+            ),
+            NetworkTargetInfo(
                 purpose="weather_map_catalog",
                 scheme="https",
                 host="geo.weather.gc.ca",
@@ -192,7 +208,8 @@ class EcccGeometProvider:
         span = 1.5
         bbox = f"{lon-span:.4f},{lat-span:.4f},{lon+span:.4f},{lat+span:.4f}"
 
-        session = async_get_clientsession(hass)
+        from ..diagnostic_center import observed_clientsession
+        session = observed_clientsession(hass, "eccc_geomet", async_get_clientsession(hass))
         async with session.get(
             _ITEMS_URL,
             params={"f": "json", "bbox": bbox, "limit": "100"},

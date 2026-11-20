@@ -280,7 +280,8 @@ class FmiLightningProvider:
         )
         now = datetime.now(timezone.utc)
         start = now - timedelta(minutes=_LOOKBACK_MINUTES)
-        session = async_get_clientsession(hass)
+        from ..diagnostic_center import observed_clientsession
+        session = observed_clientsession(hass, "fmi_lightning", async_get_clientsession(hass))
         async with session.get(
             _WFS,
             params={
@@ -294,7 +295,7 @@ class FmiLightningProvider:
             },
             headers={
                 "Accept": "application/xml,text/xml",
-                "User-Agent": "WeatherRouter/0.10 (+https://github.com/TheDaimos/weather-router-dev-pub)",
+                "User-Agent": "WeatherRouter/0.10 (+https://github.com/TheDaimos/weather-router-dev)",
             },
             timeout=25,
         ) as response:

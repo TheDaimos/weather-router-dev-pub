@@ -150,7 +150,8 @@ class BmkgTsunamiProvider:
         )
 
     async def _async_latest(self, hass: HomeAssistant) -> dict[str, Any]:
-        session = async_get_clientsession(hass)
+        from ..diagnostic_center import observed_clientsession
+        session = observed_clientsession(hass, "bmkg_tsunami", async_get_clientsession(hass))
         async with session.get(
             _API,
             headers={"Accept": "application/json"},
@@ -211,7 +212,7 @@ class BmkgTsunamiProvider:
                 "certainty": "possible",
                 "status": "actual",
                 "message_type": "alert",
-                "sent": event_time,
+                "sent": None,  # BMKG DateTime bezeichnet den Erdbebenzeitpunkt, nicht die Warn-Ausstellung.
                 "effective": event_time,
                 "onset": event_time,
                 "expires": None,

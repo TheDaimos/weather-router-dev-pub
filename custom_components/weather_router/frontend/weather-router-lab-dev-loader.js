@@ -1,6 +1,6 @@
 const TARGET_ELEMENT = "weather-router-lab";
-const WR_LAB_BUILD_VERSION = "0.10.145";
-const LOADER_REV = "0.10-loader-148"
+const WR_LAB_BUILD_VERSION = "1.0.0";
+const LOADER_REV = "1.0-loader-330"
 
 class WeatherRouterLabDevLoader extends HTMLElement {
   constructor() {
@@ -41,7 +41,7 @@ class WeatherRouterLabDevLoader extends HTMLElement {
     this.style.background = "var(--primary-background-color, #111)";
     this.style.color = "var(--primary-text-color, #eee)";
 
-    console.info(`[WeatherRouter] dev loader ${LOADER_REV} connected`);
+    console.info(`[WeatherRouter] loader ${LOADER_REV} connected`);
     this._load();
   }
 
@@ -50,7 +50,7 @@ class WeatherRouterLabDevLoader extends HTMLElement {
 
     const loading = document.createElement("div");
     loading.style.cssText = "padding:20px;font:14px system-ui,sans-serif;color:var(--primary-text-color,#eee)";
-    loading.textContent = `WeatherRouter Lab WR ${WR_LAB_BUILD_VERSION} · DEV wird geladen … (${LOADER_REV})`;
+    loading.textContent = `WeatherRouter Lab WR ${WR_LAB_BUILD_VERSION} · FINAL wird geladen … (${LOADER_REV})`;
     this.replaceChildren(loading);
 
     const token = `${Date.now()}-${Math.random().toString(36).slice(2)}`;

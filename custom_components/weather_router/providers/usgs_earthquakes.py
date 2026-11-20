@@ -315,7 +315,8 @@ class UsgsEarthquakeProvider:
         if url is None:
             raise ValueError(f"Unsupported USGS earthquake capability: {capability_id}")
 
-        session = async_get_clientsession(hass)
+        from ..diagnostic_center import observed_clientsession
+        session = observed_clientsession(hass, "usgs_earthquakes", async_get_clientsession(hass))
         async with session.get(
             url,
             headers={"Accept": "application/geo+json,application/json"},

@@ -174,7 +174,7 @@ def _event_from_feature(feature: Any, *, capability_id: str) -> dict[str, Any] |
         "certainty": "forecast",
         "status": "actual",
         "message_type": "warning" if "SIGMET" in product_type.upper() else "advisory",
-        "sent": props.get("receiptTime"),
+        "sent": None,  # AWC receiptTime bezeichnet Empfang, nicht Ausstellung.
         "effective": props.get("validTimeFrom"),
         "onset": props.get("validTimeFrom"),
         "expires": props.get("validTimeTo"),
@@ -281,12 +281,13 @@ class AviationWeatherProvider:
         if endpoint is None:
             raise ValueError(f"Unsupported Aviation Weather capability: {capability_id}")
 
-        session = async_get_clientsession(hass)
+        from ..diagnostic_center import observed_clientsession
+        session = observed_clientsession(hass, "aviation_weather", async_get_clientsession(hass))
         async with session.get(
             endpoint,
             headers={
                 "Accept": "application/geo+json,application/json,*/*",
-                "User-Agent": "WeatherRouter/0.10 (+https://github.com/TheDaimos/weather-router-dev-pub)",
+                "User-Agent": "WeatherRouter/0.10 (+https://github.com/TheDaimos/weather-router-dev)",
             },
             timeout=25,
         ) as response:

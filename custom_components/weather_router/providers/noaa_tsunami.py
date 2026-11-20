@@ -331,7 +331,8 @@ class NoaaTsunamiProvider:
         )
 
     async def _async_messages(self, hass: HomeAssistant) -> list[dict[str, Any]]:
-        session = async_get_clientsession(hass)
+        from ..diagnostic_center import observed_clientsession
+        session = observed_clientsession(hass, "noaa_tsunami", async_get_clientsession(hass))
         messages: list[dict[str, Any]] = []
         errors: list[str] = []
         for source in _SOURCES:

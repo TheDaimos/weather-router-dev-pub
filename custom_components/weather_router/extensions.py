@@ -243,13 +243,19 @@ async def async_setup_extensions(hass: HomeAssistant, entry: ConfigEntry[Any]) -
     loaded = await hass.async_add_executor_job(_loaded_modules_sync)
     state = hass.data.setdefault(_EXTENSION_STATE_KEY, {})
     for spec, module in loaded:
+        from .diagnostic_center import record as d2_record
+        d2_record(hass, category="extension", outcome="started", details={"initialized": False})
         try:
             hook = getattr(module, "async_setup_extension", None)
             if callable(hook):
                 await hook(hass, entry)
             state[spec.extension_id] = module
+            from .diagnostic_center import record as d2_record
+            d2_record(hass, category="extension", outcome="success", details={"initialized": True})
         except Exception as err:  # noqa: BLE001
             _LOGGER.error("WeatherRouter extension %s setup failed: %s", spec.extension_id, err)
+            from .diagnostic_center import record as d2_record
+            d2_record(hass, category="extension", outcome="failed", details={"initialized": False})
 
 
 async def async_notify_routing_changed(
@@ -264,6 +270,8 @@ async def async_notify_routing_changed(
                 await hook(hass, entry, options)
         except Exception as err:  # noqa: BLE001
             _LOGGER.error("WeatherRouter extension %s routing hook failed: %s", extension_id, err)
+            from .diagnostic_center import record as d2_record
+            d2_record(hass, category="extension", outcome="failed", details={"ready": False})
 
 
 async def async_unload_extensions(hass: HomeAssistant, entry: ConfigEntry[Any]) -> None:
@@ -275,4 +283,8 @@ async def async_unload_extensions(hass: HomeAssistant, entry: ConfigEntry[Any]) 
                 await hook(hass, entry)
         except Exception as err:  # noqa: BLE001
             _LOGGER.error("WeatherRouter extension %s unload failed: %s", extension_id, err)
+            from .diagnostic_center import record as d2_record
+            d2_record(hass, category="extension", outcome="failed", details={"ready": False})
     hass.data.pop(_EXTENSION_STATE_KEY, None)
+    from .diagnostic_center import record as d2_record
+    d2_record(hass, category="extension", outcome="unloaded", details={"ready": False})

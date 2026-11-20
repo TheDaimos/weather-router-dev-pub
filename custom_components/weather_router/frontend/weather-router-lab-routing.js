@@ -505,7 +505,11 @@ if (!proto.__weatherRouterRoutingEnhanced) {
       const primary = Array.isArray(provider.domains) && provider.domains.length
         ? provider.domains[0]
         : "weather";
-      const groupKey = provider.display_group || primary;
+      // Only visual groups with an explicit renderer may override the domain.
+      // OPERA declares "precipitation"; without this guard that unknown group
+      // is omitted from providerGroupDescriptors and silently disappears.
+      const groupKey = provider.display_group === "thunderstorm"
+        ? "thunderstorm" : primary;
       if (!providerGroupsByKey.has(groupKey)) providerGroupsByKey.set(groupKey, []);
       providerGroupsByKey.get(groupKey).push(provider);
     }
@@ -608,22 +612,7 @@ if (!proto.__weatherRouterRoutingEnhanced) {
       return { key:"green", label:"aktiv" };
     };
 
-    const providerGroups = providerGroupDescriptors.map(group => {
-      const entries = providerGroupsByKey.get(group.id) || [];
-      if (!entries.length) return "";
-      const enabledCount = entries.filter(provider => provider.enabled_by_user).length;
-      const groupKey = `router-provider-group-${group.id}`;
-      return `
-        <details class="router-provider-group" data-router-fold-key="${this._escape(groupKey)}"
-          ${foldOpen(groupKey, false) ? "open" : ""}>
-          <summary>
-            <span class="router-provider-group-title">
-              <span>${this._escape(group.name)}</span>
-            </span>
-            <span class="router-fold-count">${enabledCount}/${entries.length} aktiv</span>
-          </summary>
-          <div class="router-provider-list">
-            ${entries.map(provider => {
+    const renderProviderRows = entries => entries.map(provider => {
               const domainText = (provider.domains || [])
                 .map(value => this._routingDomainLabel(value))
                 .join(" · ");
@@ -654,8 +643,45 @@ if (!proto.__weatherRouterRoutingEnhanced) {
                   </span>
                 </label>
               `;
-            }).join("")}
-          </div>
+    }).join("");
+    // Display-only classification: providers are listed once and all toggles
+    // still modify the single provider ID in enabled_providers.
+    const precipitationIds = new Set(["opera", "dwd", "rainviewer", "nasa_gibs"]);
+    const renderWeatherSubgroup = (id, title, entries) => {
+      if (!entries.length) return "";
+      const enabledCount = entries.filter(provider => provider.enabled_by_user).length;
+      const foldKey = `router-provider-weather-${id}`;
+      return `
+        <details class="router-provider-group" data-router-fold-key="${this._escape(foldKey)}"
+          ${foldOpen(foldKey, false) ? "open" : ""}>
+          <summary><span class="router-provider-group-title">${this._escape(title)}</span>
+            <span class="router-fold-count">${enabledCount}/${entries.length} aktiv</span></summary>
+          <div class="router-provider-list">${renderProviderRows(entries)}</div>
+        </details>
+      `;
+    };
+
+    const providerGroups = providerGroupDescriptors.map(group => {
+      const entries = providerGroupsByKey.get(group.id) || [];
+      if (!entries.length) return "";
+      const enabledCount = entries.filter(provider => provider.enabled_by_user).length;
+      const groupKey = `router-provider-group-${group.id}`;
+      const groupBody = group.id === "weather"
+        ? [
+            renderWeatherSubgroup("precipitation", "Niederschlag",
+              entries.filter(provider => precipitationIds.has(provider.id))),
+            renderWeatherSubgroup("other", "Weitere Wetterdienste",
+              entries.filter(provider => !precipitationIds.has(provider.id))),
+          ].join("")
+        : `<div class="router-provider-list">${renderProviderRows(entries)}</div>`;
+      return `
+        <details class="router-provider-group" data-router-fold-key="${this._escape(groupKey)}"
+          ${foldOpen(groupKey, false) ? "open" : ""}>
+          <summary>
+            <span class="router-provider-group-title">${this._escape(group.name)}</span>
+            <span class="router-fold-count">${enabledCount}/${entries.length} aktiv</span>
+          </summary>
+          ${groupBody}
         </details>
       `;
     }).join("");

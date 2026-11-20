@@ -18,6 +18,7 @@ from .const import (
 from .consumer_api import _load_mapping_sync
 from .providers import provider_catalog
 from .routing_diagnostics import routing_diagnostic_summary
+from .nasa_mosaic import configured_parallel
 
 
 async def async_get_config_entry_diagnostics(
@@ -57,6 +58,7 @@ async def async_get_config_entry_diagnostics(
             "consumer_contract": CONSUMER_CONTRACT_VERSION,
             "routing_diagnostic_schema": "weather_router.routing_diagnostic.v1",
         },
+        "nasa_mosaic": {**hass.data.get("weather_router",{}).get("nasa_mosaic_status",{}), "configured_parallelism": configured_parallel(entry.options), "enabled": entry.options.get("nasa_imerg_complement",False) is True},
         "router": {
             "development_stage": "consumer_api_v1_active",
             "loaded": True,

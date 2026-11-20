@@ -37,9 +37,21 @@ async def _async_weather_maps(hass: HomeAssistant) -> dict[str, Any]:
         return _cached_payload
 
     session = async_get_clientsession(hass)
-    async with session.get(_METADATA_URL, timeout=15) as response:
-        response.raise_for_status()
-        payload = await response.json()
+    from ..diagnostic_center import record_http_exchange
+    request_started = monotonic()
+    http_status = None
+    try:
+        async with session.get(_METADATA_URL, timeout=15) as response:
+            http_status = response.status
+            response.raise_for_status()
+            payload = await response.json()
+            record_http_exchange(hass, "rainviewer", started_monotonic=request_started,
+                                 http_status=http_status,
+                                 declared_response_bytes=response.content_length)
+    except Exception:
+        record_http_exchange(hass, "rainviewer", started_monotonic=request_started,
+                             http_status=http_status, failed=True)
+        raise
 
     if not isinstance(payload, dict):
         raise ValueError("RainViewer metadata is not an object")

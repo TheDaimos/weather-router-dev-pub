@@ -188,6 +188,75 @@ if (!proto.__weatherRouterLogExportEnhanced) {
       options.onError?.(error);
       throw error;
     }
+    // Reuse the existing archive export. Read actual administrator-only ring
+    // state at export time; never synthesize values or export original bytes.
+    const safeRing = {};
+    try {
+      const ring = await this._hass.callWS({type:"weather_router/opera/ring", action:"status"});
+      const storage = ring?.storage || {};
+      const monitor = ring?.monitor || {};
+      const number = value => typeof value === "number" && Number.isFinite(value) && value >= 0 ? value : null;
+      const utc = value => typeof value === "string" && /^\d{4}-\d{2}-\d{2}T[0-9:.]+Z$/.test(value) && value.length <= 40 ? value : null;
+      safeRing.schema = "weather_router.opera.ring_export.v1";
+      safeRing.storage_available = true;
+      safeRing.version = ring.version || snapshot.version || snapshot.build || null;
+      safeRing.loader = ring.loader || null;
+      safeRing.monitor_enabled = monitor.enabled === true;
+      safeRing.interval_seconds = number(monitor.interval_seconds);
+      safeRing.original_bytes = number(storage.original_bytes);
+      safeRing.original_mib = number(storage.original_mib);
+      safeRing.capacity_bytes = number(storage.capacity_bytes);
+      safeRing.retention_hours = number(storage.retention_hours);
+      safeRing.automatic_cleanup_enabled = storage.automatic_cleanup_enabled === true;
+      safeRing.utilization_percent = number(storage.utilization_percent);
+      safeRing.original_count = number(storage.count);
+      safeRing.oldest_utc = utc(storage.oldest_utc);
+      safeRing.newest_utc = utc(storage.newest_utc);
+      safeRing.last_check_utc = utc(monitor.last_check_utc);
+      safeRing.last_automatic_download_utc = utc(monitor.last_download_utc);
+      safeRing.last_manual_download_utc = utc(ring.manual_last_download_utc);
+      safeRing.observation_count = number(monitor.delay_count);
+      safeRing.delay_min_seconds = number(monitor.delay_min_seconds);
+      safeRing.delay_mean_seconds = number(monitor.delay_mean_seconds);
+      safeRing.delay_max_seconds = number(monitor.delay_max_seconds);
+      safeRing.check_count = number(monitor.check_count);
+      safeRing.last_error_class = typeof monitor.last_error_class === "string" && /^[A-Za-z_]{1,40}$/.test(monitor.last_error_class) ? monitor.last_error_class : null;
+      // Distinguish transport failures from ODIM metadata failures without
+      // allowing arbitrary exception texts, URLs or credentials into Export2Git.
+      const downloadCodes = ["download_failed", "unexpected_content_encoding",
+        "download_body_incomplete", "invalid_original"];
+      const odimCodes = ["hdf5_read_error", "not_hdf5", "missing_odim_groups",
+        "quantity_missing_or_ambiguous", "invalid_odim_utc",
+        "grid_shape_mismatch", "invalid_calibration"];
+      const failureCode = typeof monitor.last_error_code === "string" ? monitor.last_error_code : null;
+      safeRing.last_download_error_code = monitor.last_error_phase === "download" &&
+        downloadCodes.includes(failureCode) ? failureCode : null;
+      safeRing.last_odim_error_code = monitor.last_error_phase === "odim_validation" &&
+        odimCodes.includes(failureCode) ? failureCode : null;
+      safeRing.last_error_phase = ["s3_listing","download","odim_validation","journal"].includes(
+        monitor.last_error_phase) ? monitor.last_error_phase : null;
+      safeRing.last_attempt_stamp = typeof monitor.last_attempt_stamp === "string" &&
+        /^\d{8}T\d{6}Z$/.test(monitor.last_attempt_stamp) ? monitor.last_attempt_stamp : null;
+      safeRing.failed_check_count = number(monitor.failed_check_count);
+      safeRing.last_stored_stamp = typeof monitor.last_stored_stamp === "string" &&
+        /^\d{8}T\d{6}Z$/.test(monitor.last_stored_stamp) ? monitor.last_stored_stamp : null;
+      safeRing.historical_frame_count = number(storage.count);
+      safeRing.scientific_status = "UNVERIFIED";
+      safeRing.historical_tile_authorized = false;
+      safeRing.observations = (Array.isArray(monitor.observations) ? monitor.observations : []).slice(-24).map(o => ({
+        stamp: typeof o.stamp === "string" && /^\d{8}T\d{6}Z$/.test(o.stamp) ? o.stamp : null,
+        first_seen_utc: utc(o.first_seen_utc),
+        download_completed_utc: utc(o.download_completed_utc),
+        observed_delay_seconds: number(o.observed_delay_seconds),
+        bytes: number(o.bytes),
+        storage_status: ["stored","duplicate","expired_by_policy"].includes(o.storage_status) ? o.storage_status : null,
+      }));
+    } catch (error) {
+      safeRing.schema = "weather_router.opera.ring_export.v1";
+      safeRing.storage_available = false;
+      safeRing.error = "ring_status_unavailable";
+    }
+    snapshot = {...snapshot, opera_ring_buffer: safeRing};
     const target = "archive";
     let state = await this._wrLogGitStatus(target);
     if (!state?.configured) {

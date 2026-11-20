@@ -40,6 +40,7 @@ if (!proto.__weatherRouterConsumerApiEnhanced) {
         lastResolution: null,
         loading: false,
         error: null,
+        catalogFeedback: null,
       };
     }
     return this._consumerApi;
@@ -305,6 +306,21 @@ if (!proto.__weatherRouterConsumerApiEnhanced) {
           gap:6px;
           margin-top:4px;
         }
+        .consumer-api-refresh-feedback {
+          margin:8px 0 0;
+          padding:10px 12px;
+          border:1px solid color-mix(in srgb,#d4af37 45%,var(--divider-color,#555));
+          border-radius:9px;
+          background:rgba(212,175,55,.075);
+          color:var(--primary-text-color,#eee);
+          font-size:12px;
+          font-weight:650;
+          line-height:1.4;
+          overflow-wrap:anywhere;
+        }
+        .consumer-api-refresh-feedback.loading { border-color:#d4af37;color:#ffe4a0; }
+        .consumer-api-refresh-feedback.ok { border-color:#2d8f66;background:rgba(45,143,102,.12);color:#a6f5ca; }
+        .consumer-api-refresh-feedback.error { border-color:var(--error-color,#f44336);background:rgba(244,67,54,.09);color:#ffa9a9; }
         .consumer-api-output {
           max-height:300px;
           overflow:auto;
@@ -811,10 +827,14 @@ if (!proto.__weatherRouterConsumerApiEnhanced) {
               `).join("")}
             </select>
             <button id="consumer-api-refresh" class="secondary" type="button"
-              ${state.loading ? "disabled" : ""}>Discovery/Katalog</button>
+              ${state.loading ? "disabled" : ""}>${state.loading ? "Katalog wird geladen …" : "Discovery/Katalog"}</button>
             <button id="consumer-api-resolve" type="button"
               ${state.loading || !state.selected ? "disabled" : ""}>Resolve testen</button>
           </div>
+          ${state.catalogFeedback ? `
+            <div class="consumer-api-refresh-feedback ${this._escape(state.catalogFeedback.kind)}"
+                 role="status" aria-live="polite">${this._escape(state.catalogFeedback.message)}</div>
+          ` : ""}
 
           ${hazardTypes.length ? `
             <div class="consumer-api-event-filter">
@@ -1159,8 +1179,10 @@ if (!proto.__weatherRouterConsumerApiEnhanced) {
       return state;
     }
 
+    const startedAt = Date.now();
     state.loading = true;
     state.error = null;
+    state.catalogFeedback = { kind:"loading", message:"Katalog wird geladen …" };
     this._consumerApiRender();
     try {
       state.discovery = await this._hass.callWS({
@@ -1187,7 +1209,15 @@ if (!proto.__weatherRouterConsumerApiEnhanced) {
       } else {
         state.capabilities = state.baseCapabilities;
       }
+      const durationMs = Math.max(0, Date.now() - startedAt);
+      const total = state.capabilities?.capabilities?.length || 0;
+      const available = (state.capabilities?.capabilities || []).filter(item => item.available).length;
+      state.catalogFeedback = {
+        kind:"ok",
+        message:`Katalog geladen · ${available} von ${total} verfügbar · ${durationMs} ms · ${new Date().toLocaleTimeString("de-DE")}`,
+      };
       this._wrLog?.("consumer_api_catalog_ready", {
+        duration_ms: durationMs,
         contract_version: CONSUMER_CONTRACT_VERSION,
         ready: state.discovery?.router?.ready ?? null,
         router_enabled: state.discovery?.router?.enabled ?? null,
@@ -1196,6 +1226,7 @@ if (!proto.__weatherRouterConsumerApiEnhanced) {
       });
     } catch (error) {
       state.error = error?.message || String(error);
+      state.catalogFeedback = { kind:"error", message:"Katalog konnte nicht geladen werden: " + state.error };
       this._wrLog?.("consumer_api_catalog_failed", { error }, "error");
     } finally {
       state.loading = false;

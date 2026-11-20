@@ -58,6 +58,7 @@ _CAPABILITIES = (
         ),
         documentation_url="https://www.ecmwf.int/en/forecasts/datasets/open-data",
     ),
+
 )
 
 
@@ -81,11 +82,13 @@ def _candidate_runs(now: datetime) -> list[datetime]:
     return candidates[:_MAX_PROBE_RUNS]
 
 
-def _run_paths(model: str, run: datetime) -> tuple[str, str, str]:
+def _run_paths(model: str, run: datetime, *, step: int = 0) -> tuple[str, str, str]:
     """Return relative index/GRIB paths and display run identifier."""
     date_text = run.strftime("%Y%m%d")
     hour_text = run.strftime("%H")
-    stem = f"{date_text}{hour_text}0000-0h-oper-fc"
+    if type(step) is not int or step < 0 or step > 144 or step % 3:
+        raise ValueError("ecmwf_mslp_invalid_step")
+    stem = f"{date_text}{hour_text}0000-{step}h-oper-fc"
     base = f"{date_text}/{hour_text}z/{model}/0p25/oper/{stem}"
     return f"{base}.index", f"{base}.grib2", f"{date_text}T{hour_text}Z"
 
@@ -233,6 +236,126 @@ async def _probe_model(
     }
 
 
+
+_MSL_INDEX_BUDGET = 2_000_000
+_MSL_FIELD_BUDGET = 8_000_000
+
+
+def _mslp_index_record(payload: bytes, *, step: int = 0) -> dict[str, int]:
+    """Select precisely one surface MSL pressure GRIB message, fail closed.
+
+    ECMWF's .index is NDJSON. Offset/length describe a *single* GRIB message
+    inside the unmodified official data file, not a separately computed field.
+    """
+    if not payload or len(payload) > _MSL_INDEX_BUDGET:
+        raise ValueError("ecmwf_mslp_index_budget")
+    matches = []
+    try:
+        lines = payload.splitlines()
+        if len(lines) > 10000:
+            raise ValueError("ecmwf_mslp_index_budget")
+        for line in lines:
+            if len(line) > 32768:
+                raise ValueError("ecmwf_mslp_index_record_budget")
+            record = json.loads(line)
+            if not isinstance(record, dict) or record.get("param") != "msl":
+                continue
+            # The IFS surface-pressure reduction must be the published
+            # MSL field, not raw surface pressure or an arbitrary level.
+            if record.get("levtype") != "sfc":
+                continue
+            offset, length = record.get("_offset"), record.get("_length")
+            if (type(offset) is not int or type(length) is not int
+                    or offset < 0 or not 16 <= length <= _MSL_FIELD_BUDGET):
+                raise ValueError("ecmwf_mslp_invalid_byte_range")
+            if str(record.get("step", "")) not in (str(step), f"{step}.0"):
+                continue
+            matches.append({"offset": offset, "length": length})
+    except (UnicodeDecodeError, json.JSONDecodeError) as error:
+        raise ValueError("ecmwf_mslp_invalid_index") from error
+    if len(matches) != 1:
+        raise ValueError("ecmwf_mslp_missing_or_ambiguous_field")
+    return matches[0]
+
+
+def _mslp_nearby_steps(run: datetime, now: datetime) -> tuple[int, ...]:
+    """Real IFS 3-hour forecast step cadence, nearest valid time first.
+
+    The official 0p25 IFS oper stream publishes step 0..144 at 3h spacing.
+    The source may be posted hours after model initialization: step-0 is not
+    automatically the currently valid field.
+    """
+    lead = max(0, min(144, (now - run).total_seconds() / 3600))
+    floor_step = min(144, max(0, int(lead // 3) * 3))
+    ceil_step = min(144, floor_step + 3)
+    steps = sorted({floor_step, ceil_step}, key=lambda x: (abs(x - lead), x))
+    return tuple(steps)
+
+
+async def _probe_mslp_field(session, now: datetime) -> dict[str, Any]:
+    """Probe official 0p25 IFS MSLP with bounded index+range verification.
+
+    Published GRIB files are indexed per run and forecast step. A request
+    verifies a single indexed field with HTTP 206 and a matching byte range;
+    a missing/late run is never represented as a successful source.
+    """
+    attempted = []
+    for run in _candidate_runs(now)[:4]:
+        for step in _mslp_nearby_steps(run, now):
+            index_path, grib_path, run_id = _run_paths("ifs", run, step=step)
+            try:
+                async with session.get(
+                    _PORTAL + index_path,
+                    headers={"Accept": "application/x-ndjson,text/plain,*/*"},
+                    timeout=12, allow_redirects=False,
+                ) as response:
+                    if response.status != 200:
+                        attempted.append({"run": run_id, "step": step, "stage": "index",
+                                          "http_status": response.status})
+                        continue
+                    if response.content_length and response.content_length > _MSL_INDEX_BUDGET:
+                        attempted.append({"run": run_id, "step": step, "stage": "index_budget"})
+                        continue
+                    index_data = await response.content.read(_MSL_INDEX_BUDGET + 1)
+                field = _mslp_index_record(index_data, step=step)
+                start = field["offset"]
+                end = start + 15
+                async with session.get(
+                    _PORTAL + grib_path,
+                    headers={"Accept": "application/octet-stream", "Range": f"bytes={start}-{end}"},
+                    timeout=12, allow_redirects=False,
+                ) as response:
+                    if response.status != 206:
+                        attempted.append({"run": run_id, "step": step, "stage": "range",
+                                          "http_status": response.status})
+                        continue
+                    content_range = response.headers.get("Content-Range", "")
+                    if not content_range.startswith(f"bytes {start}-{end}/"):
+                        attempted.append({"run": run_id, "step": step, "stage": "range_mismatch"})
+                        continue
+                    sample = await response.content.read(16)
+                if len(sample) != 16 or sample[:4] != b"GRIB":
+                    attempted.append({"run": run_id, "step": step, "stage": "grib_signature"})
+                    continue
+                valid_at = run + timedelta(hours=step)
+                if valid_at + timedelta(hours=3) <= now:
+                    attempted.append({"run": run_id, "step": step, "stage": "forecast_expired"})
+                    continue
+                return {"ok": True, "model": "ifs", "run": run_id, "step": step,
+                        "valid_at": valid_at.isoformat().replace("+00:00", "Z"),
+                        "index_path": index_path, "grib_path": grib_path,
+                        "parameter": "msl", "level_type": "sfc",
+                        "range_start": start, "range_length": field["length"],
+                        "grib_signature": "GRIB"}
+            except (ValueError, TimeoutError, OSError) as error:
+                attempted.append({"run": run_id, "step": step,
+                                  "stage": "probe_exception", "type": type(error).__name__})
+                continue
+    return {"ok": False, "stage": "mslp_source_probe",
+            "reason": "no_live_verified_ifs_mslp_byte_range",
+            "attempted": attempted[:8]}
+
+
 class EcmwfOpenDataProvider:
     """Expose ECMWF Open Data as a truthful data-file capability."""
 
@@ -242,6 +365,69 @@ class EcmwfOpenDataProvider:
 
     def capabilities(self) -> tuple[CapabilityInfo, ...]:
         return _CAPABILITIES
+
+    def synoptic_isobars_info(self) -> dict[str, Any]:
+        """Independent global ECMWF IFS synoptic MSLP contour source."""
+        return {"capability": "weather.synoptic.isobars",
+                "coverage": "global", "data_kind": "derived_numeric_grid",
+                "synoptic_priority": 25, "model": "ECMWF IFS", "unit": "hPa"}
+
+    async def async_fetch_synoptic_isobars(
+        self, hass: HomeAssistant, bbox: dict,
+    ) -> dict:
+        from ..synoptic_ecmwf import async_fetch_isobars
+        return await async_fetch_isobars(hass, bbox)
+
+    def synoptic_pressure_source_info(self) -> dict[str, Any]:
+        """Optional V2 global IFS-MSLP file, no numeric decoder claimed."""
+        return {"capability": "weather.synoptic.pressure_source",
+                "coverage": "global", "data_kind": "indexed_grib2_message"}
+
+    async def async_fetch_synoptic_pressure_source(
+        self, hass: HomeAssistant, bbox: dict,
+    ) -> dict[str, Any]:
+        """Resolve a verified MSL message byte range without fetching GRIB2 fields."""
+        from ..wind_field_source import plan_subset
+        plan_subset(bbox)
+        from ..diagnostic_center import observed_clientsession
+        session = observed_clientsession(hass, self.id, async_get_clientsession(hass))
+        result = await _probe_mslp_field(session, datetime.now(timezone.utc))
+        if result.get("ok") is not True:
+            raise ValueError("synoptic_ecmwf_mslp_source_unavailable")
+        reference = datetime.strptime(result["run"], "%Y%m%dT%HZ").replace(
+            tzinfo=timezone.utc)
+        now = datetime.now(timezone.utc)
+        # The index-selected forecast step, not the model run, is valid_at.
+        valid = datetime.fromisoformat(result["valid_at"].replace("Z", "+00:00"))
+        forecast_end = valid + timedelta(hours=3)
+        if valid < reference or forecast_end <= now:
+            raise ValueError("synoptic_ecmwf_mslp_stale")
+        return {
+            "capability": "weather.synoptic.pressure_source",
+            "id": f"ifs-msl-{result['run']}-step{result['step']}", "kind": "model_data_file",
+            "model": "ECMWF IFS", "unit": "Pa",
+            "model_run": reference.isoformat().replace("+00:00", "Z"),
+            "valid_at": valid.isoformat().replace("+00:00", "Z"),
+            "valid_until": forecast_end.isoformat().replace("+00:00", "Z"),
+            "refresh_after_seconds": 240,
+            "data_file": {
+                "format": "GRIB2", "parameter": "msl", "level_type": "sfc",
+                "url": _PORTAL+result["grib_path"],
+                "forecast_step_hours": result["step"],
+                "byte_offset": result["range_start"],
+                "byte_length": result["range_length"],
+                "signature_verified": True,
+                "decoded": False,
+            },
+            "coverage": {"type": "global", "crs": "EPSG:4326"},
+            "provenance": {"provider_id": self.id, "model": "IFS",
+                           "source": "ECMWF Open Data index + GRIB2 range",
+                           "attribution": "ECMWF Open Data · CC BY 4.0",
+                           "data_origin": "model",
+                           "measurement_method": "nwp_indexed_grib2_file"},
+        }
+
+
 
     def provider_info(self) -> ProviderInfo:
         return ProviderInfo(
@@ -299,11 +485,10 @@ class EcmwfOpenDataProvider:
             raise ValueError(f"Unsupported ECMWF capability: {capability_id}")
 
         model = _MODEL_BY_CAPABILITY[capability_id]
+        from ..diagnostic_center import observed_clientsession
         result = await _probe_model(
-            async_get_clientsession(hass),
-            model,
-            datetime.now(timezone.utc),
-        )
+            observed_clientsession(hass, self.id, async_get_clientsession(hass)),
+            model, datetime.now(timezone.utc))
         if result.get("ok") is not True:
             raise ValueError(
                 f"ECMWF Open Data file unavailable for {capability_id}: "
@@ -336,7 +521,10 @@ class EcmwfOpenDataProvider:
             "content_type": "application/octet-stream",
             "transport": "direct",
             "url": f"{_PORTAL}{grib_path}",
-            "data_time": data_time,
+            # Modell-Laufzeit ist eine Vorhersage-Referenzzeit und niemals
+            # eine aktuelle Beobachtung oder ein Gültigkeitszeitpunkt.
+            "data_time": None,
+            "forecast_reference_time": data_time,
             "attribution": "ECMWF Open Data · CC BY 4.0",
             "metadata_url": "https://www.ecmwf.int/en/forecasts/datasets/open-data",
             "provider_metadata": {
@@ -369,15 +557,13 @@ class EcmwfOpenDataProvider:
                 "unsupported": unsupported,
             }
 
-        session = async_get_clientsession(hass)
+        from ..diagnostic_center import observed_clientsession
+        session = observed_clientsession(hass, "ecmwf_open_data", async_get_clientsession(hass))
         now = datetime.now(timezone.utc)
         results: dict[str, dict[str, Any]] = {}
         for item in requested:
             results[item] = await _probe_model(
-                session,
-                _MODEL_BY_CAPABILITY[item],
-                now,
-            )
+                session, _MODEL_BY_CAPABILITY[item], now)
 
         return {
             "ok": all(result.get("ok") is True for result in results.values()),

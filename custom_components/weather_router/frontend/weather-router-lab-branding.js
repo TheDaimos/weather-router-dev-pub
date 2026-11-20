@@ -113,7 +113,7 @@ if (Lab && !Lab.prototype.__weatherRouterBrandingPatched) {
     hero.id = "weather-router-brand-hero";
     hero.className = "wr-brand-hero";
     hero.innerHTML = `
-      <div class="wr-brand-build">WR ${buildVersion} · DEV</div>
+      <div class="wr-brand-build">WR ${buildVersion} · FINAL</div>
       <div class="wr-brand-content">
         <img
           class="wr-brand-logo"
@@ -124,11 +124,11 @@ if (Lab && !Lab.prototype.__weatherRouterBrandingPatched) {
         <h1 class="wr-brand-title">WeatherRouter Lab</h1>
         <div class="wr-brand-subtitle">Interner Router-/Provider-Prüfstand · Wetterdaten nach Fähigkeit statt nach einem einzigen Anbieter.</div>
         <div class="wr-brand-meta">
-          <span class="wr-brand-pill">V0.10 TEST</span>
-          <span class="wr-brand-pill">API-Vertrag 1</span>
-          <span class="wr-brand-pill">Development-Baseline</span>
+          <span class="wr-brand-pill">WR ${buildVersion} · FINAL</span>
+          <span class="wr-brand-pill">Consumer V1 / V2</span>
+          <span class="wr-brand-pill">FINAL 1.0.0</span>
         </div>
-        <a class="wr-brand-help" href="/weather_router_static/weather-router-help.html" target="_blank" rel="noopener noreferrer">WeatherRouter · Projekt & Hilfe</a>
+        <a class="wr-brand-help" href="/weather_router_static/weather-router-overview.html" target="_blank" rel="noopener noreferrer">WeatherRouter · Projekt & Hilfe</a>
       </div>
     `;
 

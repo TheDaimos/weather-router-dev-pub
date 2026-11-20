@@ -111,8 +111,29 @@ class RoutingTrace(RoutingTraceBuilder):
         )
         self._hass = hass
         self._stored: dict[str, Any] | None = None
+        from .diagnostic_center import (
+            active_request_correlation, bind_request_correlation,
+        )
+        # Do not override the request ID already assigned at the WebSocket
+        # boundary. Independent routing calls still receive their trace ID.
+        self._d2_context_token = (
+            None if active_request_correlation() is not None
+            else bind_request_correlation(self.trace_id)
+        )
 
-    def finish(
+    def finish(self, *, status: str | None = None, code: str | None = None) -> dict[str, Any]:
+        try:
+            return self._finish_with_trace(status=status, code=code)
+        finally:
+            from .diagnostic_center import reset_request_correlation
+            token = self._d2_context_token
+            self._d2_context_token = None
+            try:
+                reset_request_correlation(token)
+            except ValueError:
+                pass  # Another task cannot reset the initiating task context.
+
+    def _finish_with_trace(
         self,
         *,
         status: str | None = None,
@@ -122,6 +143,20 @@ class RoutingTrace(RoutingTraceBuilder):
             return self._stored
         trace = super().finish(status=status, code=code)
         self._stored = store_routing_trace(self._hass, trace)
+        # Preserve the existing full V1 routing evidence while mirroring only
+        # bounded scalar decisions into the shared D2 UTC history.
+        try:
+            from .diagnostic_center import record as d2_record
+            summary = _trace_summary(self._stored)
+            d2_record(self._hass, category="routing",
+                      outcome="success" if summary.get("status") == "ready" else "failed"
+                          if summary.get("status") == "error" else "unavailable",
+                      correlation_id=summary.get("trace_id"),
+                      details={"duration_ms": summary.get("duration_ms"),
+                               "candidate_count": summary.get("candidate_count"),
+                               "fallback_count": summary.get("fallback_count")})
+        except Exception:
+            pass  # A diagnostic mirror must never alter Consumer V1.
         return self._stored
 
 

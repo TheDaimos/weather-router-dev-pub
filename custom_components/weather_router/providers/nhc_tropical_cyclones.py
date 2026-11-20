@@ -149,7 +149,8 @@ class NhcTropicalCycloneProvider:
         if capability_id != "active_tropical_cyclones":
             raise ValueError(f"Unsupported NHC hazard capability: {capability_id}")
 
-        session = async_get_clientsession(hass)
+        from ..diagnostic_center import observed_clientsession
+        session = observed_clientsession(hass, "nhc_tropical_cyclones", async_get_clientsession(hass))
         async with session.get(
             _CURRENT_STORMS,
             headers={"Accept": "application/json"},
@@ -224,7 +225,7 @@ class NhcTropicalCycloneProvider:
                     "certainty": "observed",
                     "status": "actual",
                     "message_type": "update",
-                    "sent": storm.get("lastUpdate"),
+                    "sent": None,  # NHC lastUpdate ist Status-Gültigkeit, kein Bulletin-Ausstellungszeitpunkt.
                     "effective": storm.get("lastUpdate"),
                     "onset": None,
                     "expires": None,

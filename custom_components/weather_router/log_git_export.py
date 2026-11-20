@@ -71,6 +71,7 @@ def _snapshot_when(snapshot: dict[str, Any]) -> datetime:
     meta = snapshot.get("meta") if isinstance(snapshot.get("meta"), dict) else {}
     generated = str(
         snapshot.get("generated_at")
+        or snapshot.get("captured_at")
         or meta.get("completed_at")
         or meta.get("started_at")
         or ""
@@ -85,6 +86,13 @@ def _snapshot_when(snapshot: dict[str, Any]) -> datetime:
 def _archive_type(schema: str) -> str:
     if schema == "weather_router.routing_diagnostic.v1":
         return "routing-test"
+    if schema in {
+        "weather_router.manual_test.v1",
+        "weather_router.manual_test.v2",
+        "weather_router.manual_test.combined.v1",
+        "weather_router.manual_test.special.v1",
+    }:
+        return "manual-test"
     if "provider_diagnostics" in schema:
         return "provider"
     if schema == "weather_router.event_log.v1":
@@ -318,10 +326,10 @@ class WeatherRouterLogGitClient:
                     "planStep": safe(test.get("planStep") or test.get("plan_step")),
                     "status": test_status,
                     "capabilityId": safe(
-                        test.get("capabilityId") or request.get("capability") or scope.get("capability")
+                        test.get("capabilityId") or snapshot.get("selected_capability") or snapshot.get("capability") or request.get("capability") or scope.get("capability")
                     ),
                     "capabilityUiNumber": safe(
-                        test.get("capabilityUiNumber") or request.get("capability_ui_number")
+                        test.get("capabilityUiNumber") or (snapshot.get("test_id") if str(snapshot.get("test_id") or "").isdigit() else None) or request.get("capability_ui_number")
                     ),
                     "counts": _metadata_counts(test.get("counts")),
                 },

@@ -13,6 +13,11 @@ from typing import Any
 from xml.etree import ElementTree as ET
 
 
+class CoverageTemporarilyUnavailable(RuntimeError):
+    """Temporarily missing coverage metadata; never geographic non-coverage."""
+
+
+
 def _local_name(tag: str) -> str:
     return tag.rsplit("}", 1)[-1]
 
@@ -62,6 +67,17 @@ def bbox_intersects(
         first_west <= second_east and second_west <= first_east
         for first_west, first_east in _longitude_segments(first["west"], first["east"])
         for second_west, second_east in _longitude_segments(second["west"], second["east"])
+    )
+
+
+def bbox_overlaps(first: dict[str, float], second: dict[str, float]) -> bool:
+    """Require positive area rather than a shared edge or corner."""
+    if max(first["south"], second["south"]) >= min(first["north"], second["north"]):
+        return False
+    return any(
+        max(a, c) < min(b, d)
+        for a, b in _longitude_segments(first["west"], first["east"])
+        for c, d in _longitude_segments(second["west"], second["east"])
     )
 
 

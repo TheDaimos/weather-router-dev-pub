@@ -1,14 +1,20 @@
 """Constants for WeatherRouter."""
 
 from typing import Final
+from pathlib import Path
+import json
 
 from homeassistant.const import Platform
 
 DOMAIN: Final = "weather_router"
 NAME: Final = "WeatherRouter"
-INTEGRATION_VERSION: Final = "0.10.0"
-DEV_BUILD_VERSION: Final = "0.10.145"
-DEV_LOADER_REV: Final = "0.10-loader-148"
+# Single authoritative backend product version: HA integration manifest.json.
+# Do not report the stable API contract identifier as the running product version.
+DEV_BUILD_VERSION: Final = str(json.loads(
+    (Path(__file__).with_name("manifest.json")).read_text(encoding="utf-8")
+)["version"])
+INTEGRATION_VERSION: Final = DEV_BUILD_VERSION
+DEV_LOADER_REV: Final = "1.0-loader-330"  # Preserve the accepted 330 loader generation in FINAL
 
 # Internal Lab/diagnostic API contract.
 API_CONTRACT_VERSION: Final = 1
@@ -166,11 +172,12 @@ ROUTER_TOPICS: Final = {
     for topic_id, topic_name in group["topics"].items()
 }
 
-# Preserve the previously accepted provider set on upgrades. Providers introduced
-# after this checkpoint are deliberately opt-in and therefore do not create new
-# network traffic merely because WeatherRouter was updated.
+# All registered standard providers are enabled on fresh 1.0.0 installations.
+# Existing Config Entry options continue to take precedence and are not migrated.
+# Scientific, licensing, coverage and OPERA service gates remain authoritative.
 DEFAULT_ENABLED_PROVIDER_IDS: Final = (
     "open_meteo",
+    "open_meteo_pollen",
     "rainviewer",
     "dwd",
     "nasa_gibs",
@@ -180,6 +187,7 @@ DEFAULT_ENABLED_PROVIDER_IDS: Final = (
     "noaa_swpc",
     "nasa_iss",
     "nasa_moon",
+    "met_norway_astronomy",
     "fmi",
     "smhi",
     "eccc_geomet",
@@ -192,14 +200,32 @@ DEFAULT_ENABLED_PROVIDER_IDS: Final = (
     "usgs_earthquakes",
     "smithsonian_volcanoes",
     "usgs_volcanoes",
+    "gdacs",
+    "glofas",
+    "usgs_seismic_events",
+    "bbk_mowas",
+    "bbk_police",
+    "aviation_weather",
+    "nina_flood",
+    "nina_katwarn",
+    "nina_biwapp",
+    "gbif_biodiversity",
+    "fmi_lightning",
+    "eumetsat_mtg_li",
+    "noaa_goes_glm",
+    "eccc_lightning",
+    "opera",
 )
 
-# Existing accepted functional areas stay active by default. Newer Pollen,
-# civil-protection/security/aviation and biological-hazards routing is opt-in.
 DEFAULT_ENABLED_DOMAINS: Final = (
     "weather",
+    "pollen",
     "natural_hazards",
     "space",
+    "civil_protection",
+    "security",
+    "aviation",
+    "biological_hazards",
 )
 
 # Initial discovery is deliberately restricted to Home Assistant people and zones.

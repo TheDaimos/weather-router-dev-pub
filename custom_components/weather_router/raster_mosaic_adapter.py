@@ -1,0 +1,222 @@
+"""P7-010 V1-normalized raster to isolated V2 mosaic candidate adapter.
+
+Pure and not activated in the Consumer API. The caller must have enforced the
+global router/domain/provider flags, deny-only profile, provider health,
+licensing and exact source permissions *before* eligible=True is supplied.
+"""
+from __future__ import annotations
+
+from typing import Any, Mapping
+from math import isfinite
+from urllib.parse import urlsplit, parse_qsl
+import re
+
+
+_SENSITIVE_KEYS = frozenset({
+    "api_key", "apikey", "token", "access_token", "password",
+    "secret", "authorization", "key", "appid",
+})
+
+
+def _public_tile_url(value: Any) -> bool:
+    if not isinstance(value, str) or not value.startswith("https://"):
+        return False
+    try:
+        parsed = urlsplit(value)
+        if (parsed.scheme != "https" or not parsed.hostname
+                or parsed.username or parsed.password or parsed.fragment):
+            return False
+        return all(key.lower() not in _SENSITIVE_KEYS
+                   for key, _ in parse_qsl(parsed.query, keep_blank_values=True))
+    except ValueError:
+        return False
+
+
+_INTERNAL_OPERA_RATE_TILE = re.compile(
+    r"^/api/weather_router/opera_tile/RATE/[0-9]{8}T[0-9]{6}Z/"
+    r"[{]z[}]/[{]x[}]/[{]y[}][.]png$"
+)
+
+
+def _trusted_local_tile_url(value: Any) -> bool:
+    """Only the exact server-built, bearer-protected OPERA RATE route."""
+    return isinstance(value, str) and _INTERNAL_OPERA_RATE_TILE.fullmatch(value) is not None
+
+
+# A whole-world WMS BBOX is not rewritten to scope=global: retain the
+# real product coverage contract. For the opt-in age exception we only trust
+# a direct, named layer's verified GetCapabilities BBOX, never a service-root
+# envelope or inherited parent-group metadata.
+_DIRECT_WMS_BBOX_SOURCES = frozenset({
+    "EX_GeographicBoundingBox", "BoundingBox/CRS:84",
+    "BoundingBox/EPSG:4326", "LatLonBoundingBox",
+})
+
+
+def verified_world_product_bbox(machine_coverage: Mapping[str, Any]) -> bool:
+    if machine_coverage.get("scope") != "bbox":
+        return False
+    box = machine_coverage.get("bbox")
+    if not isinstance(box, Mapping):
+        return False
+    if any(type(box.get(k)) not in (int, float) or not isfinite(box[k])
+           for k in ("west", "east", "south", "north")):
+        return False
+    if not (box["west"] == -180 and box["east"] == 180
+            and box["south"] == -90 and box["north"] == 90):
+        return False
+    return (
+        machine_coverage.get("source") == "wms_get_capabilities"
+        and machine_coverage.get("coverage_metadata_scope") == "layer_specific_wms"
+        and machine_coverage.get("bbox_inherited") is False
+        and machine_coverage.get("bbox_source") in _DIRECT_WMS_BBOX_SOURCES
+        and isinstance(machine_coverage.get("layer"), str)
+        and bool(machine_coverage["layer"].strip())
+    )
+
+
+def make_mosaic_candidate(
+    *,
+    source_id: str,
+    eligible: bool,
+    machine_coverage: Mapping[str, Any] | None,
+    payload: Mapping[str, Any],
+    semantics: Mapping[str, Any],
+    data_time: str | None,
+    retrieved_at: str,
+    routing_score: tuple[int, int, int] = (999, 999, 999),
+    trusted_internal_opera: bool = False,
+) -> dict[str, Any] | None:
+    """Turn already sanitized normalized raster resources into candidate data.
+
+    Unknown coverage must not become global; URL exposure must already have
+    passed the V1 public-URL sanitizer. Absence of image time is not filled
+    from the retrieval clock. Timeline frames preserve independent timestamps.
+    """
+    if not eligible or not isinstance(source_id, str) or not source_id:
+        return None
+    if not isinstance(machine_coverage, Mapping):
+        return None
+    scope = machine_coverage.get("scope")
+    if scope == "global":
+        coverage = {"scope": "global"}
+    elif scope == "bbox":
+        box = machine_coverage.get("bbox")
+        if not isinstance(box, Mapping):
+            return None
+        normalized: dict[str, float] = {}
+        for key, low, high in (
+            ("west", -180, 180), ("east", -180, 180),
+            ("south", -90, 90), ("north", -90, 90),
+        ):
+            value = box.get(key)
+            if (isinstance(value, bool) or not isinstance(value, (int, float))
+                    or not isfinite(value) or not low <= value <= high):
+                return None
+            normalized[key] = float(value)
+        if (normalized["north"] <= normalized["south"]
+                or normalized["west"] == normalized["east"]):
+            return None
+        coverage = {"scope": "bbox", "bbox": normalized}
+    else:
+        return None
+    if not isinstance(payload, Mapping) or not isinstance(semantics, Mapping):
+        return None
+    tile_url = payload.get("tile_url")
+    attribution = payload.get("attribution")
+    legend = payload.get("legend")
+    if not ((_public_tile_url(tile_url) or
+             (trusted_internal_opera is True and _trusted_local_tile_url(tile_url)))
+            and isinstance(attribution, str) and attribution.strip()
+            and isinstance(legend, Mapping)):
+        return None
+    required = ("quantity", "unit", "measurement_method", "observation_kind")
+    if any(not isinstance(semantics.get(k), str) or not semantics[k].strip()
+           for k in ("quantity", "measurement_method", "observation_kind")):
+        return None
+    # V1 permits an unknown numeric unit (e.g. reflectivity palettes).
+    # Keep it explicitly null rather than fabricating a measurement scale.
+    if "unit" not in semantics or (
+        semantics["unit"] is not None
+        and (not isinstance(semantics["unit"], str)
+             or not semantics["unit"].strip())
+    ):
+        return None
+    # Preserve the existing V1 display contract. A regional overlay may have
+    # different native tiles, zoom validity and default opacity.
+    tile_size = payload.get("tile_size", 256)
+    min_zoom = payload.get("min_zoom", 0)
+    max_zoom = payload.get("max_zoom", 18)
+    opacity = payload.get("default_opacity", 1)
+    if (type(tile_size) is not int or tile_size not in (128, 256, 512)
+            or any(isinstance(x, bool) or not isinstance(x, (int, float))
+                   or not isfinite(x) for x in (min_zoom, max_zoom, opacity))
+            or not 0 <= min_zoom <= max_zoom <= 24
+            or not 0 <= opacity <= 1):
+        return None
+    render = {
+        "tile_size": tile_size,
+        "min_zoom": float(min_zoom),
+        "max_zoom": float(max_zoom),
+        "opacity": float(opacity),
+    }
+
+    candidate = {
+        "source_id": source_id,
+        "eligible": True,
+        "verified_coverage": True,
+        "coverage": coverage,
+        # Trusted eligibility for the *age exception*, not a pixel mask and
+        # not a conversion of the output's geographical coverage scope.
+        "verified_world_product_bbox": verified_world_product_bbox(machine_coverage),
+        "resource_type": "raster_tile",
+        "internal_authentication_required": (
+            trusted_internal_opera is True and _trusted_local_tile_url(tile_url)
+            and source_id == "opera/opera_rate_raster"
+        ),
+        "render": render,
+        "tile_url": tile_url,
+        "data_time": data_time,
+        "retrieved_at": retrieved_at,
+        "attribution": attribution,
+        "legend": dict(legend),
+        "semantics": {k: semantics[k] for k in required},
+        "routing_score": list(routing_score),
+    }
+    source_time_error = payload.get("time_normalization_error")
+    if source_time_error in {
+        "unregistered_capability", "unverified_source_time_contract",
+        "unverified_epoch_unit", "invalid_timestamp",
+        "unknown_time_zone", "ambiguous_local_time", "invalid_interval",
+    }:
+        candidate["time_normalization_error"] = source_time_error
+    timeline = payload.get("timeline")
+    if isinstance(timeline, Mapping) and isinstance(timeline.get("frames"), list):
+        # Longer V1 timelines are not invalid: bound work and keep the newest
+        # validated timestamps for V2. The policy still enforces data age.
+        if len(timeline["frames"]) > 256:
+            return None
+        frames = []
+        for raw in timeline["frames"]:
+            if not isinstance(raw, Mapping):
+                continue
+            frame_url = raw.get("tile_url")
+            frame_time = raw.get("time")
+            if (_public_tile_url(frame_url)
+                    and isinstance(frame_time, str) and frame_time):
+                frames.append({"tile_url": frame_url, "data_time": frame_time})
+        if frames:
+            from datetime import datetime, timezone
+            dated = []
+            for frame in frames:
+                try:
+                    stamp = datetime.fromisoformat(
+                        frame["data_time"].replace("Z", "+00:00"))
+                    if stamp.tzinfo is not None:
+                        dated.append((stamp.astimezone(timezone.utc), frame))
+                except ValueError:
+                    continue
+            if dated:
+                dated.sort(key=lambda item: item[0], reverse=True)
+                candidate["frames"] = [frame for _, frame in dated[:24]]
+    return candidate

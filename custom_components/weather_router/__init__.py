@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from math import isfinite
+from functools import partial
 from pathlib import Path
 from typing import Any
 
@@ -29,14 +30,21 @@ from .const import (
     ROUTER_DOMAINS,
 )
 from .consumer_api import async_register as async_register_consumer_api
+from .consumer_raster_mosaic_api import async_register as async_register_consumer_mosaic_api
+from .consumer_wind_field_api import async_register as async_register_consumer_wind_field_api
+from .consumer_temperature_field_api import async_register as async_register_consumer_temperature_field_api
+from .consumer_synoptic_api import async_register as async_register_consumer_synoptic_api
+from .consumer_api_monitor_ws import async_register as async_register_monitor_api, async_unload as async_unload_monitor
 from .consumer_profiles import validate_consumer_profiles
+from .consumer_event_time_policy import _declared_policies
 from .extensions import async_notify_routing_changed, async_setup_extensions, async_unload_extensions
 from .websocket_api import async_register as async_register_websocket_api
 from .routing_diagnostics import async_register as async_register_routing_diagnostics_api
+from .opera_ha_core_runtime_ws import async_register as async_register_opera_core_runtime
 
 LAB_URL_PATH = "weather-router-lab"
 LAB_STATIC_URL = "/weather_router_static"
-LAB_FRONTEND_REV = "2026-10-04-p3-thunder-1"
+LAB_FRONTEND_REV = "2026-11-20-weather-router-final-v100"
 
 
 def _validate_options(options: dict[str, Any]) -> None:
@@ -205,7 +213,7 @@ async def _async_register_lab_panel(hass: HomeAssistant) -> None:
         hass,
         frontend_url_path=LAB_URL_PATH,
         webcomponent_name="weather-router-lab-dev-loader",
-        sidebar_title="WeatherRouter Lab",
+        sidebar_title="WeatherRouter",
         sidebar_icon="mdi:weather-partly-cloudy",
         module_url=f"{LAB_STATIC_URL}/weather-router-lab-dev-loader.js?v={LAB_FRONTEND_REV}",
         require_admin=True,
@@ -219,9 +227,90 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     await hass.http.async_register_static_paths(
         [StaticPathConfig(LAB_STATIC_URL, str(Path(__file__).parent / "frontend"), False)]
     )
+    # Warm the strict event-time policy cache outside Home Assistant's event loop.
+    # A first Consumer capability WebSocket request must never read files synchronously.
+    await hass.async_add_executor_job(_declared_policies)
+    # Reap only stale historical OPERA diagnostic files; never touch live jobs.
+    from .opera_historical_diagnostic import cleanup_orphans
+    try:
+        await hass.async_add_executor_job(cleanup_orphans)
+    except (OSError, ValueError):
+        # A cleanup error must not prevent native-free V1/V2 from loading.
+        pass
     async_register_websocket_api(hass)
     async_register_consumer_api(hass)
+    async_register_consumer_mosaic_api(hass)
+    async_register_consumer_wind_field_api(hass)
+    async_register_consumer_temperature_field_api(hass)
+    async_register_consumer_synoptic_api(hass)
+    async_register_monitor_api(hass)
     async_register_routing_diagnostics_api(hass)
+    async_register_opera_core_runtime(hass)
+    from .opera_ring_ws import async_register as async_register_opera_ring
+    async_register_opera_ring(hass)
+    from .opera_settings_ws import async_register as async_register_opera_settings
+    async_register_opera_settings(hass)
+    from .nasa_mosaic_settings import async_register as async_register_nasa_mosaic
+    async_register_nasa_mosaic(hass)
+    # Existing authenticated view: installed once, with an initially closed gate.
+    from .opera_rate_delivery import RateDelivery
+    from .opera_tile_http import OperaTileView
+    from .opera_preview_age_policy import preview_continuity_from_entries
+    preview_max_age = lambda: preview_continuity_from_entries(hass.config_entries.async_entries(DOMAIN))["delivery_limit_seconds"]
+    delivery = RateDelivery(max_age_seconds=preview_max_age)
+    area = hass.data.setdefault(DOMAIN, {})
+    from .opera_config import service_allowed
+    def admin_allowed(user, product):
+        entries = hass.config_entries.async_entries(DOMAIN)
+        options = entries[0].options if entries else {}
+        return (user is not None and product == "RATE"
+                and area.get("opera_rate_delivery", {}).get("enabled") is True
+                and options.get(CONF_ROUTER_ENABLED, True) is True
+                and "opera" in options.get(CONF_ENABLED_PROVIDERS, ())
+                and service_allowed(options, "RATE"))
+    area["opera_rate_delivery"] = {
+        "delivery": delivery, "registry": delivery.registry,
+        "http_route_active": True, "enabled": False,
+        "profile_authorizer": lambda user, query: (
+            user is not None
+            and isinstance(query, dict)
+            and query.get("capability") == "weather.precipitation.layer"),
+    }
+    hass.http.register_view(OperaTileView(
+        hass, registry_lookup=delivery.registry.lookup,
+        is_permitted=admin_allowed,
+        is_provider_enabled=lambda: any(
+            "opera" in entry.options.get(CONF_ENABLED_PROVIDERS, ())
+            and entry.options.get(CONF_ROUTER_ENABLED, True) is True
+            and service_allowed(entry.options, "RATE")
+            for entry in hass.config_entries.async_entries(DOMAIN)),
+        is_enabled=lambda: area.get("opera_rate_delivery", {}).get("enabled") is True,
+        is_diagnostic=delivery.registry.is_diagnostic,
+        max_age_seconds=preview_max_age))
+    # VIS-01: isolated, explicitly disabled on each HA restart.
+    # This is not the scientific tile view and cannot be enabled by updates.
+    from .opera_preview_tile import OperaPreviewTileView
+    # Preserve an explicit administrator opt-in through config-entry/panel reloads.
+    # hass.data is process-local; live Config Entry options determine the gate.
+    preview_state = area.setdefault("opera_preview", {"http_route_active": True})
+    preview_state["http_route_active"] = True
+    def preview_allowed():
+        return any(entry.options.get("opera_dev_preview_enabled") is True
+                   and service_allowed(entry.options, "RATE")
+                   for entry in hass.config_entries.async_entries(DOMAIN))
+    hass.http.register_view(OperaPreviewTileView(
+        hass, registry_lookup=delivery.registry.lookup,
+        is_diagnostic=delivery.registry.is_diagnostic,
+        enabled=lambda: preview_allowed(),
+        max_age_seconds=preview_max_age,
+        provider_enabled=lambda: any(
+            "opera" in entry.options.get(CONF_ENABLED_PROVIDERS, ())
+            and entry.options.get(CONF_ROUTER_ENABLED, True) is True
+            for entry in hass.config_entries.async_entries(DOMAIN)),
+        permitted=lambda user, product: (
+            getattr(user, "is_admin", False) is True
+            and product == "RATE"
+            and preview_allowed())))
     return True
 
 
@@ -235,10 +324,81 @@ async def async_setup_entry(hass: HomeAssistant, entry: WeatherRouterConfigEntry
     if options != entry.options:
         hass.config_entries.async_update_entry(entry, options=options)
 
+    from .diagnostic_center import record as d2_record
+    d2_record(hass, category="runtime", outcome="started", details={"ready": False})
     entry.runtime_data = WeatherRouterRuntimeData(hass=hass, entry=entry)
+    # Restore the administrator's experimental preview choice after a full
+    # HA restart and after a Config Entry reload. Scientific gates remain closed.
+    preview = hass.data.setdefault(DOMAIN, {}).setdefault(
+        "opera_preview", {"enabled": False, "http_route_active": True})
+
     await async_setup_extensions(hass, entry)
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+    # Restore administrator-selected recording on the server, independent of a UI.
+    # Home Assistant Store uses atomic writes in persistent .storage.
+    from homeassistant.helpers.storage import Store
+    from .consumer_api_monitor import get_monitor
+    api_monitor_store = Store(hass, 1, "weather_router_api_monitor")
+    api_monitor = get_monitor(hass)
+    try:
+        saved_api = await api_monitor_store.async_load()
+        api_monitor.restore(saved_api)
+    except (OSError, ValueError, TypeError):
+        api_monitor.restore(None)
+    api_monitor._changed = lambda: api_monitor_store.async_delay_save(
+        api_monitor.persistable, 2.0)
+    hass.data.setdefault(DOMAIN, {})["api_monitor_persistent_store"] = api_monitor_store
     await _async_register_lab_panel(hass)
+    # Opt-in store foundation: executor-only filesystem initialization, no S3 polling.
+    from .opera_ring_buffer import OperaRingBuffer
+    ring_root = Path(hass.config.path(".storage", "weather_router_opera_ring"))
+    try:
+        ring = await hass.async_add_executor_job(OperaRingBuffer, ring_root)
+        recovery = await hass.async_add_executor_job(ring.recover)
+    except (OSError, ValueError):
+        # A failed optional store must not take Consumer V1/V2 offline.
+        ring = None
+        recovery = None
+    hass.data.setdefault(DOMAIN, {})["opera_ring_buffer"] = {
+        "store": ring, "recovery": recovery, "monitor_enabled": (ring is not None),
+        "poll_interval_seconds": (options.get("opera_ring_poll_seconds") if type(options.get("opera_ring_poll_seconds")) is int and options.get("opera_ring_poll_seconds") in (15, 20, 30, 60) else 30),
+        "historical_http_enabled": False, "scientific_approved": False,
+    }
+    ring_state = hass.data.get(DOMAIN, {}).get("opera_ring_buffer", {})
+    if ring_state.get("store") is not None:
+        from .opera_monitor import OperaMonitor
+        monitor = OperaMonitor(
+            hass, ring_state["store"],
+            enabled=ring_state.get("monitor_enabled") is True,
+            interval=ring_state.get("poll_interval_seconds", 30))
+        ring_state["monitor"] = monitor
+        await monitor.start()
+    stage = hass.data.get(DOMAIN, {}).get("opera_rate_delivery", {})
+    if stage:
+        stage["enabled"] = True
+        if ring_state.get("store") is not None:
+            from .opera_ring_rate_bridge import RingRateBridge
+            from .opera_preview_age_policy import preview_continuity_from_entries
+            from .opera_rate_scoped_approval import admit_current_rate
+            bridge = RingRateBridge(
+                ring=ring_state["store"], delivery=stage["delivery"],
+                trusted_admission=admit_current_rate,
+                age_limit=lambda: preview_continuity_from_entries(
+                    hass.config_entries.async_entries(DOMAIN))["delivery_limit_seconds"])
+            ring_state["rate_bridge"] = bridge
+            from .opera_config import service_allowed
+            options = entry.options
+            allowed = (options.get(CONF_ROUTER_ENABLED, True) is True
+                       and "opera" in options.get(CONF_ENABLED_PROVIDERS, ())
+                       and service_allowed(options, "RATE"))
+            try:
+                ring_state["last_rate_stage"] = await hass.async_add_executor_job(
+                    partial(bridge.stage_latest, allowed=allowed))
+            except (OSError, ValueError):
+                ring_state["last_rate_stage"] = {
+                    "status": "rate_stage_failed", "scientific_status": "UNVERIFIED"}
+
+    d2_record(hass, category="runtime", outcome="success", details={"ready": True})
     return True
 
 
@@ -246,6 +406,23 @@ async def async_unload_entry(hass: HomeAssistant, entry: WeatherRouterConfigEntr
     """Unload WeatherRouter cleanly, including its development Lab panel."""
     unloaded = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
     if unloaded:
+        nasa_job = hass.data.get(DOMAIN, {}).pop("nasa_metadata_preparation", None)
+        if nasa_job is not None:
+            nasa_job.close()
+        ring_state = hass.data.get(DOMAIN, {}).get("opera_ring_buffer", {})
+        monitor = ring_state.get("monitor")
+        if monitor is not None:
+            await monitor.stop()
+        stage = hass.data.get(DOMAIN, {}).get("opera_rate_delivery", {})
+        if stage:
+            stage["enabled"] = False
+            stage["delivery"].reset()
+            from .diagnostic_center import record as d2_record
+            d2_record(hass, category="raster", outcome="unloaded", details={"frame_count": 0})
+        hass.data.get(DOMAIN, {}).pop("opera_ring_buffer", None)
         await async_unload_extensions(hass, entry)
+        async_unload_monitor(hass)
         frontend.async_remove_panel(hass, LAB_URL_PATH, warn_if_unknown=False)
+        from .diagnostic_center import record as d2_record
+        d2_record(hass, category="runtime", outcome="unloaded", details={"ready": False})
     return unloaded

@@ -96,6 +96,113 @@ def diagnostic_value(value: Any, *, depth: int = 0, key: str = "") -> Any:
     return redact_text(repr(value))
 
 
+
+# Manual SYNOPTIC vectors are not general-purpose diagnostic collections.
+# Preserve their numeric GeoJSON only after strict coordinate/size validation.
+_SYNOPTIC_MANUAL_CAPABILITIES = {
+    "weather.synoptic.pressure_centers", "weather.synoptic.isobars",
+}
+_SYNOPTIC_EXPORT_MAX_FEATURES = 250
+_SYNOPTIC_EXPORT_MAX_PATHS = 250
+_SYNOPTIC_EXPORT_MAX_POINTS = 12000
+_SYNOPTIC_EXPORT_MAX_GEOMETRY_BYTES = 650_000
+
+
+def _manual_synoptic_geometry(geometry: Any) -> dict[str, Any]:
+    if not isinstance(geometry, dict) or geometry.get("type") != "FeatureCollection":
+        raise ValueError("synoptic_export_invalid_geometry")
+    features = geometry.get("features")
+    if not isinstance(features, list) or len(features) > _SYNOPTIC_EXPORT_MAX_FEATURES:
+        raise ValueError("synoptic_export_feature_budget")
+    output = []
+    total_points = 0
+
+    def point(value: Any) -> list[float]:
+        nonlocal total_points
+        if (not isinstance(value, (tuple, list)) or len(value) != 2
+                or any(type(n) not in (int, float) or not isfinite(n) for n in value)
+                or not -540 <= value[0] <= 540 or not -90 <= value[1] <= 90):
+            raise ValueError("synoptic_export_invalid_coordinate")
+        total_points += 1
+        if total_points > _SYNOPTIC_EXPORT_MAX_POINTS:
+            raise ValueError("synoptic_export_point_budget")
+        return [value[0], value[1]]
+
+    for feature in features:
+        if not isinstance(feature, dict) or feature.get("type") != "Feature":
+            raise ValueError("synoptic_export_invalid_feature")
+        geom = feature.get("geometry")
+        props = feature.get("properties")
+        if not isinstance(geom, dict) or not isinstance(props, dict):
+            raise ValueError("synoptic_export_invalid_feature")
+        kind = geom.get("type")
+        if kind == "Point":
+            coordinates = point(geom.get("coordinates"))
+        elif kind in ("LineString", "MultiLineString"):
+            paths = ([geom.get("coordinates")] if kind == "LineString"
+                     else geom.get("coordinates"))
+            if not isinstance(paths, list) or len(paths) > _SYNOPTIC_EXPORT_MAX_PATHS:
+                raise ValueError("synoptic_export_path_budget")
+            validated = []
+            for path in paths:
+                if not isinstance(path, list) or len(path) < 2:
+                    raise ValueError("synoptic_export_invalid_path")
+                validated.append([point(p) for p in path])
+            coordinates = validated[0] if kind == "LineString" else validated
+        else:
+            raise ValueError("synoptic_export_unsupported_geometry")
+        # Retain only bounded, redacted metadata; coordinates are numeric-only.
+        pressure = props.get("pressure_hpa")
+        if (type(pressure) not in (int, float) or not isfinite(pressure)
+                or not 870 <= pressure <= 1090):
+            raise ValueError("synoptic_export_invalid_pressure")
+        clean_props = {"pressure_hpa": pressure}
+        if kind == "Point":
+            if props.get("kind") not in ("H", "L"):
+                raise ValueError("synoptic_export_invalid_center")
+            clean_props["kind"] = props["kind"]
+        for key in ("detection", "confidence"):
+            if key in props:
+                clean_props[key] = diagnostic_value(props[key])
+        output.append({"type": "Feature", "geometry": {"type": kind,
+                       "coordinates": coordinates}, "properties": clean_props})
+    result = {"type": "FeatureCollection", "features": output}
+    if len(json.dumps(result, ensure_ascii=False, allow_nan=False)) > _SYNOPTIC_EXPORT_MAX_GEOMETRY_BYTES:
+        raise ValueError("synoptic_export_geometry_budget")
+    return result
+
+
+def diagnostic_manual_synoptic_snapshot(raw: dict[str, Any]) -> dict[str, Any]:
+    """Bounded complete-or-reject SYNOPTIC export; no silent <max-depth> coordinates.
+
+    All ordinary fields retain the original recursive credential redaction.
+    Only an independently validated numeric FeatureCollection is restored.
+    """
+    result = diagnostic_value(raw)
+    for key in ("response", "v1", "v2"):
+        part = raw.get(key)
+        if not isinstance(part, dict):
+            continue
+        source = part.get("response") if key in ("v1", "v2") else part
+        if not isinstance(source, dict):
+            continue
+        frame = source.get("frame")
+        if not isinstance(frame, dict) or frame.get("capability") not in _SYNOPTIC_MANUAL_CAPABILITIES:
+            continue
+        geometry = _manual_synoptic_geometry(frame.get("geometry"))
+        target = result.get(key)
+        if key in ("v1", "v2"):
+            target = target.get("response") if isinstance(target, dict) else None
+        if not isinstance(target, dict) or not isinstance(target.get("frame"), dict):
+            raise ValueError("synoptic_export_response_missing")
+        target["frame"]["geometry"] = geometry
+        target["frame"]["geometry_export"] = {
+            "status": "complete", "feature_count": len(geometry["features"]),
+            "point_budget": _SYNOPTIC_EXPORT_MAX_POINTS,
+        }
+    return result
+
+
 def safe_url_summary(value: Any) -> dict[str, Any] | None:
     """Return a credential-free URL summary, never the full URL."""
     if not isinstance(value, str) or not value:
@@ -814,6 +921,25 @@ class RoutingTraceBuilder:
         item["result"] = result
         item["reason"] = reason
         item["duration_ms"] = duration_ms
+
+    def recorded_fallback_count(self) -> int:
+        """Count failed provider attempts, not excluded or unimplemented slots."""
+        return sum(
+            1
+            for item in self.data["candidates"]
+            if item.get("attempted") and item.get("result") in ("rejected", "failed")
+        )
+
+    def winner_reason(self, *, eligible_count: int, rate_limited: bool = False) -> str:
+        """Explain selection from actual failed attempts rather than candidate index."""
+        failures = self.recorded_fallback_count()
+        if failures and rate_limited:
+            return "fallback_after_rate_limit"
+        if failures:
+            return "fallback_after_failure"
+        if eligible_count == 1:
+            return "only_eligible_candidate"
+        return "eligible_candidate"
 
     def set_decision(
         self,

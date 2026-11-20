@@ -102,6 +102,24 @@ class FmiProvider:
     def capabilities(self) -> tuple[CapabilityInfo, ...]:
         return _CAPABILITIES
 
+    def synoptic_isobars_info(self) -> dict[str, Any]:
+        """V2 optional regional numeric MSLP, never a global layer."""
+        return {
+            "capability": "weather.synoptic.isobars",
+            "coverage": "regional",
+            "data_kind": "derived_numeric_grid",
+            "synoptic_priority": 14,
+            "model": "FMI HARMONIE MEPS",
+            "unit": "hPa",
+        }
+
+    async def async_fetch_synoptic_isobars(
+        self, hass: HomeAssistant, bbox: dict,
+    ) -> dict[str, Any]:
+        """Delegate provider policy to WR and numerical decoding to worker."""
+        from ..synoptic_fmi import async_fetch_isobars
+        return await async_fetch_isobars(hass, bbox)
+
     def provider_info(self) -> ProviderInfo:
         return ProviderInfo(
             summary=(
@@ -129,6 +147,16 @@ class FmiProvider:
 
     def network_targets(self) -> tuple[NetworkTargetInfo, ...]:
         return (
+            NetworkTargetInfo(
+                purpose="synoptic_pressure_regional",
+                scheme="https",
+                host="data.fmi.fi",
+                port=443,
+                target_type="data_file",
+                required=False,
+                capabilities=("weather.synoptic.isobars",),
+                note="Optionales regionales Druckraster FMI HARMONIE MEPS; MSLP, Koordinaten und Zeit im WR-Decoder verifiziert.",
+            ),
             NetworkTargetInfo(
                 purpose="point_weather_forecast",
                 scheme="https",
@@ -161,7 +189,8 @@ class FmiProvider:
             }
 
         field_names = [_FIELDS[item][0] for item in requested]
-        session = async_get_clientsession(hass)
+        from ..diagnostic_center import observed_clientsession
+        session = observed_clientsession(hass, "fmi", async_get_clientsession(hass))
         async with session.get(
             _TIMESERIES_URL,
             params={

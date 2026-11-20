@@ -357,6 +357,12 @@ def _runtime_state(hass: HomeAssistant) -> tuple[bool, dict[str, Any]]:
 def _load_mapping_sync() -> dict[str, Any]:
     """Load the shipped base map plus validated local extension contributions."""
     payload = json.loads(_CONSUMER_MAP_PATH.read_text(encoding="utf-8"))
+    # P0-UTC-Inventarsperre: nur den ausgelieferten Standardkatalog pruefen.
+    # Optionale Laufzeitbeitraege duerfen reguläre Consumer nicht blockieren.
+    # Undeklarierte Zeiten aus solchen Beitraegen bleiben an der zentralen
+    # normalize_provider_time-Grenze strikt ungueltig (fail closed).
+    from .time_normalization import validate_provider_time_registry_coverage
+    validate_provider_time_registry_coverage(payload.get("providers"))
     payload = merge_extension_capability_map(payload)
     if payload.get("schema") != "weather_router.consumer.capability_map.draft.v1":
         raise ValueError("consumer capability map has unexpected schema")
@@ -508,6 +514,8 @@ def _load_mapping_sync() -> dict[str, Any]:
                 )
 
     validate_time_semantics_contract(payload, providers)
+    # Zeitvertrag der ausgelieferten Quellen wird bereits unmittelbar
+    # vor dem Laden optionaler Provider in _load_mapping_sync geprueft.
 
     coverage_contract = payload.get("capability_coverage_semantics")
     if not isinstance(coverage_contract, dict):
@@ -971,6 +979,8 @@ def _candidates(
     providers: dict[str, Any],
     mapping: dict[str, Any],
     public_id: str,
+    *,
+    capability_maps: dict[str, dict[str, Any]] | None = None,
 ) -> list[Candidate]:
     """Return deterministic provider/capability candidates in registry order."""
     result: list[Candidate] = []
@@ -979,7 +989,11 @@ def _candidates(
         provider_map = mapped.get(provider.id)
         if not isinstance(provider_map, dict):
             continue
-        capability_map = _provider_capability_map(provider)
+        capability_map = (
+            capability_maps[provider.id]
+            if capability_maps is not None
+            else _provider_capability_map(provider)
+        )
         for internal_id, public_ids in provider_map.items():
             if public_id not in public_ids:
                 continue
@@ -1004,6 +1018,15 @@ def _candidates(
                 )
     result.sort(key=lambda candidate: candidate.score)
     return result
+
+
+# Consumer V1 is frozen: OPERA's three diagnostic capabilities are Runtime/V2-only.
+# Never advertise or resolve these identifiers over the historical V1 endpoint.
+_V1_EXCLUDED_PUBLIC_IDS = frozenset({
+    "weather.opera.rate_discovery",
+    "weather.opera.dbzh_discovery",
+    "weather.opera.rate_history",
+})
 
 
 def _public_ids(mapping: dict[str, Any]) -> list[str]:
@@ -1396,6 +1419,7 @@ def _capability_catalog_row(
         for item in candidates
         if _candidate_enabled(state, item.provider, public_id)[0]
         and profile_allows_provider(profile, item.provider.id)
+        and profile_allows_candidate(profile, item.semantics)[0]
     ]
     resolvable = [item for item in eligible if _resource_implemented(item)]
 
@@ -1438,6 +1462,27 @@ def _capability_catalog_row(
     event_filter_options = _hazard_filter_options(mapping, hazard_catalog, public_id)
     if event_filter_options is not None:
         row["event_filter_options"] = event_filter_options
+    # Advertise the exact server-authorized event policy in existing catalog
+    # responses. This is optional metadata, not a second event router.
+    if len(row.get("resource_types") or []) == 1:
+        resource = row["resource_types"][0]
+        from .consumer_event_time_policy import time_class, _CLASSES, _MAX_RESULTS, _MAX_PAGES
+        declared = time_class(public_id, resource)
+        if declared is not None:
+            limits = _CLASSES[declared]
+            row["time_modes"].append("events_intersecting_window")
+            row["event_time_options"] = {
+                "mode": "events_intersecting_window",
+                "class": declared,
+                "max_window_days": limits["days"],
+                "default_max_feed_update_age_seconds": limits["feed_seconds"],
+                "max_feed_update_age_seconds": limits["feed_seconds"] * 4,
+                "max_ongoing_update_age_seconds": limits["ongoing_seconds"],
+                "max_results": _MAX_RESULTS,
+                "default_page_size": _MAX_RESULTS,
+                "max_pages": _MAX_PAGES,
+                "include_ongoing_supported": limits["ongoing_seconds"] > 0,
+            }
     return row
 
 
@@ -1570,14 +1615,15 @@ def _time_context(msg: dict[str, Any]) -> dict[str, Any]:
     mode = raw.get("mode")
     if mode == "latest" and set(raw) != {"mode"}:
         raise vol.Invalid("latest time context accepts only mode")
+    if mode == "events_intersecting_window":
+        # Validate timestamps, class and bounds after the verified catalog has
+        # determined the actual feed type for this public capability.
+        return dict(raw)
     if mode != "latest":
         raise CandidateUnavailable(
             "requirements_not_met",
             retryable=False,
-            message=(
-                "Der aktuelle Consumer-Prototyp unterstützt für Resolve zunächst "
-                "nur time.mode=latest."
-            ),
+            message="Unbekannter oder für diese Capability nicht erlaubter Zeitmodus.",
         )
     return {"mode": "latest"}
 
@@ -2136,57 +2182,43 @@ def _safe_public_url(value: Any) -> str | None:
     return value
 
 
-def _iso_time(value: Any) -> str | None:
-    if isinstance(value, bool) or value is None:
-        return None
-    if isinstance(value, (int, float)) and isfinite(float(value)):
-        number = float(value)
-        if number > 10_000_000_000:
-            number /= 1000.0
-        try:
-            return datetime.fromtimestamp(number, tz=timezone.utc).isoformat().replace("+00:00", "Z")
-        except (ValueError, OSError, OverflowError):
-            return None
-    if isinstance(value, str) and value.strip():
-        text = value.strip()
-        if text.endswith("Z"):
-            return text
-        try:
-            parsed = datetime.fromisoformat(text)
-        except ValueError:
-            return text
-        if parsed.tzinfo is None:
-            parsed = parsed.replace(tzinfo=timezone.utc)
-        return parsed.astimezone(timezone.utc).isoformat().replace("+00:00", "Z")
-    return None
+def _iso_time(value: Any, *, epoch_unit: str | None = None) -> str | None:
+    """Explicit UTC instant only; reject unspecified numeric units and naive text."""
+    from .time_normalization import iso_instant, epoch_instant
+    if type(value) in (int, float):
+        return epoch_instant(value, unit=epoch_unit) if epoch_unit else None
+    return iso_instant(value)
+
 
 
 def _age_seconds(data_time: str | None) -> float | None:
-    if not data_time:
+    from .time_normalization import iso_instant
+    normalized = iso_instant(data_time)
+    if normalized is None:
         return None
-    try:
-        parsed = datetime.fromisoformat(data_time.replace("Z", "+00:00"))
-    except ValueError:
-        return None
-    if parsed.tzinfo is None:
-        parsed = parsed.replace(tzinfo=timezone.utc)
-    age = (datetime.now(timezone.utc) - parsed.astimezone(timezone.utc)).total_seconds()
-    return max(0.0, age)
+    parsed = datetime.fromisoformat(normalized.replace("Z", "+00:00"))
+    return max(0.0, (datetime.now(timezone.utc) - parsed).total_seconds())
 
 
-def _timeline_frames(raw: Any, *, url_field: str) -> list[dict[str, Any]]:
+
+def _timeline_frames(
+    candidate: Candidate, result: dict[str, Any], raw: Any, *,
+    url_field: str, errors: set[str],
+) -> list[dict[str, Any]]:
     if not isinstance(raw, list):
         return []
-    result: list[dict[str, Any]] = []
+    frames_out: list[dict[str, Any]] = []
     for frame in raw:
         if not isinstance(frame, dict):
             continue
         frame_url = _safe_public_url(frame.get(url_field))
-        frame_time = _iso_time(frame.get("time"))
+        frame_time = _provider_time(
+            candidate, "timeline.frames[].time",
+            frame.get("time"), result, errors)
         if frame_url is None or frame_time is None:
             continue
-        result.append({"time": frame_time, "url": frame_url})
-    return result
+        frames_out.append({"time": frame_time, "url": frame_url})
+    return frames_out
 
 
 def _provider_attribution(provider: Any, result: dict[str, Any]) -> str | None:
@@ -2239,6 +2271,21 @@ def _aggregate_provenance(sources: list[dict[str, Any]]) -> dict[str, Any]:
 
 
 def _normalize_raster(result: dict[str, Any]) -> tuple[dict[str, Any], str | None]:
+    def _source_time(field_path: str, raw_value: Any) -> str | None:
+        if raw_value is None:
+            return None
+        # Lazy fuer explizit zeitlose Raster (z.B. Referenzdaten).
+        from .time_normalization import normalize_provider_time
+        normalized = normalize_provider_time(
+            str(result.get("provider") or ""),
+            str(result.get("capability") or ""),
+            field_path, raw_value,
+            provider_metadata=result.get("provider_metadata"),
+        )
+        if normalized.reason and normalized.reason != "missing_source_time":
+            # Nur begrenzte, sichere Fehlercodes exportieren, NIE Rohzeit/URL.
+            payload["time_normalization_error"] = normalized.reason
+        return normalized.iso
     tile_url = _safe_public_url(result.get("tile_url"))
     if tile_url is None:
         raise CandidateUnavailable(
@@ -2312,6 +2359,8 @@ def _normalize_raster(result: dict[str, Any]) -> tuple[dict[str, Any], str | Non
         legend_style = legend.get("style")
         if isinstance(legend_style, str) and legend_style.strip():
             normalized_legend["style"] = legend_style.strip()
+        from .native_legend_contract import normalize_native_legend
+        normalized_legend.update(normalize_native_legend(legend))
         if normalized_legend:
             payload["legend"] = normalized_legend
 
@@ -2322,7 +2371,9 @@ def _normalize_raster(result: dict[str, Any]) -> tuple[dict[str, Any], str | Non
             if not isinstance(frame, dict):
                 continue
             url = _safe_public_url(frame.get("tile_url"))
-            time_value = _iso_time(frame.get("time"))
+            # Der deklarative UTC-Quellenvertrag ist die EINZIGE Zeitgrenze.
+            # Fehlende/mehrdeutige Rohzeit darf niemals als frisch erscheinen.
+            time_value = _source_time("timeline.frames[].time", frame.get("time"))
             if url is None or time_value is None:
                 continue
             item = {"time": time_value, "tile_url": url}
@@ -2346,7 +2397,7 @@ def _normalize_raster(result: dict[str, Any]) -> tuple[dict[str, Any], str | Non
                 normalized_timeline[index_field] = value
         payload["timeline"] = normalized_timeline
 
-    return payload, _iso_time(result.get("frame_time"))
+    return payload, _source_time("frame_time", result.get("frame_time"))
 
 
 def _validate_intent_resource_contract(
@@ -2413,10 +2464,14 @@ def _validate_intent_resource_contract(
             )
 
 
-def _normalize_image_sequence(result: dict[str, Any]) -> tuple[dict[str, Any], str | None]:
+def _normalize_image_sequence(
+    candidate: Candidate, result: dict[str, Any],
+) -> tuple[dict[str, Any], str | None]:
     timeline = result.get("timeline")
     frames_raw = timeline.get("frames") if isinstance(timeline, dict) else None
-    frames = _timeline_frames(frames_raw, url_field="image_url")
+    time_errors: set[str] = set()
+    frames = _timeline_frames(
+        candidate, result, frames_raw, url_field="image_url", errors=time_errors)
     if not frames:
         raise CandidateUnavailable(
             "temporarily_unavailable",
@@ -2433,6 +2488,8 @@ def _normalize_image_sequence(result: dict[str, Any]) -> tuple[dict[str, Any], s
         ),
         "loop": bool(timeline.get("loop", True)) if isinstance(timeline, dict) else True,
     }
+    if time_errors:
+        payload["time_normalization_error"] = sorted(time_errors)[0]
     return payload, frames[-1]["time"]
 
 
@@ -2487,6 +2544,64 @@ def _normalize_planetary_tile(result: dict[str, Any]) -> tuple[dict[str, Any], s
     return payload, None
 
 
+def _provider_time(candidate: Candidate, field_path: str, value: Any,
+                   result: dict[str, Any], errors: set[str]) -> str | None:
+    """P0: Pflichtgrenze fuer jede absolute Providerzeit in V1.
+
+    UNUMSTOESSLICHER WEATHERROUTER-ZEITVERTRAG: Keine unnormalisierten
+    Providerzeiten ausserhalb dieser Grenze, niemals Zeitformat/Einheit raten
+    und Abrufzeit niemals als Beobachtungszeit ausgeben.
+    """
+    if value is None:
+        # Nicht vorhandene optionale Felder sind keine Zeitvertragsverletzung.
+        return None
+    from .time_normalization import normalize_provider_time
+    converted = normalize_provider_time(candidate.provider.id, candidate.capability.id,
+                                         field_path, value,
+                                         provider_metadata=result.get("provider_metadata"))
+    if converted.reason and converted.reason != "missing_source_time":
+        errors.add(converted.reason)
+    return converted.iso
+
+
+
+def _normalize_declared_point_time_value(
+    candidate: Candidate, result: dict[str, Any],
+    value: dict[str, Any], errors: set[str],
+) -> dict[str, Any]:
+    """Nur vertraglich als Zeitwert deklarierte Punktwerte nach UTC wandeln.
+
+    UNUMSTOESSLICHER WEATHERROUTER-ZEITVERTRAG: Ein Sonnenaufgang ist
+    eine gueltige Ereigniszeit, kein Mess- oder Provider-Abrufzeitpunkt.
+    Ohne deklarierte Feldrolle niemals aus dem Text einen Zeitwert raten.
+    """
+    from .time_normalization import has_declared_provider_time_field
+    if has_declared_provider_time_field(
+        candidate.provider.id, candidate.capability.id, "values[].value"
+    ):
+        value["value"] = _provider_time(
+            candidate, "values[].value", value.get("value"), result, errors
+        )
+    return value
+
+
+def _verified_feed_update_result(
+    candidate: Candidate, result: dict[str, Any], payload: dict[str, Any],
+) -> dict[str, Any]:
+    """Feed-Frische ausschliesslich aus belegten Provider-Update-Zeiten.
+
+    Eine soeben beendete HTTP-Abfrage ist KEIN Quell-Update-Zeitpunkt.
+    """
+    errors: set[str] = set()
+    verified: dict[str, Any] = {}
+    for key in ("last_updated_at", "published_at", "feed_updated_at"):
+        if result.get(key) is not None:
+            verified[key] = _provider_time(candidate, key, result[key], result, errors)
+    if errors:
+        payload["time_normalization_error"] = sorted(errors)[0]
+    return verified
+
+
 def _normalize_event_feed(
     candidate: Candidate,
     result: dict[str, Any],
@@ -2501,12 +2616,13 @@ def _normalize_event_feed(
 
     events: list[dict[str, Any]] = []
     latest_time: str | None = None
+    time_errors: set[str] = set()
     for raw in result.get("events", []):
         if not isinstance(raw, dict):
             continue
         event_id = str(raw.get("id") or "").strip()
         event_type = str(raw.get("event_type") or "").strip()
-        observed_at = _iso_time(raw.get("observed_at"))
+        observed_at = _provider_time(candidate, "events[].observed_at", raw.get("observed_at"), result, time_errors)
         if not event_id or not event_type or observed_at is None:
             continue
         if latest_time is None or observed_at > latest_time:
@@ -2542,11 +2658,14 @@ def _normalize_event_feed(
                 event[optional_key] = raw.get(optional_key)
         events.append(event)
 
-    return {
+    payload = {
         "events": events,
         "event_count": len(events),
         "window_seconds": result.get("window_seconds"),
-    }, latest_time
+    }
+    if time_errors:
+        payload["time_normalization_error"] = sorted(time_errors)[0]
+    return payload, latest_time
 
 
 def _generic_hazard_type_for_public_id(public_id: str) -> str:
@@ -2563,6 +2682,41 @@ def _generic_hazard_type_for_public_id(public_id: str) -> str:
     return "natural_hazard"
 
 
+
+def _normalize_declared_event_parameter_times(
+    candidate: Candidate, result: dict[str, Any],
+    parameters: dict[str, Any], errors: set[str],
+) -> dict[str, Any]:
+    """Deklarierte verschachtelte Zeitrollen einer Ereignismeldung pruefen.
+
+    Ausschliesslich Feldpfade der EINEN Provider-Time-Registry duerfen als
+    absolute Zeiten interpretiert werden. Andere Parameter nicht raten.
+    """
+    from .time_normalization import provider_time_contracts
+    contract = (provider_time_contracts().get("providers", {})
+                .get(candidate.provider.id, {}).get(candidate.capability.id, {}))
+    for field in contract.get("fields", {}):
+        prefix = "events[].parameters."
+        if not field.startswith(prefix):
+            continue
+        segments = field[len(prefix):].split(".")
+        target = parameters
+        for segment in segments[:-1]:
+            child = target.get(segment) if isinstance(target, dict) else None
+            if not isinstance(child, dict):
+                target = None
+                break
+            # Keine Mutation des ursprünglichen Provider-Objekts.
+            copied = dict(child)
+            target[segment] = copied
+            target = copied
+        if isinstance(target, dict) and segments[-1] in target:
+            target[segments[-1]] = _provider_time(
+                candidate, field, target[segments[-1]], result, errors
+            )
+    return parameters
+
+
 def _normalize_hazard_feed(
     candidate: Candidate,
     result: dict[str, Any],
@@ -2576,6 +2730,7 @@ def _normalize_hazard_feed(
 
     events: list[dict[str, Any]] = []
     latest_time: str | None = None
+    time_errors: set[str] = set()
     for raw in result.get("events", []):
         if not isinstance(raw, dict):
             continue
@@ -2598,10 +2753,17 @@ def _normalize_hazard_feed(
             if isinstance(raw.get("parameters"), dict)
             else {}
         )
+        parameters = _normalize_declared_event_parameter_times(
+            candidate, result, parameters, time_errors
+        )
         if hazard_type != provider_hazard_type:
             parameters["provider_hazard_type"] = provider_hazard_type
             parameters["hazard_type_fallback"] = hazard_type
-        effective = _iso_time(raw.get("effective") or raw.get("sent") or raw.get("onset"))
+        effective = next((
+            instant for key in ("effective", "onset")
+            if (instant := _provider_time(candidate, f"events[].{key}",
+                                         raw.get(key), result, time_errors)) is not None
+        ), None)
         if effective and (latest_time is None or effective > latest_time):
             latest_time = effective
         event = {
@@ -2619,12 +2781,20 @@ def _normalize_hazard_feed(
             "urgency": raw.get("urgency"),
             "certainty": raw.get("certainty"),
             "status": raw.get("status"),
+            "lifecycle_status": raw.get("lifecycle_status"),
             "message_type": raw.get("message_type"),
-            "sent": _iso_time(raw.get("sent")),
+            "started_at": _provider_time(candidate, "events[].started_at", raw.get("started_at"), result, time_errors),
+            "occurred_at": _provider_time(candidate, "events[].occurred_at", raw.get("occurred_at"), result, time_errors),
+            "resolved_at": _provider_time(candidate, "events[].resolved_at", raw.get("resolved_at"), result, time_errors),
+            "last_updated_at": _provider_time(candidate, "events[].last_updated_at", raw.get("last_updated_at"), result, time_errors),
+            "published_at": _provider_time(candidate, "events[].published_at", raw.get("published_at"), result, time_errors),
+            "valid_from": _provider_time(candidate, "events[].valid_from", raw.get("valid_from"), result, time_errors),
+            "valid_until": _provider_time(candidate, "events[].valid_until", raw.get("valid_until"), result, time_errors),
+            "sent": _provider_time(candidate, "events[].sent", raw.get("sent"), result, time_errors),
             "effective": effective,
-            "onset": _iso_time(raw.get("onset")),
-            "expires": _iso_time(raw.get("expires")),
-            "ends": _iso_time(raw.get("ends")),
+            "onset": _provider_time(candidate, "events[].onset", raw.get("onset"), result, time_errors),
+            "expires": _provider_time(candidate, "events[].expires", raw.get("expires"), result, time_errors),
+            "ends": _provider_time(candidate, "events[].ends", raw.get("ends"), result, time_errors),
             "area_desc": raw.get("area_desc"),
             "geometry": raw.get("geometry") if isinstance(raw.get("geometry"), dict) else None,
             "description": raw.get("description"),
@@ -2796,6 +2966,8 @@ def _normalize_hazard_feed(
     ):
         if result.get(key) is not None:
             payload[key] = result.get(key)
+    if time_errors:
+        payload["time_normalization_error"] = sorted(time_errors)[0]
     return payload, latest_time
 
 
@@ -2960,7 +3132,9 @@ async def _resolve_candidate(
                 retryable=True,
                 message="Der Provider lieferte keinen Wert für die angefragte Capability.",
             )
-        data_time = _iso_time(result.get("data_time"))
+        time_errors: set[str] = set()
+        data_time = _provider_time(candidate, "data_time",
+                                   result.get("data_time"), result, time_errors)
         try:
             value = normalize_shared_wind_value(candidate.public_id, entry)
             value = normalize_snowfall_value(
@@ -2978,8 +3152,18 @@ async def _resolve_candidate(
                 retryable=False,
                 message=str(err),
             ) from err
+        value = _normalize_declared_point_time_value(
+            candidate, result, value, time_errors
+        )
         value["data_time"] = data_time
+        for time_field in ("valid_at", "interval_start", "interval_end"):
+            if time_field in value:
+                value[time_field] = _provider_time(
+                    candidate, f"values[].{time_field}", value[time_field],
+                    result, time_errors)
         payload = {"values": {candidate.public_id: value}}
+        if time_errors:
+            payload["time_normalization_error"] = sorted(time_errors)[0]
         return payload, result, data_time
 
     if mode == "event_feed":
@@ -3216,7 +3400,7 @@ async def _resolve_candidate(
         payload = apply_lightning_resource_semantics(candidate.public_id, payload)
         payload = apply_thunder_resource_semantics(candidate.public_id, payload)
     elif mode == "image_sequence":
-        payload, data_time = _normalize_image_sequence(result)
+        payload, data_time = _normalize_image_sequence(candidate, result)
     elif mode == "live_stream":
         payload, data_time = _normalize_live_stream(result)
     elif mode == "planetary_tile":
@@ -3250,9 +3434,11 @@ def _normalize_data_file(
     if transport not in {"direct", "weather_router_proxy"}:
         raise ValueError("data_file provider returned unsupported transport")
 
-    data_time = _iso_time(result.get("data_time"))
-    valid_time = _iso_time(result.get("valid_time"))
-    forecast_reference_time = _iso_time(result.get("forecast_reference_time"))
+    time_errors: set[str] = set()
+    data_time = _provider_time(candidate, "data_time", result.get("data_time"), result, time_errors)
+    valid_time = _provider_time(candidate, "valid_time", result.get("valid_time"), result, time_errors)
+    forecast_reference_time = _provider_time(candidate, "forecast_reference_time",
+                                             result.get("forecast_reference_time"), result, time_errors)
     payload = {
         "format": file_format,
         "url": url,
@@ -3267,6 +3453,8 @@ def _normalize_data_file(
     for key in ("satellite", "product", "coverage", "checksum", "metadata_url"):
         if result.get(key) is not None:
             payload[key] = result.get(key)
+    if time_errors:
+        payload["time_normalization_error"] = sorted(time_errors)[0]
     return payload, data_time
 
 
@@ -3308,9 +3496,34 @@ async def websocket_consumer_discovery(
         providers = await _async_providers(hass)
         _validate_mapping_against_providers(providers, mapping)
         _validate_hazard_mapping(mapping, hazard_catalog)
-    except Exception:  # noqa: BLE001 - discovery remains available on contract failure
+    except Exception as err:  # noqa: BLE001 - discovery remains available on contract failure
         mapping_ok = False
         ready = False
+        # Export only a bounded, categorized contract fault; never raw
+        # exceptions, filesystem paths or extension-specific identifiers.
+        detail = str(err)
+        if "consumer capability map mismatch for " in detail:
+            code = "provider_capability_set_mismatch"
+            area = "provider_capabilities"
+        elif "resource type" in detail:
+            code = "resource_type_contract_mismatch"
+            area = "capability_resource_types"
+        elif "coverage" in detail:
+            code = "coverage_contract_mismatch"
+            area = "capability_coverage_semantics"
+        elif "hazard" in detail:
+            code = "hazard_type_contract_mismatch"
+            area = "hazard_types"
+        else:
+            code = "consumer_contract_validation_failed"
+            area = "consumer_mapping"
+        try:
+            from .diagnostic_center import record as d2_record
+            d2_record(hass, category="runtime", outcome="failed",
+                      details={"contract_error_code": code,
+                               "contract_area": area})
+        except Exception:
+            pass
 
     connection.send_result(
         msg["id"],
@@ -3381,14 +3594,23 @@ async def websocket_consumer_capabilities(
     visible_public_ids = [
         public_id
         for public_id in _public_ids(mapping)
-        if profile_allows_capability(profile, mapping, public_id)[0]
+        if public_id not in _V1_EXCLUDED_PUBLIC_IDS
+        and profile_allows_capability(profile, mapping, public_id)[0]
     ]
+    # One inventory per catalog request, not once per public capability.
+    # No persistent cache: changing provider/extension registries remain visible.
+    capability_maps = {
+        provider.id: _provider_capability_map(provider)
+        for provider in providers.values()
+    }
     all_rows = [
         _capability_catalog_row(
             state,
             mapping,
             hazard_catalog,
-            _candidates(providers, mapping, public_id),
+            _candidates(
+                providers, mapping, public_id, capability_maps=capability_maps,
+            ),
             public_id,
             profile,
         )
@@ -3666,6 +3888,8 @@ async def websocket_routing_diagnostic_fault_arm(
         vol.Optional("requirements"): dict,
         vol.Optional("event_filter"): dict,
         vol.Optional("profile_id"): str,
+        vol.Optional("consumer_id"): str,
+        vol.Optional("correlation_id"): str,
     }
 )
 @websocket_api.async_response
@@ -3675,12 +3899,17 @@ async def websocket_consumer_resolve(
     msg: dict[str, Any],
 ) -> None:
     """Resolve one public capability and record an admin-only decision trace."""
+    from .consumer_api_monitor import monitored_connection
+    connection = monitored_connection(hass, connection, msg, "V1")
     public_id = str(msg.get("capability") or "")
     trace = begin_routing_trace(
         hass,
         capability=public_id,
         contract_version=msg.get("contract_version"),
     )
+    # Correlate this precise trace without relying on global latest-trace order.
+    if getattr(connection, "_ticket", None) is not None:
+        connection._monitor_trace = trace
     diagnostic_fault = _consume_diagnostic_fault(hass, connection)
     profile_meta: dict[str, Any] | None = None
 
@@ -3720,6 +3949,15 @@ async def websocket_consumer_resolve(
 
     if not _PUBLIC_ID_RE.fullmatch(public_id):
         _finish_error("invalid_capability", public_id, "request")
+        return
+
+    if public_id in _V1_EXCLUDED_PUBLIC_IDS:
+        _finish_unavailable(
+            "capability_not_supported",
+            retryable=False,
+            message="Diese Diagnose-Capability ist nicht Teil von Consumer V1.",
+            stage="contract",
+        )
         return
 
     try:
@@ -3905,6 +4143,20 @@ async def websocket_consumer_resolve(
         )
         return
 
+    if time_context["mode"] == "events_intersecting_window":
+        from .consumer_event_time_policy import validate_event_time
+        try:
+            if "max_age_seconds" in requirements:
+                raise ValueError("event windows use separate feed age, not max_age_seconds")
+            time_context = validate_event_time(
+                time_context, public_id=public_id,
+                resource_types={item.capability.render_mode for item in all_candidates},
+            )
+        except (ValueError, TypeError) as err:
+            trace.stage_end("eligibility")
+            _finish_error("invalid_consumer_request", str(err), "event_time")
+            return
+        trace.set_request(event_time_policy=time_context)
     for order, candidate in enumerate(all_candidates):
         key = _candidate_trace_key(candidate)
         raw_extension_id = getattr(candidate.provider, "weather_router_extension_id", None)
@@ -4137,6 +4389,13 @@ async def websocket_consumer_resolve(
             return
         trace.stage_end("provider_resolution")
 
+        if time_context["mode"] == "events_intersecting_window":
+            from .consumer_event_time_policy import filter_event_payload
+            # Aggregierte Quellzeiten haben keine einzelne belegbare
+            # Provider/Capability-Herkunft; Feedalter bleibt daher unbekannt.
+            payload = filter_event_payload(
+                payload, time=time_context, provider_result={})
+            trace.set_request(event_time_result=payload["event_time_policy"])
         now = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
         freshness = {
             "data_time": None,
@@ -4171,11 +4430,7 @@ async def websocket_consumer_resolve(
             status="ready",
             selected_provider="aggregate",
             selected_capability=public_id,
-            fallback_count=sum(
-                1
-                for item in trace.data["candidates"]
-                if item.get("attempted") and item.get("result") != "selected"
-            ),
+            fallback_count=trace.recorded_fallback_count(),
             reason_code="aggregate_eligible_sources",
         )
         trace.finish(status="ready")
@@ -4222,6 +4477,14 @@ async def websocket_consumer_resolve(
                 payload,
             )
 
+            if time_context["mode"] == "events_intersecting_window":
+                from .consumer_event_time_policy import filter_event_payload
+                payload = filter_event_payload(
+                    payload, time=time_context,
+                    provider_result=_verified_feed_update_result(
+                        candidate, provider_result, payload))
+                trace.set_request(event_time_result=payload["event_time_policy"])
+
             age = _age_seconds(data_time)
             max_age = requirements.get("max_age_seconds")
             trace.candidate_freshness(
@@ -4260,14 +4523,9 @@ async def websocket_consumer_resolve(
                 )
 
             now = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
-            reason = (
-                "fallback_after_rate_limit"
-                if index > 0 and rate_limited
-                else "fallback_after_failure"
-                if index > 0
-                else "only_eligible_candidate"
-                if len(eligible) == 1
-                else "eligible_candidate"
+            reason = trace.winner_reason(
+                eligible_count=len(eligible),
+                rate_limited=rate_limited,
             )
             freshness = {
                 "data_time": data_time,
@@ -4296,7 +4554,7 @@ async def websocket_consumer_resolve(
                 "routing": {
                     "reason_code": reason,
                     "fallback_available": len(eligible) > 1,
-                    "degraded": index > 0,
+                    "degraded": trace.recorded_fallback_count() > 0,
                     "candidate_count": len(eligible),
                     "selected_index": index,
                     "profile_excluded_candidates": profile_excluded_candidates,
@@ -4315,7 +4573,7 @@ async def websocket_consumer_resolve(
                 selected_provider=candidate.provider.id,
                 selected_capability=candidate.capability.id,
                 selected_index=index,
-                fallback_count=index,
+                fallback_count=trace.recorded_fallback_count(),
                 reason_code=reason,
             )
             trace.stage_end("provider_resolution")
@@ -4394,7 +4652,11 @@ async def websocket_consumer_resolve(
 
 
 def async_register(hass: HomeAssistant) -> None:
-    """Register the implemented read-only Consumer API V1."""
+    """Register only Consumer API V1 commands.
+
+    Consumer API V2 is registered once by __init__.py through
+    consumer_raster_mosaic_api.async_register().
+    """
     websocket_api.async_register_command(hass, websocket_consumer_discovery)
     websocket_api.async_register_command(hass, websocket_consumer_capabilities)
     websocket_api.async_register_command(hass, websocket_routing_diagnostic_fault_arm)

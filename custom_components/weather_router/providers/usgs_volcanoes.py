@@ -199,7 +199,8 @@ class UsgsVolcanoProvider:
         if capability_id != "elevated_us_volcanoes":
             raise ValueError(f"Unsupported USGS volcano capability: {capability_id}")
 
-        session = async_get_clientsession(hass)
+        from ..diagnostic_center import observed_clientsession
+        session = observed_clientsession(hass, "usgs_volcanoes", async_get_clientsession(hass))
         async with session.get(
             _ELEVATED_URL,
             headers={"Accept": "application/json"},
@@ -259,6 +260,10 @@ class UsgsVolcanoProvider:
                     "urgency": "expected",
                     "certainty": "observed",
                     "status": "actual",
+                    # The elevated-status endpoint is the authoritative source
+                    # of currently elevated notices, not proof of an eruption.
+                    "lifecycle_status": "ongoing",
+                    "last_updated_at": sent,
                     "message_type": "status",
                     "sent": sent,
                     "effective": sent,

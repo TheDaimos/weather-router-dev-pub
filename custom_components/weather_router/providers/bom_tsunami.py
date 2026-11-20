@@ -236,7 +236,8 @@ class BomTsunamiProvider:
         if capability_id != "official_tsunami_warnings_australia":
             raise ValueError(f"Unsupported BoM tsunami capability: {capability_id}")
 
-        session = async_get_clientsession(hass)
+        from ..diagnostic_center import observed_clientsession
+        session = observed_clientsession(hass, "bom_tsunami", async_get_clientsession(hass))
         events: list[dict[str, Any]] = []
         errors: list[str] = []
         maximum = max(1, min(int(limit), 500))
@@ -301,7 +302,7 @@ class BomTsunamiProvider:
                         if level == "canceled"
                         else "alert",
                         "sent": _child_text(item, "pubDate"),
-                        "effective": _child_text(item, "pubDate"),
+                        "effective": None,  # RSS pubDate ist Veröffentlichung, nicht Warnbeginn.
                         "onset": None,
                         "expires": None,
                         "ends": None,

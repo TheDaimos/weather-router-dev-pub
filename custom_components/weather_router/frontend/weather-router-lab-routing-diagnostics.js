@@ -9,6 +9,34 @@ if (!LabClass) {
 
 const proto = LabClass.prototype;
 
+
+// Frozen historical V1 numbers (001-230). Never sort and renumber these again.
+// New capabilities require an explicit append-only registry change.
+// Historical 0.10.145 roster: numbers 001–227 from the actual private source.
+// Three later OPERA capabilities appended as 228–230, never alphabetically inserted.
+const MANUAL_TEST_LEGACY_IDS = Object.freeze(["aviation.airmet.us","aviation.gairmet.us","aviation.sigmet.international","biological_hazards.occurrence.aconite.density","biological_hazards.occurrence.aedes_aegypti.density","biological_hazards.occurrence.aedes_albopictus.density","biological_hazards.occurrence.african_buffalo.density","biological_hazards.occurrence.african_wild_dog.density","biological_hazards.occurrence.alligatoridae.density","biological_hazards.occurrence.american_alligator.density","biological_hazards.occurrence.anopheles.density","biological_hazards.occurrence.autumn_crocus.density","biological_hazards.occurrence.black_widows.density","biological_hazards.occurrence.blue_ringed_octopus.density","biological_hazards.occurrence.box_jellyfish.density","biological_hazards.occurrence.brown_bear.density","biological_hazards.occurrence.brugmansia.density","biological_hazards.occurrence.bull_shark.density","biological_hazards.occurrence.buthidae.density","biological_hazards.occurrence.caiman.density","biological_hazards.occurrence.castor_bean.density","biological_hazards.occurrence.cheetah.density","biological_hazards.occurrence.chironex_fleckeri.density","biological_hazards.occurrence.cobras.density","biological_hazards.occurrence.cone_snails.density","biological_hazards.occurrence.coral_snakes.density","biological_hazards.occurrence.crocodylia.density","biological_hazards.occurrence.crocodylus.density","biological_hazards.occurrence.datura.density","biological_hazards.occurrence.deadly_nightshade.density","biological_hazards.occurrence.deadly_webcap.density","biological_hazards.occurrence.death_cap.density","biological_hazards.occurrence.destroying_angel.density","biological_hazards.occurrence.elapidae.density","biological_hazards.occurrence.elephantidae.density","biological_hazards.occurrence.false_morel.density","biological_hazards.occurrence.felidae.density","biological_hazards.occurrence.foxglove.density","biological_hazards.occurrence.funnel_web_spiders.density","biological_hazards.occurrence.galerina_marginata.density","biological_hazards.occurrence.giant_hogweed.density","biological_hazards.occurrence.golden_chain.density","biological_hazards.occurrence.great_white_shark.density","biological_hazards.occurrence.gympie_gympie.density","biological_hazards.occurrence.hammerhead_sharks.density","biological_hazards.occurrence.hippopotamus.density","biological_hazards.occurrence.hyaenidae.density","biological_hazards.occurrence.jaguar.density","biological_hazards.occurrence.kraits.density","biological_hazards.occurrence.lanceheads.density","biological_hazards.occurrence.leopard.density","biological_hazards.occurrence.lion.density","biological_hazards.occurrence.mambas.density","biological_hazards.occurrence.manchineel.density","biological_hazards.occurrence.nile_crocodile.density","biological_hazards.occurrence.oleander.density","biological_hazards.occurrence.panthera.density","biological_hazards.occurrence.pit_vipers.density","biological_hazards.occurrence.poison_dart_frogs.density","biological_hazards.occurrence.poison_hemlock.density","biological_hazards.occurrence.polar_bear.density","biological_hazards.occurrence.portuguese_man_o_war.density","biological_hazards.occurrence.puff_adders.density","biological_hazards.occurrence.puma.density","biological_hazards.occurrence.rattlesnakes.density","biological_hazards.occurrence.recluse_spiders.density","biological_hazards.occurrence.requiem_sharks.density","biological_hazards.occurrence.rhinocerotidae.density","biological_hazards.occurrence.rosary_pea.density","biological_hazards.occurrence.saltwater_crocodile.density","biological_hazards.occurrence.saw_scaled_vipers.density","biological_hazards.occurrence.scorpions.density","biological_hazards.occurrence.sea_snakes.density","biological_hazards.occurrence.serpentes.density","biological_hazards.occurrence.sharks.density","biological_hazards.occurrence.snow_leopard.density","biological_hazards.occurrence.stingrays.density","biological_hazards.occurrence.stonefish.density","biological_hazards.occurrence.strychnine_tree.density","biological_hazards.occurrence.suicide_tree.density","biological_hazards.occurrence.taipans.density","biological_hazards.occurrence.ticks.density","biological_hazards.occurrence.tiger_shark.density","biological_hazards.occurrence.tiger.density","biological_hazards.occurrence.toxicodendron.density","biological_hazards.occurrence.ursidae.density","biological_hazards.occurrence.viperidae.density","biological_hazards.occurrence.wandering_spiders.density","biological_hazards.occurrence.water_hemlock.density","biological_hazards.occurrence.wolf.density","biological_hazards.occurrence.yew.density","civil_protection.warning.official","natural_hazards.disaster_awareness.events","natural_hazards.earthquake.events","natural_hazards.earthquake.significant_events","natural_hazards.flood.hazard_100y.layer","natural_hazards.flood.probability_20y.layer","natural_hazards.flood.probability_5y.layer","natural_hazards.flood.rapid_impact.layer","natural_hazards.flood.rapid_mapping.layer","natural_hazards.flood.reporting_points.layer","natural_hazards.flood.summary_1_3d.layer","natural_hazards.flood.summary_11_30d.layer","natural_hazards.flood.summary_4_10d.layer","natural_hazards.flood.warning","natural_hazards.seismic_non_earthquake.events","natural_hazards.tropical_cyclone.events","natural_hazards.tsunami.observations","natural_hazards.tsunami.potential","natural_hazards.tsunami.warnings","natural_hazards.volcano.activity","natural_hazards.volcano.warnings","pollen.alder","pollen.birch","pollen.grass","pollen.mugwort","pollen.olive","pollen.ragweed","security.public_warning.official","space.aurora.probability.grid","space.iss.live","space.moon.age_days","space.moon.high_elevation","space.moon.high_time","space.moon.high_visible","space.moon.illumination","space.moon.low_elevation","space.moon.low_time","space.moon.low_visible","space.moon.phase_angle","space.moon.phase_name","space.moon.rise_azimuth","space.moon.rise_time","space.moon.set_azimuth","space.moon.set_time","space.moon.tiles","space.solar.suvi.094_angstrom","space.solar.suvi.131_angstrom","space.solar.suvi.171_angstrom","space.solar.suvi.195_angstrom","space.solar.suvi.284_angstrom","space.solar.suvi.304_angstrom","space.sun.high_elevation","space.sun.high_time","space.sun.high_visible","space.sun.low_elevation","space.sun.low_time","space.sun.low_visible","space.sun.rise_azimuth","space.sun.rise_time","space.sun.set_azimuth","space.sun.set_time","weather.convection.thunderstorm_cells","weather.lightning.density","weather.lightning.observed.density","weather.lightning.observed.events","weather.lightning.observed.nearest_azimuth","weather.lightning.observed.nearest_distance","weather.lightning.satellite.glm_east.lcfa","weather.lightning.satellite.glm_west.lcfa","weather.lightning.satellite.mtg_li.accumulated_flashes","weather.model.aifs.data_file","weather.model.ifs.data_file","weather.model.precipitation_1h.layer","weather.model.temperature_2m.layer","weather.model.wind_10m.layer","weather.nowcast.precipitation","weather.nowcast.precipitation_rate","weather.nowcast.relative_humidity","weather.nowcast.temperature","weather.nowcast.wind_direction","weather.nowcast.wind_gusts","weather.nowcast.wind_speed","weather.observation.cloud_cover","weather.observation.temperature","weather.observation.visibility","weather.observation.wind_direction_at_max_speed","weather.point.air_pressure","weather.point.cloud_cover","weather.point.cloud_cover_high","weather.point.cloud_cover_low","weather.point.cloud_cover_mid","weather.point.dew_point","weather.point.fog","weather.point.precipitation","weather.point.precipitation_1h","weather.point.precipitation_probability","weather.point.rain","weather.point.relative_humidity","weather.point.showers","weather.point.snowfall","weather.point.temperature","weather.point.thunder_probability","weather.point.uv_index","weather.point.uv_index_clear_sky","weather.point.uv_index_clear_sky_max_today","weather.point.uv_index_max_today","weather.point.visibility","weather.point.weather_code","weather.point.weather_summary","weather.point.wind_direction","weather.point.wind_gusts","weather.point.wind_speed","weather.point.wind_summary","weather.precipitation.layer","weather.radar.precipitation","weather.radar.precipitation.quality_checked","weather.radar.reflectivity","weather.satellite.air_mass.goes_east","weather.satellite.air_mass.goes_west","weather.satellite.air_mass.himawari_9","weather.satellite.clouds","weather.satellite.dust.goes_east","weather.satellite.dust.goes_west","weather.satellite.fire_temperature.goes_east","weather.satellite.fire_temperature.goes_west","weather.satellite.geocolor.goes_east","weather.satellite.geocolor.goes_west","weather.satellite.infrared.goes_east","weather.satellite.infrared.goes_west","weather.satellite.infrared.himawari_9","weather.satellite.precipitation_rate","weather.satellite.true_color","weather.satellite.visible_red.goes_east","weather.satellite.visible_red.goes_west","weather.satellite.visible_red.himawari_9","weather.warning.official","weather.opera.dbzh_discovery","weather.opera.rate_discovery","weather.opera.rate_history"]);
+
+const V2_TEST_ROUTES = Object.freeze({
+  "weather.precipitation.layer":"weather_router/consumer/resolve_mosaic",
+  "weather.wind.field_10m":"weather_router/consumer/resolve_wind_field",
+  "weather.temperature.field_2m":"weather_router/consumer/resolve_temperature_field",
+  "weather.temperature.advection_850hpa":"weather_router/consumer/resolve_temperature_field",
+  "weather.synoptic.pressure_centers":"weather_router/consumer/resolve_synoptic",
+  "weather.synoptic.isobars":"weather_router/consumer/resolve_synoptic",
+  "weather.synoptic.pressure_raster":"weather_router/consumer/resolve_synoptic",
+  "weather.synoptic.pressure_source":"weather_router/consumer/resolve_synoptic",
+});
+// Appended-only extension; do not renumber the legacy V1 capability sequence.
+const V2_ONLY_TESTS = Object.freeze([
+  ["weather.synoptic.pressure_centers","H/T-Druckzentren"],
+  ["weather.synoptic.isobars","Isobaren"],
+  ["weather.synoptic.pressure_raster","DWD-Druckraster"],
+  ["weather.synoptic.pressure_source","ECMWF-Druckquelle"],
+  ["weather.wind.field_10m","Windfeld 10 m"],
+  ["weather.temperature.field_2m","Temperaturfeld 2 m"],
+  ["weather.temperature.advection_850hpa","Temperaturadvektion 850 hPa"],
+]);
+
 const PRESETS = {
   germany: { label:"Deutschland", type:"bbox", west:5.0, south:47.0, east:16.0, north:56.0 },
   europe: { label:"Europa", type:"bbox", west:-12.0, south:34.0, east:35.0, north:72.0 },
@@ -61,7 +89,15 @@ if (!proto.__weatherRouterRoutingDiagnosticsEnhanced) {
         exportKind: "muted",
         exportBusy: false,
         gitExportResult: null,
+        manualExportRecords: {},
+        manualExportPending: null,
         manual: {
+          catalogOpen: false,
+          catalogSearch: "",
+          contractVersion: 1,
+          v2Result: null,
+          v2Request: null,
+          combinedResult: null,
           capability: "",
           capabilityFilter: "",
           preset: "",
@@ -72,6 +108,9 @@ if (!proto.__weatherRouterRoutingDiagnosticsEnhanced) {
           timelineRequired: false,
           profileId: "",
           faultMode: "resource_temporarily_unavailable",
+          initialSnapshot: null,
+          p0060Open:false,
+          p0070Open:false,
         },
       };
     }
@@ -132,6 +171,56 @@ if (!proto.__weatherRouterRoutingDiagnosticsEnhanced) {
         .wr-rd-compare-grid{grid-template-columns:1fr 1fr auto}
         .wr-rd-card,.wr-rd-fold{border:1px solid var(--divider-color,#444);border-radius:12px;background:#00000012}
         .wr-rd-card{padding:10px}.wr-rd-card small{display:block;opacity:.58}.wr-rd-card strong{display:block;margin-top:3px}
+        .wr-rd-manual-highlight{border:1px solid #9b7938!important;background:linear-gradient(135deg,#b68c2418,#13202a18)!important;box-shadow:inset 0 0 0 1px #be973225}
+        .wr-rd-manual-highlight>summary{color:#efc879;font-size:14px;letter-spacing:.15px;padding:14px 12px}
+        .wr-rd-catalog-fold{border:1px solid #85672c!important;background:#c3922010!important;margin-bottom:12px}
+        .wr-rd-catalog-fold>summary{color:#efcb83;padding:13px 12px}
+        .wr-rd-catalog-search{width:100%;min-height:40px;margin:7px 0;padding:8px 10px;border:1px solid #8a702e;border-radius:9px;background:var(--secondary-background-color,#242424);color:inherit}
+        /* Scoped premium hierarchy; gold signals orientation, green marks a value deviation. */
+        .wr-rd-window{--wr-rd-premium-gold:#efc879;--wr-rd-label-gold:#e8cd96;--wr-rd-edited-green:#8ff0ae}
+        .wr-rd-window .wr-rd-fold>summary>span:first-child,
+        .wr-rd-window .wr-rd-catalog-fold>summary strong,
+        .wr-rd-window .wr-rd-section-heading,
+        .wr-rd-window .wr-rd-profile-testbox>strong,
+        .wr-rd-window .wr-rd-card>strong{color:var(--wr-rd-premium-gold);font-weight:780;letter-spacing:.12px}
+        .wr-rd-window .wr-rd-manual-highlight label,
+        .wr-rd-window .wr-rd-toolbar label,
+        .wr-rd-window .wr-rd-compare-grid label{color:var(--wr-rd-label-gold);font-weight:690;line-height:1.5}
+        .wr-rd-window .wr-rd-manual-highlight label>input,
+        .wr-rd-window .wr-rd-manual-highlight label>select,
+        .wr-rd-window .wr-rd-toolbar label>select,
+        .wr-rd-window .wr-rd-compare-grid label>select{margin-top:5px;color:var(--primary-text-color,#e9ebef);font-weight:520}
+        .wr-rd-window .wr-rd-manual-highlight label>input[type="checkbox"]{margin-top:0}
+        .wr-rd-window input.wr-rd-value-changed,
+        .wr-rd-window select.wr-rd-value-changed{color:var(--wr-rd-edited-green)!important;border-color:#419a65!important;box-shadow:inset 0 0 0 1px #419a6533}
+        .wr-rd-window select.wr-rd-value-changed option:checked{color:var(--wr-rd-edited-green)}
+        .wr-rd-window input[type="checkbox"].wr-rd-value-changed{accent-color:#48b77c;outline:2px solid #48b77c;outline-offset:2px}
+        .wr-rd-window .wr-rd-subsection{border:1px solid #a8894538;border-left:2px solid #b7924f;border-radius:10px;background:linear-gradient(90deg,#bb91400c,transparent);padding:10px;margin:9px 0}
+        .wr-rd-window .wr-rd-subsection .wr-rd-section-heading{margin:0 0 8px;font-size:12px}
+        .wr-rd-window .wr-rd-subsection .wr-rd-manual-grid{margin:0}
+        .wr-rd-window .wr-rd-profile-testbox>summary{cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between;min-height:40px;color:var(--wr-rd-premium-gold);font-weight:760}
+        .wr-rd-window .wr-rd-profile-testbox>summary:after{content:"⌄";font-size:20px;transition:transform .18s ease}
+        .wr-rd-window .wr-rd-profile-testbox[open]>summary:after{transform:rotate(180deg)}
+        .wr-rd-window .wr-rd-profile-testbox>summary::-webkit-details-marker{display:none}
+        .wr-rd-window .wr-rd-profile-testbox{border:1px solid #a8894540;border-left:2px solid #b7924f;border-radius:10px;padding:12px}
+        .wr-rd-window .wr-rd-section-title{color:var(--wr-rd-label-gold);opacity:1}
+        .wr-rd-window .wr-rd-muted{opacity:.78}
+        .wr-rd-window input:focus-visible,.wr-rd-window select:focus-visible{outline:2px solid var(--wr-rd-premium-gold);outline-offset:2px}
+        .wr-rd-resolve-control{min-width:166px;min-height:44px}
+        .wr-rd-resolve-control.is-working{cursor:progress}
+        .wr-rd-resolve-control.is-working:before{content:"";display:inline-block;width:13px;height:13px;margin-right:8px;vertical-align:-2px;border:2px solid #fff7;border-top-color:white;border-radius:50%;animation:wr-rd-turn .8s linear infinite}
+        @keyframes wr-rd-turn{to{transform:rotate(360deg)}}
+        @media(prefers-reduced-motion:reduce){.wr-rd-resolve-control.is-working:before{animation:none;border-style:dotted}}
+        .wr-rd-resolve-control.is-answered{background:#176e3b!important;color:#fff!important;border-color:#36b36b!important}
+        .wr-rd-resolve-control.is-failed{background:#942c34!important;color:#fff!important;border-color:#da5960!important}
+        .wr-rd-resolve-feedback{font-size:11px;min-height:18px;color:var(--secondary-text-color,#aaa);padding:5px 2px}
+        .wr-rd-resolve-feedback.is-answered{color:#8ce0a8}
+        .wr-rd-resolve-feedback.is-failed{color:#ff9a9a}
+        .wr-rd-export-button.is-exported,.wr-rd-git-exported{background:#176e3b!important;border:1px solid #36b36b!important;color:#fff!important}
+        .wr-rd-export-button.is-exporting{opacity:.75;cursor:progress}
+        .wr-rd-export-button.is-error{border:1px solid #c75050!important;color:#ff9292!important}
+        .wr-rd-export-feedback{font-size:11px;margin:7px 0 2px;overflow-wrap:anywhere}
+        .wr-rd-export-feedback.ok{color:#8ce0a8}.wr-rd-export-feedback.error{color:#ff9090}
         .wr-rd-fold>summary{cursor:pointer;padding:10px 12px;font-weight:750;display:flex;justify-content:space-between;gap:10px}
         .wr-rd-fold-body{padding:0 12px 12px}
         .wr-rd-actions{display:flex;flex-wrap:wrap;gap:7px}
@@ -278,10 +367,46 @@ if (!proto.__weatherRouterRoutingDiagnosticsEnhanced) {
   proto._rdOpen = async function() {
     const panel=this.shadowRoot?.getElementById("wr-routing-diagnostic-window");
     if (!panel) return;
+    if(panel.hidden)this._rdState().manual.initialSnapshot=null; // new window session only
     panel.hidden=false;
     await this._rdRefresh(true);
     await this._rdLoadCapabilities();
     await this._rdLoadProfiles();
+  };
+
+  // The original, numbered V1 capability catalogue remains the single source.
+  // Open the existing diagnostic cockpit without running network tests implicitly.
+  proto._rdOpenManualTests = async function(capabilityId = "") {
+    await this._rdOpen();
+    if (capabilityId) {
+      const state=this._rdState();
+      if (this._rdCapabilityEntries().some(item=>item.id===capabilityId)) {
+        state.manual.capability=capabilityId;
+        state.manual.capabilityFilter="";
+        this._rdRender();
+      }
+    }
+    const body=this.shadowRoot?.getElementById("wr-rd-body");
+    const selector=body?.querySelector("#wr-rd-capability");
+    const fold=selector?.closest("details.wr-rd-fold");
+    if (fold) {
+      fold.open=true;
+      fold.scrollIntoView({block:"start",behavior:"smooth"});
+    }
+  };
+
+  // Historical P0 shortcuts navigate to existing controls without starting tests.
+  proto._rdOpenManualSpecial = async function(specialId) {
+    const ids = {"P0-060":"wr-rd-create-p0060-profiles","P0-070":"wr-rd-run-p0070-fault"};
+    const target = ids[specialId];
+    if (!target) throw new Error("Unbekannte historische Sondertestkennung");
+    await this._rdOpenManualTests();
+    const fold=this.shadowRoot?.getElementById(specialId==="P0-060"?"wr-rd-p0060-fold":"wr-rd-p0070-fold");
+    if(fold){fold.open=true;this._rdState().manual[specialId==="P0-060"?"p0060Open":"p0070Open"]=true;}
+    const control = this.shadowRoot?.getElementById(target);
+    if (!control) throw new Error("Original-Bedienelement nicht verfügbar: " + specialId);
+    control.scrollIntoView({block:"center",behavior:"smooth"});
+    control.focus({preventScroll:true});
   };
 
   proto._rdClose = function() {
@@ -328,16 +453,30 @@ if (!proto.__weatherRouterRoutingDiagnosticsEnhanced) {
       {id:"p0060_no_reflectivity",name:"P0-060 · Keine Radarreflektivität",description:"Testprofil: radar_reflectivity als Messmethode ausschließen.",enabled:true,excluded_measurement_methods:["radar_reflectivity"]},
       {id:"p0060_no_forecast_model",name:"P0-060 · Kein Forecast/Modell",description:"Testprofil: Modelle und Forecast-Beobachtungsart ausschließen.",enabled:true,excluded_data_origins:["model"],excluded_observation_kinds:["forecast"]},
     ];
+    state.manual.specialResult=null;
+    const actions=[];
     state.message="P0-060-Testprofile werden angelegt/aktualisiert …";state.messageKind="muted";this._rdRenderMessageOnly();
     try{
       let result=null;
       for(const profile of profiles){
-        result=await this._hass.callWS({type:"weather_router/consumer_profile_upsert",profile});
+        const query={type:"weather_router/consumer_profile_upsert",profile};
+        try{
+          result=await this._hass.callWS(query);
+          actions.push({profile_id:profile.id,status:"response_received",response:result});
+        }catch(error){
+          actions.push({profile_id:profile.id,status:"error",error:{message:String(error?.message||error)}});
+          throw error;
+        }
       }
+      state.manual.specialResult={schema:"weather_router.manual_test.special.v1",test_id:"P0-060",
+        capability:null,contract_version:null,status:"response_received",captured_at:new Date().toISOString(),actions};
       state.profiles=Array.isArray(result?.profiles)?result.profiles:state.profiles;
-      state.message="5 P0-060-Testprofile sind bereit. Wähle jetzt eines im Feld Profil aus.";state.messageKind="ok";
+      state.message="P0-060: fünf Profil-Updates beantwortet. Profilauswahl aktualisiert.";state.messageKind="ok";
       this._rdRender();
     }catch(error){
+      state.manual.specialResult={schema:"weather_router.manual_test.special.v1",test_id:"P0-060",
+        capability:null,contract_version:null,status:"error",captured_at:new Date().toISOString(),
+        error:{message:String(error?.message||error)},actions};
       state.message=`P0-060-Testprofile konnten nicht angelegt werden: ${error?.message||String(error)}`;state.messageKind="error";this._rdRender();
     }
   };
@@ -389,8 +528,55 @@ if (!proto.__weatherRouterRoutingDiagnosticsEnhanced) {
     this._rdRender();
   };
 
+  proto._rdManualSnapshot = function(manual=this._rdState().manual) {
+    const c=manual.context||{};
+    return Object.freeze({
+      "wr-rd-contract-version":String(manual.contractVersion??1),
+      "wr-rd-capability-filter":String(manual.capabilityFilter||""),
+      "wr-rd-capability":String(manual.capability||""),
+      "wr-rd-context-type":String(c.type||"bbox"),
+      "wr-rd-preset":String(manual.preset||""),
+      "wr-rd-resource-type":String(manual.resourceType||""),
+      "wr-rd-source-class":String(manual.sourceClass||""),
+      "wr-rd-max-age":String(manual.maxAgeSeconds??""),
+      "wr-rd-timeline-required":Boolean(manual.timelineRequired),
+      "wr-rd-profile":String(manual.profileId||""),
+      "wr-rd-p0070-fault":String(manual.faultMode||"resource_temporarily_unavailable"),
+      "wr-rd-west":c.type==="bbox"?c.west:null,
+      "wr-rd-south":c.type==="bbox"?c.south:null,
+      "wr-rd-east":c.type==="bbox"?c.east:null,
+      "wr-rd-north":c.type==="bbox"?c.north:null,
+      "wr-rd-lat":c.type==="point"?c.latitude:null,
+      "wr-rd-lon":c.type==="point"?c.longitude:null,
+    });
+  };
+
+  proto._rdManualNormalize = function(value,control) {
+    if(control?.type==="checkbox")return Boolean(value);
+    if(control?.type==="number" || ["wr-rd-west","wr-rd-south","wr-rd-east","wr-rd-north","wr-rd-lat","wr-rd-lon","wr-rd-max-age"].includes(control?.id)){
+      if(value===null||String(value).trim()==="")return "";
+      const n=Number(value);return Number.isFinite(n)?n:String(value);
+    }
+    return String(value??"");
+  };
+
+  proto._rdMarkManualChanges = function() {
+    const manual=this._rdState().manual,root=this.shadowRoot;
+    if(!root||!manual.initialSnapshot)return;
+    for(const [id,initial] of Object.entries(manual.initialSnapshot)){
+      const control=root.getElementById(id);if(!control)continue;
+      const current=control.type==="checkbox"?control.checked:control.value;
+      const changed=this._rdManualNormalize(current,control)!==this._rdManualNormalize(initial,control);
+      control.classList.toggle("wr-rd-value-changed",changed);
+      if(changed)control.setAttribute("data-manual-changed","true");
+      else control.removeAttribute("data-manual-changed");
+    }
+  };
+
   proto._rdCaptureManual = function() {
     const root=this.shadowRoot;const state=this._rdState();const manual=state.manual;
+    const selectedVersion=root?.getElementById("wr-rd-contract-version")?.value;
+    if(["1","2","3"].includes(selectedVersion))manual.contractVersion=Number(selectedVersion);
     const capability=root?.getElementById("wr-rd-capability");if(capability?.value)manual.capability=capability.value;
     const filter=root?.getElementById("wr-rd-capability-filter");if(filter)manual.capabilityFilter=filter.value;
     const preset=root?.getElementById("wr-rd-preset");if(preset)manual.preset=preset.value;
@@ -411,6 +597,7 @@ if (!proto.__weatherRouterRoutingDiagnosticsEnhanced) {
     const state=this._rdState();state.manual.preset=key;state.manual.context={...preset};
     const type=this.shadowRoot?.getElementById("wr-rd-context-type");if(type)type.value=preset.type;
     this._rdRenderManualContext(preset);
+    this._rdMarkManualChanges();
   };
 
   proto._rdRenderManualContext = function(values=null) {
@@ -424,13 +611,13 @@ if (!proto.__weatherRouterRoutingDiagnosticsEnhanced) {
     }
     const type=context.type||"bbox";state.manual.context={...context};
     const typeSelect=this.shadowRoot?.getElementById("wr-rd-context-type");if(typeSelect)typeSelect.value=type;
-    if(type==="global"){host.className="wr-rd-context-grid";host.innerHTML='<div class="wr-rd-muted">global=true</div>';return;}
+    if(type==="global"){host.className="wr-rd-context-grid";host.innerHTML='<div class="wr-rd-muted">global=true</div>';this._rdMarkManualChanges();return;}
     if(type==="point"){
       host.className="wr-rd-context-grid point";
       host.innerHTML=`
         <label>Latitude<input id="wr-rd-lat" type="number" step="any" value="${context.latitude??53.5}"></label>
         <label>Longitude<input id="wr-rd-lon" type="number" step="any" value="${context.longitude??10.0}"></label>`;
-      return;
+      this._rdMarkManualChanges();return;
     }
     host.className="wr-rd-context-grid";
     host.innerHTML=`
@@ -438,6 +625,7 @@ if (!proto.__weatherRouterRoutingDiagnosticsEnhanced) {
       <label>south<input id="wr-rd-south" type="number" step="any" value="${context.south??47}"></label>
       <label>east<input id="wr-rd-east" type="number" step="any" value="${context.east??16}"></label>
       <label>north<input id="wr-rd-north" type="number" step="any" value="${context.north??56}"></label>`;
+    this._rdMarkManualChanges();
   };
 
   proto._rdUseTraceContext = function() {
@@ -450,53 +638,142 @@ if (!proto.__weatherRouterRoutingDiagnosticsEnhanced) {
     state.manual.context=next;state.manual.preset="";
     const preset=this.shadowRoot?.getElementById("wr-rd-preset");if(preset)preset.value="";
     this._rdRenderManualContext(next);
+    this._rdMarkManualChanges();
     state.message="Räumlicher Kontext des ausgewählten Traces wurde in die manuelle Testanfrage übernommen.";
     state.messageKind="ok";this._rdRenderMessageOnly();
   };
 
   proto._rdCapabilityEntries = function() {
-    return [...this._rdState().capabilities].sort((a,b)=>String(a.id).localeCompare(String(b.id)))
-      .map((item,index)=>({...item,uiNumber:String(index+1).padStart(3,"0")}));
+    const existing=[...this._rdState().capabilities];
+    const byId=new Map(existing.map(item=>[item.id,item]));
+    // Every historical test remains visible even when runtime discovery is unavailable.
+    const entries=MANUAL_TEST_LEGACY_IDS.map((id,index)=>({
+      ...(byId.get(id)||{id,name:id,catalogUnavailable:true}),
+      uiNumber:String(index+1).padStart(3,"0"),
+    }));
+    const known=new Set(MANUAL_TEST_LEGACY_IDS);
+    V2_ONLY_TESTS.forEach(([id,name],index)=>{
+      if(!known.has(id))entries.push({id,name,v2Only:true,
+        uiNumber:String(MANUAL_TEST_LEGACY_IDS.length+index+1).padStart(3,"0")});
+    });
+    // Unknown future IDs cannot silently shift an already assigned test number.
+    existing.filter(item=>!known.has(item.id) && !V2_ONLY_TESTS.some(([id])=>id===item.id))
+      .forEach(item=>entries.push({...item,uiNumber:"NEU",unregistered:true}));
+    return entries;
+  };
+
+  proto._rdMatchesManualFilter = function(item, raw) {
+    const query=String(raw||"").trim().toLocaleLowerCase("de-DE");
+    if(!query)return true;
+    const text=[item.uiNumber,item.name||"",item.id||""].join(" ").toLocaleLowerCase("de-DE");
+    if(!query.includes("*")&&!query.includes("?"))return text.includes(query);
+    // Literal glob; never treat user input as an arbitrary regular expression.
+    const escaped=query.replace(/[.*+?^${}()|[\]\\]/g,"\\$&").replace(/\\\*/g,".*").replace(/\\\?/g,".");
+    try{return new RegExp(escaped,"i").test(text);}catch(_e){return false;}
+  };
+
+  proto._rdApplyCatalogSearch = function() {
+    const root=this.shadowRoot,state=this._rdState();
+    const input=root?.getElementById("wr-rd-catalog-search");
+    if(!input)return;
+    state.manual.catalogSearch=input.value;
+    const entries=this._rdCapabilityEntries();
+    let count=0;
+    for(const button of root.querySelectorAll("[data-rd-manual-capability]")){
+      const item=entries.find(entry=>entry.id===button.getAttribute("data-rd-manual-capability"));
+      const show=item&&this._rdMatchesManualFilter(item,input.value);
+      button.hidden=!show;
+      button.style.display=show?"":"none";
+      if(show)count++;
+    }
+    const label=root.getElementById("wr-rd-catalog-count");
+    if(label)label.textContent=`${count} von ${entries.length} Capabilities`;
   };
 
   proto._rdApplyCapabilityFilter = function() {
-    const state=this._rdState();const root=this.shadowRoot;
-    const select=root?.getElementById("wr-rd-capability");const input=root?.getElementById("wr-rd-capability-filter");if(!select||!input)return;
+    const state=this._rdState(),root=this.shadowRoot;
+    const select=root?.getElementById("wr-rd-capability"),input=root?.getElementById("wr-rd-capability-filter");
+    if(!select||!input)return;
     state.manual.capabilityFilter=input.value;
-    const needle=input.value.trim().toLocaleLowerCase("de-DE");
-    const rows=this._rdCapabilityEntries().filter(item=>!needle||item.uiNumber.includes(needle)||String(item.name||"").toLocaleLowerCase("de-DE").includes(needle)||String(item.id).toLocaleLowerCase("de-DE").includes(needle));
+    const rows=this._rdCapabilityEntries().filter(item=>this._rdMatchesManualFilter(item,input.value));
     const wanted=state.manual.capability||select.value;
     select.innerHTML=rows.map(item=>`<option value="${this._rdEsc(item.id)}" ${item.id===wanted?"selected":""}>${item.uiNumber} · ${this._rdEsc(item.name||item.id)} · ${this._rdEsc(item.id)}</option>`).join("");
     if(rows.some(item=>item.id===wanted))select.value=wanted;
     else if(rows.length){select.value=rows[0].id;state.manual.capability=rows[0].id;}
+    this._rdResetResolveUiOnSelectionChange(wanted,select.value||state.manual.capability);
+    this._rdMarkManualChanges();
+  };
+
+  proto._rdCurrentManualSnapshot = function() {
+    const manual=this._rdState().manual;
+    if(manual.contractVersion===3)return manual.combinedResult;
+    if(manual.contractVersion===2)return manual.v2Result;
+    return manual.v1Result;
+  };
+
+  proto._rdManualExportKey = function(snapshot) {
+    if(!snapshot||!snapshot.schema||!snapshot.captured_at)return "";
+    return [snapshot.schema,snapshot.test_id||"",snapshot.selected_capability||snapshot.capability||"",snapshot.captured_at].join("|");
+  };
+
+  proto._rdUpdateManualExportButtons = function() {
+    const root=this.shadowRoot,state=this._rdState(),manual=state.manual;
+    const targets=[
+      ["wr-rd-v2-export",manual.v2Result,"V2-Ergebnis · Export2Git"],
+      ["wr-rd-combined-export",manual.combinedResult,"V1 + V2 · Export2Git"],
+      ["wr-rd-manual-v1-export",manual.v1Result,"V1-Test · Export2Git"],
+      ["wr-rd-special-export",manual.specialResult,"Sondertest · Export2Git"],
+    ];
+    for(const [id,snapshot,label] of targets){
+      const button=root?.getElementById(id);
+      if(!button)continue;
+      const key=this._rdManualExportKey(snapshot),record=state.manualExportRecords?.[key];
+      const pending=state.manualExportPending===key;
+      button.disabled=Boolean(state.exportBusy)||snapshot?.status==="not_supported";
+      button.classList.toggle("is-exporting",pending);
+      button.classList.toggle("is-exported",record?.status==="ok");
+      button.classList.toggle("is-error",record?.status==="error");
+      button.textContent=pending?"Exportiere…":record?.status==="ok"?"✓ "+label:record?.status==="error"?"Export fehlgeschlagen · erneut versuchen":label;
+      button.title=record?.status==="ok"?(record.result?.path||"Export2Git bestätigt"):record?.message||"";
+      const feedback=root.getElementById(id+"-feedback");
+      if(feedback){
+        feedback.className="wr-rd-export-feedback "+(record?.status||"");
+        feedback.textContent=record?.status==="ok"
+          ?"✓ Git bestätigt · "+(record.result?.path||"Archivierung erfolgreich")
+          :record?.status==="error"?"Export2Git: "+(record.message||"Unbekannter Fehler")
+          :pending?"Übertragung läuft …":"";
+      }
+    }
   };
 
   proto._rdUpdateHeaderActions = function() {
-    const root=this.shadowRoot;const state=this._rdState();const disabled=!state.trace||state.exportBusy;
-    for(const id of ["wr-rd-head-copy","wr-rd-head-json","wr-rd-head-report","wr-rd-head-csv","wr-rd-head-git"]){const button=root?.getElementById(id);if(button)button.disabled=disabled;}
+    const root=this.shadowRoot,state=this._rdState();
+    const manual=this._rdCurrentManualSnapshot();
+    const manualKey=this._rdManualExportKey(manual);
+    const manualRecord=state.manualExportRecords?.[manualKey];
+    const currentManual=state.manual.contractVersion!==1&&Boolean(manual);
+    const copyAvailable=Boolean(state.manual.contractVersion===1?(state.trace||manual):manual);
+    for(const id of ["wr-rd-head-copy","wr-rd-head-json","wr-rd-head-report"]){
+      const button=root?.getElementById(id);
+      if(button)button.disabled=!copyAvailable||state.exportBusy;
+    }
+    const csv=root?.getElementById("wr-rd-head-csv");
+    if(csv)csv.disabled=!state.trace||state.manual.contractVersion!==1||state.exportBusy;
+    const git=root?.getElementById("wr-rd-head-git");
+    const gitAvailable=state.manual.contractVersion===1?(state.trace||manual):manual;
+    if(git)git.disabled=!gitAvailable||state.exportBusy||manual?.status==="not_supported";
     const status=root?.getElementById("wr-rd-head-status");
     if(status){
       status.textContent=state.exportMessage||"";
       status.className=`wr-rd-head-status ${state.exportKind||"muted"}`;
     }
-    const git=root?.getElementById("wr-rd-head-git");
     if(git){
       const currentTraceId=state.trace?.meta?.trace_id||null;
-      const exportedCurrentTrace=Boolean(
-        state.gitExportResult
-        && state.gitExportedTraceId
-        && currentTraceId
-        && state.gitExportedTraceId===currentTraceId
-      );
-      git.textContent=state.exportBusy
-        ?"Git-Export …"
-        :exportedCurrentTrace
-          ?"✓ In Git"
-          :"Nach Git übertragen";
-      git.classList.toggle("wr-rd-git-exported",exportedCurrentTrace);
-      git.title=exportedCurrentTrace
-        ?("Aktueller Trace nach Git exportiert"+(state.gitExportResult?.path?" · "+state.gitExportResult.path:""))
-        :"Aktuellen Trace nach Git übertragen";
+      const exportedTrace=Boolean(state.gitExportResult&&state.gitExportedTraceId&&currentTraceId&&state.gitExportedTraceId===currentTraceId);
+      const exported=state.manual.contractVersion!==1?manualRecord?.status==="ok":exportedTrace;
+      git.textContent=state.exportBusy?"Exportiere…":exported?"✓ Export2Git":"Export2Git";
+      git.classList.toggle("wr-rd-git-exported",Boolean(exported));
+      git.title=exported?(currentManual?manualRecord?.result?.path:state.gitExportResult?.path)||"Git-Export bestätigt":"Aktuelles Ergebnis nach Export2Git übertragen";
     }
   };
 
@@ -561,7 +838,14 @@ if (!proto.__weatherRouterRoutingDiagnosticsEnhanced) {
     const timeline=root.getElementById("wr-rd-timeline-required");if(timeline)timeline.checked=false;
     this._rdRenderManualContext(state.manual.context);
 
+    // P0-070 fault injection belongs to V1 routing; do not arm a V2-only resolve.
+    if (state.manual.contractVersion!==1) {
+      state.message="P0-070: Bitte Consumer V1 wählen. Für V2 oder V1+V2 wird keine Fehlerprobe aktiviert.";
+      state.messageKind="error";this._rdRenderMessageOnly();return;
+    }
+    state.manual.specialResult=null;
     state.message="P0-070 Fehlerprobe wird vorbereitet …";state.messageKind="muted";this._rdRenderMessageOnly();
+    const previousManualResult=state.manualResult;
     try{
       await this._hass.callWS({
         type:"weather_router/routing_diagnostic_fault_arm",
@@ -572,17 +856,167 @@ if (!proto.__weatherRouterRoutingDiagnosticsEnhanced) {
       state.message=`P0-070 Fehlerprobe aktiv: ${mode} · nächster Resolve nutzt Deutschland + weather.precipitation.layer.`;
       state.messageKind="muted";this._rdRenderMessageOnly();
       await this._rdResolve();
+      const response=state.manualResult;
+      if (!response || response===previousManualResult) {
+        throw new Error("Kein neues V1-Resolve-Ergebnis nach Fault-Injection belegt");
+      }
+      state.manual.specialResult={schema:"weather_router.manual_test.special.v1",test_id:"P0-070",
+        capability:"weather.precipitation.layer",contract_version:1,status:response.status||"response_received",
+        captured_at:new Date().toISOString(),fault_mode:mode,query:{type:"weather_router/routing_diagnostic_fault_arm",
+          provider_id:"dwd",capability_id:"radar_precipitation_quality_checked",mode},response};
+      this._rdRender();
     }catch(error){
+      state.manual.specialResult={schema:"weather_router.manual_test.special.v1",test_id:"P0-070",
+        capability:"weather.precipitation.layer",contract_version:1,status:"error",captured_at:new Date().toISOString(),
+        fault_mode:mode,error:{message:String(error?.message||error)}};
       state.message=`P0-070 Fehlerprobe fehlgeschlagen: ${error?.message||String(error)}`;
       state.messageKind="error";this._rdRender();
     }
+  };
+
+  proto._rdResolveV2 = async function(capability) {
+    const state=this._rdState();
+    const route=V2_TEST_ROUTES[capability];
+    if(!route) {
+      state.manual.v2Result={schema:"weather_router.manual_test.v2",contract_version:2,
+        test_id:this._rdCapabilityEntries().find(item=>item.id===capability)?.uiNumber||null,
+        selected_capability:capability,status:"not_supported",request:null,response:null,
+        captured_at:new Date().toISOString()};
+      state.message="V2 für diese Capability: not_supported · keine WebSocket-Anfrage gesendet.";
+      state.messageKind="muted";this._rdRender();return;
+    }
+    const context=this._rdBuildContext();
+    if(context.type!=="bbox"){
+      state.message="V2-Test benötigt einen Bounding-Box-Kontext. Bitte BBox auswählen.";
+      state.messageKind="error";
+      this._rdRenderMessageOnly();
+      return;
+    }
+    const bbox={west:context.west,east:context.east,south:context.south,north:context.north};
+    const profileId=String(this.shadowRoot?.getElementById("wr-rd-profile")?.value||"").trim();
+    const mosaic=route==="weather_router/consumer/resolve_mosaic";
+    const isAdvection=capability==="weather.temperature.advection_850hpa";
+    const query={
+      type:route,contract_version:2,
+      capability:isAdvection?"weather.temperature.field_2m":capability,
+      context:mosaic?{type:"bbox",...bbox}:{bbox},
+      time:mosaic?{mode:"latest_coherent",max_data_age_seconds:3600}:{mode:"latest"},
+    };
+    if(mosaic)query.limits={max_layers:4,max_tile_requests:64};
+    if(isAdvection)query.include_advection=true;
+    if(profileId)query.profile_id=profileId;
+    state.manual.v2Result=null;
+    state.manual.v2Request=query;
+    state.message="Consumer V2 wird abgefragt …";
+    state.messageKind="muted";
+    this._rdRenderMessageOnly();
+    try {
+      const result=await this._hass.callWS(query);
+      state.manual.v2Result={schema:"weather_router.manual_test.v2",contract_version:2,
+        test_id:this._rdCapabilityEntries().find(item=>item.id===capability)?.uiNumber||null,
+        selected_capability:capability,request:query,response:result,
+        captured_at:new Date().toISOString()};
+      state.message="V2: "+String(result?.status||"Antwort erhalten")+" · "+String(result?.unavailable?.code||"");
+      state.messageKind=result?.status==="ready"?"ok":"muted";
+    }catch(error) {
+      state.manual.v2Result={schema:"weather_router.manual_test.v2",contract_version:2,
+        test_id:this._rdCapabilityEntries().find(item=>item.id===capability)?.uiNumber||null,
+        selected_capability:capability,request:query,
+        error:{message:String(error?.message||error)},captured_at:new Date().toISOString()};
+      state.message="V2-Anfrage fehlgeschlagen: "+String(error?.message||error);
+      state.messageKind="error";
+    }
+    this._rdRender();
+  };
+
+  // Sequential opt-in comparison. A missing contract is SKIPPED, never FAILED.
+  proto._rdResolveCombined = async function(capability) {
+    const state=this._rdState();
+    const test=this._rdCapabilityEntries().find(item=>item.id===capability);
+    if(!test||test.unregistered)return;
+    const report={
+      schema:"weather_router.manual_test.combined.v1",
+      test_id:test.uiNumber,capability,contract_mode:"V1+V2",
+      captured_at:new Date().toISOString(),
+      v1:{status:"not_supported"},v2:{status:"not_supported"},
+    };
+    state.manual.combinedResult=null;
+    state.gitExportResult=null;
+    state.gitExportedTraceId=null;
+    state.message="V1 + V2: getrennte Prüfungen werden nacheinander ausgeführt …";
+    state.messageKind="muted";
+    this._rdRenderMessageOnly();
+    const isV1=state.capabilities.some(item=>item.id===capability);
+    if(!isV1 && MANUAL_TEST_LEGACY_IDS.includes(capability)) {
+      report.v1={status:"catalog_unavailable",reason:"Historical V1 capability absent from runtime discovery"};
+    }
+    if(isV1){
+      const root=this.shadowRoot;
+      const query={
+        type:"weather_router/consumer/resolve",contract_version:1,capability,
+        context:this._rdBuildContext(),time:{mode:"latest"},
+      };
+      const profile=String(root?.getElementById("wr-rd-profile")?.value||"").trim();
+      if(profile)query.profile_id=profile;
+      const resource=String(root?.getElementById("wr-rd-resource-type")?.value||"").trim();
+      const source=String(root?.getElementById("wr-rd-source-class")?.value||"").trim();
+      const age=String(root?.getElementById("wr-rd-max-age")?.value||"").trim();
+      const timeline=Boolean(root?.getElementById("wr-rd-timeline-required")?.checked);
+      const requirements={};
+      if(resource)requirements.resource_types=[resource];
+      if(source)requirements.source_classes=[source];
+      if(age)requirements.max_age_seconds=Math.max(0,Math.floor(Number(age)));
+      if(timeline)requirements.timeline_required=true;
+      if(Object.keys(requirements).length)query.requirements=requirements;
+      try{
+        const response=await this._hass.callWS(query);
+        report.v1={status:response?.status||"response_received",query,response};
+        state.manualResult=response;
+      }catch(error){
+        report.v1={status:"error",query,error:{message:String(error?.message||error)}};
+      }
+    }
+    if(V2_TEST_ROUTES[capability]){
+      await this._rdResolveV2(capability);
+      const result=state.manual.v2Result;
+      report.v2=result?.status==="not_supported"
+        ?{status:"not_supported"}
+        :result?.error
+        ?{status:"error",query:result.request,error:result.error}
+        :result?.response
+          ?{status:result.response.status||"response_received",query:result.request,response:result.response}
+          :{status:"error",error:{message:"V2-Ergebnis fehlt"}};
+    }
+    state.manual.combinedResult=report;
+    state.message="Test "+test.uiNumber+": V1 "+report.v1.status+" · V2 "+report.v2.status;
+    state.messageKind=report.v1.status==="error"||report.v2.status==="error"?"error":"ok";
+    this._rdRender();
   };
 
   proto._rdResolve = async function() {
     const state=this._rdState();const root=this.shadowRoot;this._rdCaptureManual();
     const capability=root?.getElementById("wr-rd-capability")?.value||state.manual.capability;
     if(!capability)return;
+    if(this._rdCapabilityEntries().find(item=>item.id===capability)?.unregistered){
+      state.message="Neue Capability ohne feste Testnummer: erst im append-only Testregister registrieren.";
+      state.messageKind="error";this._rdRenderMessageOnly();return;
+    }
     state.manual.capability=capability;
+    state.manual.v1Result=null;
+    if(state.manual.contractVersion===2)return this._rdResolveV2(capability);
+    if(state.manual.contractVersion===3)return this._rdResolveCombined(capability);
+    if(V2_ONLY_TESTS.some(([id])=>id===capability) && !state.capabilities.some(item=>item.id===capability)) {
+      state.manual.v1Result={schema:"weather_router.manual_test.v1",contract_version:1,
+        test_id:this._rdCapabilityEntries().find(item=>item.id===capability)?.uiNumber||null,
+        selected_capability:capability,status:"not_supported",request:null,response:null,
+        captured_at:new Date().toISOString()};
+      state.message="Consumer V1: not_supported · keine Anfrage gesendet.";
+      state.messageKind="muted";this._rdRender();return;
+    }
+    if(MANUAL_TEST_LEGACY_IDS.includes(capability) && !state.capabilities.some(item=>item.id===capability)) {
+      state.message="Historische V1-Capability in der aktuellen Discovery nicht vorhanden · keine Anfrage gesendet.";
+      state.messageKind="error";this._rdRenderMessageOnly();return;
+    }
     const resourceType=root?.getElementById("wr-rd-resource-type")?.value||"";
     const sourceClass=String(root?.getElementById("wr-rd-source-class")?.value||"").trim();
     const maxAgeRaw=String(root?.getElementById("wr-rd-max-age")?.value||"").trim();
@@ -599,9 +1033,13 @@ if (!proto.__weatherRouterRoutingDiagnosticsEnhanced) {
     if(timelineRequired)requirements.timeline_required=true;
     if(Object.keys(requirements).length)message.requirements=requirements;
     if(profileId)message.profile_id=profileId;
+    state.manual.v1Result=null;
     state.message="Resolve läuft …";state.messageKind="muted";this._rdRenderMessageOnly();
     try{
       state.manualResult=await this._hass.callWS(message);
+      state.manual.v1Result={schema:"weather_router.manual_test.v1",test_id:this._rdCapabilityEntries().find(item=>item.id===capability)?.uiNumber||null,
+        selected_capability:capability,contract_version:1,status:state.manualResult?.status||"response_received",
+        request:message,response:state.manualResult,captured_at:new Date().toISOString()};
       state.gitExportResult=null;
       state.gitExportedTraceId=null;
       state.exportMessage="Aktueller Resolve noch nicht nach Git übertragen.";
@@ -609,7 +1047,78 @@ if (!proto.__weatherRouterRoutingDiagnosticsEnhanced) {
       state.message=`Resolve: ${state.manualResult?.status||"?"} · ${state.manualResult?.unavailable?.code||state.manualResult?.routing?.reason_code||""}`;
       state.messageKind=state.manualResult?.status==="ready"?"ok":"muted";
       await this._rdRefresh(true);
-    }catch(error){state.message=error?.message||String(error);state.messageKind="error";this._rdRender();}
+    }catch(error){
+      state.manual.v1Result={schema:"weather_router.manual_test.v1",test_id:this._rdCapabilityEntries().find(item=>item.id===capability)?.uiNumber||null,
+        selected_capability:capability,contract_version:1,status:"error",request:message,
+        error:{message:String(error?.message||error)},captured_at:new Date().toISOString()};
+      state.message=error?.message||String(error);state.messageKind="error";this._rdRender();
+    }
+  };
+
+  // One UI request at a time. A received unavailable/partial is transport success.
+  const previousManualResolve=proto._rdResolve;
+  // A completed Resolve acknowledgement belongs to the capability that was actually tested.
+  // Switching to a different capability must never leave its button looking completed.
+  proto._rdResetResolveUiOnSelectionChange = function(previousCapability,nextCapability) {
+    const state=this._rdState();
+    if(String(previousCapability||"")===String(nextCapability||"")||state.resolveUi?.state==="running")return;
+    state.resolveUi={state:"idle",started:0,message:""};
+    this._rdResolveDisplayStatus();
+  };
+
+  proto._rdResolveDisplayStatus = function() {
+    const f=this._rdState().resolveUi||{state:"idle"};
+    const root=this.shadowRoot,btn=root?.getElementById("wr-rd-resolve");
+    if(!btn)return;
+    const pending=f.state==="running";
+    btn.disabled=pending;
+    btn.setAttribute("aria-busy",String(pending));
+    for(const cls of ["is-working","is-answered","is-failed"])btn.classList.remove(cls);
+    btn.classList.add(pending?"is-working":f.state==="answered"?"is-answered":f.state==="failed"?"is-failed":"primary");
+    btn.textContent=pending?"Resolve läuft …":f.state==="answered"?"✓ Antwort erhalten":f.state==="failed"?"✕ Anfragefehler":"Resolve testen";
+    const label=root?.getElementById("wr-rd-resolve-feedback");
+    if(label){
+      label.className="wr-rd-resolve-feedback"+(f.state==="answered"?" is-answered":f.state==="failed"?" is-failed":"");
+      label.textContent=pending?"Läuft seit "+Math.max(0,Math.floor((Date.now()-f.started)/1000))+" s …":String(f.message||"");
+    }
+    for(const input of root?.querySelectorAll("#wr-rd-manual-tests input,#wr-rd-manual-tests select,#wr-rd-manual-tests button[data-rd-manual-capability],#wr-rd-manual-tests #wr-rd-map,#wr-rd-manual-tests #wr-rd-trace-context,#wr-rd-manual-tests #wr-rd-create-p0060-profiles,#wr-rd-manual-tests #wr-rd-run-p0070-fault")||[]){
+      if(pending){
+        if(!input.hasAttribute("data-rd-was-disabled"))input.setAttribute("data-rd-was-disabled",input.disabled?"1":"0");
+        input.disabled=true;
+      }else if(input.hasAttribute("data-rd-was-disabled")){
+        input.disabled=input.getAttribute("data-rd-was-disabled")==="1";
+        input.removeAttribute("data-rd-was-disabled");
+      }
+    }
+  };
+  proto._rdResolve = async function() {
+    const state=this._rdState();
+    if(state.resolveUi?.state==="running")return;
+    this._rdCaptureManual();
+    const mode=state.manual.contractVersion;
+    const originalCapability=state.manual.capability;
+    state.resolveUi={state:"running",started:Date.now(),message:""};
+    this._rdResolveDisplayStatus();
+    const interval=setInterval(()=>this._rdResolveDisplayStatus(),350);
+    try{
+      await previousManualResolve.call(this);
+      const result=mode===3?state.manual.combinedResult:mode===2?state.manual.v2Result:state.manual.v1Result;
+      const failure=!result||Boolean(result.error)||["error","not_supported"].includes(result.status)||
+        (mode===3&&(result.v1?.status==="error"||result.v2?.status==="error"));
+      if(failure){
+        const reason=result?.error?.message||result?.v1?.error?.message||result?.v2?.error?.message||state.message||"Kein gültiges WS-Ergebnis";
+        state.resolveUi={state:"failed",capability:originalCapability,message:String(reason)};
+      }else{
+        const detail=mode===3?"V1 "+(result.v1?.status||"?")+" · V2 "+(result.v2?.status||"?"):
+          String(result.response?.status||result.status||"empfangen");
+        state.resolveUi={state:"answered",capability:originalCapability,message:"Fachlicher Status: "+detail+" · "+originalCapability};
+      }
+    }catch(error){
+      state.resolveUi={state:"failed",capability:originalCapability,message:String(error?.message||error)};
+    }finally{
+      clearInterval(interval);
+      this._rdResolveDisplayStatus();
+    }
   };
 
   proto._rdCompare = async function() {
@@ -671,6 +1180,8 @@ if (!proto.__weatherRouterRoutingDiagnosticsEnhanced) {
     }
 
     this._rdUpdateHeaderActions();
+    this._rdResolveDisplayStatus();
+    this._rdUpdateManualExportButtons();
     const status=this.shadowRoot?.getElementById("wr-rd-export-status");
     if(status){
       status.textContent=message||"";
@@ -695,13 +1206,17 @@ if (!proto.__weatherRouterRoutingDiagnosticsEnhanced) {
   };
 
   proto._rdCopy = async function(compact=false) {
-    const trace=this._rdState().trace;
+    const state=this._rdState();
+    const trace=state.manual.contractVersion!==1
+      ?this._rdCurrentManualSnapshot()
+      :(state.trace||this._rdCurrentManualSnapshot());
     if(!trace){
-      this._rdSetExportStatus("Kein Routingtrace zum Kopieren vorhanden.","error");
+      this._rdSetExportStatus("Kein Test-/Routing-Ergebnis zum Kopieren vorhanden.","error");
       return;
     }
     this._rdSetExportStatus("Kopieren …","muted",true);
-    const text=compact?this._rdCompactText(trace):JSON.stringify(trace,null,2);
+    const text=compact&&trace.schema==="weather_router.routing_diagnostic.v1"
+      ?this._rdCompactText(trace):JSON.stringify(trace,null,2);
     const ok=await this._rdCopyText(text);
     this._rdSetExportStatus(
       ok
@@ -729,9 +1244,14 @@ if (!proto.__weatherRouterRoutingDiagnosticsEnhanced) {
   };
 
   proto._rdDownload = function(kind="json") {
-    const trace=this._rdState().trace;
+    const state=this._rdState();
+    const trace=kind==="csv"?state.trace:(
+      state.manual.contractVersion!==1
+        ?this._rdCurrentManualSnapshot()
+        :state.trace||this._rdCurrentManualSnapshot()
+    );
     if(!trace){
-      this._rdSetExportStatus("Kein Routingtrace zum Herunterladen vorhanden.","error");
+      this._rdSetExportStatus("Kein geeignetes Test-/Routing-Ergebnis zum Herunterladen vorhanden.","error");
       return;
     }
 
@@ -770,8 +1290,94 @@ if (!proto.__weatherRouterRoutingDiagnosticsEnhanced) {
     }
   };
 
+  // One verified archive write per executed result; duplicate clicks do not re-upload.
+  proto._rdExportManualSnapshot = async function(report,label) {
+    const state=this._rdState();
+    if(!report||report.status==="not_supported"||typeof this._wrGitExportSnapshot!=="function"){
+      this._rdSetExportStatus("Kein ausführbares "+label+"-Ergebnis für Export2Git.","error");
+      return;
+    }
+    const key=this._rdManualExportKey(report);
+    if(!key){
+      this._rdSetExportStatus("Testergebnis ohne gültige Kennung/Zeitpunkt.","error");
+      return;
+    }
+    const prior=state.manualExportRecords?.[key];
+    if(prior?.status==="ok"){
+      this._rdSetExportStatus("✓ Bereits in Export2Git: "+(prior.result?.path||label),"ok");
+      this._rdResolveDisplayStatus();
+    this._rdUpdateManualExportButtons();
+      return prior.result;
+    }
+    if(state.exportBusy)return;
+    state.manualExportPending=key;
+    this._rdSetExportStatus(label+" · Export2Git läuft …","muted",true);
+    this._rdResolveDisplayStatus();
+    this._rdUpdateManualExportButtons();
+    try{
+      const result=await this._wrGitExportSnapshot(report,{
+        onConfigure:()=>this._rdSetExportStatus("Git-Konfiguration erforderlich.","muted"),
+        onStart:()=>this._rdSetExportStatus(label+" · Übertrage nach Export2Git …","muted",true),
+        onSuccess:confirmed=>{
+          if(!confirmed?.path)return;
+          state.manualExportRecords[key]={status:"ok",result:confirmed};
+          state.manualExportPending=null;
+          this._rdSetExportStatus("✓ "+label+" · Export2Git bestätigt: "+confirmed.path,"ok",false);
+        },
+        onError:error=>{
+          const message=String(error?.message||error);
+          state.manualExportRecords[key]={status:"error",message};
+          state.manualExportPending=null;
+          this._rdSetExportStatus(label+" · Export fehlgeschlagen: "+message,"error",false);
+        },
+      });
+      if(result?.pending_configuration){
+        state.manualExportPending=null;
+        this._rdSetExportStatus("Git-Konfiguration erforderlich; Export noch nicht bestätigt.","muted");
+        return;
+      }
+      if(!result||!result.path){
+        throw Error("Keine Git-Pfadbestätigung vom Export2Git-Server");
+      }
+      state.manualExportRecords[key]={status:"ok",result};
+      state.manualExportPending=null;
+      this._rdSetExportStatus("✓ "+label+" · Export2Git bestätigt: "+result.path,"ok",false);
+      return result;
+    }catch(error){
+      const message=String(error?.message||error);
+      state.manualExportRecords[key]={status:"error",message};
+      state.manualExportPending=null;
+      this._rdSetExportStatus(label+" · Export fehlgeschlagen: "+message,"error",false);
+    }finally{
+      state.manualExportPending=null;
+      state.exportBusy=false;
+      this._rdUpdateHeaderActions();
+      this._rdResolveDisplayStatus();
+    this._rdUpdateManualExportButtons();
+    }
+  };
+
+  proto._rdExportManualV1 = async function() {
+    return this._rdExportManualSnapshot(this._rdState().manual.v1Result,"V1-Test");
+  };
+
+  proto._rdExportSpecial = async function() {
+    return this._rdExportManualSnapshot(this._rdState().manual.specialResult,"P0-Sondertest");
+  };
+
   proto._rdGitExport = async function() {
     const state=this._rdState();
+    if(state.manual.contractVersion===1 && state.manual.v1Result?.status==="not_supported") {
+      this._rdSetExportStatus("V1 not_supported: kein ausgeführter Test, kein Trace-Export.","muted");return;
+    }
+    if(state.manual.contractVersion===2||state.manual.contractVersion===3){
+      const snapshot=this._rdCurrentManualSnapshot();
+      return this._rdExportManualSnapshot(snapshot,state.manual.contractVersion===3?"V1+V2-Test":"V2-Test");
+    }
+    if(!state.trace&&state.manual.v1Result){
+      return this._rdExportManualV1();
+    }
+
     const manualCapability=String(
       this.shadowRoot?.getElementById("wr-rd-capability")?.value
       || state.manual.capability
@@ -910,6 +1516,7 @@ if (!proto.__weatherRouterRoutingDiagnosticsEnhanced) {
     const compactMobile=Boolean(window.matchMedia?.("(max-width:900px)")?.matches);
     const selectedCapability=state.manual.capability||request.capability||capabilities.find(x=>x.id==="weather.precipitation.layer")?.id||capabilities.find(x=>x.id==="weather.radar.precipitation")?.id||capabilities[0]?.id||"";
     state.manual.capability=selectedCapability;
+    if(!state.manual.initialSnapshot)state.manual.initialSnapshot=this._rdManualSnapshot(state.manual);
     const traceMeta=trace?.meta||{};
     const context=trace?.context||{};
     const coverage=trace?.coverage||[];
@@ -927,12 +1534,35 @@ if (!proto.__weatherRouterRoutingDiagnosticsEnhanced) {
       </div>
       <div id="wr-rd-message" class="wr-rd-message ${state.messageKind}">${this._rdEsc(state.message||"")}</div>
 
-      ${this._rdFold("Manuelle Testanfrage","keine Providerwahl · erzeugt einen echten Consumer-V1-Resolve",`
-        <div class="wr-rd-manual-grid">
+      ${this._rdFold("Manuelle Testanfrage","◆ 237 historische Tests · V1 / V2 / gemeinsam",`
+        <div class="wr-rd-subsection"><div class="wr-rd-section-heading">Consumer-Vertrag und Testmodus</div>
+        <label for="wr-rd-contract-version" style="display:block;margin-bottom:10px">Consumer-Vertrag
+          <select id="wr-rd-contract-version" style="min-height:42px;width:100%">
+            <option value="1" ${state.manual.contractVersion===1?"selected":""}>Consumer V1</option>
+            <option value="2" ${state.manual.contractVersion===2?"selected":""}>Consumer V2</option>
+            <option value="3" ${state.manual.contractVersion===3?"selected":""}>V1 + V2 gemeinsam</option>
+          </select>
+        </label></div>
+        <details id="wr-rd-catalog-fold" class="wr-rd-fold wr-rd-catalog-fold" ${state.manual.catalogOpen?"open":""}>
+          <summary><strong>Identische nummerierte Capability-Liste (${capabilities.length})</strong><span class="wr-rd-muted">Suchen · auf-/zuklappen</span></summary>
+          <div class="wr-rd-fold-body">
+          <p class="wr-rd-muted">Eine feste Testnummer pro Capability. Fehlende Vertragswege werden übersprungen; die Nummerierung bleibt unverändert.</p>
+          <input id="wr-rd-catalog-search" class="wr-rd-catalog-search" type="search" placeholder="Nummer, Teilstring oder Muster: weather.*.precipitation" value="${this._rdEsc(state.manual.catalogSearch||"")}" aria-label="Nummerierte Capability-Liste durchsuchen">
+          <div id="wr-rd-catalog-count" class="wr-rd-muted" aria-live="polite">${capabilities.length} von ${capabilities.length} Capabilities</div>
+          <div id="wr-rd-manual-catalog" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:6px;max-height:320px;overflow:auto;overscroll-behavior:contain">
+            ${capabilities.map(item=>`<button type="button" data-rd-manual-capability="${this._rdEsc(item.id)}" aria-label="Capability ${item.uiNumber}: ${this._rdEsc(item.name||item.id)}" style="text-align:left;white-space:normal;overflow-wrap:anywhere;min-height:40px">${item.uiNumber} · ${this._rdEsc(item.name||item.id)}<small style="display:block;opacity:.7">${this._rdEsc(item.id)} · ${item.unregistered?"Neue Test-ID erforderlich":item.catalogUnavailable?"Historisch registriert · aktuell nicht in V1-Discovery":state.manual.contractVersion===2?(V2_TEST_ROUTES[item.id]?"V2 unterstützt":"V2 nicht verfügbar"):state.manual.contractVersion===3?(item.v2Only?"V1 überspringen · V2 prüfen":V2_TEST_ROUTES[item.id]?"V1 und V2 prüfen":"V1 prüfen · V2 überspringen"):(item.v2Only?"V1 nicht verfügbar":"V1 unterstützt")}</small></button>`).join("")||"<span class=\"wr-rd-muted\">Noch keine Capabilities geladen.</span>"}
+          </div>
+          </div>
+        </details>
+        <div class="wr-rd-subsection"><div class="wr-rd-section-heading">Capability-Suche und Auswahl</div><div class="wr-rd-manual-grid">
           <label>Capability suchen<input id="wr-rd-capability-filter" class="wr-rd-cap-search" value="${this._rdEsc(state.manual.capabilityFilter||"")}" placeholder="Nr., Name oder ID"></label>
           <label>Capability<select id="wr-rd-capability">${capabilities.map(item=>`<option value="${this._rdEsc(item.id)}" ${item.id===selectedCapability?"selected":""}>${item.uiNumber} · ${this._rdEsc(item.name||item.id)} · ${this._rdEsc(item.id)}</option>`).join("")}</select></label>
+        </div></div>
+        <div class="wr-rd-subsection"><div class="wr-rd-section-heading">Räumlicher Kontext und Preset</div><div class="wr-rd-manual-grid">
           <label>Context<select id="wr-rd-context-type"><option value="bbox" ${state.manual.context?.type==="bbox"?"selected":""}>bbox</option><option value="point" ${state.manual.context?.type==="point"?"selected":""}>point</option><option value="global" ${state.manual.context?.type==="global"?"selected":""}>global</option></select></label>
           <label>Preset<select id="wr-rd-preset"><option value="">— Preset —</option>${Object.entries(PRESETS).map(([key,p])=>`<option value="${key}" ${state.manual.preset===key?"selected":""}>${this._rdEsc(p.label)}</option>`).join("")}</select></label>
+        </div></div>
+        <div class="wr-rd-subsection"><div class="wr-rd-section-heading">Optionale Anforderungen und Profil</div><div class="wr-rd-manual-grid">
           <label>Requirement Resource<select id="wr-rd-resource-type"><option value="" ${!state.manual.resourceType?"selected":""}>kein Zwang</option><option value="raster_tile" ${state.manual.resourceType==="raster_tile"?"selected":""}>raster_tile</option><option value="value" ${state.manual.resourceType==="value"?"selected":""}>value</option><option value="event_feed" ${state.manual.resourceType==="event_feed"?"selected":""}>event_feed</option><option value="hazard_feed" ${state.manual.resourceType==="hazard_feed"?"selected":""}>hazard_feed</option><option value="data_file" ${state.manual.resourceType==="data_file"?"selected":""}>data_file</option><option value="image_sequence" ${state.manual.resourceType==="image_sequence"?"selected":""}>image_sequence</option><option value="live_stream" ${state.manual.resourceType==="live_stream"?"selected":""}>live_stream</option><option value="planetary_tile" ${state.manual.resourceType==="planetary_tile"?"selected":""}>planetary_tile</option></select></label>
           <label>Source-Class<input id="wr-rd-source-class" value="${this._rdEsc(state.manual.sourceClass||"")}" placeholder="optional · observation" style="width:100%;min-height:34px"></label>
           <label>max_age_seconds<input id="wr-rd-max-age" type="number" min="0" step="1" value="${this._rdEsc(state.manual.maxAgeSeconds||"")}" placeholder="optional" style="width:100%;min-height:34px"></label>
@@ -943,13 +1573,13 @@ if (!proto.__weatherRouterRoutingDiagnosticsEnhanced) {
             ${state.manual.profileId && !(state.profiles||[]).some(profile=>profile.id===state.manual.profileId)?`<option value="${this._rdEsc(state.manual.profileId)}" selected>${this._rdEsc(state.manual.profileId)} · nicht im aktuellen Profilkatalog</option>`:""}
           </select></label>
         </div>
-        <div class="wr-rd-profile-testbox" style="margin-top:8px">
-          <strong>P0-060 Profiltests</strong>
+        <details id="wr-rd-p0060-fold" class="wr-rd-profile-testbox" style="margin-top:8px" ${state.manual.p0060Open?"open":""}>
+          <summary>P0-060 Profiltests</summary>
           <div class="wr-rd-muted" style="margin:4px 0 8px">Legt die fünf reservierten Testprofile an bzw. aktualisiert sie. Danach stehen sie direkt in der Profilauswahl oben.</div>
           <button id="wr-rd-create-p0060-profiles" type="button">P0-060-Testprofile anlegen / aktualisieren</button>
-        </div>
-        <div class="wr-rd-profile-testbox" style="margin-top:8px">
-          <strong>P0-070 Fehler-/Ausfall-Fallback</strong>
+        </details>
+        <details id="wr-rd-p0070-fold" class="wr-rd-profile-testbox" style="margin-top:8px" ${state.manual.p0070Open?"open":""}>
+          <summary>P0-070 Fehler-/Ausfall-Fallback</summary>
           <div class="wr-rd-muted" style="margin:4px 0 8px">Admin-only · einmalig für den nächsten manuellen Resolve · Ziel: DWD quality-checked in Deutschland. Normales Routing bleibt unverändert.</div>
           <label>Fehlerprobe
             <select id="wr-rd-p0070-fault">
@@ -959,11 +1589,35 @@ if (!proto.__weatherRouterRoutingDiagnosticsEnhanced) {
             </select>
           </label>
           <button id="wr-rd-run-p0070-fault" type="button" style="margin-top:8px">P0-070 Fehlerprobe + Resolve starten</button>
-        </div>
-        <div id="wr-rd-context-fields" class="wr-rd-context-grid" style="margin-top:8px"></div>
-        <div class="wr-rd-actions" style="margin-top:8px"><button id="wr-rd-trace-context" type="button" ${trace?"":"disabled"}>Kontext aus Trace übernehmen</button><button id="wr-rd-map" type="button">Aktuellen Kartenausschnitt testen</button><button id="wr-rd-resolve" class="primary" type="button">Resolve testen</button></div>
-      `,false)}
+        </details>
+        ${state.manual.specialResult ? `<div class="wr-rd-card">
+          <strong>Sondertest ${this._rdEsc(state.manual.specialResult.test_id)} · ${this._rdEsc(state.manual.specialResult.status)}</strong>
+          <pre class="wr-rd-pre" style="max-height:260px;overflow:auto;white-space:pre-wrap">${this._rdJson(state.manual.specialResult)}</pre>
+          <button id="wr-rd-special-export" class="wr-rd-export-button" type="button">Sondertest-Ergebnis · Export2Git</button><div id="wr-rd-special-export-feedback" class="wr-rd-export-feedback" role="status"></div>
+        </div>` : ""}
+        <div class="wr-rd-subsection"><div class="wr-rd-section-heading">Koordinaten</div>
+        <div id="wr-rd-context-fields" class="wr-rd-context-grid" style="margin-top:8px"></div></div>
+        <div class="wr-rd-subsection"><div class="wr-rd-section-heading">Testaktionen</div><div class="wr-rd-actions" style="margin-top:8px"><button id="wr-rd-trace-context" type="button" ${trace?"":"disabled"}>Kontext aus Trace übernehmen</button><button id="wr-rd-map" type="button">Aktuellen Kartenausschnitt testen</button><button id="wr-rd-resolve" class="primary wr-rd-resolve-control" type="button">Resolve testen</button></div><div id="wr-rd-resolve-feedback" class="wr-rd-resolve-feedback" aria-live="polite" role="status"></div></div>
+      `,true).replace('<details class="wr-rd-fold"','<details class="wr-rd-fold wr-rd-manual-highlight" id="wr-rd-manual-tests"')}
 
+      ${state.manual.contractVersion===1 && state.manual.v1Result ? `
+        <div class="wr-rd-card">
+          <strong>Consumer V1 · Nr. ${this._rdEsc(state.manual.v1Result.test_id||"—")} · ${this._rdEsc(state.manual.v1Result.status)}</strong>
+          <pre class="wr-rd-pre" style="max-height:260px;overflow:auto;white-space:pre-wrap">${this._rdJson(state.manual.v1Result)}</pre>
+          ${state.manual.v1Result.status!=="not_supported" ? `<button id="wr-rd-manual-v1-export" class="wr-rd-export-button" type="button">V1-Test · Export2Git</button><div id="wr-rd-manual-v1-export-feedback" class="wr-rd-export-feedback" role="status"></div>` : ""}
+        </div>` : ""}
+      ${state.manual.contractVersion===3 && state.manual.combinedResult ? `
+        <div class="wr-rd-card">
+          <strong>Gemeinsames Testergebnis · Nr. ${this._rdEsc(state.manual.combinedResult.test_id)}</strong>
+          <pre class="wr-rd-pre" style="max-height:320px;overflow:auto;white-space:pre-wrap">${this._rdJson(state.manual.combinedResult)}</pre>
+          <button id="wr-rd-combined-export" class="wr-rd-export-button" type="button">V1 + V2 · gemeinsamer Export2Git</button><div id="wr-rd-combined-export-feedback" class="wr-rd-export-feedback" role="status"></div>
+        </div>` : ""}
+      ${state.manual.contractVersion===2 && state.manual.v2Result ? `
+        <div class="wr-rd-card">
+          <strong>Letztes Consumer-V2-Testergebnis · Nr. ${this._rdEsc(state.manual.v2Result.test_id||"—")}</strong>
+          <pre class="wr-rd-pre" style="max-height:320px;overflow:auto;white-space:pre-wrap">${this._rdJson(state.manual.v2Result)}</pre>
+          <button id="wr-rd-v2-export" class="wr-rd-export-button" type="button">V2-Ergebnis · Export2Git</button><div id="wr-rd-v2-export-feedback" class="wr-rd-export-feedback" role="status"></div>
+        </div>` : ""}
       ${trace?`
         <div class="wr-rd-summary-grid">
           <div class="wr-rd-card"><small>Trace</small><strong>${this._rdEsc(traceMeta.trace_id||"")}</strong></div>
@@ -1012,11 +1666,37 @@ if (!proto.__weatherRouterRoutingDiagnosticsEnhanced) {
     body.querySelector("#wr-rd-refresh")?.addEventListener("click",()=>void this._rdRefresh(false));
     body.querySelector("#wr-rd-live")?.addEventListener("change",e=>void this._rdSetLive(e.target.checked));
     body.querySelector("#wr-rd-clear")?.addEventListener("click",()=>void this._rdClear());
+    body.querySelector("#wr-rd-p0060-fold")?.addEventListener("toggle",event=>{state.manual.p0060Open=event.target.open;});
+    body.querySelector("#wr-rd-p0070-fold")?.addEventListener("toggle",event=>{state.manual.p0070Open=event.target.open;});
     body.querySelector("#wr-rd-create-p0060-profiles")?.addEventListener("click",()=>void this._rdEnsureP0060Profiles());
     body.querySelector("#wr-rd-p0070-fault")?.addEventListener("change",e=>{state.manual.faultMode=e.target.value;});
     body.querySelector("#wr-rd-run-p0070-fault")?.addEventListener("click",()=>void this._rdRunP0070FaultTest());
+    body.querySelectorAll("[data-rd-manual-capability]").forEach(button => button.addEventListener("click", () => {
+      const selected=button.getAttribute("data-rd-manual-capability");
+      if (!this._rdCapabilityEntries().some(item=>item.id===selected)) return;
+      this._rdResetResolveUiOnSelectionChange(state.manual.capability,selected);
+      state.manual.capability=selected;
+      state.manual.v2Result=null;
+      state.manual.combinedResult=null;
+      state.manual.capabilityFilter="";
+      const search=body.querySelector("#wr-rd-capability-filter");
+      if(search) search.value="";
+      this._rdApplyCapabilityFilter();
+      const select=body.querySelector("#wr-rd-capability");
+      if(select) select.value=selected;
+      select?.scrollIntoView({block:"center",behavior:"smooth"});
+    }));
+    body.querySelector("#wr-rd-contract-version")?.addEventListener("change", event => {
+      const newVersion=[1,2,3].includes(Number(event.target.value))?Number(event.target.value):1;
+      if(state.manual.contractVersion!==newVersion && state.resolveUi?.state!=="running")state.resolveUi={state:"idle",started:0,message:""};
+      state.manual.contractVersion=newVersion;
+      state.manual.v2Result=null;
+      state.manual.v2Request=null;
+      state.manual.combinedResult=null;
+      this._rdRender();
+    });
     body.querySelector("#wr-rd-capability-filter")?.addEventListener("input",()=>this._rdApplyCapabilityFilter());
-    body.querySelector("#wr-rd-capability")?.addEventListener("change",e=>{state.manual.capability=e.target.value;});
+    body.querySelector("#wr-rd-capability")?.addEventListener("change",e=>{this._rdResetResolveUiOnSelectionChange(state.resolveUi?.capability||state.manual.v2Result?.selected_capability||state.manual.v1Result?.selected_capability||state.manual.capability,e.target.value);state.manual.capability=e.target.value;state.manual.v2Result=null;state.manual.combinedResult=null;});
     body.querySelector("#wr-rd-context-type")?.addEventListener("change",()=>this._rdRenderManualContext());
     body.querySelector("#wr-rd-preset")?.addEventListener("change",e=>this._rdPreset(e.target.value));
     body.querySelector("#wr-rd-trace-context")?.addEventListener("click",()=>this._rdUseTraceContext());
@@ -1026,13 +1706,34 @@ if (!proto.__weatherRouterRoutingDiagnosticsEnhanced) {
     body.querySelector("#wr-rd-copy-json")?.addEventListener("click",()=>void this._rdCopy(false));
     body.querySelector("#wr-rd-download-json")?.addEventListener("click",()=>this._rdDownload("json"));
     body.querySelector("#wr-rd-download-csv")?.addEventListener("click",()=>this._rdDownload("csv"));
+    body.querySelector("#wr-rd-v2-export")?.addEventListener("click",()=>void this._rdGitExport());
+    body.querySelector("#wr-rd-manual-v1-export")?.addEventListener("click",()=>void this._rdExportManualV1());
+    body.querySelector("#wr-rd-combined-export")?.addEventListener("click",()=>void this._rdGitExport());
+    body.querySelector("#wr-rd-special-export")?.addEventListener("click",()=>void this._rdExportSpecial());
     body.querySelector("#wr-rd-git")?.addEventListener("click",()=>void this._rdGitExport());
     body.querySelector("#wr-rd-compare-a")?.addEventListener("change",e=>{state.compareA=e.target.value;});
     body.querySelector("#wr-rd-compare-b")?.addEventListener("change",e=>{state.compareB=e.target.value;});
     body.querySelector("#wr-rd-compare")?.addEventListener("click",()=>void this._rdCompare());
     this._rdRenderManualContext(state.manual.context);
     this._rdApplyCapabilityFilter();
+    this._rdApplyCatalogSearch();
+    // Capture before individual handlers re-render, keeping the immutable opening baseline.
+    for(const type of ["input","change"]){
+      body.addEventListener(type,event=>{
+        const control=event.target;
+        if(control?.id?.startsWith("wr-rd-") && control.closest("#wr-rd-manual-tests")){
+          this._rdCaptureManual();
+          this._rdMarkManualChanges();
+        }
+      },true);
+    }
+    this._rdMarkManualChanges();
+    body.querySelector("#wr-rd-catalog-search")?.addEventListener("input",()=>this._rdApplyCatalogSearch());
+    body.querySelector("#wr-rd-catalog-fold")?.addEventListener("toggle",event=>{state.manual.catalogOpen=event.target.open;});
     this._rdUpdateHeaderActions();
+    this._rdResolveDisplayStatus();
+    this._rdUpdateManualExportButtons();
+    this._rdMarkManualChanges();
     this._rdOrganizeDiagnosticHub();
   };
 

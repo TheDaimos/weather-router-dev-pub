@@ -223,8 +223,8 @@ def _parse_iso_time(value: Any) -> datetime | None:
         parsed = datetime.fromisoformat(value.strip().replace("Z", "+00:00"))
     except ValueError:
         return None
-    if parsed.tzinfo is None:
-        parsed = parsed.replace(tzinfo=timezone.utc)
+    if parsed.tzinfo is None or parsed.utcoffset() is None:
+        return None
     return parsed.astimezone(timezone.utc)
 
 
@@ -344,7 +344,7 @@ def _parse_jma_warning_report(payload: bytes) -> tuple[dict[str, Any], list[dict
                 "status": "actual",
                 "message_type": str(meta.get("info_type") or "alert"),
                 "sent": meta.get("report_time") or meta.get("control_time"),
-                "effective": meta.get("target_time") or meta.get("report_time"),
+                "effective": meta.get("target_time"),
                 "onset": _jma_child_text(first_height, "ArrivalTime"),
                 "expires": None,
                 "ends": None,
@@ -437,7 +437,7 @@ def _parse_jma_observation_report(
                     "status": "actual",
                     "message_type": str(meta.get("info_type") or "update"),
                     "sent": meta.get("report_time") or meta.get("control_time"),
-                    "effective": first_time or max_time or meta.get("report_time"),
+                    "effective": first_time or max_time,
                     "onset": first_time,
                     "expires": None,
                     "ends": None,
@@ -573,7 +573,8 @@ class JmaProvider:
         if not (20.0 <= lat <= 50.0 and 120.0 <= lon <= 155.0):
             return _empty_result(requested, "Koordinate liegt außerhalb Japans.")
 
-        session = async_get_clientsession(hass)
+        from ..diagnostic_center import observed_clientsession
+        session = observed_clientsession(hass, "jma", async_get_clientsession(hass))
         async with session.get(_FORECAST_AREA_URL, headers={"Accept": "application/json"}, timeout=20) as response:
             response.raise_for_status()
             forecast_areas = await response.json()
@@ -664,7 +665,8 @@ class JmaProvider:
         self,
         hass: HomeAssistant,
     ) -> list[dict[str, str]]:
-        session = async_get_clientsession(hass)
+        from ..diagnostic_center import observed_clientsession
+        session = observed_clientsession(hass, "jma", async_get_clientsession(hass))
         entries: dict[str, dict[str, str]] = {}
 
         for feed_url in (_JMA_XML_FEED_FAST, _JMA_XML_FEED_LONG):
@@ -713,7 +715,8 @@ class JmaProvider:
         observation: bool,
     ) -> list[tuple[dict[str, Any], list[dict[str, Any]]]]:
         entries = await self._async_tsunami_entries(hass)
-        session = async_get_clientsession(hass)
+        from ..diagnostic_center import observed_clientsession
+        session = observed_clientsession(hass, "jma", async_get_clientsession(hass))
         reports: list[tuple[dict[str, Any], list[dict[str, Any]]]] = []
         fetched = 0
 

@@ -593,6 +593,11 @@ class NasaGibsProvider:
                 "style": style_name,
             }
 
+        if spec.capability_id == "satellite_precipitation_imerg_30min":
+            from ..nasa_legend import imerg_native_legend
+            native = await hass.async_add_executor_job(imerg_native_legend)
+            descriptor["legend"] = {**descriptor.get("legend", {}), **native}
+
         if frames:
             descriptor["timeline"] = {
                 "mode": "frames",

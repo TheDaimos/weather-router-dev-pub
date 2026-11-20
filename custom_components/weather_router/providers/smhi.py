@@ -100,6 +100,24 @@ class SmhiProvider:
     def capabilities(self) -> tuple[CapabilityInfo, ...]:
         return _CAPABILITIES
 
+    def synoptic_isobars_info(self) -> dict[str, Any]:
+        """V2 optional regional numeric MSLP, never a global layer."""
+        return {
+            "capability": "weather.synoptic.isobars",
+            "coverage": "regional",
+            "data_kind": "derived_numeric_grid",
+            "synoptic_priority": 10,
+            "model": "SMHI SNOW1G",
+            "unit": "hPa",
+        }
+
+    async def async_fetch_synoptic_isobars(
+        self, hass: HomeAssistant, bbox: dict,
+    ) -> dict[str, Any]:
+        """Delegate provider policy to WR and numerical decoding to worker."""
+        from ..synoptic_smhi import async_fetch_isobars
+        return await async_fetch_isobars(hass, bbox)
+
     def provider_info(self) -> ProviderInfo:
         return ProviderInfo(
             summary=(
@@ -129,6 +147,16 @@ class SmhiProvider:
 
     def network_targets(self) -> tuple[NetworkTargetInfo, ...]:
         return (
+            NetworkTargetInfo(
+                purpose="synoptic_pressure_regional",
+                scheme="https",
+                host="opendata-download-metfcst.smhi.se",
+                port=443,
+                target_type="data_file",
+                required=False,
+                capabilities=("weather.synoptic.isobars",),
+                note="Optionales regionales Druckraster SMHI SNOW1G; MSLP, Koordinaten und Zeit im WR-Decoder verifiziert.",
+            ),
             NetworkTargetInfo(
                 purpose="point_weather_forecast",
                 scheme="https",
@@ -162,7 +190,8 @@ class SmhiProvider:
 
         url = f"{_BASE}/lon/{float(longitude):.4f}/lat/{float(latitude):.4f}/data.json"
         params = ",".join(_FIELDS[item][0] for item in requested)
-        session = async_get_clientsession(hass)
+        from ..diagnostic_center import observed_clientsession
+        session = observed_clientsession(hass, "smhi", async_get_clientsession(hass))
         async with session.get(
             url,
             params={"timeseries": "1", "parameters": params},

@@ -84,10 +84,8 @@ def _clean_html(value: str | None) -> str | None:
 def _rss_time(value: str | None) -> str | None:
     if not value:
         return None
-    try:
-        return parsedate_to_datetime(value).isoformat()
-    except (TypeError, ValueError, OverflowError):
-        return value
+    from ..time_normalization import rss_instant
+    return rss_instant(value)
 
 
 def _safe_gvp_url(value: str | None) -> str | None:
@@ -276,12 +274,13 @@ class SmithsonianVolcanoProvider:
         if capability_id != "weekly_volcanic_activity":
             raise ValueError(f"Unsupported Smithsonian volcano capability: {capability_id}")
 
-        session = async_get_clientsession(hass)
+        from ..diagnostic_center import observed_clientsession
+        session = observed_clientsession(hass, "smithsonian_volcanoes", async_get_clientsession(hass))
         async with session.get(
             _RSS_URL,
             headers={
                 "Accept": "application/rss+xml,application/xml,text/xml,*/*",
-                "User-Agent": "WeatherRouter/0.10 (+https://github.com/TheDaimos/weather-router-dev-pub)",
+                "User-Agent": "WeatherRouter/0.10 (+https://github.com/TheDaimos/weather-router-dev)",
             },
             timeout=20,
         ) as response:
@@ -327,11 +326,20 @@ class SmithsonianVolcanoProvider:
                 "stage": "capability_selection",
                 "provider_revision": _PROVIDER_REVISION,
             }
-        feed = await self.async_get_hazard_feed(
-            hass,
-            "weekly_volcanic_activity",
-            limit=50,
-        )
+        try:
+            feed = await self.async_get_hazard_feed(
+                hass, "weekly_volcanic_activity", limit=50,
+            )
+        except Exception as exc:
+            # Remote 403 is a real source denial, not an internal traceback.
+            status = getattr(exc, "status", None)
+            if status in (401, 403, 429, 500, 502, 503, 504):
+                return {"ok": False, "stage": "upstream_access",
+                        "provider_revision": _PROVIDER_REVISION,
+                        "http_status": status,
+                        "error": "upstream_access_denied" if status in (401, 403)
+                        else "upstream_temporarily_unavailable"}
+            raise
         return {
             "ok": True,
             "stage": "gvp_weekly_rss_georss",

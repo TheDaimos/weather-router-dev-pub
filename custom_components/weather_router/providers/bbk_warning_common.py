@@ -14,7 +14,7 @@ from .hazard_common import geometry_intersects_bbox, normalize_severity
 _BASE_URL = "https://warnung.bund.de/api31"
 _HEADERS = {
     "Accept": "application/json,application/geo+json,*/*",
-    "User-Agent": "WeatherRouter/0.10 (+https://github.com/TheDaimos/weather-router-dev-pub)",
+    "User-Agent": "WeatherRouter/0.10 (+https://github.com/TheDaimos/weather-router-dev)",
 }
 
 
@@ -131,15 +131,28 @@ def _valid_geometry(geometry: dict[str, Any] | None) -> dict[str, Any] | None:
     return geometry
 
 
-async def _fetch_json(hass: HomeAssistant, path: str) -> Any:
-    session = async_get_clientsession(hass)
-    async with session.get(
-        f"{_BASE_URL}{path}",
-        headers=_HEADERS,
-        timeout=20,
-    ) as response:
-        response.raise_for_status()
-        return await response.json(content_type=None)
+async def _fetch_json(hass: HomeAssistant, path: str, provider_id: str) -> Any:
+    from time import monotonic
+    from ..diagnostic_center import record_http_exchange
+    started = monotonic()
+    status = None
+    try:
+        session = async_get_clientsession(hass)
+        async with session.get(
+            f"{_BASE_URL}{path}",
+            headers=_HEADERS,
+            timeout=20,
+        ) as response:
+            status = response.status
+            response.raise_for_status()
+            result = await response.json(content_type=None)
+            record_http_exchange(hass, provider_id, started_monotonic=started,
+                                 http_status=status, declared_response_bytes=response.content_length)
+            return result
+    except Exception:
+        record_http_exchange(hass, provider_id, started_monotonic=started,
+                             http_status=status, failed=True)
+        raise
 
 
 async def fetch_bbk_feed(
@@ -158,7 +171,7 @@ async def fetch_bbk_feed(
 ) -> dict[str, Any]:
     """Fetch one public warnung.bund.de map feed and resolve its geometries."""
     police = channel == "police"
-    raw = await _fetch_json(hass, map_path)
+    raw = await _fetch_json(hass, map_path, provider_id)
     if not isinstance(raw, list):
         raise ValueError("BBK mapData response is not a list")
 
@@ -180,6 +193,7 @@ async def fetch_bbk_feed(
             geo_payload = await _fetch_json(
                 hass,
                 f"/warnings/{quote(identifier, safe='')}.geojson",
+                provider_id,
             )
             geometry = _valid_geometry(_geometry_from_geojson(geo_payload))
         except Exception:  # noqa: BLE001 - geometry enrichment is best-effort
@@ -207,7 +221,8 @@ async def fetch_bbk_feed(
                 "certainty": "unknown",
                 "status": "actual",
                 "message_type": message_type,
-                "sent": item.get("startDate"),
+                # NINA mapData.startDate ist Warnbeginn, keine belegte Ausstellungszeit.
+                "sent": None,
                 "effective": item.get("startDate"),
                 "onset": item.get("startDate"),
                 "expires": item.get("expiresDate"),
