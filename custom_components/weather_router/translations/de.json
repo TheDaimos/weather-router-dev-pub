@@ -3,7 +3,7 @@
     "step": {
       "user": {
         "title": "WeatherRouter einrichten",
-        "description": "Installiert den optionalen WeatherRouter-Dienst. Wetteranbieter und Consumer-Schnittstellen folgen in späteren Entwicklungsstufen."
+        "description": "Richtet WeatherRouter mit Wetteranbietern, Consumer-Schnittstellen und WeatherRouter Lab ein."
       }
     }
   },
@@ -11,6 +11,17 @@
     "select": {
       "reference_location": {
         "name": "Bezugsstandort"
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "WeatherRouter konfigurieren",
+        "description": "Steuert den direkten Zugriff auf WeatherRouter über die Home-Assistant-Seitenleiste.",
+        "data": {
+          "show_sidebar_panel": "In Seitenleiste anzeigen"
+        }
       }
     }
   }

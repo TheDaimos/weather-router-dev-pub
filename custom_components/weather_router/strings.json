@@ -3,7 +3,7 @@
     "step": {
       "user": {
         "title": "Set up WeatherRouter",
-        "description": "Install the optional WeatherRouter service and its internal diagnostic lab."
+        "description": "Set up WeatherRouter with active weather providers, Consumer APIs and WeatherRouter Lab."
       }
     }
   },
@@ -11,6 +11,17 @@
     "select": {
       "reference_location": {
         "name": "Reference location"
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Configure WeatherRouter",
+        "description": "Control direct access to WeatherRouter through the Home Assistant sidebar.",
+        "data": {
+          "show_sidebar_panel": "Show in sidebar"
+        }
       }
     }
   }

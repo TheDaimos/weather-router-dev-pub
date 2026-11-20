@@ -22,6 +22,7 @@ from .const import (
     CONF_CONSUMER_PROFILES,
     CONF_REFERENCE_LOCATION,
     CONF_ROUTER_ENABLED,
+    CONF_SHOW_SIDEBAR_PANEL,
     DEFAULT_OPTIONS,
     DOMAIN,
     INTEGRATION_VERSION,
@@ -59,6 +60,8 @@ def _validate_options(options: dict[str, Any]) -> None:
 
     if not isinstance(options[CONF_ROUTER_ENABLED], bool):
         raise ValueError("router_enabled must be boolean")
+    if not isinstance(options[CONF_SHOW_SIDEBAR_PANEL], bool):
+        raise ValueError("show_sidebar_panel must be boolean")
 
     domains = options[CONF_ENABLED_DOMAINS]
     if (
@@ -348,7 +351,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: WeatherRouterConfigEntry
     api_monitor._changed = lambda: api_monitor_store.async_delay_save(
         api_monitor.persistable, 2.0)
     hass.data.setdefault(DOMAIN, {})["api_monitor_persistent_store"] = api_monitor_store
-    await _async_register_lab_panel(hass)
+    if options[CONF_SHOW_SIDEBAR_PANEL]:
+        await _async_register_lab_panel(hass)
+    else:
+        frontend.async_remove_panel(hass, LAB_URL_PATH, warn_if_unknown=False)
     # Opt-in store foundation: executor-only filesystem initialization, no S3 polling.
     from .opera_ring_buffer import OperaRingBuffer
     ring_root = Path(hass.config.path(".storage", "weather_router_opera_ring"))
