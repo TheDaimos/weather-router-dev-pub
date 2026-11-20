@@ -3,14 +3,14 @@ from __future__ import annotations
 from math import isfinite
 
 PRODUCTS = ("RATE", "DBZH", "ACRR")
-DEFAULTS = {"RATE": False, "DBZH": False, "ACRR": False}
+DEFAULTS = {"RATE": True, "DBZH": True, "ACRR": True}
 MIN_AGE, MAX_AGE = 900, 3600
 
 def read_config(options):
     raw = options.get("opera_services", {})
     if not isinstance(raw, dict):
         raw = {}
-    services = {p: raw.get(p) is True for p in PRODUCTS}
+    services = {p: raw.get(p, DEFAULTS[p]) is True for p in PRODUCTS}
     def age(key, old, default):
         value = options.get(key, options.get(old, default))
         return value if type(value) is int and MIN_AGE <= value <= MAX_AGE else default
