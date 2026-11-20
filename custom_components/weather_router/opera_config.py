@@ -14,8 +14,8 @@ def read_config(options):
     def age(key, old, default):
         value = options.get(key, options.get(old, default))
         return value if type(value) is int and MIN_AGE <= value <= MAX_AGE else default
-    freshness = age("opera_max_age_seconds", "opera_dev_preview_max_age_seconds", 1500)
-    stale = age("opera_stale_after_seconds", "opera_dev_preview_stale_after_seconds", freshness)
+    freshness = age("opera_max_age_seconds", "opera_dev_preview_max_age_seconds", 1650)
+    stale = age("opera_stale_after_seconds", "opera_dev_preview_stale_after_seconds", 1651)
     return {
         "services": services,
         "max_age_seconds": freshness,

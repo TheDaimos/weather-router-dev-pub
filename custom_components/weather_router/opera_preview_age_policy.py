@@ -1,6 +1,6 @@
 """Server-side preview freshness option; never changes approved radar tile age."""
 from collections.abc import Mapping
-DEFAULT_PREVIEW_MAX_AGE_SECONDS = 1500
+DEFAULT_PREVIEW_MAX_AGE_SECONDS = 1650
 MIN_PREVIEW_MAX_AGE_SECONDS = 900
 MAX_PREVIEW_MAX_AGE_SECONDS = 3600
 OPTION_PREVIEW_MAX_AGE_SECONDS = "opera_dev_preview_max_age_seconds"

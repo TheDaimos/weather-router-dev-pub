@@ -14,6 +14,19 @@ class OperaDefaultsTests(unittest.TestCase):
         settings = opera_config.read_config({})
         self.assertEqual(settings["services"], {"RATE": True, "DBZH": True, "ACRR": True})
 
+    def test_new_install_uses_last_tested_freshness_policy(self):
+        settings = opera_config.read_config({})
+        self.assertEqual(settings["max_age_seconds"], 1650)
+        self.assertEqual(settings["stale_after_seconds"], 1651)
+        self.assertEqual(settings["max_stale_age_seconds"], 3600)
+
+    def test_saved_freshness_choices_are_preserved(self):
+        settings = opera_config.read_config({
+            "opera_max_age_seconds": 1500, "opera_stale_after_seconds": 1500,
+        })
+        self.assertEqual(settings["max_age_seconds"], 1500)
+        self.assertEqual(settings["stale_after_seconds"], 1500)
+
     def test_existing_explicitly_disabled_choices_are_preserved(self):
         settings = opera_config.read_config({
             "opera_services": {"RATE": False, "DBZH": True, "ACRR": False}
