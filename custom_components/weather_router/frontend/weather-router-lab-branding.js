@@ -126,7 +126,7 @@ if (Lab && !Lab.prototype.__weatherRouterBrandingPatched) {
         <div class="wr-brand-meta">
           <span class="wr-brand-pill">WR ${buildVersion} · FINAL</span>
           <span class="wr-brand-pill">Consumer V1 / V2</span>
-          <span class="wr-brand-pill">FINAL 1.0.0</span>
+          <span class="wr-brand-pill">FINAL 1.0.3</span>
         </div>
         <a class="wr-brand-help" href="/weather_router_static/weather-router-overview.html" target="_blank" rel="noopener noreferrer">WeatherRouter · Projekt & Hilfe</a>
       </div>

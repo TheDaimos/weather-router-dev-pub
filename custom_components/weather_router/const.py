@@ -14,7 +14,7 @@ DEV_BUILD_VERSION: Final = str(json.loads(
     (Path(__file__).with_name("manifest.json")).read_text(encoding="utf-8")
 )["version"])
 INTEGRATION_VERSION: Final = DEV_BUILD_VERSION
-DEV_LOADER_REV: Final = "1.0-loader-330"  # Preserve the accepted 330 loader generation in FINAL
+DEV_LOADER_REV: Final = "1.0-loader-333"  # Preserve the 333 loader generation from DEV 0.10.330 in FINAL
 
 # Internal Lab/diagnostic API contract.
 API_CONTRACT_VERSION: Final = 1

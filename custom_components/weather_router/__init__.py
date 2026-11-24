@@ -45,7 +45,7 @@ from .opera_ha_core_runtime_ws import async_register as async_register_opera_cor
 
 LAB_URL_PATH = "weather-router-lab"
 LAB_STATIC_URL = "/weather_router_static"
-LAB_FRONTEND_REV = "2026-11-20-weather-router-final-v100"
+LAB_FRONTEND_REV = "2026-11-24-weather-router-final-v103"
 
 
 def _validate_options(options: dict[str, Any]) -> None:

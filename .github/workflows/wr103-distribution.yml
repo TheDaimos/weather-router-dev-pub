@@ -1,0 +1,86 @@
+name: WeatherRouter FINAL - Distribution Check
+
+on:
+  push:
+    branches: ['feature/wr103-release-check']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  distribution:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: FINAL metadata and license
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          root = Path("custom_components/weather_router")
+          manifest = json.loads((root / "manifest.json").read_text(encoding="utf-8"))
+          assert manifest["domain"] == "weather_router"
+          assert manifest["version"] == "1.0.3"
+          assert manifest["config_flow"] is True
+          assert Path("LICENSE.md").is_file()
+          assert Path("hacs.json").is_file()
+          print("OK: manifest, HACS and license")
+          PY
+      - name: Python syntax (without writing cache files)
+        run: |
+          python - <<'PY'
+          import ast
+          from pathlib import Path
+          for source in Path('custom_components/weather_router').rglob('*.py'):
+              ast.parse(source.read_text(encoding='utf-8'), filename=str(source))
+          print('OK: Python syntax')
+          PY
+      - name: Install pinned Moon dependencies
+        run: python -m pip install astronomy-engine==2.1.19 timezonefinder==8.2.0 voluptuous tzdata
+      - name: Moon regressions
+        run: PYTHONDONTWRITEBYTECODE=1 python -m unittest discover -s tests -p 'test_moon*.py' -v
+      - name: OPERA service default regression
+        run: PYTHONDONTWRITEBYTECODE=1 python -m unittest discover -s tests -p 'test_opera_defaults.py' -v
+      - name: JavaScript syntax
+        shell: bash
+        run: |
+          find custom_components/weather_router/frontend -type f -name '*.js' -print0 |
+            xargs -0 -r -n1 node --check
+      - name: Forbidden distribution files
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          root = Path("custom_components/weather_router")
+          forbidden = {".env", "secrets.yaml", "secrets.yml", "id_rsa", "id_ed25519"}
+          suffixes = {".key", ".pem", ".p12", ".pfx", ".pyc"}
+          problems = [str(p) for p in root.rglob("*") if p.is_file() and (p.name.lower() in forbidden or p.suffix.lower() in suffixes)]
+          assert not problems, problems
+          print("OK: no forbidden file names or key extensions")
+          PY
+      - name: Distribution package
+        shell: bash
+        run: |
+          mkdir -p dist
+          zip -q -r dist/WeatherRouter-1.0.3-FINAL.zip custom_components/weather_router LICENSE.md
+          unzip -tqq dist/WeatherRouter-1.0.3-FINAL.zip
+          sha256sum dist/WeatherRouter-1.0.3-FINAL.zip > dist/SHA256SUMS
+      - name: Archive package and hash
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: WeatherRouter-1.0.3-FINAL-distribution
+          path: dist/
+          if-no-files-found: warn
+          retention-days: 30

@@ -15,8 +15,10 @@
   "issue_tracker": "https://github.com/TheDaimos/weather-router-pub/issues",
   "requirements": [
     "h5py==3.16.0",
-    "pyproj==3.8.0"
+    "pyproj==3.8.0",
+    "astronomy-engine==2.1.19",
+    "timezonefinder==8.2.0"
   ],
   "single_config_entry": true,
-  "version": "1.0.0"
+  "version": "1.0.3"
 }

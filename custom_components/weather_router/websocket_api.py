@@ -2705,6 +2705,9 @@ async def websocket_opera_preview_control(hass, connection, msg):
 
 
 def async_register(hass: HomeAssistant) -> None:
+    from .moon_websocket import websocket_moon
+
+    websocket_api.async_register_command(hass, websocket_moon)
     """Register WeatherRouter WebSocket commands."""
     websocket_api.async_register_command(hass, websocket_routing_settings)
     websocket_api.async_register_command(hass, websocket_routing_settings_update)
