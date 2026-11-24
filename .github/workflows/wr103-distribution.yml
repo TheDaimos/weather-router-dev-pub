@@ -73,9 +73,9 @@ jobs:
         shell: bash
         run: |
           mkdir -p dist
-          zip -q -r dist/WeatherRouter-1.0.3-FINAL.zip custom_components/weather_router LICENSE.md
+          zip -q -r dist/WeatherRouter-1.0.3-FINAL.zip custom_components/weather_router LICENSE.md COPYRIGHT.md BRANDING.md
           unzip -tqq dist/WeatherRouter-1.0.3-FINAL.zip
-          sha256sum dist/WeatherRouter-1.0.3-FINAL.zip > dist/SHA256SUMS
+          sha256sum dist/WeatherRouter-1.0.3-FINAL.zip | tee dist/SHA256SUMS
       - name: Archive package and hash
         if: always()
         uses: actions/upload-artifact@v4
